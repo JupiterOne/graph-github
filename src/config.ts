@@ -21,12 +21,17 @@ import { createAPIClient } from './client';
  * `instance.config` in a UI.
  */
 export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
-  clientId: {
+  githubAppId: {
     type: 'string',
   },
-  clientSecret: {
+  githubAppLocalPrivateKeyPath: {
     type: 'string',
-    mask: true,
+  },
+  githubAppLocalCallbackUrl: {
+    type: 'string',
+  },
+  installationId: {
+    type: 'string',
   },
 };
 
@@ -36,14 +41,24 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
  */
 export interface IntegrationConfig extends IntegrationInstanceConfig {
   /**
-   * The provider API client ID used to authenticate requests.
+   * The GitHub App ID of the application at https://github.com/settings/apps
    */
-  clientId: string;
+  githubAppId: string;
 
   /**
-   * The provider API client secret used to authenticate requests.
+   * The local path to your PEM file for authentication
    */
-  clientSecret: string;
+  githubAppLocalPrivateKeyPath: string;
+
+  /**
+   * The callback URL used by the GitHub app to reply. Probably a smee.io link.
+   */
+  githubAppLocalCallbackUrl: string;
+
+  /**
+   * The ID number assigned to the installation, delivered to the callback URL above.
+   */
+  installationId: string;
 }
 
 export async function validateInvocation(
@@ -51,12 +66,11 @@ export async function validateInvocation(
 ) {
   const { config } = context.instance;
 
-  if (!config.clientId || !config.clientSecret) {
+  if (!config.githubAppId || !config.githubAppLocalPrivateKeyPath || !config.installationId) {
     throw new IntegrationValidationError(
-      'Config requires all of {clientId, clientSecret}',
+      'Config requires all of {githubAppId, githubAppLocalPrivateKeyPath, installationId}',
     );
   }
-
-  const apiClient = createAPIClient(config);
+  const apiClient = createAPIClient(config, context.logger);
   await apiClient.verifyAuthentication();
 }

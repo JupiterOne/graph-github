@@ -1,8 +1,15 @@
-import http from 'http';
-
-import { IntegrationProviderAuthenticationError } from '@jupiterone/integration-sdk-core';
+import { 
+  IntegrationLogger, 
+  IntegrationValidationError
+} from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
+import { AccountType } from './types';
+import getInstallation from './util/getInstallation';
+import createGitHubAppClient from './util/createGitHubAppClient';
+import OrganizationAccountClient from './client/OrganizationAccountClient';
+import { GitHubGraphQLClient } from './client/GraphQLClient';
+import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -41,41 +48,49 @@ export type AcmeGroup = Opaque<any, 'AcmeGroup'>;
  * resources.
  */
 export class APIClient {
-  constructor(readonly config: IntegrationConfig) {}
+  constructor(readonly config: IntegrationConfig, readonly logger: IntegrationLogger) { }
 
   public async verifyAuthentication(): Promise<void> {
     // TODO make the most light-weight request possible to validate
     // authentication works with the provided credentials, throw an err if
     // authentication fails
-    const request = new Promise<void>((resolve, reject) => {
-      http.get(
-        {
-          hostname: 'localhost',
-          port: 443,
-          path: '/api/v1/some/endpoint?limit=1',
-          agent: false,
-          timeout: 10,
-        },
-        (res) => {
-          if (res.statusCode !== 200) {
-            reject(new Error('Provider authentication failed'));
-          } else {
-            resolve();
-          }
-        },
+    const installationId = Number(this.config.installationId);
+    const appClient = await createGitHubAppClient(
+      installationId, 
+      this.logger
+    );
+    const { token } = (await appClient.auth({ type: 'installation' })) as {
+      token: string;
+    };
+    const installation = await getInstallation(appClient, installationId);
+  
+    if (installation.target_type !== AccountType.Org) {
+      throw new IntegrationValidationError(
+        'Integration supports only GitHub Organization accounts.'
       );
+    }
+
+    let login = '';
+    if (installation.account?.login) {
+      login = installation.account.login;
+    }
+    const accountClient = new OrganizationAccountClient({
+      login: login,
+      restClient: appClient,
+      graphqlClient: new GitHubGraphQLClient(
+        token,
+        resourceMetadataMap(),
+        this.logger
+      ),
+      logger: this.logger,
+      analyzeCommitApproval: this.config.analyzeCommitApproval,
     });
 
-    try {
-      await request;
-    } catch (err) {
-      throw new IntegrationProviderAuthenticationError({
-        cause: err,
-        endpoint: 'https://localhost/api/v1/some/endpoint?limit=1',
-        status: err.status,
-        statusText: err.statusText,
-      });
-    }
+    const output = await accountClient.getAccount();
+    console.log(output);
+    const output2 = await accountClient.getMembers();
+    console.log(output2);
+    
   }
 
   /**
@@ -144,6 +159,6 @@ export class APIClient {
   }
 }
 
-export function createAPIClient(config: IntegrationConfig): APIClient {
-  return new APIClient(config);
+export function createAPIClient(config: IntegrationConfig, logger: IntegrationLogger): APIClient {
+  return new APIClient(config, logger);
 }

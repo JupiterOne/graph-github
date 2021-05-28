@@ -25,12 +25,33 @@
     "prepush": "yarn lint && yarn type-check && jest --changedSince master",
     "prepack": "yarn build"
   },
+  "dependencies": {
+    "graphql": "^14.0.2",
+    "graphql-tools": "^4.0.3",
+    "graphql.js": "^0.6.5",
+    "jsonwebtoken": "^8.3.0",
+    "koa": "^2.11.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0",
+    "nested-error-stacks": "^2.1.0",
+    "node-fetch": "^2.2.0",
+    "p-map": "^2.1.0",
+    "qs": "^6.9.1",
+    "uuid": "^3.0.0"
+  },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^6.0.0"
+    "@jupiterone/integration-sdk-core": "^6.3.0",
+    "@octokit/rest": "~17.6.0",
+    "@octokit/auth-app": "2.4.5",
+    "@octokit/plugin-throttling": "^3.4.1",
+    "@octokit/core": "^3.0.0"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^6.0.0",
-    "@jupiterone/integration-sdk-dev-tools": "^6.0.0",
-    "@jupiterone/integration-sdk-testing": "^6.0.0"
+    "@jupiterone/integration-sdk-core": "^6.3.0",
+    "@jupiterone/integration-sdk-dev-tools": "^6.3.0",
+    "@jupiterone/integration-sdk-testing": "^6.3.0",
+    "@octokit/rest": "^17.6.0",
+    "@octokit/auth-app": "2.4.5",
+    "@octokit/plugin-throttling": "^3.4.1."
   }
 }

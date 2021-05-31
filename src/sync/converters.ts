@@ -98,7 +98,7 @@ export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
 }
 
 export function toOrganizationMemberEntity(
-  data: OrgMemberQueryResponse
+  data: OrgMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
     _class: 'User',
@@ -116,7 +116,7 @@ export function toOrganizationMemberEntity(
 }
 
 export function toOrganizationMemberEntityFromTeamMember(
-  data: OrgTeamMemberQueryResponse
+  data: OrgTeamMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
     _class: 'User',
@@ -137,20 +137,20 @@ export function toPullRequestEntity(
   commitsApproved?: PullsListCommitsResponseItem[],
   commitsByUnknownAuthor?: PullsListCommitsResponseItem[],
   approvals?: Approval[],
-  usersByLogin?: IdEntityMap<UserEntity>
+  usersByLogin?: IdEntityMap<UserEntity>,
 ): PullRequestEntity {
-  const commitHashes = commits ? commits.map(c => c.sha) : undefined;
+  const commitHashes = commits ? commits.map((c) => c.sha) : undefined;
   const commitMessages = commits
-    ? commits.map(c => c.commit.message)
+    ? commits.map((c) => c.commit.message)
     : undefined;
   const commitsApprovedHashes = commitsApproved
-    ? commitsApproved.map(c => c.sha)
+    ? commitsApproved.map((c) => c.sha)
     : undefined;
   const commitsByUnknownAuthorHashes = commitsByUnknownAuthor
-    ? commitsByUnknownAuthor.map(c => c.sha)
+    ? commitsByUnknownAuthor.map((c) => c.sha)
     : undefined;
   const commitsNotApproved = commitHashes
-    ? commitHashes.filter(c => !commitsApprovedHashes!.includes(c))
+    ? commitHashes.filter((c) => !commitsApprovedHashes!.includes(c))
     : undefined;
 
   const approved = commitsNotApproved
@@ -162,7 +162,7 @@ export function toPullRequestEntity(
 
   const approverLogins = approvals
     ? flattenMatrix<string>(
-        aggregateProperties<string[]>('approverUsernames', approvals)
+        aggregateProperties<string[]>('approverUsernames', approvals),
       )
     : undefined;
   const authorUser = (usersByLogin || {})[data.user.login];
@@ -214,7 +214,7 @@ export function toPullRequestEntity(
         data.user.login,
     reviewerLogins: aggregateProperties<string>(
       'login',
-      data.requested_reviewers
+      data.requested_reviewers,
     ),
     reviewers: data.requested_reviewers.reduce(
       (reviewers: string[], reviewerData) => {
@@ -226,7 +226,7 @@ export function toPullRequestEntity(
 
         return reviewers;
       },
-      []
+      [],
     ),
     approverLogins,
     approvers:
@@ -240,7 +240,7 @@ export function toPullRequestEntity(
 
 export function toOrganizationHasMemberRelationship(
   installationEntity: AccountEntity,
-  userEntity: UserEntity
+  userEntity: UserEntity,
 ): OrganizationMemberRelationship {
   return {
     _key: `${installationEntity._key}|has|${userEntity._key}`,
@@ -248,12 +248,13 @@ export function toOrganizationHasMemberRelationship(
     _class: 'HAS',
     _fromEntityKey: installationEntity._key,
     _toEntityKey: userEntity._key,
+    displayName: 'HAS',
   };
 }
 
 export function toMemberManagesOrganizationRelationship(
   installationEntity: AccountEntity,
-  userEntity: UserEntity
+  userEntity: UserEntity,
 ): OrganizationMemberRelationship {
   return {
     _key: `${userEntity._key}|manages|${installationEntity._key}`,
@@ -261,12 +262,13 @@ export function toMemberManagesOrganizationRelationship(
     _class: 'MANAGES',
     _fromEntityKey: userEntity._key,
     _toEntityKey: installationEntity._key,
+    displayName: 'MANAGES',
   };
 }
 
 export function toOrganizationHasTeamRelationship(
   installationEntity: AccountEntity,
-  teamEntity: TeamEntity
+  teamEntity: TeamEntity,
 ): OrganizationMemberRelationship {
   return {
     _key: `${installationEntity._key}|has|${teamEntity._key}`,
@@ -279,7 +281,7 @@ export function toOrganizationHasTeamRelationship(
 
 export function toTeamHasMemberRelationship(
   teamEntity: TeamEntity,
-  teamMemberEntity: UserEntity
+  teamMemberEntity: UserEntity,
 ): TeamMemberRelationship {
   return {
     _key: `${teamEntity._key}|has|${teamMemberEntity._key}`,
@@ -292,7 +294,7 @@ export function toTeamHasMemberRelationship(
 
 export function toMemberManagesTeamRelationship(
   teamEntity: TeamEntity,
-  teamMemberEntity: UserEntity
+  teamMemberEntity: UserEntity,
 ): TeamMemberRelationship {
   return {
     _key: `${teamMemberEntity._key}|manages|${teamEntity._key}`,
@@ -306,7 +308,7 @@ export function toMemberManagesTeamRelationship(
 export function toTeamAllowsRepoRelationship(
   teamEntity: TeamEntity,
   repoEntity: RepoEntity,
-  permission: string
+  permission: string,
 ): TeamRepoRelationship {
   return {
     _key: `${teamEntity._key}|allows|${repoEntity._key}`,
@@ -320,7 +322,7 @@ export function toTeamAllowsRepoRelationship(
 
 export function toAccountOwnsRepoRelationship(
   installationEntity: AccountEntity,
-  repoEntity: RepoEntity
+  repoEntity: RepoEntity,
 ): AccountRepoRelationship {
   return {
     _key: `${installationEntity._key}|owns|${repoEntity._key}`,
@@ -333,7 +335,7 @@ export function toAccountOwnsRepoRelationship(
 
 export function toRepoHasPullRequestRelationship(
   repoEntity: RepoEntity,
-  pullRequestEntity: PullRequestEntity
+  pullRequestEntity: PullRequestEntity,
 ): RepoPullRequestRelationship {
   return {
     _key: `${repoEntity._key}|has|${pullRequestEntity._key}`,
@@ -346,7 +348,7 @@ export function toRepoHasPullRequestRelationship(
 
 export function toUserOpenedPullRequestRelationship(
   userEntity: UserEntity,
-  pullRequestEntity: PullRequestEntity
+  pullRequestEntity: PullRequestEntity,
 ): UserPullRequestRelationship {
   return {
     _key: `${userEntity._key}|opened|${pullRequestEntity._key}`,
@@ -359,7 +361,7 @@ export function toUserOpenedPullRequestRelationship(
 
 export function toUserReviewedPullRequestRelationship(
   userEntity: UserEntity,
-  pullRequestEntity: PullRequestEntity
+  pullRequestEntity: PullRequestEntity,
 ): UserPullRequestRelationship {
   return {
     _key: `${userEntity._key}|reviewed|${pullRequestEntity._key}`,
@@ -372,7 +374,7 @@ export function toUserReviewedPullRequestRelationship(
 
 export function toUserApprovedPullRequestRelationship(
   userEntity: UserEntity,
-  pullRequestEntity: PullRequestEntity
+  pullRequestEntity: PullRequestEntity,
 ): UserPullRequestRelationship {
   return {
     _key: `${userEntity._key}|approved|${pullRequestEntity._key}`,

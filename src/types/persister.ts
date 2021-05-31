@@ -2,11 +2,11 @@ import { AccountType } from '.';
 import {
   Entity,
   Relationship,
-  ExplicitRelationship
+  ExplicitRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 //to simplify diffs:
-export interface EntityFromIntegration extends Entity {}
+export type EntityFromIntegration = Entity;
 
 export interface AccountEntity extends EntityFromIntegration {
   accountType: AccountType;
@@ -15,11 +15,11 @@ export interface AccountEntity extends EntityFromIntegration {
   name: string;
 }
 
-export type AccountRepoRelationship = Relationship
+export type AccountRepoRelationship = Relationship;
 
-export type OrganizationMemberRelationship = Relationship
+export type OrganizationMemberRelationship = Relationship;
 
-export type OrganizationTeamRelationship = Relationship
+export type OrganizationTeamRelationship = Relationship;
 
 export interface TeamEntity extends EntityFromIntegration {
   name: string;
@@ -27,7 +27,7 @@ export interface TeamEntity extends EntityFromIntegration {
   full_name: string;
 }
 
-export type TeamMemberRelationship = Relationship
+export type TeamMemberRelationship = Relationship;
 
 export interface TeamRepoRelationship extends ExplicitRelationship {
   permission: string;
@@ -43,7 +43,7 @@ export interface RepoEntity extends EntityFromIntegration {
   updatedOn: number | undefined;
 }
 
-export type RepoPullRequestRelationship = Relationship
+export type RepoPullRequestRelationship = Relationship;
 
 export interface UserEntity extends EntityFromIntegration {
   username: string;
@@ -53,7 +53,7 @@ export interface UserEntity extends EntityFromIntegration {
   siteAdmin?: boolean;
 }
 
-export type UserPullRequestRelationship = Relationship
+export type UserPullRequestRelationship = Relationship;
 
 export interface PullRequestEntity extends EntityFromIntegration {
   accountLogin: string;

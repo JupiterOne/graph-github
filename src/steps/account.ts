@@ -5,33 +5,22 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from '../config';
+import { createAPIClient } from '../client';
+import { toAccountEntity } from '../sync/converters';
 
-export const ACCOUNT_ENTITY_KEY = 'entity:account';
+export const DATA_ACCOUNT_ENTITY = 'DATA_ACCOUNT_ENTITY';
 
 export async function fetchAccountDetails({
   jobState,
+  instance,
+  logger,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
+  const apiClient = createAPIClient(instance.config, logger);
   const accountEntity = await jobState.addEntity(
-    createIntegrationEntity({
-      entityData: {
-        source: {
-          id: 'acme-unique-account-id',
-          name: 'Example Co. Acme Account',
-        },
-        assign: {
-          _key: 'acme-unique-account-id',
-          _type: 'acme_account',
-          _class: 'Account',
-          mfaEnabled: true,
-          // This is a custom property that is not a part of the data model class
-          // hierarchy. See: https://github.com/JupiterOne/data-model/blob/master/src/schemas/Account.json
-          manager: 'Manager Name',
-        },
-      },
-    }),
+    toAccountEntity(await apiClient.getAccountDetails()),
   );
 
-  await jobState.setData(ACCOUNT_ENTITY_KEY, accountEntity);
+  await jobState.setData(DATA_ACCOUNT_ENTITY, accountEntity);
 }
 
 export const accountSteps: IntegrationStep<IntegrationConfig>[] = [
@@ -41,7 +30,7 @@ export const accountSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'Account',
-        _type: 'acme_account',
+        _type: 'github_account',
         _class: 'Account',
       },
     ],

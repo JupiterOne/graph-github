@@ -1,6 +1,7 @@
-import { 
-  IntegrationLogger, 
-  IntegrationValidationError
+import {
+  IntegrationLogger,
+  IntegrationValidationError,
+  IntegrationProviderAuthenticationError,
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
@@ -10,6 +11,13 @@ import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
 import { GitHubGraphQLClient } from './client/GraphQLClient';
 import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
+import {
+  OrgMemberQueryResponse,
+  OrgRepoQueryResponse,
+  OrgTeamQueryResponse,
+  OrgQueryResponse,
+  OrgTeamMemberQueryResponse,
+} from './client/GraphQLClient';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -48,49 +56,33 @@ export type AcmeGroup = Opaque<any, 'AcmeGroup'>;
  * resources.
  */
 export class APIClient {
-  constructor(readonly config: IntegrationConfig, readonly logger: IntegrationLogger) { }
+  accountClient: OrganizationAccountClient;
+  constructor(
+    readonly config: IntegrationConfig,
+    readonly logger: IntegrationLogger,
+  ) {}
 
   public async verifyAuthentication(): Promise<void> {
-    // TODO make the most light-weight request possible to validate
+    // the most light-weight request possible to validate
     // authentication works with the provided credentials, throw an err if
     // authentication fails
-    const installationId = Number(this.config.installationId);
-    const appClient = await createGitHubAppClient(
-      installationId, 
-      this.logger
-    );
-    const { token } = (await appClient.auth({ type: 'installation' })) as {
-      token: string;
-    };
-    const installation = await getInstallation(appClient, installationId);
-  
-    if (installation.target_type !== AccountType.Org) {
-      throw new IntegrationValidationError(
-        'Integration supports only GitHub Organization accounts.'
-      );
+    try {
+      await this.setupAccountClient();
+    } catch (err) {
+      throw new IntegrationProviderAuthenticationError({
+        cause: err,
+        endpoint: `https://api.github.com/app/installations/${this.config.installation_id}/access_tokens`,
+        status: err.status,
+        statusText: err.statusText,
+      });
     }
+  }
 
-    let login = '';
-    if (installation.account?.login) {
-      login = installation.account.login;
+  public async getAccountDetails(): Promise<OrgQueryResponse> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
     }
-    const accountClient = new OrganizationAccountClient({
-      login: login,
-      restClient: appClient,
-      graphqlClient: new GitHubGraphQLClient(
-        token,
-        resourceMetadataMap(),
-        this.logger
-      ),
-      logger: this.logger,
-      analyzeCommitApproval: this.config.analyzeCommitApproval,
-    });
-
-    const output = await accountClient.getAccount();
-    console.log(output);
-    const output2 = await accountClient.getMembers();
-    console.log(output2);
-    
+    return await this.accountClient.getAccount();
   }
 
   /**
@@ -98,30 +90,16 @@ export class APIClient {
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
-  public async iterateUsers(
-    iteratee: ResourceIteratee<AcmeUser>,
+  public async iterateMembers(
+    iteratee: ResourceIteratee<OrgMemberQueryResponse>,
   ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
-    //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    const members: OrgMemberQueryResponse[] = await this.accountClient.getMembers();
 
-    const users: AcmeUser[] = [
-      {
-        id: 'acme-user-1',
-        name: 'User One',
-      },
-      {
-        id: 'acme-user-2',
-        name: 'User Two',
-      },
-    ];
-
-    for (const user of users) {
-      await iteratee(user);
+    for (const member of members) {
+      await iteratee(member);
     }
   }
 
@@ -141,24 +119,49 @@ export class APIClient {
     // the page, invoke the `ResourceIteratee`. This will encourage a pattern
     // where each resource is processed and dropped from memory.
 
-    const groups: AcmeGroup[] = [
-      {
-        id: 'acme-group-1',
-        name: 'Group One',
-        users: [
-          {
-            id: 'acme-user-1',
-          },
-        ],
-      },
-    ];
-
-    for (const group of groups) {
-      await iteratee(group);
+    if (!this.accountClient) {
+      await this.setupAccountClient();
     }
+    const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
+
+    for (const team of teams) {
+      console.log(team);
+      console.log(`justin case`);
+      //await iteratee(team);
+    }
+  }
+
+  public async setupAccountClient(): Promise<void> {
+    const installationId = Number(this.config.installationId);
+    const appClient = await createGitHubAppClient(installationId, this.logger);
+    const { token } = (await appClient.auth({ type: 'installation' })) as {
+      token: string;
+    };
+    const installation = await getInstallation(appClient, installationId);
+
+    if (installation.target_type !== AccountType.Org) {
+      throw new IntegrationValidationError(
+        'Integration supports only GitHub Organization accounts.',
+      );
+    }
+
+    this.accountClient = new OrganizationAccountClient({
+      login: installation.account.login,
+      restClient: appClient,
+      graphqlClient: new GitHubGraphQLClient(
+        token,
+        resourceMetadataMap(),
+        this.logger,
+      ),
+      logger: this.logger,
+      analyzeCommitApproval: this.config.analyzeCommitApproval,
+    });
   }
 }
 
-export function createAPIClient(config: IntegrationConfig, logger: IntegrationLogger): APIClient {
+export function createAPIClient(
+  config: IntegrationConfig,
+  logger: IntegrationLogger,
+): APIClient {
   return new APIClient(config, logger);
 }

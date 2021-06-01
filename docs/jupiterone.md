@@ -98,6 +98,7 @@ The following entities are created:
 | ----------- | ---------------- | --------------- |
 | Account     | `github_account` | `Account`       |
 | GitHub Team | `github_team`    | `UserGroup`     |
+| Github Repo | `github_repo`    | `CodeRepo`      |
 | Github User | `github_user`    | `User`          |
 
 ### Relationships
@@ -108,8 +109,11 @@ The following relationships are created/mapped:
 | --------------------- | --------------------- | --------------------- |
 | `github_account`      | **HAS**               | `github_team`         |
 | `github_account`      | **HAS**               | `github_user`         |
+| `github_account`      | **OWNS**              | `github_repo`         |
+| `github_team`         | **ALLOWS**            | `github_repo`         |
 | `github_team`         | **HAS**               | `github_user`         |
 | `github_user`         | **MANAGES**           | `github_account`      |
+| `github_user`         | **MANAGES**           | `github_team`         |
 
 <!--
 ********************************************************************************

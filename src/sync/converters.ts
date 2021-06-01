@@ -276,6 +276,7 @@ export function toOrganizationHasTeamRelationship(
     _class: 'HAS',
     _fromEntityKey: installationEntity._key,
     _toEntityKey: teamEntity._key,
+    displayName: 'HAS',
   };
 }
 
@@ -289,12 +290,13 @@ export function toTeamHasMemberRelationship(
     _class: 'HAS',
     _fromEntityKey: teamEntity._key,
     _toEntityKey: teamMemberEntity._key,
+    displayName: 'HAS',
   };
 }
 
 export function toMemberManagesTeamRelationship(
-  teamEntity: TeamEntity,
   teamMemberEntity: UserEntity,
+  teamEntity: TeamEntity,
 ): TeamMemberRelationship {
   return {
     _key: `${teamMemberEntity._key}|manages|${teamEntity._key}`,
@@ -302,6 +304,7 @@ export function toMemberManagesTeamRelationship(
     _class: 'MANAGES',
     _fromEntityKey: teamMemberEntity._key,
     _toEntityKey: teamEntity._key,
+    displayName: 'MANAGES',
   };
 }
 
@@ -317,6 +320,7 @@ export function toTeamAllowsRepoRelationship(
     _fromEntityKey: teamEntity._key,
     _toEntityKey: repoEntity._key,
     permission,
+    displayName: 'ALLOWS',
   };
 }
 
@@ -330,6 +334,7 @@ export function toAccountOwnsRepoRelationship(
     _class: 'OWNS',
     _fromEntityKey: installationEntity._key,
     _toEntityKey: repoEntity._key,
+    displayName: 'OWNS',
   };
 }
 

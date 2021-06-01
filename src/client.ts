@@ -9,7 +9,10 @@ import { AccountType, TokenPermissions } from './types';
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
-import { GitHubGraphQLClient } from './client/GraphQLClient';
+import {
+  GitHubGraphQLClient,
+  OrgTeamRepoQueryResponse,
+} from './client/GraphQLClient';
 import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
 import {
   OrgMemberQueryResponse,
@@ -105,10 +108,40 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
+    const allTeamMembers: OrgTeamMemberQueryResponse[] = await this.accountClient.getTeamMembers();
+    const allTeamRepos: OrgTeamRepoQueryResponse[] = await this.accountClient.getTeamRepositories();
     for (const team of teams) {
+      team.members = [];
+      for (const member of allTeamMembers) {
+        if (member.teams === team.id) {
+          team.members.push(member);
+        }
+      }
+      team.repos = [];
+      for (const repo of allTeamRepos) {
+        if (repo.teams === team.id) {
+          team.repos.push(repo);
+        }
+      }
       await iteratee(team);
     }
-    console.log(await this.accountClient.getTeamMembers());
+  }
+
+  /**
+   * Iterates each repo (CodeRepo) resource in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateRepos(
+    iteratee: ResourceIteratee<OrgRepoQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    const repos: OrgRepoQueryResponse[] = await this.accountClient.getRepositories();
+    for (const repo of repos) {
+      await iteratee(repo);
+    }
   }
 
   public async setupAccountClient(): Promise<void> {
@@ -125,6 +158,7 @@ export class APIClient {
         permissions: TokenPermissions;
       };
 
+      //checking for proper scopes
       if (
         !(permissions.members === 'read' || permissions.members === 'write')
       ) {
@@ -141,6 +175,7 @@ export class APIClient {
           'Integration requires read access to repository metadata. See GitHub App permissions.',
         );
       }
+      //scopes check done
 
       const installation = await getInstallation(appClient, installationId);
 

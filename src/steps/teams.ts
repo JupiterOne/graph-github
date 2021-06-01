@@ -1,5 +1,4 @@
 import {
-  createDirectRelationship,
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
@@ -11,9 +10,15 @@ import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import {
   toTeamEntity,
+  toOrganizationMemberEntityFromTeamMember,
   toOrganizationHasTeamRelationship,
+  toTeamHasMemberRelationship,
+  toMemberManagesTeamRelationship,
+  toTeamAllowsRepoRelationship,
 } from '../sync/converters';
-import { AccountEntity, TeamEntity } from '../types';
+import { AccountEntity, TeamEntity, UserEntity, RepoEntity } from '../types';
+import sha from '../util/sha';
+import { TeamMemberRole } from '../client/GraphQLClient';
 
 export async function fetchTeams({
   instance,
@@ -35,26 +40,41 @@ export async function fetchTeams({
       toOrganizationHasTeamRelationship(accountEntity, teamEntity),
     );
 
-    /* still have to figure out the best way to do this
-    //might add a property to the type that lets me tack on the user list
-    //but is the object too huge? Or do I just add it as an iteratee input?
-    for (const user of group.users || []) {
-      const userEntity = await jobState.findEntity(user.id);
+    for (const member of team.members || []) {
+      let memberEntity = (await jobState.findEntity(member.id)) as UserEntity;
 
-      if (!userEntity) {
-        throw new IntegrationMissingKeyError(
-          `Expected user with key to exist (key=${user.id})`,
+      if (!memberEntity) {
+        memberEntity = (await jobState.addEntity(
+          toOrganizationMemberEntityFromTeamMember(member),
+        )) as UserEntity;
+        logger.warn(
+          { memberLoginSha: sha(member.login) },
+          'Could not find user entity for member login',
         );
       }
 
       await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.HAS,
-          from: groupEntity,
-          to: userEntity,
-        }),
+        toTeamHasMemberRelationship(teamEntity, memberEntity),
       );
-    } */
+
+      if (member.role === TeamMemberRole.Maintainer) {
+        await jobState.addRelationship(
+          toMemberManagesTeamRelationship(memberEntity, teamEntity),
+        );
+      }
+    }
+
+    for (const repo of team.repos || []) {
+      let repoEntity = (await jobState.findEntity(repo.id)) as RepoEntity;
+      if (!repoEntity) {
+        throw new IntegrationMissingKeyError(
+          `Expected repo (CodeRepo) with key to exist (key=${repo.id})`,
+        );
+      }
+      await jobState.addRelationship(
+        toTeamAllowsRepoRelationship(teamEntity, repoEntity, repo.permission),
+      );
+    }
   });
 }
 
@@ -82,8 +102,20 @@ export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
         sourceType: 'github_team',
         targetType: 'github_user',
       },
+      {
+        _type: 'github_user_manages_team',
+        _class: RelationshipClass.MANAGES,
+        sourceType: 'github_user',
+        targetType: 'github_team',
+      },
+      {
+        _type: 'github_team_allows_repo',
+        _class: RelationshipClass.ALLOWS,
+        sourceType: 'github_team',
+        targetType: 'github_repo',
+      },
     ],
-    dependsOn: ['fetch-users'],
+    dependsOn: ['fetch-repos', 'fetch-users'],
     executionHandler: fetchTeams,
   },
 ];

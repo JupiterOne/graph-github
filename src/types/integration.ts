@@ -1,6 +1,4 @@
-import {
-  IntegrationExecutionContext,
-} from '@jupiterone/integration-sdk-core';
+import { IntegrationExecutionContext } from '@jupiterone/integration-sdk-core';
 import {
   AccountEntity,
   UserEntity,
@@ -11,7 +9,7 @@ import {
   OrganizationMemberRelationship,
   RepoPullRequestRelationship,
   UserPullRequestRelationship,
-  OrganizationTeamRelationship
+  OrganizationTeamRelationship,
 } from './';
 import OrganizationAccountClient from '../client/OrganizationAccountClient';
 import { TeamMemberRelationship, TeamRepoRelationship } from './persister';
@@ -21,7 +19,7 @@ import { TeamMemberRelationship, TeamRepoRelationship } from './persister';
  */
 export enum AccountType {
   Org = 'Organization',
-  User = 'User'
+  User = 'User',
 }
 
 /**
@@ -60,29 +58,6 @@ export interface GitHubIntegrationExecutionContext
   //persister: PersisterClient;
   accountType: AccountType;
   github: OrganizationAccountClient;
-}
-
-export interface GraphData {
-  account?: AccountEntity;
-  teams: TeamEntity[];
-  users: UserEntity[];
-  repos: RepoEntity[];
-  pullRequests: PullRequestEntity[];
-
-  organizationMemberRelationships: OrganizationMemberRelationship[];
-  teamMemberRelationships: TeamMemberRelationship[];
-  teamRepoRelationships: TeamRepoRelationship[];
-  organizationTeamRelationships: OrganizationTeamRelationship[];
-  accountRepoRelationships: AccountRepoRelationship[];
-  repoPullRequestRelationships: RepoPullRequestRelationship[];
-  userPullRequestRelationships: UserPullRequestRelationship[];
-}
-
-
-export interface ProviderData extends GraphData {
-  userByLoginMap: IdEntityMap<UserEntity>;
-  repoByNameMap: IdEntityMap<RepoEntity>;
-  pullRequestByIdMap: IdEntityMap<PullRequestEntity>;
 }
 
 export interface IdEntityMap<V> {

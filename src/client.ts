@@ -5,7 +5,7 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
-import { AccountType } from './types';
+import { AccountType, TokenPermissions } from './types';
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
@@ -18,6 +18,7 @@ import {
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
 } from './client/GraphQLClient';
+import { Token } from 'graphql';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -66,16 +67,7 @@ export class APIClient {
     // the most light-weight request possible to validate
     // authentication works with the provided credentials, throw an err if
     // authentication fails
-    try {
-      await this.setupAccountClient();
-    } catch (err) {
-      throw new IntegrationProviderAuthenticationError({
-        cause: err,
-        endpoint: `https://api.github.com/app/installations/${this.config.installation_id}/access_tokens`,
-        status: err.status,
-        statusText: err.statusText,
-      });
-    }
+    await this.setupAccountClient();
   }
 
   public async getAccountDetails(): Promise<OrgQueryResponse> {
@@ -101,6 +93,7 @@ export class APIClient {
     for (const member of members) {
       await iteratee(member);
     }
+    console.log(await this.accountClient.getTeams());
   }
 
   /**
@@ -132,30 +125,63 @@ export class APIClient {
   }
 
   public async setupAccountClient(): Promise<void> {
-    const installationId = Number(this.config.installationId);
-    const appClient = await createGitHubAppClient(installationId, this.logger);
-    const { token } = (await appClient.auth({ type: 'installation' })) as {
-      token: string;
-    };
-    const installation = await getInstallation(appClient, installationId);
-
-    if (installation.target_type !== AccountType.Org) {
-      throw new IntegrationValidationError(
-        'Integration supports only GitHub Organization accounts.',
-      );
-    }
-
-    this.accountClient = new OrganizationAccountClient({
-      login: installation.account.login,
-      restClient: appClient,
-      graphqlClient: new GitHubGraphQLClient(
-        token,
-        resourceMetadataMap(),
+    try {
+      const installationId = Number(this.config.installationId);
+      const appClient = await createGitHubAppClient(
+        installationId,
         this.logger,
-      ),
-      logger: this.logger,
-      analyzeCommitApproval: this.config.analyzeCommitApproval,
-    });
+      );
+      const { token, permissions } = (await appClient.auth({
+        type: 'installation',
+      })) as {
+        token: string;
+        permissions: TokenPermissions;
+      };
+
+      if (
+        !(permissions.members === 'read' || permissions.members === 'write')
+      ) {
+        throw new IntegrationValidationError(
+          'Integration requires read access to organization members. See GitHub App permissions.',
+        );
+      }
+
+      if (
+        !(permissions.metadata === 'read' || permissions.metadata === 'write')
+      ) {
+        //as of now, this property has no 'write' value, but just in case
+        throw new IntegrationValidationError(
+          'Integration requires read access to repository metadata. See GitHub App permissions.',
+        );
+      }
+
+      const installation = await getInstallation(appClient, installationId);
+
+      if (installation.target_type !== AccountType.Org) {
+        throw new IntegrationValidationError(
+          'Integration supports only GitHub Organization accounts.',
+        );
+      }
+
+      this.accountClient = new OrganizationAccountClient({
+        login: installation.account.login,
+        restClient: appClient,
+        graphqlClient: new GitHubGraphQLClient(
+          token,
+          resourceMetadataMap(),
+          this.logger,
+        ),
+        logger: this.logger,
+        analyzeCommitApproval: this.config.analyzeCommitApproval,
+      });
+    } catch (err) {
+      throw new IntegrationProviderAuthenticationError({
+        cause: err,
+        endpoint: `https://api.github.com/app/installations/${this.config.installation_id}/access_tokens`,
+        status: err.status,
+        statusText: err.statusText,
+      });
+    }
   }
 }
 

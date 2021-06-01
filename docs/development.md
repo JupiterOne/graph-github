@@ -84,3 +84,6 @@ unsuspending the App on GitHub will send payloads to the callback URL (the
 smee.io link that you configured as the callback URL in the App). Those payloads
 will have the App ID and installation ID included, so that's a handy way to get
 that info if you're having trouble finding it otherwise.
+
+Note also that you can review and update permissions here:
+https://github.com/settings/apps/{YOURAPPNAME}/permissions

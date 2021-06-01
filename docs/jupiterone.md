@@ -97,6 +97,7 @@ The following entities are created:
 | Resources   | Entity `_type`   | Entity `_class` |
 | ----------- | ---------------- | --------------- |
 | Account     | `github_account` | `Account`       |
+| GitHub Team | `github_team`    | `UserGroup`     |
 | Github User | `github_user`    | `User`          |
 
 ### Relationships
@@ -105,7 +106,9 @@ The following relationships are created/mapped:
 
 | Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
 | --------------------- | --------------------- | --------------------- |
+| `github_account`      | **HAS**               | `github_team`         |
 | `github_account`      | **HAS**               | `github_user`         |
+| `github_team`         | **HAS**               | `github_user`         |
 | `github_user`         | **MANAGES**           | `github_account`      |
 
 <!--

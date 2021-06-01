@@ -18,7 +18,6 @@ import {
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
 } from './client/GraphQLClient';
-import { Token } from 'graphql';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -78,7 +77,7 @@ export class APIClient {
   }
 
   /**
-   * Iterates each user resource in the provider.
+   * Iterates each member (user) resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
@@ -89,39 +88,27 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const members: OrgMemberQueryResponse[] = await this.accountClient.getMembers();
-
     for (const member of members) {
       await iteratee(member);
     }
-    console.log(await this.accountClient.getTeams());
   }
 
   /**
-   * Iterates each group resource in the provider.
+   * Iterates each team resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
-  public async iterateGroups(
-    iteratee: ResourceIteratee<AcmeGroup>,
+  public async iterateTeams(
+    iteratee: ResourceIteratee<OrgTeamQueryResponse>,
   ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
-    //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
-
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
-
     for (const team of teams) {
-      console.log(team);
-      console.log(`justin case`);
-      //await iteratee(team);
+      await iteratee(team);
     }
+    console.log(await this.accountClient.getTeamMembers());
   }
 
   public async setupAccountClient(): Promise<void> {

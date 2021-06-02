@@ -70,9 +70,16 @@ export async function validateInvocation(
 ) {
   const { config } = context.instance;
 
+  await sanitizeConfig(config); //mutate the config as needed
+  const apiClient = createAPIClient(config, context.logger);
+  await apiClient.verifyAuthentication();
+}
+
+export async function sanitizeConfig(config: IntegrationConfig) {
+  config.githubAppPrivateKey = 'temp';
   config.githubAppPrivateKey = await fetchPrivateKey({
     privateKeyEnvLocalPathParam: 'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH',
-    privateKeyEnvSsmParam: 'GITHUB_APP_PRIVATE_KEY_PARAM',
+    privateKeyEnvSsmParam: 'GITHUB_APP_PRIVATE_KEY', //this a hack. We need to define the real param.
   });
 
   if (
@@ -84,6 +91,4 @@ export async function validateInvocation(
       'Config requires all of {githubAppId, githubAppPrivateKey, installationId}',
     );
   }
-  const apiClient = createAPIClient(config, context.logger);
-  await apiClient.verifyAuthentication();
 }

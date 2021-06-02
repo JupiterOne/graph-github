@@ -348,6 +348,7 @@ export function toRepoHasPullRequestRelationship(
     _class: 'HAS',
     _fromEntityKey: repoEntity._key,
     _toEntityKey: pullRequestEntity._key,
+    displayName: 'HAS',
   };
 }
 
@@ -361,6 +362,7 @@ export function toUserOpenedPullRequestRelationship(
     _type: 'github_user_opened_pullrequest',
     _fromEntityKey: userEntity._key,
     _toEntityKey: pullRequestEntity._key,
+    displayName: 'OPENED',
   };
 }
 
@@ -374,6 +376,7 @@ export function toUserReviewedPullRequestRelationship(
     _type: 'github_user_reviewed_pullrequest',
     _fromEntityKey: userEntity._key,
     _toEntityKey: pullRequestEntity._key,
+    displayName: 'REVIEWED',
   };
 }
 
@@ -387,5 +390,6 @@ export function toUserApprovedPullRequestRelationship(
     _type: 'github_user_approved_pullrequest',
     _fromEntityKey: userEntity._key,
     _toEntityKey: pullRequestEntity._key,
+    displayName: 'APPROVED',
   };
 }

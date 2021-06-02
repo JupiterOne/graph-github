@@ -30,8 +30,11 @@ it('auth error', async () => {
 
   const executionContext = createMockExecutionContext({
     instanceConfig: {
-      clientId: 'INVALID',
-      clientSecret: 'INVALID',
+      githubAppId: 999999,
+      githubAppPrivateKey: '',
+      githubAppPrivateKeyParam: 'something', //this is here to fake util/getPrivateKey, so we can get to the real error
+      installationId: 999999,
+      analyzeCommitApproval: true,
     },
   });
 

@@ -9,7 +9,7 @@ import {
   toUserOpenedPullRequestRelationship,
 } from './converters';
 import { RepoEntity, PullRequestEntity, UserEntity, PRState } from '../types';
-import toTime from '../../util/toTime';
+import toTime from '../util/toTime';
 
 test('toAccountEntity', () => {
   const apiResponse = {
@@ -108,7 +108,7 @@ describe('toPullRequestEntity', () => {
   };
   const apiResponse = {
     title: 'The Best PR Ever',
-    number: 420,
+    number: '420',
     user: {
       login: 'somebody',
     },
@@ -145,7 +145,7 @@ describe('toPullRequestEntity', () => {
     _key: `my-team/my-repo/pull-requests/420`,
     name: 'The Best PR Ever',
     displayName: `my-repo/420`,
-    id: 420,
+    id: '420',
     accountLogin: 'me',
     authorLogin: 'somebody',
     author: 'Some Body',
@@ -194,7 +194,7 @@ describe('toPullRequestEntity', () => {
       {
         [user.login]: user as UserEntity,
         [reviewerUser.login]: reviewerUser as UserEntity,
-      }
+      },
     );
     expect(entity).toEqual(expectedEntity);
   });
@@ -217,7 +217,7 @@ describe('toPullRequestEntity', () => {
       {
         [user.login]: user as UserEntity,
         [reviewerUser.login]: reviewerUser as UserEntity,
-      }
+      },
     );
     expect(entity).toEqual({
       ...expectedEntity,
@@ -249,7 +249,7 @@ describe('toPullRequestEntity', () => {
       {
         [user.login]: user as UserEntity,
         [reviewerUser.login]: reviewerUser as UserEntity,
-      }
+      },
     );
     expect(entity).toEqual({
       ...expectedEntity,
@@ -287,7 +287,7 @@ describe('toPullRequestEntity', () => {
 test('toOrganizationMemberRelationships', () => {
   const relationship = toOrganizationHasMemberRelationship(
     { _key: 'account-key' } as any,
-    { _key: 'user-key' } as any
+    { _key: 'user-key' } as any,
   );
   expect(relationship).toEqual({
     _key: 'account-key|has|user-key',
@@ -295,13 +295,14 @@ test('toOrganizationMemberRelationships', () => {
     _class: 'HAS',
     _fromEntityKey: 'account-key',
     _toEntityKey: 'user-key',
+    displayName: 'HAS',
   });
 });
 
 test('toAccountRepoRelationships', () => {
   const relationship = toAccountOwnsRepoRelationship(
     { _key: 'account-key' } as any,
-    { _key: 'repo-key' } as any
+    { _key: 'repo-key' } as any,
   );
   expect(relationship).toEqual({
     _key: 'account-key|owns|repo-key',
@@ -309,13 +310,14 @@ test('toAccountRepoRelationships', () => {
     _class: 'OWNS',
     _fromEntityKey: 'account-key',
     _toEntityKey: 'repo-key',
+    displayName: 'OWNS',
   });
 });
 
 test('toRepoPullRequestRelationship', () => {
   const relationship = toRepoHasPullRequestRelationship(
     { _key: 'repo-key' } as RepoEntity,
-    { _key: 'pr-key' } as PullRequestEntity
+    { _key: 'pr-key' } as PullRequestEntity,
   );
   expect(relationship).toEqual({
     _key: 'repo-key|has|pr-key',
@@ -323,13 +325,14 @@ test('toRepoPullRequestRelationship', () => {
     _class: 'HAS',
     _fromEntityKey: 'repo-key',
     _toEntityKey: 'pr-key',
+    displayName: 'HAS',
   });
 });
 
 test('toUserPullRequestRelationship', () => {
   const relationship = toUserOpenedPullRequestRelationship(
     { _key: 'user-key' } as UserEntity,
-    { _key: 'pr-key' } as PullRequestEntity
+    { _key: 'pr-key' } as PullRequestEntity,
   );
   expect(relationship).toEqual({
     _key: 'user-key|opened|pr-key',
@@ -337,5 +340,6 @@ test('toUserPullRequestRelationship', () => {
     _class: 'OPENED',
     _fromEntityKey: 'user-key',
     _toEntityKey: 'pr-key',
+    displayName: 'OPENED',
   });
 });

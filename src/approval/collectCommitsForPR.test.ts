@@ -1,6 +1,7 @@
 import {
   createMockStepExecutionContext,
   Recording,
+  createMockIntegrationLogger,
 } from '@jupiterone/integration-sdk-testing';
 
 import collectCommitsForPR from './collectCommitsForPR';
@@ -8,7 +9,10 @@ import { AccountEntity, PullsListResponseItem } from '../types';
 import { setupGithubRecording } from '../../test/recording';
 import { IntegrationConfig } from '../config';
 import { integrationConfig } from '../../test/config';
-import { createAPIClient } from '../client';
+import createGitHubAppClient from '../util/createGitHubAppClient';
+import resourceMetadataMap from '../client/GraphQLClient/resourceMetadataMap';
+import OrganizationAccountClient from '../client/OrganizationAccountClient';
+import { GitHubGraphQLClient } from '../client/GraphQLClient';
 
 let p: Recording; //p for polly
 
@@ -40,10 +44,29 @@ function collectCommitsForPRTest({
       instanceConfig: integrationConfig,
     });
 
-    const apiClient = createAPIClient(context.instance.config, context.logger);
-    await apiClient.setupAccountClient();
+    //mutate config with installation ID 953957, which is used in recordings
+    context.instance.config.installationId = 953957;
+
+    const logger = createMockIntegrationLogger();
+    const token = 'faketoken';
+    const appClient = await createGitHubAppClient(
+      context.instance.config,
+      logger,
+    );
+    const accountClient = new OrganizationAccountClient({
+      login: 'github-app-test',
+      restClient: appClient,
+      graphqlClient: new GitHubGraphQLClient(
+        token,
+        resourceMetadataMap(),
+        logger,
+      ),
+      logger: logger,
+      analyzeCommitApproval: context.instance.config.analyzeCommitApproval,
+    });
+
     const commitsForPR = await collectCommitsForPR(
-      apiClient.accountClient,
+      accountClient,
       {
         login: 'github-app-test',
       } as AccountEntity,

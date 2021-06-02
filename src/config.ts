@@ -5,6 +5,7 @@ import {
   IntegrationInstanceConfig,
 } from '@jupiterone/integration-sdk-core';
 import { createAPIClient } from './client';
+import fetchPrivateKey from './util/fetchPrivateKey';
 
 /**
  * A type describing the configuration fields required to execute the
@@ -22,13 +23,13 @@ import { createAPIClient } from './client';
  */
 export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   githubAppId: {
-    type: 'string',
+    type: 'string', //should be a number, but that's not an option in the SDK
   },
   githubAppLocalPrivateKeyPath: {
-    type: 'string',
+    type: 'string', //only used for local configs
   },
   installationId: {
-    type: 'string',
+    type: 'string', //should be a number, but that's not an option in the SDK
   },
   analyzeCommitApproval: {
     type: 'boolean',
@@ -43,17 +44,20 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   /**
    * The GitHub App ID of the application at https://github.com/settings/apps
    */
-  githubAppId: string;
+  githubAppId: number;
 
   /**
-   * The local path to your PEM file for authentication
+   * The private key to authenticate the GitHub App.
+   * This can come from a local config variable GITHUB_APP_LOCAL_PRIVATE_KEY_PATH
+   * or if that doesn't exist, from a config variable GITHUB_APP_PRIVATE_KEY_PARAM
+   * See validateInvocation below
    */
-  githubAppLocalPrivateKeyPath: string;
+  githubAppPrivateKey: string;
 
   /**
    * The ID number assigned to the installation, delivered to the callback URL above.
    */
-  installationId: string;
+  installationId: number;
 
   /**
    * Whether to analyze commit approvals as part of pull-requests
@@ -66,13 +70,18 @@ export async function validateInvocation(
 ) {
   const { config } = context.instance;
 
+  config.githubAppPrivateKey = await fetchPrivateKey({
+    privateKeyEnvLocalPathParam: 'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH',
+    privateKeyEnvSsmParam: 'GITHUB_APP_PRIVATE_KEY_PARAM',
+  });
+
   if (
     !config.githubAppId ||
-    !config.githubAppLocalPrivateKeyPath ||
+    !config.githubAppPrivateKey ||
     !config.installationId
   ) {
     throw new IntegrationValidationError(
-      'Config requires all of {githubAppId, githubAppLocalPrivateKeyPath, installationId}',
+      'Config requires all of {githubAppId, githubAppPrivateKey, installationId}',
     );
   }
   const apiClient = createAPIClient(config, context.logger);

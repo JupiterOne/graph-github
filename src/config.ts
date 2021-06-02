@@ -27,11 +27,11 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   githubAppLocalPrivateKeyPath: {
     type: 'string',
   },
-  githubAppLocalCallbackUrl: {
-    type: 'string',
-  },
   installationId: {
     type: 'string',
+  },
+  analyzeCommitApproval: {
+    type: 'boolean',
   },
 };
 
@@ -51,14 +51,14 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   githubAppLocalPrivateKeyPath: string;
 
   /**
-   * The callback URL used by the GitHub app to reply. Probably a smee.io link.
-   */
-  githubAppLocalCallbackUrl: string;
-
-  /**
    * The ID number assigned to the installation, delivered to the callback URL above.
    */
   installationId: string;
+
+  /**
+   * Whether to analyze commit approvals as part of pull-requests
+   */
+  analyzeCommitApproval: boolean;
 }
 
 export async function validateInvocation(
@@ -66,7 +66,11 @@ export async function validateInvocation(
 ) {
   const { config } = context.instance;
 
-  if (!config.githubAppId || !config.githubAppLocalPrivateKeyPath || !config.installationId) {
+  if (
+    !config.githubAppId ||
+    !config.githubAppLocalPrivateKeyPath ||
+    !config.installationId
+  ) {
     throw new IntegrationValidationError(
       'Config requires all of {githubAppId, githubAppLocalPrivateKeyPath, installationId}',
     );

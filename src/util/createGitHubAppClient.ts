@@ -2,16 +2,17 @@ import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { throttling } from '@octokit/plugin-throttling';
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
-
 import fetchPrivateKey from '../util/fetchPrivateKey';
+import { IntegrationConfig } from '../config';
 
-const MAX_RETRIES = 20;
+const MAX_RETRIES = 20; //an arbitrary number
 
 export default async function createGitHubAppClient(
-  installationId: number,
-  logger: IntegrationLogger
+  config: IntegrationConfig,
+  logger: IntegrationLogger,
 ) {
-  const appId = Number(process.env.GITHUB_APP_ID);
+  const appId = Number(config.githubAppId);
+  const installationId = Number(config.installationId);
   if (!appId) {
     throw new Error('GITHUB_APP_ID must be defined!');
   }
@@ -37,7 +38,7 @@ export default async function createGitHubAppClient(
         privateKeyEnvLocalPathParam: 'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH',
         privateKeyEnvSsmParam: 'GITHUB_APP_PRIVATE_KEY_PARAM',
       }),
-      installationId,
+      installationId: installationId,
     },
     throttle: {
       onRateLimit: (retryAfter: number, options: any) => {
@@ -55,7 +56,7 @@ export default async function createGitHubAppClient(
       onAbuseLimit: (retryAfter: number, options: any) => {
         logger.warn(
           { retryAfter, options },
-          'Abuse limit reached for request.'
+          'Abuse limit reached for request.',
         );
 
         if (options.request.retryCount < MAX_RETRIES) {

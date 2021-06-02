@@ -1,19 +1,23 @@
-import { Polly } from '@pollyjs/core';
+import {
+  createMockStepExecutionContext,
+  Recording,
+} from '@jupiterone/integration-sdk-testing';
 
 import collectCommitsForPR from './collectCommitsForPR';
 import { AccountEntity, PullsListResponseItem } from '../types';
-import createTestGitHubIntegrationExecutionContext from '../../../test/helpers/createTestGitHubIntegrationExecutionContext';
-import initializeContext from '../util/initializeContext';
-import polly from '../../../test/helpers/polly';
+import { setupGithubRecording } from '../../test/recording';
+import { IntegrationConfig } from '../config';
+import { integrationConfig } from '../../test/config';
+import { createAPIClient } from '../client';
 
-let p: Polly;
+let p: Recording; //p for polly
 
 afterEach(async () => {
   await p.stop();
 });
 
 function commitExpectationsFromShas(...shas: string[]) {
-  return shas.map(sha => expect.objectContaining({ sha }));
+  return shas.map((sha) => expect.objectContaining({ sha }));
 }
 
 function collectCommitsForPRTest({
@@ -30,13 +34,16 @@ function collectCommitsForPRTest({
   teamMembers?: any[];
 }) {
   return test(title, async () => {
-    p = polly(__dirname, recordingName);
+    p = setupGithubRecording({ directory: __dirname, name: recordingName });
 
-    const executionContext = createTestGitHubIntegrationExecutionContext();
-    const githubContext = await initializeContext(executionContext);
+    const context = createMockStepExecutionContext<IntegrationConfig>({
+      instanceConfig: integrationConfig,
+    });
 
+    const apiClient = createAPIClient(context.instance.config, context.logger);
+    await apiClient.setupAccountClient();
     const commitsForPR = await collectCommitsForPR(
-      githubContext.github,
+      apiClient.accountClient,
       {
         login: 'github-app-test',
       } as AccountEntity,
@@ -48,7 +55,7 @@ function collectCommitsForPRTest({
         },
         number: prId,
       } as PullsListResponseItem,
-      teamMembers
+      teamMembers,
     );
 
     expect(commitsForPR).toEqual(expected);
@@ -65,7 +72,7 @@ collectCommitsForPRTest({
       '08167cc7b2067451ee85fb45d9fd7b9f0581ee27',
       '992cebcd8e2038bb5406c24636faa4ffb32bdb17',
       '8133160989625cf6dac3b571f88d1d077686f8c6',
-      'bc9e3b6ac9f5091772ef825ead58259cd9c956c7'
+      'bc9e3b6ac9f5091772ef825ead58259cd9c956c7',
     ),
     approvedCommits: [],
     commitsByUnknownAuthor: [],
@@ -81,11 +88,11 @@ collectCommitsForPRTest({
   expected: {
     allCommits: commitExpectationsFromShas(
       '37bf4ef3083fb14e7cf2eb076cdee1710764084a',
-      '098d667efc63095f4e099305de8597bfaee8c381'
+      '098d667efc63095f4e099305de8597bfaee8c381',
     ),
     approvedCommits: commitExpectationsFromShas(
       '37bf4ef3083fb14e7cf2eb076cdee1710764084a',
-      '098d667efc63095f4e099305de8597bfaee8c381'
+      '098d667efc63095f4e099305de8597bfaee8c381',
     ),
     commitsByUnknownAuthor: [
       expect.objectContaining({
@@ -110,7 +117,7 @@ collectCommitsForPRTest({
   prId: 9,
   expected: {
     allCommits: commitExpectationsFromShas(
-      'e42f6281ec53e1611a0b45c012333af688b85d2d'
+      'e42f6281ec53e1611a0b45c012333af688b85d2d',
     ),
     approvedCommits: [],
     commitsByUnknownAuthor: [],
@@ -145,10 +152,10 @@ collectCommitsForPRTest({
   prId: 10,
   expected: {
     allCommits: commitExpectationsFromShas(
-      '0a8f4c03958084032179fc675d2d607661f43625'
+      '0a8f4c03958084032179fc675d2d607661f43625',
     ),
     approvedCommits: commitExpectationsFromShas(
-      '0a8f4c03958084032179fc675d2d607661f43625'
+      '0a8f4c03958084032179fc675d2d607661f43625',
     ),
     commitsByUnknownAuthor: [],
     approvals: [
@@ -169,7 +176,7 @@ collectCommitsForPRTest({
     allCommits: commitExpectationsFromShas(
       '8bdb8e835476acd7c1483958c5ba333644b7050c',
       '1c9ecf2cb14eb88bc97c9bf84694b95668c2088e',
-      '567e24bdafae62e6d2d08d1af63f3eeed0465753'
+      '567e24bdafae62e6d2d08d1af63f3eeed0465753',
     ),
     approvedCommits: [],
     commitsByUnknownAuthor: [],
@@ -190,10 +197,10 @@ collectCommitsForPRTest({
   expected: {
     allCommits: commitExpectationsFromShas(
       '0f9820226b89470f927a21dbbff5fcc298ff6917',
-      'f46826dbaaba5c52f63a1ab2492150869a368acb'
+      'f46826dbaaba5c52f63a1ab2492150869a368acb',
     ),
     approvedCommits: commitExpectationsFromShas(
-      '0f9820226b89470f927a21dbbff5fcc298ff6917'
+      '0f9820226b89470f927a21dbbff5fcc298ff6917',
     ),
     commitsByUnknownAuthor: [],
     approvals: [

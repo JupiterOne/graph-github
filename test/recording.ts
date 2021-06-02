@@ -20,14 +20,6 @@ export function setupGithubRecording(
   });
 }
 
-function getRedactedOAuthResponse() {
-  return {
-    access_token: '[REDACTED]',
-    expires_in: 9999,
-    token_type: 'Bearer',
-  };
-}
-
 function redact(entry): void {
   if (entry.request.postData) {
     entry.request.postData.text = '[REDACTED]';
@@ -40,18 +32,15 @@ function redact(entry): void {
   //let's unzip the entry so we can modify it
   mutations.unzipGzippedRecordingEntry(entry);
 
-  //we can just get rid of all response content if this was the token call
-  const requestUrl = entry.request.url;
-  if (requestUrl.match(/github.com\/oauth\/token/)) {
-    entry.response.content.text = JSON.stringify(getRedactedOAuthResponse());
-    return;
+  entry.request.headers.forEach((header) => {
+    if (header.name === 'authorization') {
+      header.value = 'Bearer [REDACTED]';
+    }
+  });
+
+  if (/access_tokens/.exec(entry.request.url)) {
+    const responseContent = JSON.parse(entry.response.content.text);
+    responseContent.token = '[REDACTED]';
+    entry.response.content.text = JSON.stringify(responseContent);
   }
-
-  //if it wasn't a token call, parse the response text, removing any carriage returns or newlines
-  const responseText = entry.response.content.text;
-  const parsedResponseText = JSON.parse(responseText.replace(/\r?\n|\r/g, ''));
-
-  //now we can modify the returned object as desired
-
-  entry.response.content.text = JSON.stringify(parsedResponseText);
 }

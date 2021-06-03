@@ -412,7 +412,7 @@ export default class OrganizationAccountClient {
 
       return reviews;
     } catch (err) {
-      this.logger.error({ err, listOptions }, 'pulls.listReviews failed');
+      this.logger.info({ err }, 'pulls.listReviews failed');
       return [];
     }
   }

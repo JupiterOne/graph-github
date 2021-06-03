@@ -3,13 +3,14 @@ import {
   Recording,
 } from '@jupiterone/integration-sdk-testing';
 
-import { IntegrationConfig } from '../config';
+import { IntegrationConfig, sanitizeConfig } from '../config';
 import { fetchMembers } from './members';
 import { fetchRepos } from './repos';
 import { fetchTeams } from './teams';
 import { fetchAccountDetails } from './account';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
+import { attachConnectorsToContext } from 'graphql-tools';
 
 let recording: Recording;
 afterEach(async () => {
@@ -22,6 +23,7 @@ test('should collect data', async () => {
     name: 'steps', //redaction of headers is in setupGithubRecording
   });
 
+  await sanitizeConfig(integrationConfig);
   const context = createMockStepExecutionContext<IntegrationConfig>({
     instanceConfig: integrationConfig,
   });

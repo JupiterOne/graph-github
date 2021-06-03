@@ -20,6 +20,7 @@ export function setupGithubRecording(
     options: {
       matchRequestsBy: {
         headers: false,
+        order: false,
       },
     },
   });

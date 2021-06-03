@@ -72,7 +72,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     webLink: data.url,
     name: data.slug,
     displayName: data.name,
-    full_name: data.name,
+    fullName: data.name,
   };
   setRawData(teamEntity, { name: 'default', rawData: data });
   return teamEntity;
@@ -108,7 +108,7 @@ export function toOrganizationMemberEntity(
     username: data.login,
     displayName: data.name,
     name: data.name,
-    mfaEnabled: data.hasTwoFactorEnabled,
+    mfaEnabled: data.hasTwoFactorEnabled || false,
     role: data.role,
     siteAdmin: data.isSiteAdmin,
   };

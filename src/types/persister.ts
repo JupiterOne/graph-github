@@ -24,7 +24,7 @@ export type OrganizationTeamRelationship = Relationship;
 export interface TeamEntity extends EntityFromIntegration {
   name: string;
   displayName: string;
-  full_name: string;
+  fullName: string;
 }
 
 export type TeamMemberRelationship = Relationship;

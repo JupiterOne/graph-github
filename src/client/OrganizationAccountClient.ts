@@ -412,7 +412,7 @@ export default class OrganizationAccountClient {
 
       return reviews;
     } catch (err) {
-      this.logger.info({ err, listOptions }, 'pulls.listReviews failed');
+      this.logger.error({ err, listOptions }, 'pulls.listReviews failed');
       return [];
     }
   }
@@ -470,7 +470,7 @@ export default class OrganizationAccountClient {
 
       return comparison;
     } catch (err) {
-      this.logger.info({ err }, 'repos.compareCommits failed');
+      this.logger.error({ err }, 'repos.compareCommits failed');
 
       throw err;
     }

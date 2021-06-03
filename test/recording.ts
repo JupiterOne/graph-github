@@ -17,6 +17,11 @@ export function setupGithubRecording(
     mutateEntry: (entry) => {
       redact(entry);
     },
+    options: {
+      matchRequestsBy: {
+        headers: false,
+      },
+    },
   });
 }
 

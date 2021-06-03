@@ -41,8 +41,6 @@ export interface AppInstallationAccess extends AccessToken {
  */
 export interface GitHubIntegrationExecutionContext
   extends IntegrationExecutionContext {
-  //graph: GraphClient;
-  //persister: PersisterClient;
   accountType: AccountType;
   github: OrganizationAccountClient;
 }

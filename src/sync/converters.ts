@@ -51,7 +51,7 @@ import {
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
-    _class: 'Account',
+    _class: ['Account'],
     _type: 'github_account',
     _key: data.id,
     accountType: AccountType.Org,
@@ -66,7 +66,7 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {
-    _class: 'UserGroup',
+    _class: ['UserGroup'],
     _type: 'github_team',
     _key: data.id,
     webLink: data.url,
@@ -80,7 +80,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
   const repoEntity: RepoEntity = {
-    _class: 'CodeRepo',
+    _class: ['CodeRepo'],
     _type: 'github_repo',
     _key: data.id,
     webLink: data.url,
@@ -101,12 +101,13 @@ export function toOrganizationMemberEntity(
   data: OrgMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: 'User',
+    _class: ['User'],
     _type: 'github_user',
     _key: data.id,
     login: data.login,
     username: data.login,
     displayName: data.name,
+    name: data.name,
     mfaEnabled: data.hasTwoFactorEnabled,
     role: data.role,
     siteAdmin: data.isSiteAdmin,
@@ -119,12 +120,14 @@ export function toOrganizationMemberEntityFromTeamMember(
   data: OrgTeamMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: 'User',
+    _class: ['User'],
     _type: 'github_user',
     _key: data.id,
     login: data.login,
     username: data.login,
     displayName: data.login,
+    name: data.login,
+    mfaEnabled: false,
     role: data.role,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
@@ -169,13 +172,17 @@ export function toPullRequestEntity(
 
   const entity: PullRequestEntity = {
     _type: 'github_pullrequest',
-    _class: 'PR',
+    _class: ['PR'],
     _key: `${data.base.repo.full_name}/pull-requests/${data.number}`,
     displayName: `${data.base.repo.name}/${data.number}`,
 
     accountLogin: data.base.repo.owner.login,
     repository: data.base.repo.name,
-    id: JSON.stringify(data.number),
+    //the type is hacked here because typing of data properties is controlled by a library call
+    //so I can't just say that data.number is a string
+    //here would be another way to solve it:
+    //id: JSON.stringify(data.number).replace(/\"/g, ''),
+    id: <string>(<unknown>data.number),
 
     name: data.title,
     title: data.title,

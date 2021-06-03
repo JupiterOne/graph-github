@@ -7,7 +7,7 @@ import {
 import collectCommitsForPR from './collectCommitsForPR';
 import { AccountEntity, PullsListResponseItem } from '../types';
 import { setupGithubRecording } from '../../test/recording';
-import { IntegrationConfig } from '../config';
+import { IntegrationConfig, sanitizeConfig } from '../config';
 import { integrationConfig } from '../../test/config';
 import createGitHubAppClient from '../util/createGitHubAppClient';
 import resourceMetadataMap from '../client/GraphQLClient/resourceMetadataMap';
@@ -45,14 +45,13 @@ function collectCommitsForPRTest({
     });
 
     //mutate config with installation ID 953957, which is used in recordings
-    context.instance.config.installationId = 953957;
+    const config = context.instance.config;
+    await sanitizeConfig(config);
+    config.installationId = 953957;
 
     const logger = createMockIntegrationLogger();
     const token = 'faketoken';
-    const appClient = await createGitHubAppClient(
-      context.instance.config,
-      logger,
-    );
+    const appClient = await createGitHubAppClient(config, logger);
     const accountClient = new OrganizationAccountClient({
       login: 'github-app-test',
       restClient: appClient,
@@ -62,7 +61,7 @@ function collectCommitsForPRTest({
         logger,
       ),
       logger: logger,
-      analyzeCommitApproval: context.instance.config.analyzeCommitApproval,
+      analyzeCommitApproval: config.analyzeCommitApproval,
     });
 
     const commitsForPR = await collectCommitsForPR(

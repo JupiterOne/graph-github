@@ -19,7 +19,7 @@ test('toAccountEntity', () => {
   };
   const entity = toAccountEntity(apiResponse as any);
   expect(entity).toEqual({
-    _class: 'Account',
+    _class: ['Account'],
     _type: 'github_account',
     _key: 'account-node-id',
     _rawData: [
@@ -49,7 +49,7 @@ test('toRepositoryEntities', () => {
   expect(entity).toEqual({
     _key: 'repo-node-id',
     _type: 'github_repo',
-    _class: 'CodeRepo',
+    _class: ['CodeRepo'],
     _rawData: [
       {
         name: 'default',
@@ -79,7 +79,7 @@ test('toOrganizationMemberEntities', () => {
   expect(entity).toEqual({
     _key: 'member-node-id',
     _type: 'github_user',
-    _class: 'User',
+    _class: ['User'],
     _rawData: [
       {
         name: 'default',
@@ -89,6 +89,7 @@ test('toOrganizationMemberEntities', () => {
     login: 'user-login',
     username: 'user-login',
     displayName: 'User Flynn',
+    name: 'User Flynn',
     mfaEnabled: true,
     role: 'Maintainer',
     siteAdmin: false,
@@ -141,7 +142,7 @@ describe('toPullRequestEntity', () => {
 
   const expectedEntity = {
     _type: 'github_pullrequest',
-    _class: 'PR',
+    _class: ['PR'],
     _key: `my-team/my-repo/pull-requests/420`,
     name: 'The Best PR Ever',
     displayName: `my-repo/420`,

@@ -179,8 +179,8 @@ export default class OrganizationAccountClient {
 
     if (slugs) {
       // TODO: allow selection of specific resources in the GQL. should be p ez
-      return (this.repositories || []).filter(repo =>
-        slugs.includes(repo.name)
+      return (this.repositories || []).filter((repo) =>
+        slugs.includes(repo.name),
       );
     } else {
       return this.repositories || [];
@@ -188,12 +188,12 @@ export default class OrganizationAccountClient {
   }
 
   async getTeamRepositories(
-    useRest: boolean = false
+    useRest: boolean = false,
   ): Promise<OrgTeamRepoQueryResponse[]> {
     if (useRest) {
       if (!this.teams) {
         throw new Error(
-          'Do not attempt to call REST version of getTeamRepositories without first calling getTeams!'
+          'Do not attempt to call REST version of getTeamRepositories without first calling getTeams!',
         );
       }
 
@@ -206,20 +206,20 @@ export default class OrganizationAccountClient {
               team_slug: team.slug,
               per_page: 100,
             },
-            response => {
+            (response) => {
               this.logger.info(
                 {
                   teamRepositoriesPageLength: response.data.length,
                   team: sha(team.slug),
                 },
-                'Fetched page of team repositories'
+                'Fetched page of team repositories',
               );
               this.v3RateLimitConsumed++;
               return response.data;
-            }
+            },
           );
 
-          return teamRepositories.map(tr => {
+          return teamRepositories.map((tr) => {
             let permission: TeamRepositoryPermission;
             if (tr.permissions?.admin) {
               permission = TeamRepositoryPermission.Admin;
@@ -290,7 +290,7 @@ export default class OrganizationAccountClient {
     repo: RepoEntity,
     id: number,
     teamMembers?: UserEntity[],
-    teamMemberMap?: IdEntityMap<UserEntity>
+    teamMemberMap?: IdEntityMap<UserEntity>,
   ): Promise<PullRequestEntity | undefined> {
     if (!this.authorizedForPullRequests) {
       return undefined;
@@ -321,7 +321,7 @@ export default class OrganizationAccountClient {
         approvedCommits,
         commitsByUnknownAuthor,
         approvals,
-        teamMemberMap
+        teamMemberMap,
       );
     } catch (err) {
       this.logger.info({ err }, 'pulls.get failed');
@@ -336,7 +336,7 @@ export default class OrganizationAccountClient {
     account: AccountEntity,
     repo: RepoEntity,
     teamMembers?: UserEntity[],
-    teamMemberMap?: IdEntityMap<UserEntity>
+    teamMemberMap?: IdEntityMap<UserEntity>,
   ): Promise<Array<PullRequestEntity> | undefined> {
     if (!this.authorizedForPullRequests) {
       return undefined;
@@ -359,7 +359,7 @@ export default class OrganizationAccountClient {
 
       return pMap(
         pullRequests,
-        async pullRequest => {
+        async (pullRequest) => {
           if (this.analyzeCommitApproval) {
             const {
               allCommits,
@@ -370,7 +370,7 @@ export default class OrganizationAccountClient {
               this,
               account,
               pullRequest,
-              teamMembers
+              teamMembers,
             );
             return toPullRequestEntity(
               pullRequest,
@@ -378,13 +378,13 @@ export default class OrganizationAccountClient {
               approvedCommits,
               commitsByUnknownAuthor,
               approvals,
-              teamMemberMap
+              teamMemberMap,
             );
           } else {
             return toPullRequestEntity(pullRequest);
           }
         },
-        { concurrency: 2 }
+        { concurrency: 2 },
       );
     } catch (err) {
       this.logger.info({ err }, 'pulls.list failed');
@@ -397,7 +397,7 @@ export default class OrganizationAccountClient {
 
   async getPullRequestReviews(
     account: AccountEntity,
-    pullRequest: PullsListResponseItem
+    pullRequest: PullsListResponseItem,
   ): Promise<PullsListReviewsResponseItem[]> {
     const listOptions = {
       owner: account.login,
@@ -413,14 +413,13 @@ export default class OrganizationAccountClient {
       return reviews;
     } catch (err) {
       this.logger.info({ err, listOptions }, 'pulls.listReviews failed');
-
       return [];
     }
   }
 
   async getPullRequestCommits(
     account: AccountEntity,
-    pullRequest: PullsListResponseItem
+    pullRequest: PullsListResponseItem,
   ): Promise<PullsListCommitsResponseItem[]> {
     const listOptions = {
       owner: account.login,
@@ -455,7 +454,7 @@ export default class OrganizationAccountClient {
     account: string,
     repository: string,
     base: string,
-    head: string
+    head: string,
   ): Promise<ReposCompareCommitsResponseItem> {
     try {
       const comparison = (
@@ -480,7 +479,7 @@ export default class OrganizationAccountClient {
   async isEmptyMergeCommit(
     account: string,
     repository: string,
-    commit: ReposListCommitsResponseItem
+    commit: ReposListCommitsResponseItem,
   ): Promise<boolean> {
     if (commit.parents.length !== 2) {
       return false;
@@ -492,7 +491,7 @@ export default class OrganizationAccountClient {
       account,
       repository,
       commit.parents[1].sha,
-      commit.sha
+      commit.sha,
     );
     if (diffToMergedChanges.files.length === 0) {
       return true;
@@ -506,13 +505,13 @@ export default class OrganizationAccountClient {
       account,
       repository,
       commit.parents[0].sha,
-      commit.sha
+      commit.sha,
     );
     const diffBranchToMaster = await this.getComparison(
       account,
       repository,
       commit.parents[0].sha,
-      commit.parents[1].sha
+      commit.parents[1].sha,
     );
     if (this.diffsEqual(diffMergeToMaster.files, diffBranchToMaster.files)) {
       return true;
@@ -520,10 +519,6 @@ export default class OrganizationAccountClient {
 
     return false;
   }
-
-  /*******************************************************
-   * PRIVATES - DON'T LOOK OR I'LL REPORT YOU TO THE CPS *
-   *******************************************************/
 
   private diffsEqual(a: DiffFiles[], b: DiffFiles[]): boolean {
     if (a.length !== b.length) {
@@ -544,7 +539,7 @@ export default class OrganizationAccountClient {
 
   private async queryGraphQL(
     name: string,
-    performQuery: () => Promise<number>
+    performQuery: () => Promise<number>,
   ) {
     try {
       const rateLimitConsumed = await performQuery();

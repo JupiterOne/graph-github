@@ -16,7 +16,7 @@ export const integrationConfig: IntegrationConfig = {
   githubAppLocalPrivateKeyPath:
     process.env.GITHUB_APP_LOCAL_PRIVATE_KEY_PATH ||
     DEFAULT_GITHUB_APP_LOCAL_PRIVATE_KEY_PATH,
-  githubAppPrivateKey: '',
+  githubAppPrivateKey: 'fakekeyincaseofproblemwithlocalpath',
   installationId:
     Number(process.env.INSTALLATION_ID) || DEFAULT_INSTALLATION_ID,
   analyzeCommitApproval: true,

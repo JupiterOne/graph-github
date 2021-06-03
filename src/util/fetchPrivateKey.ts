@@ -1,3 +1,5 @@
+import { IntegrationValidationError } from '@jupiterone/integration-sdk-core';
+
 const fs = require('fs');
 //import * as ssm from '../aws/util/ssm';
 
@@ -26,13 +28,13 @@ function getLocalPrivateKey(envLocalPathParam: string): string | undefined {
 async function getSsmPrivateKey(envSssParam: string) {
   const secretName = process.env[envSssParam];
   if (!secretName) {
-    throw new Error(`${envSssParam} must be defined!`);
+    throw new IntegrationValidationError(`${envSssParam} must be defined!`);
   }
   return 'fakeString'; //ssm.getSecret(secretName);
 }
 
 export default async function fetchPrivateKey(
-  options: CreateJsonWebTokenOptions
+  options: CreateJsonWebTokenOptions,
 ): Promise<string> {
   let privateKey = getLocalPrivateKey(options.privateKeyEnvLocalPathParam);
 

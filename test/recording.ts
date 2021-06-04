@@ -18,6 +18,7 @@ export function setupGithubRecording(
       redact(entry);
     },
     options: {
+      recordFailedRequests: true,
       matchRequestsBy: {
         headers: false,
         order: false,

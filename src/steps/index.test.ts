@@ -10,7 +10,6 @@ import { fetchTeams } from './teams';
 import { fetchAccountDetails } from './account';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import { attachConnectorsToContext } from 'graphql-tools';
 
 let recording: Recording;
 afterEach(async () => {
@@ -24,6 +23,7 @@ test('should collect data', async () => {
   });
 
   await sanitizeConfig(integrationConfig);
+  integrationConfig.installationId = 17214088; //this is the id the recordings are under
   const context = createMockStepExecutionContext<IntegrationConfig>({
     instanceConfig: integrationConfig,
   });

@@ -406,10 +406,9 @@ export default class OrganizationAccountClient {
     };
 
     try {
-      const reviews = (await this.v3.pulls.listReviews(listOptions)).data;
+      let reviews = (await this.v3.pulls.listReviews(listOptions)).data;
 
       this.v3RateLimitConsumed++;
-
       return reviews;
     } catch (err) {
       this.logger.info({ err }, 'pulls.listReviews failed');
@@ -428,7 +427,7 @@ export default class OrganizationAccountClient {
     };
 
     try {
-      const commits = (
+      let commits = (
         await this.v3.pulls.listCommits({
           ...listOptions,
           /**
@@ -441,7 +440,6 @@ export default class OrganizationAccountClient {
       ).data;
 
       this.v3RateLimitConsumed++;
-
       return commits;
     } catch (err) {
       this.logger.info({ err, listOptions }, 'pulls.listCommits failed');

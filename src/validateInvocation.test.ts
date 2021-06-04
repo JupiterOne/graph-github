@@ -6,6 +6,7 @@ import {
   createMockExecutionContext,
   setupRecording,
 } from '@jupiterone/integration-sdk-testing';
+import { integrationConfig } from '../test/config';
 import { IntegrationConfig, validateInvocation } from './config';
 
 it('requires valid config', async () => {
@@ -29,10 +30,7 @@ it('auth error', async () => {
   });
 
   const executionContext = createMockExecutionContext({
-    instanceConfig: {
-      clientId: 'INVALID',
-      clientSecret: 'INVALID',
-    },
+    instanceConfig: integrationConfig,
   });
 
   await expect(validateInvocation(executionContext)).rejects.toThrow(

@@ -51,7 +51,7 @@ import {
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
-    _class: 'Account',
+    _class: ['Account'],
     _type: 'github_account',
     _key: data.id,
     accountType: AccountType.Org,
@@ -66,13 +66,13 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {
-    _class: 'UserGroup',
+    _class: ['UserGroup'],
     _type: 'github_team',
     _key: data.id,
     webLink: data.url,
     name: data.slug,
     displayName: data.name,
-    full_name: data.name,
+    fullName: data.name,
   };
   setRawData(teamEntity, { name: 'default', rawData: data });
   return teamEntity;
@@ -80,7 +80,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
   const repoEntity: RepoEntity = {
-    _class: 'CodeRepo',
+    _class: ['CodeRepo'],
     _type: 'github_repo',
     _key: data.id,
     webLink: data.url,
@@ -101,13 +101,14 @@ export function toOrganizationMemberEntity(
   data: OrgMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: 'User',
+    _class: ['User'],
     _type: 'github_user',
     _key: data.id,
     login: data.login,
     username: data.login,
     displayName: data.name,
-    mfaEnabled: data.hasTwoFactorEnabled,
+    name: data.name,
+    mfaEnabled: data.hasTwoFactorEnabled || false,
     role: data.role,
     siteAdmin: data.isSiteAdmin,
   };
@@ -119,12 +120,14 @@ export function toOrganizationMemberEntityFromTeamMember(
   data: OrgTeamMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: 'User',
+    _class: ['User'],
     _type: 'github_user',
     _key: data.id,
     login: data.login,
     username: data.login,
     displayName: data.login,
+    name: data.login,
+    mfaEnabled: false,
     role: data.role,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
@@ -169,13 +172,17 @@ export function toPullRequestEntity(
 
   const entity: PullRequestEntity = {
     _type: 'github_pullrequest',
-    _class: 'PR',
+    _class: ['PR'],
     _key: `${data.base.repo.full_name}/pull-requests/${data.number}`,
     displayName: `${data.base.repo.name}/${data.number}`,
 
     accountLogin: data.base.repo.owner.login,
     repository: data.base.repo.name,
-    id: JSON.stringify(data.number),
+    //the type is hacked here because typing of data properties is controlled by a library call
+    //so I can't just say that data.number is a string
+    //here would be another way to solve it:
+    //id: JSON.stringify(data.number).replace(/\"/g, ''),
+    id: <string>(<unknown>data.number),
 
     name: data.title,
     title: data.title,
@@ -276,6 +283,7 @@ export function toOrganizationHasTeamRelationship(
     _class: 'HAS',
     _fromEntityKey: installationEntity._key,
     _toEntityKey: teamEntity._key,
+    displayName: 'HAS',
   };
 }
 
@@ -289,12 +297,13 @@ export function toTeamHasMemberRelationship(
     _class: 'HAS',
     _fromEntityKey: teamEntity._key,
     _toEntityKey: teamMemberEntity._key,
+    displayName: 'HAS',
   };
 }
 
 export function toMemberManagesTeamRelationship(
-  teamEntity: TeamEntity,
   teamMemberEntity: UserEntity,
+  teamEntity: TeamEntity,
 ): TeamMemberRelationship {
   return {
     _key: `${teamMemberEntity._key}|manages|${teamEntity._key}`,
@@ -302,6 +311,7 @@ export function toMemberManagesTeamRelationship(
     _class: 'MANAGES',
     _fromEntityKey: teamMemberEntity._key,
     _toEntityKey: teamEntity._key,
+    displayName: 'MANAGES',
   };
 }
 
@@ -317,6 +327,7 @@ export function toTeamAllowsRepoRelationship(
     _fromEntityKey: teamEntity._key,
     _toEntityKey: repoEntity._key,
     permission,
+    displayName: 'ALLOWS',
   };
 }
 
@@ -330,6 +341,7 @@ export function toAccountOwnsRepoRelationship(
     _class: 'OWNS',
     _fromEntityKey: installationEntity._key,
     _toEntityKey: repoEntity._key,
+    displayName: 'OWNS',
   };
 }
 
@@ -343,6 +355,7 @@ export function toRepoHasPullRequestRelationship(
     _class: 'HAS',
     _fromEntityKey: repoEntity._key,
     _toEntityKey: pullRequestEntity._key,
+    displayName: 'HAS',
   };
 }
 
@@ -356,6 +369,7 @@ export function toUserOpenedPullRequestRelationship(
     _type: 'github_user_opened_pullrequest',
     _fromEntityKey: userEntity._key,
     _toEntityKey: pullRequestEntity._key,
+    displayName: 'OPENED',
   };
 }
 
@@ -369,6 +383,7 @@ export function toUserReviewedPullRequestRelationship(
     _type: 'github_user_reviewed_pullrequest',
     _fromEntityKey: userEntity._key,
     _toEntityKey: pullRequestEntity._key,
+    displayName: 'REVIEWED',
   };
 }
 
@@ -382,5 +397,6 @@ export function toUserApprovedPullRequestRelationship(
     _type: 'github_user_approved_pullrequest',
     _fromEntityKey: userEntity._key,
     _toEntityKey: pullRequestEntity._key,
+    displayName: 'APPROVED',
   };
 }

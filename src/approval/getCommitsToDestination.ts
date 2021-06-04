@@ -8,10 +8,10 @@ function commitMatches(commit: string, match: string): boolean {
 
 export default function getCommitsToDestination(
   commits: PullsListCommitsResponseItem[],
-  destination: string
+  destination: string,
 ) {
-  const destinationIndex = commits.findIndex(commit =>
-    commitMatches(commit.sha, destination)
+  const destinationIndex = commits.findIndex((commit) =>
+    commitMatches(commit.sha, destination),
   );
 
   if (destinationIndex < 0) {

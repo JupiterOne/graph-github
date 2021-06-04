@@ -4,17 +4,17 @@ export enum OrganizationResource {
   Teams = 'teams',
   TeamMembers = 'teamMembers',
   TeamRepositories = 'teamRepositories',
-  Repositories = 'repositories'
+  Repositories = 'repositories',
 }
 
 export enum OrgMemberRole {
   Admin = 'ADMIN',
-  Member = 'MEMBER'
+  Member = 'MEMBER',
 }
 
 export enum TeamMemberRole {
   Maintainer = 'MAINTAINER',
-  Member = 'MEMBER'
+  Member = 'MEMBER',
 }
 
 export enum TeamRepositoryPermission {
@@ -22,7 +22,7 @@ export enum TeamRepositoryPermission {
   Maintain = 'MAINTAIN',
   Read = 'READ',
   Triage = 'TRIAGE',
-  Write = 'WRITE'
+  Write = 'WRITE',
 }
 
 interface Node {
@@ -46,6 +46,8 @@ export interface OrgTeamQueryResponse extends Node {
   url: string;
   slug: string;
   name: string;
+  members?: OrgTeamMemberQueryResponse[];
+  repos?: OrgTeamRepoQueryResponse[];
 }
 
 export interface OrgTeamMemberQueryResponse extends Node {

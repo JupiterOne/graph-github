@@ -20,7 +20,8 @@ export async function fetchMembers({
   logger,
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const apiClient = createAPIClient(instance.config, logger);
+  const config = instance.config;
+  const apiClient = createAPIClient(config, logger);
 
   const accountEntity = (await jobState.getData(
     DATA_ACCOUNT_ENTITY,

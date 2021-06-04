@@ -2,20 +2,28 @@ import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { throttling } from '@octokit/plugin-throttling';
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
+import { IntegrationConfig } from '../config';
 
-import fetchPrivateKey from '../util/fetchPrivateKey';
-
+//MAX_RETRIES is an arbitrary number, but consider that it limits the number
+// of retries for the entire client instance, not for a single request.
 const MAX_RETRIES = 20;
 
-export default async function createGitHubAppClient(
-  installationId: number,
-  logger: IntegrationLogger
+export default function createGitHubAppClient(
+  config: IntegrationConfig,
+  logger: IntegrationLogger,
 ) {
-  const appId = Number(process.env.GITHUB_APP_ID);
+  const appId = config.githubAppId;
+  const installationId = config.installationId;
+  const privateKey = config.githubAppPrivateKey;
   if (!appId) {
     throw new Error('GITHUB_APP_ID must be defined!');
   }
 
+  //we appear to be doing something a little strange with types here
+  //this code works, but TypeScript complains because Octokit is being
+  //draw from @octokit/rest instead of @octokit/core
+  //But, if we change this reference to @octokit/core, we have to change
+  //it in GitHubApp.ts, which breaks .getInstallation() there
   const OctokitThrottling = Octokit.plugin(throttling);
 
   /*
@@ -33,20 +41,12 @@ export default async function createGitHubAppClient(
     // Options passed to authStrategy
     auth: {
       id: appId,
-      privateKey: await fetchPrivateKey({
-        privateKeyEnvLocalPathParam: 'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH',
-        privateKeyEnvSsmParam: 'GITHUB_APP_PRIVATE_KEY_PARAM',
-      }),
-      installationId,
+      privateKey: privateKey,
+      installationId: installationId,
     },
     throttle: {
       onRateLimit: (retryAfter: number, options: any) => {
         logger.warn({ retryAfter, options }, 'Rate limit reached for request.');
-
-        /**
-         * An important thing to know: retryCount represents the number of
-         * retries for the entire client instance, not for a single request.
-         */
         if (options.request.retryCount < MAX_RETRIES) {
           // Retry twice
           return true;
@@ -55,9 +55,9 @@ export default async function createGitHubAppClient(
       onAbuseLimit: (retryAfter: number, options: any) => {
         logger.warn(
           { retryAfter, options },
-          'Abuse limit reached for request.'
+          'Abuse limit reached for request.',
         );
-
+        // Note: retryCount represents the number of retries for the entire client instance, not for a single request.
         if (options.request.retryCount < MAX_RETRIES) {
           return true;
         }

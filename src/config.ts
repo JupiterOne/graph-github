@@ -5,6 +5,7 @@ import {
   IntegrationInstanceConfig,
 } from '@jupiterone/integration-sdk-core';
 import { createAPIClient } from './client';
+const fs = require('fs');
 
 /**
  * A type describing the configuration fields required to execute the
@@ -19,46 +20,55 @@ import { createAPIClient } from './client';
  * Environment variables are NOT used when the integration is executing in a
  * managed environment. For example, in JupiterOne, users configure
  * `instance.config` in a UI.
+ *
+ * This integration will actually have a disparity between the instanceConfigFields
+ * that will come from local execution and the fields used in the managed environment.
+ * Specifically, local execution will use githubAppLocalPrivateKeyPath to load the
+ * path to a .pem file on the local filesystem. That file will load the real field,
+ * githubAppPrivateKey, that is used in the managed environment.
  */
 export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   githubAppId: {
-    type: 'string',
+    type: 'string', //should be a number, but that's not an option in the SDK
   },
   githubAppLocalPrivateKeyPath: {
-    type: 'string',
-  },
-  githubAppLocalCallbackUrl: {
-    type: 'string',
+    type: 'string', //only used for local configs
   },
   installationId: {
-    type: 'string',
+    type: 'string', //should be a number, but that's not an option in the SDK
+  },
+  analyzeCommitApproval: {
+    type: 'boolean',
   },
 };
 
 /**
- * Properties provided by the `IntegrationInstance.config`. This reflects the
- * same properties defined by `instanceConfigFields`.
+ * Properties provided by the `IntegrationInstance.config`. Normally reflects the
+ * same properties defined by `instanceConfigFields`. See note above.
  */
 export interface IntegrationConfig extends IntegrationInstanceConfig {
   /**
    * The GitHub App ID of the application at https://github.com/settings/apps
    */
-  githubAppId: string;
+  githubAppId: number;
 
   /**
-   * The local path to your PEM file for authentication
+   * The private key to authenticate the GitHub App.
+   * This can come from a local config variable GITHUB_APP_LOCAL_PRIVATE_KEY_PATH
+   * or if that doesn't exist, from a config variable GITHUB_APP_PRIVATE_KEY_PARAM
+   * See validateInvocation below
    */
-  githubAppLocalPrivateKeyPath: string;
-
-  /**
-   * The callback URL used by the GitHub app to reply. Probably a smee.io link.
-   */
-  githubAppLocalCallbackUrl: string;
+  githubAppPrivateKey: string;
 
   /**
    * The ID number assigned to the installation, delivered to the callback URL above.
    */
-  installationId: string;
+  installationId: number;
+
+  /**
+   * Whether to analyze commit approvals as part of pull-requests
+   */
+  analyzeCommitApproval: boolean;
 }
 
 export async function validateInvocation(
@@ -66,11 +76,36 @@ export async function validateInvocation(
 ) {
   const { config } = context.instance;
 
-  if (!config.githubAppId || !config.githubAppLocalPrivateKeyPath || !config.installationId) {
-    throw new IntegrationValidationError(
-      'Config requires all of {githubAppId, githubAppLocalPrivateKeyPath, installationId}',
-    );
-  }
+  sanitizeConfig(config); //mutate the config as needed
   const apiClient = createAPIClient(config, context.logger);
   await apiClient.verifyAuthentication();
+}
+
+export function sanitizeConfig(config: IntegrationConfig) {
+  const localPath = process.env['GITHUB_APP_LOCAL_PRIVATE_KEY_PATH'];
+  if (localPath) {
+    let content;
+    try {
+      content = fs.readFileSync(localPath);
+    } catch (err) {
+      // basically not there
+    }
+    if (content) {
+      config.githubAppPrivateKey = content.toString();
+    } else {
+      throw new Error(
+        `'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH' ${localPath}: cannot read content`,
+      );
+    }
+  }
+
+  if (
+    !config.githubAppId ||
+    !config.githubAppPrivateKey ||
+    !config.installationId
+  ) {
+    throw new IntegrationValidationError(
+      'Config requires all of {githubAppId, githubAppPrivateKey, installationId}',
+    );
+  }
 }

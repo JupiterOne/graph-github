@@ -1,27 +1,12 @@
-import {
-  IntegrationExecutionContext,
-} from '@jupiterone/integration-sdk-core';
-import {
-  AccountEntity,
-  UserEntity,
-  RepoEntity,
-  TeamEntity,
-  PullRequestEntity,
-  AccountRepoRelationship,
-  OrganizationMemberRelationship,
-  RepoPullRequestRelationship,
-  UserPullRequestRelationship,
-  OrganizationTeamRelationship
-} from './';
+import { IntegrationExecutionContext } from '@jupiterone/integration-sdk-core';
 import OrganizationAccountClient from '../client/OrganizationAccountClient';
-import { TeamMemberRelationship, TeamRepoRelationship } from './persister';
 
 /**
  * The type of GitHub account the integration is synchronizing.
  */
 export enum AccountType {
   Org = 'Organization',
-  User = 'User'
+  User = 'User',
 }
 
 /**
@@ -56,35 +41,51 @@ export interface AppInstallationAccess extends AccessToken {
  */
 export interface GitHubIntegrationExecutionContext
   extends IntegrationExecutionContext {
-  //graph: GraphClient;
-  //persister: PersisterClient;
   accountType: AccountType;
   github: OrganizationAccountClient;
 }
 
-export interface GraphData {
-  account?: AccountEntity;
-  teams: TeamEntity[];
-  users: UserEntity[];
-  repos: RepoEntity[];
-  pullRequests: PullRequestEntity[];
-
-  organizationMemberRelationships: OrganizationMemberRelationship[];
-  teamMemberRelationships: TeamMemberRelationship[];
-  teamRepoRelationships: TeamRepoRelationship[];
-  organizationTeamRelationships: OrganizationTeamRelationship[];
-  accountRepoRelationships: AccountRepoRelationship[];
-  repoPullRequestRelationships: RepoPullRequestRelationship[];
-  userPullRequestRelationships: UserPullRequestRelationship[];
-}
-
-
-export interface ProviderData extends GraphData {
-  userByLoginMap: IdEntityMap<UserEntity>;
-  repoByNameMap: IdEntityMap<RepoEntity>;
-  pullRequestByIdMap: IdEntityMap<PullRequestEntity>;
-}
-
 export interface IdEntityMap<V> {
   [key: string]: V;
+}
+/**
+ * The permissions that come back with an access token in an auth call.
+ * This list is not exhaustive; if the token doesn't have access to a certain
+ * scope, the property simply does not come through in the permissions object
+ * for possible permissions, the App owner can check:
+ * https://github.com/settings/apps/{YOURAPPNAME}/permissions
+ */
+export interface TokenPermissions {
+  members: string; //we need this to be set to 'read' or 'write'
+  metadata: string; //we need this to be set to 'read'
+  repository: string;
+  organization_administration: string; //'read' or 'write'
+  organization_events: string; //'read' or 'write'
+  organization_hooks: string; //'read' or 'write'
+  organization_packages: string; //'read' or 'write'
+  organization_plan: string; //'read'
+  organization_projects: string; //'read', 'write', or 'admin'
+  organization_secrets: string; //'read' or 'write'
+  organization_self_hosted_runners: string; //'read' or 'write'
+  organization_user_blocking: string; //'read' or 'write'
+  team_discussions: string; //'read' or 'write'
+  administration: string; //'read' or 'write'
+  actions: string;
+  checks: string;
+  contents: string;
+  deployments: string;
+  discussions: string;
+  environments: string;
+  issues: string;
+  packages: string;
+  pages: string;
+  pull_requests: string;
+  repository_hooks: string;
+  repository_projects: string;
+  secrets: string;
+  secret_scanning_alerts: string;
+  security_events: string;
+  statuses: string;
+  vulnerability_alerts: string;
+  workflows: string;
 }

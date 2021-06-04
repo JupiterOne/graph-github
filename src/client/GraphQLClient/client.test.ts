@@ -1,30 +1,27 @@
-import { Polly } from '@pollyjs/core';
-import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing';
-
-import polly from ../../../../test/helpers/polly';
+import {
+  createMockStepExecutionContext,
+  Recording,
+  createMockIntegrationLogger,
+} from '@jupiterone/integration-sdk-testing';
 import { setupGithubRecording } from '../../../test/recording';
 import { GitHubGraphQLClient, OrganizationResource } from '.';
 import resourceMetadataMap from './resourceMetadataMap';
 import createGitHubAppClient from '../../util/createGitHubAppClient';
+import { IntegrationConfig, sanitizeConfig } from '../../config';
+import { integrationConfig } from '../../../test/config';
 
 async function getAccess() {
-  if (
-    !process.env.GITHUB_APP_ID ||
-    !process.env.GITHUB_APP_LOCAL_PRIVATE_KEY_PATH ||
-    !process.env.GITHUB_INSTALLATION_ID
-  ) {
-    throw new Error(`
-      Make sure you define all required environment variables!
+  const context = createMockStepExecutionContext<IntegrationConfig>({
+    instanceConfig: integrationConfig,
+  });
 
-      * GITHUB_APP_ID
-      * GITHUB_APP_LOCAL_PRIVATE_KEY_PATH
-      * GITHUB_INSTALLATION_ID
-    `);
-  }
-
-  const appClient = await createGitHubAppClient(
-    Number(process.env.GITHUB_INSTALLATION_ID),
-    createMockIntegrationLogger()
+  const config = context.instance.config;
+  sanitizeConfig(config);
+  //the installid in the recordings
+  config.installationId = 17214088;
+  const appClient = createGitHubAppClient(
+    config,
+    createMockIntegrationLogger(),
   );
   const { token } = (await appClient.auth({ type: 'installation' })) as {
     token: string;
@@ -38,22 +35,30 @@ async function getClient() {
   return new GitHubGraphQLClient(
     access,
     resourceMetadataMap(2),
-    createMockIntegrationLogger()
+    createMockIntegrationLogger(),
   );
 }
 
 describe('results and pagination', () => {
-  let p: Polly;
+  let p: Recording; //p for polly
 
   afterEach(async () => {
     await p.stop();
   });
 
   test('single page', async () => {
-    p = polly(__dirname, 'GitHubGraphQLClient.fetchOrganization.singlePage');
+    p = setupGithubRecording({
+      directory: __dirname,
+      name: 'GitHubGraphQLClient.fetchOrganization.singlePage',
+      options: {
+        matchRequestsBy: {
+          headers: false, //must not set order:false
+        },
+      },
+    });
     const client = await getClient();
 
-    const data = await client.fetchOrganization('github-app-test', [
+    const data = await client.fetchOrganization('Kei-Institute', [
       OrganizationResource.Repositories,
     ]);
 
@@ -66,10 +71,18 @@ describe('results and pagination', () => {
   });
 
   test('multiple pages', async () => {
-    p = polly(__dirname, 'GitHubGraphQLClient.fetchOrganization.multiplePages');
+    p = setupGithubRecording({
+      directory: __dirname,
+      name: 'GitHubGraphQLClient.fetchOrganization.multiplePages',
+      options: {
+        matchRequestsBy: {
+          headers: false, //must not set order:false
+        },
+      },
+    });
     const client = await getClient();
 
-    const data = await client.fetchOrganization('github-app-test', [
+    const data = await client.fetchOrganization('Kei-Institute', [
       OrganizationResource.Members,
     ]);
 
@@ -82,10 +95,18 @@ describe('results and pagination', () => {
   });
 
   test('child resource only', async () => {
-    p = polly(__dirname, 'GitHubGraphQLClient.fetchOrganization.childOnly');
+    p = setupGithubRecording({
+      directory: __dirname,
+      name: 'GitHubGraphQLClient.fetchOrganization.childOnly',
+      options: {
+        matchRequestsBy: {
+          headers: false, //must not set order:false
+        },
+      },
+    });
     const client = await getClient();
 
-    const data = await client.fetchOrganization('github-app-test', [
+    const data = await client.fetchOrganization('Kei-Institute', [
       OrganizationResource.TeamMembers,
     ]);
 
@@ -93,36 +114,48 @@ describe('results and pagination', () => {
     expect(data.members).toBeUndefined();
     expect(data.repositories).toBeUndefined();
     // expect(data.teams).toBeUndefined();
-    expect(data.teamMembers).toHaveLength(5);
+    expect(data.teamMembers).toHaveLength(6);
     expect(data.teamMembers).toEqual([
       {
-        id: 'MDQ6VXNlcjE1MjY0NDU=',
-        login: 'fomentia',
-        teams: 'MDQ6VGVhbTM0NzMyOTc=',
-        role: 'MAINTAINER',
-      },
-      {
-        id: 'MDQ6VXNlcjE1MjY0NDU=',
-        login: 'fomentia',
-        teams: 'MDQ6VGVhbTM0NTM4Njg=',
+        id: 'MDQ6VXNlcjUxMzUyMw==',
+        login: 'erichs',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTgxNjk=',
         role: 'MEMBER',
       },
       {
-        id: 'MDQ6VXNlcjUwNjI3MTgx',
-        login: 'fomentia2',
-        teams: 'MDQ6VGVhbTM0NTM4Njg=',
-        role: 'MAINTAINER',
-      },
-      {
-        id: 'MDQ6VXNlcjU1NDk0NjY1',
-        login: 'github-user-test',
-        teams: 'MDQ6VGVhbTM0NTM4Njg=',
+        id: 'MDQ6VXNlcjI1NDg5NDgy',
+        login: 'mknoedel',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTgxNjk=',
         role: 'MEMBER',
       },
       {
-        id: 'MDQ6VXNlcjUwNjI3MTgx',
-        login: 'fomentia2',
-        teams: 'MDQ6VGVhbTM0NzM0MDI=',
+        id: 'MDQ6VXNlcjYyNDkyMDk3',
+        login: 'kevincasey1222',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTgxNzA=',
+        role: 'MAINTAINER',
+      },
+      {
+        id: 'MDQ6VXNlcjYyNDkyMDk3',
+        login: 'kevincasey1222',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTgxNjk=',
+        role: 'MAINTAINER',
+      },
+      {
+        id: 'MDQ6VXNlcjI1NDg5NDgy',
+        login: 'mknoedel',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTc0OTU=',
+        role: 'MEMBER',
+      },
+      {
+        id: 'MDQ6VXNlcjYyNDkyMDk3',
+        login: 'kevincasey1222',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTc0OTU=',
         role: 'MAINTAINER',
       },
     ]);
@@ -130,10 +163,18 @@ describe('results and pagination', () => {
   });
 
   test('all resources', async () => {
-    p = polly(__dirname, 'GitHubGraphQLClient.fetchOrganization.all');
+    p = setupGithubRecording({
+      directory: __dirname,
+      name: 'GitHubGraphQLClient.fetchOrganization.all',
+      options: {
+        matchRequestsBy: {
+          headers: false, //must not set order:false
+        },
+      },
+    });
     const client = await getClient();
 
-    const data = await client.fetchOrganization('github-app-test', [
+    const data = await client.fetchOrganization('Kei-Institute', [
       OrganizationResource.TeamMembers,
       OrganizationResource.Members,
       OrganizationResource.Teams,
@@ -145,8 +186,10 @@ describe('results and pagination', () => {
     expect(data.members).toHaveLength(3);
     expect(data.repositories).toHaveLength(1);
     expect(data.teams).toHaveLength(3);
-    expect(data.teamMembers).toHaveLength(5);
-    expect(data.teamRepositories).toHaveLength(1);
+    expect(data.teamMembers).toHaveLength(6);
+    //there's just one repo, but it's in a team that is a child of another team
+    //that means repos (above) = 1 but teamRepos (below) = 2
+    expect(data.teamRepositories).toHaveLength(2);
     expect(data.rateLimitConsumed).toBe(3);
   });
 });

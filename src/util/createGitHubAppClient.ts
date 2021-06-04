@@ -8,7 +8,7 @@ import { IntegrationConfig } from '../config';
 // of retries for the entire client instance, not for a single request.
 const MAX_RETRIES = 20;
 
-export default async function createGitHubAppClient(
+export default function createGitHubAppClient(
   config: IntegrationConfig,
   logger: IntegrationLogger,
 ) {

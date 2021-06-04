@@ -6,7 +6,7 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
-import { IntegrationConfig, sanitizeConfig } from '../config';
+import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import {
   toTeamEntity,
@@ -26,7 +26,6 @@ export async function fetchTeams({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  await sanitizeConfig(config);
   const apiClient = createAPIClient(config, logger);
 
   const accountEntity = (await jobState.getData(

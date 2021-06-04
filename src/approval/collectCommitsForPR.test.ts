@@ -54,12 +54,12 @@ function collectCommitsForPRTest({
 
     //mutate config with installation ID 953957, which is used in recordings
     const config = context.instance.config;
-    await sanitizeConfig(config);
+    sanitizeConfig(config);
     config.installationId = 953957;
 
     const logger = createMockIntegrationLogger();
     const token = 'faketoken';
-    const appClient = await createGitHubAppClient(config, logger);
+    const appClient = createGitHubAppClient(config, logger);
     const accountClient = new OrganizationAccountClient({
       login: 'github-app-test',
       restClient: appClient,

@@ -5,7 +5,7 @@ import {
   IntegrationInstanceConfig,
 } from '@jupiterone/integration-sdk-core';
 import { createAPIClient } from './client';
-import fetchPrivateKey from './util/fetchPrivateKey';
+const fs = require('fs');
 
 /**
  * A type describing the configuration fields required to execute the
@@ -20,6 +20,12 @@ import fetchPrivateKey from './util/fetchPrivateKey';
  * Environment variables are NOT used when the integration is executing in a
  * managed environment. For example, in JupiterOne, users configure
  * `instance.config` in a UI.
+ *
+ * This integration will actually have a disparity between the instanceConfigFields
+ * that will come from local execution and the fields used in the managed environment.
+ * Specifically, local execution will use githubAppLocalPrivateKeyPath to load the
+ * path to a .pem file on the local filesystem. That file will load the real field,
+ * githubAppPrivateKey, that is used in the managed environment.
  */
 export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   githubAppId: {
@@ -37,8 +43,8 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
 };
 
 /**
- * Properties provided by the `IntegrationInstance.config`. This reflects the
- * same properties defined by `instanceConfigFields`.
+ * Properties provided by the `IntegrationInstance.config`. Normally reflects the
+ * same properties defined by `instanceConfigFields`. See note above.
  */
 export interface IntegrationConfig extends IntegrationInstanceConfig {
   /**
@@ -70,17 +76,28 @@ export async function validateInvocation(
 ) {
   const { config } = context.instance;
 
-  await sanitizeConfig(config); //mutate the config as needed
+  sanitizeConfig(config); //mutate the config as needed
   const apiClient = createAPIClient(config, context.logger);
   await apiClient.verifyAuthentication();
 }
 
-export async function sanitizeConfig(config: IntegrationConfig) {
-  config.githubAppPrivateKey = 'temp';
-  config.githubAppPrivateKey = await fetchPrivateKey({
-    privateKeyEnvLocalPathParam: 'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH',
-    privateKeyEnvSsmParam: 'GITHUB_APP_PRIVATE_KEY', //this a hack. We need to define the real param.
-  });
+export function sanitizeConfig(config: IntegrationConfig) {
+  const localPath = process.env['GITHUB_APP_LOCAL_PRIVATE_KEY_PATH'];
+  if (localPath) {
+    let content;
+    try {
+      content = fs.readFileSync(localPath);
+    } catch (err) {
+      // basically not there
+    }
+    if (content) {
+      config.githubAppPrivateKey = content.toString();
+    } else {
+      throw new Error(
+        `'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH' ${localPath}: cannot read content`,
+      );
+    }
+  }
 
   if (
     !config.githubAppId ||

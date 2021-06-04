@@ -16,10 +16,10 @@ async function getAccess() {
   });
 
   const config = context.instance.config;
-  await sanitizeConfig(config);
+  sanitizeConfig(config);
   //the installid in the recordings
   config.installationId = 17214088;
-  const appClient = await createGitHubAppClient(
+  const appClient = createGitHubAppClient(
     config,
     createMockIntegrationLogger(),
   );

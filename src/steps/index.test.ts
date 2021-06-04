@@ -28,7 +28,7 @@ test('should collect data', async () => {
     },
   });
 
-  await sanitizeConfig(integrationConfig);
+  sanitizeConfig(integrationConfig);
   integrationConfig.installationId = 17214088; //this is the id the recordings are under
   const context = createMockStepExecutionContext<IntegrationConfig>({
     instanceConfig: integrationConfig,

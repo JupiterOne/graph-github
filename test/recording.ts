@@ -17,20 +17,13 @@ export function setupGithubRecording(
     mutateEntry: (entry) => {
       redact(entry);
     },
-    options: {
-      recordFailedRequests: true,
-      matchRequestsBy: {
-        headers: false,
-        order: false,
-      },
-    },
   });
 }
 
 function redact(entry): void {
-  if (entry.request.postData) {
-    entry.request.postData.text = '[REDACTED]';
-  }
+  //if (entry.request.postData) {
+  //  entry.request.postData.text = '[REDACTED]';
+  //}
 
   if (!entry.response.content.text) {
     return;

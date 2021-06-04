@@ -29,6 +29,64 @@ Object {
       "_class": Array [
         "User",
       ],
+      "_key": "MDQ6VXNlcjUxMzUyMw==",
+      "_rawData": Array [
+        Object {
+          "name": "default",
+          "rawData": Object {
+            "hasTwoFactorEnabled": null,
+            "id": "MDQ6VXNlcjUxMzUyMw==",
+            "isSiteAdmin": false,
+            "login": "erichs",
+            "name": "Erich Smith",
+            "node": undefined,
+            "organization": "MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz",
+            "role": "MEMBER",
+          },
+        },
+      ],
+      "_type": "github_user",
+      "displayName": "Erich Smith",
+      "login": "erichs",
+      "mfaEnabled": false,
+      "name": "Erich Smith",
+      "role": "MEMBER",
+      "siteAdmin": false,
+      "username": "erichs",
+    },
+    Object {
+      "_class": Array [
+        "User",
+      ],
+      "_key": "MDQ6VXNlcjI1NDg5NDgy",
+      "_rawData": Array [
+        Object {
+          "name": "default",
+          "rawData": Object {
+            "hasTwoFactorEnabled": null,
+            "id": "MDQ6VXNlcjI1NDg5NDgy",
+            "isSiteAdmin": false,
+            "login": "mknoedel",
+            "name": "Michael Knoedel",
+            "node": undefined,
+            "organization": "MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz",
+            "role": "MEMBER",
+          },
+        },
+      ],
+      "_type": "github_user",
+      "displayName": "Michael Knoedel",
+      "login": "mknoedel",
+      "mfaEnabled": false,
+      "name": "Michael Knoedel",
+      "role": "MEMBER",
+      "siteAdmin": false,
+      "username": "mknoedel",
+    },
+    Object {
+      "_class": Array [
+        "User",
+      ],
       "_key": "MDQ6VXNlcjYyNDkyMDk3",
       "_rawData": Array [
         Object {
@@ -99,6 +157,20 @@ Object {
             "id": "MDQ6VGVhbTQ4NTgxNjk=",
             "members": Array [
               Object {
+                "id": "MDQ6VXNlcjUxMzUyMw==",
+                "login": "erichs",
+                "node": undefined,
+                "role": "MEMBER",
+                "teams": "MDQ6VGVhbTQ4NTgxNjk=",
+              },
+              Object {
+                "id": "MDQ6VXNlcjI1NDg5NDgy",
+                "login": "mknoedel",
+                "node": undefined,
+                "role": "MEMBER",
+                "teams": "MDQ6VGVhbTQ4NTgxNjk=",
+              },
+              Object {
                 "id": "MDQ6VXNlcjYyNDkyMDk3",
                 "login": "kevincasey1222",
                 "node": undefined,
@@ -167,6 +239,13 @@ Object {
             "id": "MDQ6VGVhbTQ4NTc0OTU=",
             "members": Array [
               Object {
+                "id": "MDQ6VXNlcjI1NDg5NDgy",
+                "login": "mknoedel",
+                "node": undefined,
+                "role": "MEMBER",
+                "teams": "MDQ6VGVhbTQ4NTc0OTU=",
+              },
+              Object {
                 "id": "MDQ6VXNlcjYyNDkyMDk3",
                 "login": "kevincasey1222",
                 "node": undefined,
@@ -191,6 +270,22 @@ Object {
     },
   ],
   "collectedRelationships": Array [
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz",
+      "_key": "MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz|has|MDQ6VXNlcjUxMzUyMw==",
+      "_toEntityKey": "MDQ6VXNlcjUxMzUyMw==",
+      "_type": "github_account_has_user",
+      "displayName": "HAS",
+    },
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz",
+      "_key": "MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz|has|MDQ6VXNlcjI1NDg5NDgy",
+      "_toEntityKey": "MDQ6VXNlcjI1NDg5NDgy",
+      "_type": "github_account_has_user",
+      "displayName": "HAS",
+    },
     Object {
       "_class": "HAS",
       "_fromEntityKey": "MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz",
@@ -221,6 +316,22 @@ Object {
       "_key": "MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz|has|MDQ6VGVhbTQ4NTgxNjk=",
       "_toEntityKey": "MDQ6VGVhbTQ4NTgxNjk=",
       "_type": "github_account_has_team",
+      "displayName": "HAS",
+    },
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "MDQ6VGVhbTQ4NTgxNjk=",
+      "_key": "MDQ6VGVhbTQ4NTgxNjk=|has|MDQ6VXNlcjUxMzUyMw==",
+      "_toEntityKey": "MDQ6VXNlcjUxMzUyMw==",
+      "_type": "github_team_has_user",
+      "displayName": "HAS",
+    },
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "MDQ6VGVhbTQ4NTgxNjk=",
+      "_key": "MDQ6VGVhbTQ4NTgxNjk=|has|MDQ6VXNlcjI1NDg5NDgy",
+      "_toEntityKey": "MDQ6VXNlcjI1NDg5NDgy",
+      "_type": "github_team_has_user",
       "displayName": "HAS",
     },
     Object {
@@ -274,6 +385,14 @@ Object {
     Object {
       "_class": "HAS",
       "_fromEntityKey": "MDQ6VGVhbTQ4NTc0OTU=",
+      "_key": "MDQ6VGVhbTQ4NTc0OTU=|has|MDQ6VXNlcjI1NDg5NDgy",
+      "_toEntityKey": "MDQ6VXNlcjI1NDg5NDgy",
+      "_type": "github_team_has_user",
+      "displayName": "HAS",
+    },
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "MDQ6VGVhbTQ4NTc0OTU=",
       "_key": "MDQ6VGVhbTQ4NTc0OTU=|has|MDQ6VXNlcjYyNDkyMDk3",
       "_toEntityKey": "MDQ6VXNlcjYyNDkyMDk3",
       "_type": "github_team_has_user",
@@ -300,7 +419,7 @@ Object {
     "github_team_has_user",
     "github_user_manages_team",
   ],
-  "numCollectedEntities": 6,
-  "numCollectedRelationships": 12,
+  "numCollectedEntities": 8,
+  "numCollectedRelationships": 17,
 }
 `;

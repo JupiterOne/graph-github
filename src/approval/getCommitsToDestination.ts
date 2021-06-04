@@ -3,7 +3,6 @@ import { PullsListCommitsResponseItem } from '../types';
 function commitMatches(commit: string, match: string): boolean {
   // using the length of the proposed match allows for matching shas of
   // different length, so that abcdefghij12345678 matches abcdefghij
-  //if (!commit) { return false; }
   return commit.slice(0, match.length) === match;
 }
 

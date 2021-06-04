@@ -50,10 +50,15 @@ describe('results and pagination', () => {
     p = setupGithubRecording({
       directory: __dirname,
       name: 'GitHubGraphQLClient.fetchOrganization.singlePage',
+      options: {
+        matchRequestsBy: {
+          headers: false, //must not set order:false
+        },
+      },
     });
     const client = await getClient();
 
-    const data = await client.fetchOrganization('github-app-test', [
+    const data = await client.fetchOrganization('Kei-Institute', [
       OrganizationResource.Repositories,
     ]);
 
@@ -69,10 +74,15 @@ describe('results and pagination', () => {
     p = setupGithubRecording({
       directory: __dirname,
       name: 'GitHubGraphQLClient.fetchOrganization.multiplePages',
+      options: {
+        matchRequestsBy: {
+          headers: false, //must not set order:false
+        },
+      },
     });
     const client = await getClient();
 
-    const data = await client.fetchOrganization('github-app-test', [
+    const data = await client.fetchOrganization('Kei-Institute', [
       OrganizationResource.Members,
     ]);
 
@@ -88,10 +98,15 @@ describe('results and pagination', () => {
     p = setupGithubRecording({
       directory: __dirname,
       name: 'GitHubGraphQLClient.fetchOrganization.childOnly',
+      options: {
+        matchRequestsBy: {
+          headers: false, //must not set order:false
+        },
+      },
     });
     const client = await getClient();
 
-    const data = await client.fetchOrganization('github-app-test', [
+    const data = await client.fetchOrganization('Kei-Institute', [
       OrganizationResource.TeamMembers,
     ]);
 
@@ -99,36 +114,48 @@ describe('results and pagination', () => {
     expect(data.members).toBeUndefined();
     expect(data.repositories).toBeUndefined();
     // expect(data.teams).toBeUndefined();
-    expect(data.teamMembers).toHaveLength(5);
+    expect(data.teamMembers).toHaveLength(6);
     expect(data.teamMembers).toEqual([
       {
-        id: 'MDQ6VXNlcjE1MjY0NDU=',
-        login: 'fomentia',
-        teams: 'MDQ6VGVhbTM0NzMyOTc=',
-        role: 'MAINTAINER',
-      },
-      {
-        id: 'MDQ6VXNlcjE1MjY0NDU=',
-        login: 'fomentia',
-        teams: 'MDQ6VGVhbTM0NTM4Njg=',
+        id: 'MDQ6VXNlcjUxMzUyMw==',
+        login: 'erichs',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTgxNjk=',
         role: 'MEMBER',
       },
       {
-        id: 'MDQ6VXNlcjUwNjI3MTgx',
-        login: 'fomentia2',
-        teams: 'MDQ6VGVhbTM0NTM4Njg=',
-        role: 'MAINTAINER',
-      },
-      {
-        id: 'MDQ6VXNlcjU1NDk0NjY1',
-        login: 'github-user-test',
-        teams: 'MDQ6VGVhbTM0NTM4Njg=',
+        id: 'MDQ6VXNlcjI1NDg5NDgy',
+        login: 'mknoedel',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTgxNjk=',
         role: 'MEMBER',
       },
       {
-        id: 'MDQ6VXNlcjUwNjI3MTgx',
-        login: 'fomentia2',
-        teams: 'MDQ6VGVhbTM0NzM0MDI=',
+        id: 'MDQ6VXNlcjYyNDkyMDk3',
+        login: 'kevincasey1222',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTgxNzA=',
+        role: 'MAINTAINER',
+      },
+      {
+        id: 'MDQ6VXNlcjYyNDkyMDk3',
+        login: 'kevincasey1222',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTgxNjk=',
+        role: 'MAINTAINER',
+      },
+      {
+        id: 'MDQ6VXNlcjI1NDg5NDgy',
+        login: 'mknoedel',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTc0OTU=',
+        role: 'MEMBER',
+      },
+      {
+        id: 'MDQ6VXNlcjYyNDkyMDk3',
+        login: 'kevincasey1222',
+        node: undefined,
+        teams: 'MDQ6VGVhbTQ4NTc0OTU=',
         role: 'MAINTAINER',
       },
     ]);
@@ -139,10 +166,15 @@ describe('results and pagination', () => {
     p = setupGithubRecording({
       directory: __dirname,
       name: 'GitHubGraphQLClient.fetchOrganization.all',
+      options: {
+        matchRequestsBy: {
+          headers: false, //must not set order:false
+        },
+      },
     });
     const client = await getClient();
 
-    const data = await client.fetchOrganization('github-app-test', [
+    const data = await client.fetchOrganization('Kei-Institute', [
       OrganizationResource.TeamMembers,
       OrganizationResource.Members,
       OrganizationResource.Teams,
@@ -154,8 +186,10 @@ describe('results and pagination', () => {
     expect(data.members).toHaveLength(3);
     expect(data.repositories).toHaveLength(1);
     expect(data.teams).toHaveLength(3);
-    expect(data.teamMembers).toHaveLength(5);
-    expect(data.teamRepositories).toHaveLength(1);
+    expect(data.teamMembers).toHaveLength(6);
+    //there's just one repo, but it's in a team that is a child of another team
+    //that means repos (above) = 1 but teamRepos (below) = 2
+    expect(data.teamRepositories).toHaveLength(2);
     expect(data.rateLimitConsumed).toBe(3);
   });
 });

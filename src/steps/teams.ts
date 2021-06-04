@@ -67,7 +67,7 @@ export async function fetchTeams({
     }
 
     for (const repo of team.repos || []) {
-      let repoEntity = (await jobState.findEntity(repo.id)) as RepoEntity;
+      const repoEntity = (await jobState.findEntity(repo.id)) as RepoEntity;
       if (!repoEntity) {
         throw new IntegrationMissingKeyError(
           `Expected repo (CodeRepo) with key to exist (key=${repo.id})`,

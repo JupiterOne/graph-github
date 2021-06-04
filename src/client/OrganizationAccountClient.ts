@@ -406,7 +406,7 @@ export default class OrganizationAccountClient {
     };
 
     try {
-      let reviews = (await this.v3.pulls.listReviews(listOptions)).data;
+      const reviews = (await this.v3.pulls.listReviews(listOptions)).data;
 
       this.v3RateLimitConsumed++;
       return reviews;
@@ -427,7 +427,7 @@ export default class OrganizationAccountClient {
     };
 
     try {
-      let commits = (
+      const commits = (
         await this.v3.pulls.listCommits({
           ...listOptions,
           /**

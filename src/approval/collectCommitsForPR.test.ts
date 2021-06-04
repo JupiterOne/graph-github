@@ -38,7 +38,15 @@ function collectCommitsForPRTest({
   teamMembers?: any[];
 }) {
   return test(title, async () => {
-    p = setupGithubRecording({ directory: __dirname, name: recordingName });
+    p = setupGithubRecording({
+      directory: __dirname,
+      name: recordingName,
+      options: {
+        matchRequestsBy: {
+          headers: false,
+        },
+      },
+    });
 
     const context = createMockStepExecutionContext<IntegrationConfig>({
       instanceConfig: integrationConfig,

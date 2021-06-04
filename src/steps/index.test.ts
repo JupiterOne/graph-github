@@ -20,6 +20,12 @@ test('should collect data', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
     name: 'steps', //redaction of headers is in setupGithubRecording
+    options: {
+      matchRequestsBy: {
+        headers: false,
+        order: false, //this is needed for index.test.ts
+      },
+    },
   });
 
   await sanitizeConfig(integrationConfig);

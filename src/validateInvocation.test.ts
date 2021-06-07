@@ -29,8 +29,10 @@ it('auth error', async () => {
     res.status(401);
   });
 
+  const config = integrationConfig;
+  config.githubAppPrivateKey = 'Iwanttofailauthen';
   const executionContext = createMockExecutionContext({
-    instanceConfig: integrationConfig,
+    instanceConfig: config,
   });
 
   await expect(validateInvocation(executionContext)).rejects.toThrow(

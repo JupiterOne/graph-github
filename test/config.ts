@@ -16,5 +16,5 @@ export const integrationConfig: IntegrationConfig = {
   installationId:
     Number(process.env.INSTALLATION_ID) || DEFAULT_INSTALLATION_ID,
   analyzeCommitApproval: true,
-  githubAppDefaultLogin: '', //can be set manually in tests
+  githubAppDefaultLogin: 'something', //can be set manually in tests
 };

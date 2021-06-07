@@ -40,7 +40,7 @@ export default function createGitHubAppClient(
     authStrategy: createAppAuth,
     // Options passed to authStrategy
     auth: {
-      id: appId,
+      appId: appId,
       privateKey: privateKey,
       installationId: installationId,
     },

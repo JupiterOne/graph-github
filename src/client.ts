@@ -121,7 +121,7 @@ export class APIClient {
   public async setupAccountClient(): Promise<void> {
     try {
       const installationId = Number(this.config.installationId);
-      const appClient = await createGitHubAppClient(this.config, this.logger);
+      const appClient = createGitHubAppClient(this.config, this.logger);
       const { token, permissions } = (await appClient.auth({
         type: 'installation',
       })) as {
@@ -157,7 +157,7 @@ export class APIClient {
       }
 
       this.accountClient = new OrganizationAccountClient({
-        login: installation.account.login,
+        login: installation.account!.login!,
         restClient: appClient,
         graphqlClient: new GitHubGraphQLClient(
           token,

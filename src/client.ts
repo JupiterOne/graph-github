@@ -120,18 +120,31 @@ export class APIClient {
 
   public async setupAccountClient(): Promise<void> {
     try {
+      const authen: boolean = !(
+        this.config.githubAppPrivateKey === 'donotauthenticate'
+      );
       const installationId = Number(this.config.installationId);
       const appClient = createGitHubAppClient(this.config, this.logger);
-      const { token, permissions } = (await appClient.auth({
-        type: 'installation',
-      })) as {
-        token: string;
-        permissions: TokenPermissions;
+      let myToken: string = '[REDACTED]';
+      let myPermissions: TokenPermissions = {
+        members: 'read',
+        metadata: 'read',
       };
+
+      if (authen) {
+        const { token, permissions } = (await appClient.auth({
+          type: 'installation',
+        })) as {
+          token: string;
+          permissions: TokenPermissions;
+        };
+        myToken = token;
+        myPermissions = permissions;
+      }
 
       //checking for proper scopes
       if (
-        !(permissions.members === 'read' || permissions.members === 'write')
+        !(myPermissions.members === 'read' || myPermissions.members === 'write')
       ) {
         throw new IntegrationValidationError(
           'Integration requires read access to organization members. See GitHub App permissions.',
@@ -139,7 +152,10 @@ export class APIClient {
       }
 
       if (
-        !(permissions.metadata === 'read' || permissions.metadata === 'write')
+        !(
+          myPermissions.metadata === 'read' ||
+          myPermissions.metadata === 'write'
+        )
       ) {
         //as of now, this property has no 'write' value, but just in case
         throw new IntegrationValidationError(
@@ -148,19 +164,23 @@ export class APIClient {
       }
       //scopes check done
 
-      const installation = await getInstallation(appClient, installationId);
-
-      if (installation.target_type !== AccountType.Org) {
-        throw new IntegrationValidationError(
-          'Integration supports only GitHub Organization accounts.',
-        );
+      let login: string = 'Kei-Institute'; //TODO: move this to a var passed in
+      if (authen) {
+        const installation = await getInstallation(appClient, installationId);
+        if (installation.target_type !== AccountType.Org) {
+          throw new IntegrationValidationError(
+            'Integration supports only GitHub Organization accounts.',
+          );
+        }
+        if (installation.account) {
+          login = installation.account.login || '';
+        }
       }
-
       this.accountClient = new OrganizationAccountClient({
-        login: installation.account!.login!,
+        login: login,
         restClient: appClient,
         graphqlClient: new GitHubGraphQLClient(
-          token,
+          myToken,
           resourceMetadataMap(),
           this.logger,
         ),

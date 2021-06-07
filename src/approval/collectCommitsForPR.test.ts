@@ -56,6 +56,7 @@ function collectCommitsForPRTest({
     const config = context.instance.config;
     sanitizeConfig(config);
     config.installationId = 953957;
+    //config.githubAppPrivateKey = '-----BEGIN RSA PRIVATE KEY-----MIIEowIBAAKCAQEA0g7LvR7i2TxTxBnNdP7c/pgJ5lNWhQdw48nf8/xBF8M6ixQFDZPnrSxjUt3+R8C3382ZpVu3xBaXO12G8/ubrqP2qIU/eBHzm1rHCmOXxPa6jec1-----END RSA PRIVATE KEY----';
 
     const logger = createMockIntegrationLogger();
     const token = 'faketoken';

@@ -54,9 +54,13 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
 
   /**
    * The private key to authenticate the GitHub App.
-   * This can come from a local config variable GITHUB_APP_LOCAL_PRIVATE_KEY_PATH
-   * or if that doesn't exist, from a config variable GITHUB_APP_PRIVATE_KEY_PARAM
-   * See validateInvocation below
+   * In the managed environment, this field will be passed in.
+   *
+   * Since the key is typically a long RSA hash, it is more convenient in
+   * the local environment to store that value in a file than to put it directly
+   * in .env. The .env variable GITHUB_APP_LOCAL_PRIVATE_KEY_PATH is provided for
+   * this purpose. If it exists, sanitizeConfig() below will load the text of
+   * the file (pointed to by that path) into GITHUB_APP_PRIVATE_KEY.
    */
   githubAppPrivateKey: string;
 

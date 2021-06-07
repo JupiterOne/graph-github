@@ -191,7 +191,6 @@ export function toPullRequestEntity(
       [],
     );
   }
-
   const entity: PullRequestEntity = {
     _type: 'github_pullrequest',
     _class: ['PR'],

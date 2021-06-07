@@ -30,6 +30,7 @@ test('should collect data', async () => {
 
   sanitizeConfig(integrationConfig);
   integrationConfig.installationId = 17214088; //this is the id the recordings are under
+  integrationConfig.githubAppDefaultLogin = 'Kei-Institute'; //this is the login for the recordings
   const context = createMockStepExecutionContext<IntegrationConfig>({
     instanceConfig: integrationConfig,
   });

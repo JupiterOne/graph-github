@@ -73,6 +73,13 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    * Whether to analyze commit approvals as part of pull-requests
    */
   analyzeCommitApproval: boolean;
+
+  /**
+   * Optional. Login is usually derived from a call to the API,
+   * but if that fails or is not available, processing can proceed
+   * if this var is specified.
+   */
+  githubAppDefaultLogin: string;
 }
 
 export async function validateInvocation(

@@ -164,7 +164,7 @@ export class APIClient {
       }
       //scopes check done
 
-      let login: string = 'Kei-Institute'; //TODO: move this to a var passed in
+      let login: string = this.config.githubAppDefaultLogin;
       if (authen) {
         const installation = await getInstallation(appClient, installationId);
         if (installation.target_type !== AccountType.Org) {
@@ -173,7 +173,8 @@ export class APIClient {
           );
         }
         if (installation.account) {
-          login = installation.account.login || '';
+          login =
+            installation.account.login || this.config.githubAppDefaultLogin;
         }
       }
       this.accountClient = new OrganizationAccountClient({

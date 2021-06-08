@@ -1,6 +1,7 @@
 import {
   setRawData,
   RelationshipClass,
+  parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -21,7 +22,6 @@ import {
   PullsListResponseItem,
   PullsListCommitsResponseItem,
 } from '../types';
-import toTime from '../util/toTime';
 import { Approval } from '../approval/collectCommitsForPR';
 import {
   aggregateProperties,
@@ -101,8 +101,8 @@ export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
     owner: data.nameWithOwner.toLowerCase().split('/')[0],
     public: !data.isPrivate,
     archived: data.isArchived,
-    createdOn: toTime(data.createdAt),
-    updatedOn: toTime(data.updatedAt),
+    createdOn: parseTimePropertyValue(data.createdAt),
+    updatedOn: parseTimePropertyValue(data.updatedAt),
   };
   setRawData(repoEntity, { name: 'default', rawData: data });
   return repoEntity;
@@ -239,8 +239,8 @@ export function toPullRequestEntity(
     source: data.head.ref,
     target: data.base.ref,
 
-    createdOn: toTime(data.created_at),
-    updatedOn: toTime(data.updated_at),
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
 
     authorLogin: userLogin,
     author: authorUser

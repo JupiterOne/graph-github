@@ -1,3 +1,4 @@
+import { parseTimePropertyValue } from '@jupiterone/integration-sdk-core';
 import {
   toAccountOwnsRepoRelationship,
   toOrganizationMemberEntity,
@@ -9,7 +10,6 @@ import {
   toUserOpenedPullRequestRelationship,
 } from './converters';
 import { RepoEntity, PullRequestEntity, UserEntity, PRState } from '../types';
-import toTime from '../util/toTime';
 
 test('toAccountEntity', () => {
   const apiResponse = {
@@ -160,8 +160,8 @@ describe('toPullRequestEntity', () => {
     source: 'abcdef123456',
     target: 'qwerty098765',
     repository: 'my-repo',
-    createdOn: toTime(apiResponse.created_at),
-    updatedOn: toTime(apiResponse.updated_at),
+    createdOn: parseTimePropertyValue(apiResponse.created_at),
+    updatedOn: parseTimePropertyValue(apiResponse.updated_at),
     webLink: 'https://github.com/JupiterOne/jupiter-project-repo/pulls/1',
     commits: ['commit_a', 'commit_b', 'commit_c'],
     commitMessages: ['Commit A', 'Commit B', 'Commit C'],

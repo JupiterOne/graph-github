@@ -119,10 +119,6 @@ export class APIClient {
   }
 
   public async setupAccountClient(): Promise<void> {
-    const authen: boolean = !(
-      this.config.githubAppPrivateKey === 'donotauthenticate'
-    ); //a hook for testing to skip certain authens if needed, because Polly isn't capturing all the authen
-
     const installationId = Number(this.config.installationId);
     const appClient = createGitHubAppClient(this.config, this.logger);
     let myToken: string = '[REDACTED]';
@@ -132,25 +128,21 @@ export class APIClient {
     };
 
     try {
-      if (authen) {
-        const { token, permissions } = (await appClient.auth({
-          type: 'installation',
-        })) as {
-          token: string;
-          permissions: TokenPermissions;
-        };
-        myToken = token;
-        myPermissions = permissions;
-      }
+      const { token, permissions } = (await appClient.auth({
+        type: 'installation',
+      })) as {
+        token: string;
+        permissions: TokenPermissions;
+      };
+      myToken = token;
+      myPermissions = permissions;
     } catch (err) {
-      if (authen) {
-        throw new IntegrationProviderAuthenticationError({
-          cause: err,
-          endpoint: `https://api.github.com/app/installations/${this.config.installation_id}/access_tokens`,
-          status: err.status,
-          statusText: err.statusText,
-        });
-      }
+      throw new IntegrationProviderAuthenticationError({
+        cause: err,
+        endpoint: `https://api.github.com/app/installations/${this.config.installation_id}/access_tokens`,
+        status: err.status,
+        statusText: err.statusText,
+      });
     }
 
     //checking for proper scopes
@@ -173,16 +165,14 @@ export class APIClient {
     //scopes check done
 
     let login: string = this.config.githubAppDefaultLogin;
-    if (authen) {
-      const installation = await getInstallation(appClient, installationId);
-      if (installation.target_type !== AccountType.Org) {
-        throw new IntegrationValidationError(
-          'Integration supports only GitHub Organization accounts.',
-        );
-      }
-      if (installation.account) {
-        login = installation.account.login || this.config.githubAppDefaultLogin;
-      }
+    const installation = await getInstallation(appClient, installationId);
+    if (installation.target_type !== AccountType.Org) {
+      throw new IntegrationValidationError(
+        'Integration supports only GitHub Organization accounts.',
+      );
+    }
+    if (installation.account) {
+      login = installation.account.login || this.config.githubAppDefaultLogin;
     }
 
     this.accountClient = new OrganizationAccountClient({

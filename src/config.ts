@@ -65,7 +65,7 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   githubAppPrivateKey: string;
 
   /**
-   * The ID number assigned to the installation, delivered to the callback URL above.
+   * The ID number assigned to the installation.
    */
   installationId: number;
 

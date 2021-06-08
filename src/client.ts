@@ -119,14 +119,15 @@ export class APIClient {
   }
 
   public async setupAccountClient(): Promise<void> {
+    if (isNaN(this.config.installationId)) {
+      throw new IntegrationValidationError(
+        'Integration id should be a number.',
+      );
+    }
     const installationId = Number(this.config.installationId);
     const appClient = createGitHubAppClient(this.config, this.logger);
-    let myToken: string = '[REDACTED]';
-    let myPermissions: TokenPermissions = {
-      members: 'read',
-      metadata: 'read',
-    };
-
+    let myToken: string;
+    let myPermissions: TokenPermissions;
     try {
       const { token, permissions } = (await appClient.auth({
         type: 'installation',

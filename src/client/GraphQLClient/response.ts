@@ -2,30 +2,30 @@ import {
   ResourceMetadata,
   ResourceMap,
   CursorHierarchy,
-  OrganizationResource
+  OrganizationResource,
 } from './types';
 
 export function mapResponseCursorsForQuery(
   cursors: ResourceMap<CursorHierarchy>,
-  queryCursors: ResourceMap<string>
+  queryCursors: ResourceMap<string>,
 ): ResourceMap<string> {
   function cursorsFromHierarchy(
     hierarchy: CursorHierarchy,
     key: string,
-    queryCursors: ResourceMap<string>
+    queryCursors: ResourceMap<string>,
   ): ResourceMap<string> {
     let cursors: ResourceMap<string> = {};
 
     if (Object.keys(hierarchy.children).length > 0) {
       for (const [resource, childrenHierarchies] of Object.entries(
-        hierarchy.children
+        hierarchy.children,
       )) {
         // Use the first child hierarchy until it stops showing up, which will
         // happen when its paging ends (hasNextPage = false).
         const first = childrenHierarchies[0];
         cursors = {
           ...cursors,
-          ...cursorsFromHierarchy(first, resource, queryCursors)
+          ...cursorsFromHierarchy(first, resource, queryCursors),
         };
       }
 
@@ -43,7 +43,7 @@ export function mapResponseCursorsForQuery(
   for (const [resource, cursorHierarchy] of Object.entries(cursors)) {
     flatCursors = {
       ...flatCursors,
-      ...cursorsFromHierarchy(cursorHierarchy, resource, queryCursors)
+      ...cursorsFromHierarchy(cursorHierarchy, resource, queryCursors),
     };
   }
 
@@ -53,9 +53,9 @@ export function mapResponseCursorsForQuery(
 export function mapResponseResourcesForQuery(
   cursors: ResourceMap<CursorHierarchy>,
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
-  selectedResources: OrganizationResource[]
+  selectedResources: OrganizationResource[],
 ): string[] {
-  const resources = [];
+  const resources: string[] = [];
   for (const [resource, hierarchy] of Object.entries(cursors)) {
     resources.push(resource);
     resources.push(
@@ -63,8 +63,8 @@ export function mapResponseResourcesForQuery(
         resource,
         hierarchy,
         resourceMetadataMap,
-        selectedResources
-      )
+        selectedResources,
+      ),
     );
   }
 
@@ -74,7 +74,7 @@ export function mapResponseResourcesForQuery(
 export function extractSelectedResources(
   selectedResources: OrganizationResource[],
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
-  data: any
+  data: any,
 ) {
   const resources: ResourceMap<any> = {};
   const cursors: ResourceMap<CursorHierarchy> = {};
@@ -84,12 +84,12 @@ export function extractSelectedResources(
     resourceMetadataMap,
     resources,
     cursors,
-    selectedResources
+    selectedResources,
   );
 
   return {
     resources,
-    cursors
+    cursors,
   };
 }
 
@@ -101,21 +101,21 @@ function extractSelectedResourceFromData(
   selectedResources: OrganizationResource[],
   selectedResource: OrganizationResource = OrganizationResource.Organization,
   parentResource?: [OrganizationResource, string],
-  edge?: any
+  edge?: any,
 ) {
   const node: { [key: string]: any } = { ...edge };
 
   for (const [key, value] of Object.entries(data)) {
     if (value && typeof value === 'object' && value.edges) {
       const nestedResource = Object.keys(resourceMetadataMap).find(
-        resourceKey => {
+        (resourceKey) => {
           return (
             resourceMetadataMap[resourceKey].graphProperty === key &&
             (!resourceMetadataMap[resourceKey].parent ||
               (!!parentResource &&
                 resourceMetadataMap[resourceKey].parent === selectedResource))
           );
-        }
+        },
       ) as OrganizationResource | undefined;
       if (!nestedResource) {
         continue;
@@ -147,12 +147,12 @@ function extractSelectedResourceFromData(
 
           parentCursorHierarchy.children[nestedResource].push({
             self: value.pageInfo.endCursor,
-            children: {}
+            children: {},
           });
         } else {
           cursors[nestedResource] = {
             self: value.pageInfo.endCursor,
-            children: {}
+            children: {},
           };
         }
       }
@@ -166,7 +166,7 @@ function extractSelectedResourceFromData(
           selectedResources,
           nestedResource,
           [selectedResource, node.id],
-          { ...child, node: undefined }
+          { ...child, node: undefined },
         );
       }
 
@@ -190,20 +190,20 @@ function addResourcesFromHierarchy(
   key: string,
   hierarchy: CursorHierarchy,
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
-  selectedResources: OrganizationResource[]
+  selectedResources: OrganizationResource[],
 ): string[] {
   if (!(Object.keys(hierarchy.children).length > 0)) {
     const metadata = resourceMetadataMap[key];
     if (metadata.children && hierarchy.self) {
-      return selectedResources.filter(sr => metadata.children!.includes(sr));
+      return selectedResources.filter((sr) => metadata.children!.includes(sr));
     } else {
       return [];
     }
   }
 
-  const resources = [];
+  const resources: string[] = [];
   for (const [childResource, childHierarchies] of Object.entries(
-    hierarchy.children
+    hierarchy.children,
   )) {
     resources.push(childResource);
     for (const childHierarchy of childHierarchies) {
@@ -212,8 +212,8 @@ function addResourcesFromHierarchy(
           childResource,
           childHierarchy,
           resourceMetadataMap,
-          selectedResources
-        )
+          selectedResources,
+        ),
       );
     }
   }

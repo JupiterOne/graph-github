@@ -18,11 +18,6 @@ export type ReposListCommitsResponseItem = RestEndpointMethodTypes['repos']['lis
 
 export type TeamsListReposResponseItem = RestEndpointMethodTypes['teams']['listReposInOrg']['response']['data'][0];
 
-export interface OrgsListMembersResponseItemWithName
-  extends OrgsListMembersResponseItem {
-  name: string;
-}
-
 export enum PRState {
   Open = 'open',
   Closed = 'closed',
@@ -30,11 +25,11 @@ export enum PRState {
 
 export interface DiffFiles {
   sha: string;
-  patch: string;
+  patch?: string;
 }
 
 export interface ReposCompareCommitsResponseItem {
   commits: ReposListCommitsResponseItem[];
   // Not going to type files because we only use it to check for emptiness.
-  files: DiffFiles[];
+  files?: DiffFiles[];
 }

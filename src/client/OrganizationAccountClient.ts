@@ -297,13 +297,15 @@ export default class OrganizationAccountClient {
     }
 
     try {
-      const pullRequest = (
-        await this.v3.pulls.get({
+      const pullRequests = (
+        await this.v3.pulls.list({
+          //changed from .get to .list for typing reasons
           owner: account.login,
           repo: repo.name,
           pull_number: id,
         })
       ).data;
+      const pullRequest = pullRequests[0];
 
       this.v3RateLimitConsumed++;
 
@@ -491,7 +493,7 @@ export default class OrganizationAccountClient {
       commit.parents[1].sha,
       commit.sha,
     );
-    if (diffToMergedChanges.files.length === 0) {
+    if (!diffToMergedChanges.files || diffToMergedChanges.files.length === 0) {
       return true;
     }
 
@@ -511,7 +513,11 @@ export default class OrganizationAccountClient {
       commit.parents[0].sha,
       commit.parents[1].sha,
     );
-    if (this.diffsEqual(diffMergeToMaster.files, diffBranchToMaster.files)) {
+    if (
+      diffMergeToMaster.files &&
+      diffBranchToMaster.files &&
+      this.diffsEqual(diffMergeToMaster.files, diffBranchToMaster.files)
+    ) {
       return true;
     }
 

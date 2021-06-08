@@ -19,6 +19,7 @@ async function getAccess() {
   sanitizeConfig(config);
   //the installid in the recordings
   config.installationId = 17214088;
+
   const appClient = createGitHubAppClient(
     config,
     createMockIntegrationLogger(),

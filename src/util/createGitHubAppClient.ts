@@ -19,11 +19,6 @@ export default function createGitHubAppClient(
     throw new Error('GITHUB_APP_ID must be defined!');
   }
 
-  //we appear to be doing something a little strange with types here
-  //this code works, but TypeScript complains because Octokit is being
-  //draw from @octokit/rest instead of @octokit/core
-  //But, if we change this reference to @octokit/core, we have to change
-  //it in GitHubApp.ts, which breaks .getInstallation() there
   const OctokitThrottling = Octokit.plugin(throttling);
 
   /*
@@ -40,7 +35,7 @@ export default function createGitHubAppClient(
     authStrategy: createAppAuth,
     // Options passed to authStrategy
     auth: {
-      id: appId,
+      appId: appId,
       privateKey: privateKey,
       installationId: installationId,
     },

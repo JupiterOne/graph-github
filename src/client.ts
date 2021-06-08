@@ -119,54 +119,24 @@ export class APIClient {
   }
 
   public async setupAccountClient(): Promise<void> {
+    if (isNaN(this.config.installationId)) {
+      throw new IntegrationValidationError(
+        'Integration id should be a number.',
+      );
+    }
+    const installationId = Number(this.config.installationId);
+    const appClient = createGitHubAppClient(this.config, this.logger);
+    let myToken: string;
+    let myPermissions: TokenPermissions;
     try {
-      const installationId = Number(this.config.installationId);
-      const appClient = await createGitHubAppClient(this.config, this.logger);
       const { token, permissions } = (await appClient.auth({
         type: 'installation',
       })) as {
         token: string;
         permissions: TokenPermissions;
       };
-
-      //checking for proper scopes
-      if (
-        !(permissions.members === 'read' || permissions.members === 'write')
-      ) {
-        throw new IntegrationValidationError(
-          'Integration requires read access to organization members. See GitHub App permissions.',
-        );
-      }
-
-      if (
-        !(permissions.metadata === 'read' || permissions.metadata === 'write')
-      ) {
-        //as of now, this property has no 'write' value, but just in case
-        throw new IntegrationValidationError(
-          'Integration requires read access to repository metadata. See GitHub App permissions.',
-        );
-      }
-      //scopes check done
-
-      const installation = await getInstallation(appClient, installationId);
-
-      if (installation.target_type !== AccountType.Org) {
-        throw new IntegrationValidationError(
-          'Integration supports only GitHub Organization accounts.',
-        );
-      }
-
-      this.accountClient = new OrganizationAccountClient({
-        login: installation.account.login,
-        restClient: appClient,
-        graphqlClient: new GitHubGraphQLClient(
-          token,
-          resourceMetadataMap(),
-          this.logger,
-        ),
-        logger: this.logger,
-        analyzeCommitApproval: this.config.analyzeCommitApproval,
-      });
+      myToken = token;
+      myPermissions = permissions;
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
@@ -175,6 +145,48 @@ export class APIClient {
         statusText: err.statusText,
       });
     }
+
+    //checking for proper scopes
+    if (
+      !(myPermissions.members === 'read' || myPermissions.members === 'write')
+    ) {
+      throw new IntegrationValidationError(
+        'Integration requires read access to organization members. See GitHub App permissions.',
+      );
+    }
+
+    if (
+      !(myPermissions.metadata === 'read' || myPermissions.metadata === 'write')
+    ) {
+      //as of now, this property has no 'write' value, but just in case
+      throw new IntegrationValidationError(
+        'Integration requires read access to repository metadata. See GitHub App permissions.',
+      );
+    }
+    //scopes check done
+
+    let login: string = this.config.githubAppDefaultLogin;
+    const installation = await getInstallation(appClient, installationId);
+    if (installation.target_type !== AccountType.Org) {
+      throw new IntegrationValidationError(
+        'Integration supports only GitHub Organization accounts.',
+      );
+    }
+    if (installation.account) {
+      login = installation.account.login || this.config.githubAppDefaultLogin;
+    }
+
+    this.accountClient = new OrganizationAccountClient({
+      login: login,
+      restClient: appClient,
+      graphqlClient: new GitHubGraphQLClient(
+        myToken,
+        resourceMetadataMap(),
+        this.logger,
+      ),
+      logger: this.logger,
+      analyzeCommitApproval: this.config.analyzeCommitApproval,
+    });
   }
 }
 

@@ -9,6 +9,7 @@ import resourceMetadataMap from './resourceMetadataMap';
 import createGitHubAppClient from '../../util/createGitHubAppClient';
 import { IntegrationConfig, sanitizeConfig } from '../../config';
 import { integrationConfig } from '../../../test/config';
+import { getFakeRsaKey } from '../../util/sha';
 
 async function getAccess() {
   const context = createMockStepExecutionContext<IntegrationConfig>({
@@ -19,6 +20,9 @@ async function getAccess() {
   sanitizeConfig(config);
   //the installid in the recordings
   config.installationId = 17214088;
+  //to satisfy @octokit requirements
+  config.githubAppPrivateKey = getFakeRsaKey();
+
   const appClient = createGitHubAppClient(
     config,
     createMockIntegrationLogger(),

@@ -13,6 +13,7 @@ import createGitHubAppClient from '../util/createGitHubAppClient';
 import resourceMetadataMap from '../client/GraphQLClient/resourceMetadataMap';
 import OrganizationAccountClient from '../client/OrganizationAccountClient';
 import { GitHubGraphQLClient } from '../client/GraphQLClient';
+import { getFakeRsaKey } from '../util/sha';
 
 let p: Recording; //p for polly
 
@@ -56,6 +57,8 @@ function collectCommitsForPRTest({
     const config = context.instance.config;
     sanitizeConfig(config);
     config.installationId = 953957;
+    //to satisfy @octokit requirements
+    config.githubAppPrivateKey = getFakeRsaKey();
 
     const logger = createMockIntegrationLogger();
     const token = 'faketoken';

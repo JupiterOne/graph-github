@@ -9,10 +9,11 @@ if (process.env.LOAD_ENV) {
 }
 const DEFAULT_GITHUB_APP_ID = 999999;
 const DEFAULT_INSTALLATION_ID = 99999999;
+const DEFAULT_APP_PRIVATE_KEY = 'donotauthenticate';
 
 export const integrationConfig: IntegrationConfig = {
   githubAppId: Number(process.env.GITHUB_APP_ID) || DEFAULT_GITHUB_APP_ID,
-  githubAppPrivateKey: 'donotauthenticate',
+  githubAppPrivateKey: DEFAULT_APP_PRIVATE_KEY,
   installationId:
     Number(process.env.INSTALLATION_ID) || DEFAULT_INSTALLATION_ID,
   analyzeCommitApproval: true,

@@ -14,6 +14,13 @@ import {
 } from '../sync/converters';
 import { AccountEntity, UserEntity } from '../types';
 import { OrgMemberRole } from '../client/GraphQLClient';
+import {
+  GITHUB_ACCOUNT_ENTITY_TYPE,
+  GITHUB_MEMBER_ENTITY_TYPE,
+  GITHUB_MEMBER_ENTITY_CLASS,
+  GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
+  GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
+} from '../constants';
 
 export async function fetchMembers({
   instance,
@@ -51,22 +58,22 @@ export const memberSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'Github User',
-        _type: 'github_user',
-        _class: 'User',
+        _type: GITHUB_MEMBER_ENTITY_TYPE,
+        _class: GITHUB_MEMBER_ENTITY_CLASS,
       },
     ],
     relationships: [
       {
-        _type: 'github_account_has_user',
+        _type: GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: 'github_account',
-        targetType: 'github_user',
+        sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
+        targetType: GITHUB_MEMBER_ENTITY_TYPE,
       },
       {
-        _type: 'github_user_manages_account',
+        _type: GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
         _class: RelationshipClass.MANAGES,
-        sourceType: 'github_user',
-        targetType: 'github_account',
+        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
+        targetType: GITHUB_ACCOUNT_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-account'],

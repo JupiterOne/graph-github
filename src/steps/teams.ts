@@ -19,6 +19,17 @@ import {
 import { AccountEntity, TeamEntity, UserEntity, RepoEntity } from '../types';
 import sha from '../util/sha';
 import { TeamMemberRole } from '../client/GraphQLClient';
+import {
+  GITHUB_ACCOUNT_ENTITY_TYPE,
+  GITHUB_MEMBER_ENTITY_TYPE,
+  GITHUB_REPO_ENTITY_TYPE,
+  GITHUB_TEAM_ENTITY_TYPE,
+  GITHUB_TEAM_ENTITY_CLASS,
+  GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
+  GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
+} from '../constants';
 
 export async function fetchTeams({
   instance,
@@ -86,34 +97,34 @@ export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Team',
-        _type: 'github_team',
-        _class: 'UserGroup',
+        _type: GITHUB_TEAM_ENTITY_TYPE,
+        _class: GITHUB_TEAM_ENTITY_CLASS,
       },
     ],
     relationships: [
       {
-        _type: 'github_account_has_team',
+        _type: GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: 'github_account',
-        targetType: 'github_team',
+        sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
+        targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
       {
-        _type: 'github_team_has_user',
+        _type: GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: 'github_team',
-        targetType: 'github_user',
+        sourceType: GITHUB_TEAM_ENTITY_TYPE,
+        targetType: GITHUB_MEMBER_ENTITY_TYPE,
       },
       {
-        _type: 'github_user_manages_team',
+        _type: GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.MANAGES,
-        sourceType: 'github_user',
-        targetType: 'github_team',
+        sourceType: GITHUB_TEAM_ENTITY_TYPE,
+        targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
       {
-        _type: 'github_team_allows_repo',
+        _type: GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
         _class: RelationshipClass.ALLOWS,
-        sourceType: 'github_team',
-        targetType: 'github_repo',
+        sourceType: GITHUB_TEAM_ENTITY_TYPE,
+        targetType: GITHUB_REPO_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-users'],

@@ -1,4 +1,7 @@
-import { setRawData } from '@jupiterone/integration-sdk-core';
+import {
+  setRawData,
+  RelationshipClass,
+} from '@jupiterone/integration-sdk-core';
 
 import {
   AccountEntity,
@@ -33,26 +36,34 @@ import {
   OrgTeamMemberQueryResponse,
 } from '../client/GraphQLClient';
 
-/*
- * account
- *   HAS -> user
- *   OWNS -> repo
- * team
- *   HAS -> user
- *   HAS -> repo
- * repo
- *   HAS -> pullrequest
- * user
- *   CONTRIBUTES -> repo
- *   MAINTAINS -> team
- *   OWNS -> account
- *   OPENED -> pullrequest
- */
+import {
+  GITHUB_ACCOUNT_ENTITY_TYPE,
+  GITHUB_ACCOUNT_ENTITY_CLASS,
+  GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
+  GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_ENTITY_TYPE,
+  GITHUB_MEMBER_ENTITY_CLASS,
+  GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
+  GITHUB_REPO_ENTITY_TYPE,
+  GITHUB_REPO_ENTITY_CLASS,
+  GITHUB_REPO_PR_RELATIONSHIP_TYPE,
+  GITHUB_PR_ENTITY_TYPE,
+  GITHUB_PR_ENTITY_CLASS,
+  GITHUB_TEAM_ENTITY_TYPE,
+  GITHUB_TEAM_ENTITY_CLASS,
+  GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
+  GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
+} from '../constants';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
-    _class: ['Account'],
-    _type: 'github_account',
+    _class: [GITHUB_ACCOUNT_ENTITY_CLASS],
+    _type: GITHUB_ACCOUNT_ENTITY_TYPE,
     _key: data.id,
     accountType: AccountType.Org,
     accountId: data.login,
@@ -66,8 +77,8 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {
-    _class: ['UserGroup'],
-    _type: 'github_team',
+    _class: [GITHUB_TEAM_ENTITY_CLASS],
+    _type: GITHUB_TEAM_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
     name: data.slug,
@@ -80,8 +91,8 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
   const repoEntity: RepoEntity = {
-    _class: ['CodeRepo'],
-    _type: 'github_repo',
+    _class: [GITHUB_REPO_ENTITY_CLASS],
+    _type: GITHUB_REPO_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
     name: data.name,
@@ -101,8 +112,8 @@ export function toOrganizationMemberEntity(
   data: OrgMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: ['User'],
-    _type: 'github_user',
+    _class: [GITHUB_MEMBER_ENTITY_CLASS],
+    _type: GITHUB_MEMBER_ENTITY_TYPE,
     _key: data.id,
     login: data.login,
     username: data.login,
@@ -120,8 +131,8 @@ export function toOrganizationMemberEntityFromTeamMember(
   data: OrgTeamMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: ['User'],
-    _type: 'github_user',
+    _class: [GITHUB_MEMBER_ENTITY_CLASS],
+    _type: GITHUB_MEMBER_ENTITY_TYPE,
     _key: data.id,
     login: data.login,
     username: data.login,
@@ -192,8 +203,8 @@ export function toPullRequestEntity(
     );
   }
   const entity: PullRequestEntity = {
-    _type: 'github_pullrequest',
-    _class: ['PR'],
+    _type: GITHUB_PR_ENTITY_TYPE,
+    _class: [GITHUB_PR_ENTITY_CLASS],
     _key: `${data.base.repo.full_name}/pull-requests/${data.number}`,
     displayName: `${data.base.repo.name}/${data.number}`,
     accountLogin: data.base.repo.owner ? data.base.repo.owner.login : '',
@@ -257,11 +268,11 @@ export function toOrganizationHasMemberRelationship(
 ): OrganizationMemberRelationship {
   return {
     _key: `${installationEntity._key}|has|${userEntity._key}`,
-    _type: 'github_account_has_user',
-    _class: 'HAS',
+    _type: GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
+    _class: RelationshipClass.HAS,
     _fromEntityKey: installationEntity._key,
     _toEntityKey: userEntity._key,
-    displayName: 'HAS',
+    displayName: RelationshipClass.HAS,
   };
 }
 
@@ -271,11 +282,11 @@ export function toMemberManagesOrganizationRelationship(
 ): OrganizationMemberRelationship {
   return {
     _key: `${userEntity._key}|manages|${installationEntity._key}`,
-    _type: 'github_user_manages_account',
-    _class: 'MANAGES',
+    _type: GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
+    _class: RelationshipClass.MANAGES,
     _fromEntityKey: userEntity._key,
     _toEntityKey: installationEntity._key,
-    displayName: 'MANAGES',
+    displayName: RelationshipClass.MANAGES,
   };
 }
 
@@ -285,11 +296,11 @@ export function toOrganizationHasTeamRelationship(
 ): OrganizationMemberRelationship {
   return {
     _key: `${installationEntity._key}|has|${teamEntity._key}`,
-    _type: 'github_account_has_team',
-    _class: 'HAS',
+    _type: GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
+    _class: RelationshipClass.HAS,
     _fromEntityKey: installationEntity._key,
     _toEntityKey: teamEntity._key,
-    displayName: 'HAS',
+    displayName: RelationshipClass.HAS,
   };
 }
 
@@ -299,11 +310,11 @@ export function toTeamHasMemberRelationship(
 ): TeamMemberRelationship {
   return {
     _key: `${teamEntity._key}|has|${teamMemberEntity._key}`,
-    _type: 'github_team_has_user',
-    _class: 'HAS',
+    _type: GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
+    _class: RelationshipClass.HAS,
     _fromEntityKey: teamEntity._key,
     _toEntityKey: teamMemberEntity._key,
-    displayName: 'HAS',
+    displayName: RelationshipClass.HAS,
   };
 }
 
@@ -313,11 +324,11 @@ export function toMemberManagesTeamRelationship(
 ): TeamMemberRelationship {
   return {
     _key: `${teamMemberEntity._key}|manages|${teamEntity._key}`,
-    _type: 'github_user_manages_team',
-    _class: 'MANAGES',
+    _type: GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
+    _class: RelationshipClass.MANAGES,
     _fromEntityKey: teamMemberEntity._key,
     _toEntityKey: teamEntity._key,
-    displayName: 'MANAGES',
+    displayName: RelationshipClass.MANAGES,
   };
 }
 
@@ -328,12 +339,12 @@ export function toTeamAllowsRepoRelationship(
 ): TeamRepoRelationship {
   return {
     _key: `${teamEntity._key}|allows|${repoEntity._key}`,
-    _type: 'github_team_allows_repo',
-    _class: 'ALLOWS',
+    _type: GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
+    _class: RelationshipClass.ALLOWS,
     _fromEntityKey: teamEntity._key,
     _toEntityKey: repoEntity._key,
     permission,
-    displayName: 'ALLOWS',
+    displayName: RelationshipClass.ALLOWS,
   };
 }
 
@@ -343,11 +354,11 @@ export function toAccountOwnsRepoRelationship(
 ): AccountRepoRelationship {
   return {
     _key: `${installationEntity._key}|owns|${repoEntity._key}`,
-    _type: 'github_account_owns_repo',
-    _class: 'OWNS',
+    _type: GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
+    _class: RelationshipClass.OWNS,
     _fromEntityKey: installationEntity._key,
     _toEntityKey: repoEntity._key,
-    displayName: 'OWNS',
+    displayName: RelationshipClass.OWNS,
   };
 }
 
@@ -357,11 +368,11 @@ export function toRepoHasPullRequestRelationship(
 ): RepoPullRequestRelationship {
   return {
     _key: `${repoEntity._key}|has|${pullRequestEntity._key}`,
-    _type: 'github_repo_has_pullrequest',
-    _class: 'HAS',
+    _type: GITHUB_REPO_PR_RELATIONSHIP_TYPE,
+    _class: RelationshipClass.HAS,
     _fromEntityKey: repoEntity._key,
     _toEntityKey: pullRequestEntity._key,
-    displayName: 'HAS',
+    displayName: RelationshipClass.HAS,
   };
 }
 
@@ -371,11 +382,11 @@ export function toUserOpenedPullRequestRelationship(
 ): UserPullRequestRelationship {
   return {
     _key: `${userEntity._key}|opened|${pullRequestEntity._key}`,
-    _class: 'OPENED',
-    _type: 'github_user_opened_pullrequest',
+    _class: RelationshipClass.OPENED,
+    _type: GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
     _fromEntityKey: userEntity._key,
     _toEntityKey: pullRequestEntity._key,
-    displayName: 'OPENED',
+    displayName: RelationshipClass.OPENED,
   };
 }
 
@@ -385,11 +396,11 @@ export function toUserReviewedPullRequestRelationship(
 ): UserPullRequestRelationship {
   return {
     _key: `${userEntity._key}|reviewed|${pullRequestEntity._key}`,
-    _class: 'REVIEWED',
-    _type: 'github_user_reviewed_pullrequest',
+    _class: RelationshipClass.REVIEWED,
+    _type: GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
     _fromEntityKey: userEntity._key,
     _toEntityKey: pullRequestEntity._key,
-    displayName: 'REVIEWED',
+    displayName: RelationshipClass.REVIEWED,
   };
 }
 
@@ -399,10 +410,10 @@ export function toUserApprovedPullRequestRelationship(
 ): UserPullRequestRelationship {
   return {
     _key: `${userEntity._key}|approved|${pullRequestEntity._key}`,
-    _class: 'APPROVED',
-    _type: 'github_user_approved_pullrequest',
+    _class: RelationshipClass.APPROVED,
+    _type: GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
     _fromEntityKey: userEntity._key,
     _toEntityKey: pullRequestEntity._key,
-    displayName: 'APPROVED',
+    displayName: RelationshipClass.APPROVED,
   };
 }

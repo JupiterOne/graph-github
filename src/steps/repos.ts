@@ -12,6 +12,12 @@ import {
   toAccountOwnsRepoRelationship,
 } from '../sync/converters';
 import { AccountEntity, RepoEntity } from '../types';
+import {
+  GITHUB_ACCOUNT_ENTITY_TYPE,
+  GITHUB_REPO_ENTITY_TYPE,
+  GITHUB_REPO_ENTITY_CLASS,
+  GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
+} from '../constants';
 
 export async function fetchRepos({
   instance,
@@ -43,16 +49,16 @@ export const repoSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'Github Repo',
-        _type: 'github_repo',
-        _class: 'CodeRepo',
+        _type: GITHUB_REPO_ENTITY_TYPE,
+        _class: GITHUB_REPO_ENTITY_CLASS,
       },
     ],
     relationships: [
       {
-        _type: 'github_account_owns_repo',
+        _type: GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
         _class: RelationshipClass.OWNS,
-        sourceType: 'github_account',
-        targetType: 'github_repo',
+        sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
+        targetType: GITHUB_REPO_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-account'],

@@ -113,7 +113,7 @@ The following relationships are created/mapped:
 | `github_team`         | **ALLOWS**            | `github_repo`         |
 | `github_team`         | **HAS**               | `github_user`         |
 | `github_user`         | **MANAGES**           | `github_account`      |
-| `github_user`         | **MANAGES**           | `github_team`         |
+| `github_team`         | **MANAGES**           | `github_team`         |
 
 <!--
 ********************************************************************************

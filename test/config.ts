@@ -12,8 +12,9 @@ const DEFAULT_INSTALLATION_ID = 99999999;
 
 export const integrationConfig: IntegrationConfig = {
   githubAppId: Number(process.env.GITHUB_APP_ID) || DEFAULT_GITHUB_APP_ID,
-  githubAppPrivateKey: 'fakekey',
+  githubAppPrivateKey: 'donotauthenticate',
   installationId:
     Number(process.env.INSTALLATION_ID) || DEFAULT_INSTALLATION_ID,
   analyzeCommitApproval: true,
+  githubAppDefaultLogin: 'something', //can be set manually in tests
 };

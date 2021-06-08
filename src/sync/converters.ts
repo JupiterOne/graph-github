@@ -168,15 +168,35 @@ export function toPullRequestEntity(
         aggregateProperties<string[]>('approverUsernames', approvals),
       )
     : undefined;
-  const authorUser = (usersByLogin || {})[data.user.login];
-
+  const userLogin: string = data.user ? data.user.login : '';
+  const authorUser = (usersByLogin || {})[userLogin];
+  let reviewerLogins: string[] = [];
+  let reviewers: string[] = [];
+  if (data.requested_reviewers) {
+    reviewerLogins = aggregateProperties<string>(
+      'login',
+      data.requested_reviewers,
+    );
+    reviewers = data.requested_reviewers.reduce(
+      (reviewers: string[], reviewerData) => {
+        if (reviewerData) {
+          if (usersByLogin && usersByLogin[reviewerData.login]) {
+            reviewers.push(usersByLogin[reviewerData.login].displayName!);
+          } else {
+            reviewers.push(reviewerData.login);
+          }
+        }
+        return reviewers;
+      },
+      [],
+    );
+  }
   const entity: PullRequestEntity = {
     _type: 'github_pullrequest',
     _class: ['PR'],
     _key: `${data.base.repo.full_name}/pull-requests/${data.number}`,
     displayName: `${data.base.repo.name}/${data.number}`,
-
-    accountLogin: data.base.repo.owner.login,
+    accountLogin: data.base.repo.owner ? data.base.repo.owner.login : '',
     repository: data.base.repo.name,
     //the type is hacked here because typing of data properties is controlled by a library call
     //so I can't just say that data.number is a string
@@ -211,30 +231,16 @@ export function toPullRequestEntity(
     createdOn: toTime(data.created_at),
     updatedOn: toTime(data.updated_at),
 
-    authorLogin: data.user.login,
+    authorLogin: userLogin,
     author: authorUser
       ? // We know displayName is set; see toOrganizationMemberEntity
         authorUser.displayName!
       : // Fallback to username. This will always be used when ingesting from a
         // user account, since we don't ingest team members in that case (there
         // is no team)
-        data.user.login,
-    reviewerLogins: aggregateProperties<string>(
-      'login',
-      data.requested_reviewers,
-    ),
-    reviewers: data.requested_reviewers.reduce(
-      (reviewers: string[], reviewerData) => {
-        if (usersByLogin && usersByLogin[reviewerData.login]) {
-          reviewers.push(usersByLogin[reviewerData.login].displayName!);
-        } else {
-          reviewers.push(reviewerData.login);
-        }
-
-        return reviewers;
-      },
-      [],
-    ),
+        userLogin,
+    reviewerLogins: reviewerLogins,
+    reviewers: reviewers,
     approverLogins,
     approvers:
       approverLogins && usersByLogin

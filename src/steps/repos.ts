@@ -31,15 +31,21 @@ export async function fetchRepos({
     DATA_ACCOUNT_ENTITY,
   )) as AccountEntity;
 
+  const repoEntities: RepoEntity[] = []; //for use later in PRs
+
   await apiClient.iterateRepos(async (repo) => {
     const repoEntity = (await jobState.addEntity(
       toRepositoryEntity(repo),
     )) as RepoEntity;
 
+    repoEntities.push(repoEntity);
+
     await jobState.addRelationship(
       toAccountOwnsRepoRelationship(accountEntity, repoEntity),
     );
   });
+
+  await jobState.setData('REPO_ARRAY', repoEntities);
 }
 
 export const repoSteps: IntegrationStep<IntegrationConfig>[] = [

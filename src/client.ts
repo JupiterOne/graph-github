@@ -5,7 +5,15 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
-import { AccountType, TokenPermissions } from './types';
+import {
+  AccountEntity,
+  AccountType,
+  IdEntityMap,
+  PullRequestEntity,
+  RepoEntity,
+  TokenPermissions,
+  UserEntity,
+} from './types';
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
@@ -115,6 +123,35 @@ export class APIClient {
     const repos: OrgRepoQueryResponse[] = await this.accountClient.getRepositories();
     for (const repo of repos) {
       await iteratee(repo);
+    }
+  }
+
+  /**
+   * Iterates each pull request (PR) resource in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iteratePullRequests(
+    account: AccountEntity,
+    repo: RepoEntity,
+    memberEntities: UserEntity[],
+    memberByLoginMap: IdEntityMap<UserEntity>,
+    iteratee: ResourceIteratee<PullRequestEntity>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+
+    const pullrequests = await this.accountClient.getPullRequestEntities(
+      account,
+      repo,
+      memberEntities,
+      memberByLoginMap,
+    );
+    if (pullrequests) {
+      for (const pr of pullrequests) {
+        await iteratee(pr);
+      }
     }
   }
 

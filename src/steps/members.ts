@@ -12,7 +12,7 @@ import {
   toOrganizationHasMemberRelationship,
   toMemberManagesOrganizationRelationship,
 } from '../sync/converters';
-import { AccountEntity, UserEntity } from '../types';
+import { AccountEntity, UserEntity, IdEntityMap } from '../types';
 import { OrgMemberRole } from '../client/GraphQLClient';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
@@ -34,10 +34,17 @@ export async function fetchMembers({
     DATA_ACCOUNT_ENTITY,
   )) as AccountEntity;
 
+  //for use later in PRs
+  const memberEntities: UserEntity[] = [];
+  const memberByLoginMap: IdEntityMap<UserEntity> = {};
+
   await apiClient.iterateMembers(async (member) => {
     const memberEntity = (await jobState.addEntity(
       toOrganizationMemberEntity(member),
     )) as UserEntity;
+
+    memberEntities.push(memberEntity);
+    memberByLoginMap[member.login] = memberEntity;
 
     await jobState.addRelationship(
       toOrganizationHasMemberRelationship(accountEntity, memberEntity),
@@ -49,6 +56,9 @@ export async function fetchMembers({
       );
     }
   });
+
+  await jobState.setData('MEMBER_ARRAY', memberEntities);
+  await jobState.setData('MEMBER_BY_LOGIN_MAP', memberByLoginMap);
 }
 
 export const memberSteps: IntegrationStep<IntegrationConfig>[] = [

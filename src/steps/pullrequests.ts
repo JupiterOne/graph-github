@@ -1,4 +1,5 @@
 import {
+  IntegrationMissingKeyError,
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
@@ -38,19 +39,35 @@ export async function fetchPrs({
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
-  const accountEntity = (await jobState.getData(
+  const accountEntity = await jobState.getData<AccountEntity>(
     DATA_ACCOUNT_ENTITY,
-  )) as AccountEntity;
+  );
+  if (!accountEntity) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find Account entity in jobState.`,
+    );
+  }
 
-  const repoEntities: RepoEntity[] = (await jobState.getData(
-    'REPO_ARRAY',
-  )) as RepoEntity[];
-  const memberEntities: UserEntity[] = (await jobState.getData(
-    'MEMBER_ARRAY',
-  )) as UserEntity[];
-  const memberByLoginMap: IdEntityMap<UserEntity> = (await jobState.getData(
+  const repoEntities = await jobState.getData<RepoEntity[]>('REPO_ARRAY');
+  if (!repoEntities) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find repoEntities in jobState.`,
+    );
+  }
+  const memberEntities = await jobState.getData<UserEntity[]>('MEMBER_ARRAY');
+  if (!memberEntities) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find memberEntities in jobState.`,
+    );
+  }
+  const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
     'MEMBER_BY_LOGIN_MAP',
-  )) as IdEntityMap<UserEntity>;
+  );
+  if (!memberByLoginMap) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find memberByLoginMap in jobState.`,
+    );
+  }
 
   for (const repoEntity of repoEntities) {
     await apiClient.iteratePullRequests(

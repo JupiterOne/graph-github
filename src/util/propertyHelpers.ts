@@ -2,7 +2,7 @@ import { IdEntityMap, UserEntity } from '../types';
 
 export function aggregateProperties<T>(
   property: string,
-  collection?: any[]
+  collection?: any[],
 ): T[] {
   if (!collection) {
     return [];
@@ -16,14 +16,13 @@ export function aggregateProperties<T>(
 
 export function flattenMatrix<T>(matrix: T[][]): T[] {
   return matrix.reduce((flatArray: T[], row) => {
-    flatArray.push(...row);
-    return flatArray;
+    return flatArray.concat(row);
   }, []);
 }
 
 export function displayNamesFromLogins(
   logins: string[],
-  usersByLogin: IdEntityMap<UserEntity>
+  usersByLogin: IdEntityMap<UserEntity>,
 ): string[] {
   return logins.reduce((approverNames: string[], approverLogins) => {
     const approver = usersByLogin[approverLogins];

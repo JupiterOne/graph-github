@@ -2,6 +2,7 @@ import {
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
+  IntegrationMissingKeyError,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
@@ -12,8 +13,15 @@ import {
   toOrganizationHasMemberRelationship,
   toMemberManagesOrganizationRelationship,
 } from '../sync/converters';
-import { AccountEntity, UserEntity } from '../types';
+import { AccountEntity, UserEntity, IdEntityMap } from '../types';
 import { OrgMemberRole } from '../client/GraphQLClient';
+import {
+  GITHUB_ACCOUNT_ENTITY_TYPE,
+  GITHUB_MEMBER_ENTITY_TYPE,
+  GITHUB_MEMBER_ENTITY_CLASS,
+  GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
+  GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
+} from '../constants';
 
 export async function fetchMembers({
   instance,
@@ -23,14 +31,26 @@ export async function fetchMembers({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const accountEntity = (await jobState.getData(
+  const accountEntity = (await jobState.getData<AccountEntity>(
     DATA_ACCOUNT_ENTITY,
   )) as AccountEntity;
+  if (!accountEntity) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find Account entity in jobState.`,
+    );
+  }
+
+  //for use later in PRs
+  const memberEntities: UserEntity[] = [];
+  const memberByLoginMap: IdEntityMap<UserEntity> = {};
 
   await apiClient.iterateMembers(async (member) => {
     const memberEntity = (await jobState.addEntity(
       toOrganizationMemberEntity(member),
     )) as UserEntity;
+
+    memberEntities.push(memberEntity);
+    memberByLoginMap[member.login] = memberEntity;
 
     await jobState.addRelationship(
       toOrganizationHasMemberRelationship(accountEntity, memberEntity),
@@ -42,6 +62,9 @@ export async function fetchMembers({
       );
     }
   });
+
+  await jobState.setData('MEMBER_ARRAY', memberEntities);
+  await jobState.setData('MEMBER_BY_LOGIN_MAP', memberByLoginMap);
 }
 
 export const memberSteps: IntegrationStep<IntegrationConfig>[] = [
@@ -51,22 +74,22 @@ export const memberSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'Github User',
-        _type: 'github_user',
-        _class: 'User',
+        _type: GITHUB_MEMBER_ENTITY_TYPE,
+        _class: GITHUB_MEMBER_ENTITY_CLASS,
       },
     ],
     relationships: [
       {
-        _type: 'github_account_has_user',
+        _type: GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: 'github_account',
-        targetType: 'github_user',
+        sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
+        targetType: GITHUB_MEMBER_ENTITY_TYPE,
       },
       {
-        _type: 'github_user_manages_account',
+        _type: GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
         _class: RelationshipClass.MANAGES,
-        sourceType: 'github_user',
-        targetType: 'github_account',
+        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
+        targetType: GITHUB_ACCOUNT_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-account'],

@@ -39,9 +39,14 @@ export async function fetchTeams({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const accountEntity = (await jobState.getData(
+  const accountEntity = await jobState.getData<AccountEntity>(
     DATA_ACCOUNT_ENTITY,
-  )) as AccountEntity;
+  );
+  if (!accountEntity) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find Account entity in jobState.`,
+    );
+  }
 
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(

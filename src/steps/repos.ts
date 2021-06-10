@@ -2,6 +2,7 @@ import {
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
+  IntegrationMissingKeyError,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
@@ -27,9 +28,15 @@ export async function fetchRepos({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const accountEntity = (await jobState.getData(
+  const accountEntity = await jobState.getData<AccountEntity>(
     DATA_ACCOUNT_ENTITY,
-  )) as AccountEntity;
+  );
+
+  if (!accountEntity) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find Account entity in jobState.`,
+    );
+  }
 
   const repoEntities: RepoEntity[] = []; //for use later in PRs
 

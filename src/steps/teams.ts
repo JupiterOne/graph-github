@@ -44,6 +44,18 @@ export async function fetchTeams({
       `Expected to find Account entity in jobState.`,
     );
   }
+  const repoEntities = await jobState.getData<RepoEntity[]>('REPO_ARRAY');
+  if (!repoEntities) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find repoEntities in jobState.`,
+    );
+  }
+  const memberEntities = await jobState.getData<UserEntity[]>('MEMBER_ARRAY');
+  if (!memberEntities) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find memberEntities in jobState.`,
+    );
+  }
 
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
@@ -59,8 +71,7 @@ export async function fetchTeams({
     );
 
     for (const member of team.members || []) {
-      let memberEntity = (await jobState.findEntity(member.id)) as UserEntity;
-
+      let memberEntity = memberEntities.find((m) => m._key === member.id);
       if (!memberEntity) {
         memberEntity = (await jobState.addEntity(
           toOrganizationMemberEntityFromTeamMember(member),
@@ -91,10 +102,10 @@ export async function fetchTeams({
     }
 
     for (const repo of team.repos || []) {
-      const repoEntity = (await jobState.findEntity(repo.id)) as RepoEntity;
+      const repoEntity = repoEntities.find((r) => r._key === repo.id);
       if (!repoEntity) {
         throw new IntegrationMissingKeyError(
-          `Expected repo (CodeRepo) with key to exist (key=${repo.id})`,
+          `Expected repo (CodeRepo) with id to exist (key=${repo.id})`,
         );
       }
       await jobState.addRelationship(

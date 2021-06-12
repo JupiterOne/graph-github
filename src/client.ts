@@ -93,18 +93,10 @@ export class APIClient {
     const allTeamMembers: OrgTeamMemberQueryResponse[] = await this.accountClient.getTeamMembers();
     const allTeamRepos: OrgTeamRepoQueryResponse[] = await this.accountClient.getTeamRepositories();
     for (const team of teams) {
-      team.members = [];
-      for (const member of allTeamMembers) {
-        if (member.teams === team.id) {
-          team.members.push(member);
-        }
-      }
-      team.repos = [];
-      for (const repo of allTeamRepos) {
-        if (repo.teams === team.id) {
-          team.repos.push(repo);
-        }
-      }
+      team.members = allTeamMembers.filter(
+        (member) => member.teams === team.id,
+      );
+      team.repos = allTeamRepos.filter((repo) => repo.teams === team.id);
       await iteratee(team);
     }
   }

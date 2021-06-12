@@ -81,7 +81,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     _type: GITHUB_TEAM_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
-    name: data.slug,
+    name: data.slug, //this works, but why? Where is .slug set?
     displayName: data.name,
     fullName: data.name,
   };

@@ -3,15 +3,13 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   IntegrationMissingKeyError,
+  createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import {
-  toRepositoryEntity,
-  toAccountOwnsRepoRelationship,
-} from '../sync/converters';
+import { toRepositoryEntity } from '../sync/converters';
 import { AccountEntity, RepoEntity } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
@@ -48,7 +46,11 @@ export async function fetchRepos({
     repoEntities.push(repoEntity);
 
     await jobState.addRelationship(
-      toAccountOwnsRepoRelationship(accountEntity, repoEntity),
+      createDirectRelationship({
+        _class: RelationshipClass.OWNS,
+        from: accountEntity,
+        to: repoEntity,
+      }),
     );
   });
 

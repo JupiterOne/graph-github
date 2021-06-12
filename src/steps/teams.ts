@@ -3,6 +3,7 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   IntegrationMissingKeyError,
+  createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
@@ -11,10 +12,6 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import {
   toTeamEntity,
   toOrganizationMemberEntityFromTeamMember,
-  toOrganizationHasTeamRelationship,
-  toTeamHasMemberRelationship,
-  toMemberManagesTeamRelationship,
-  toTeamAllowsRepoRelationship,
 } from '../sync/converters';
 import { AccountEntity, TeamEntity, UserEntity, RepoEntity } from '../types';
 import sha from '../util/sha';
@@ -54,7 +51,11 @@ export async function fetchTeams({
     )) as TeamEntity;
 
     await jobState.addRelationship(
-      toOrganizationHasTeamRelationship(accountEntity, teamEntity),
+      createDirectRelationship({
+        _class: RelationshipClass.HAS,
+        from: accountEntity,
+        to: teamEntity,
+      }),
     );
 
     for (const member of team.members || []) {
@@ -71,12 +72,20 @@ export async function fetchTeams({
       }
 
       await jobState.addRelationship(
-        toTeamHasMemberRelationship(teamEntity, memberEntity),
+        createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          from: teamEntity,
+          to: memberEntity,
+        }),
       );
 
       if (member.role === TeamMemberRole.Maintainer) {
         await jobState.addRelationship(
-          toMemberManagesTeamRelationship(memberEntity, teamEntity),
+          createDirectRelationship({
+            _class: RelationshipClass.MANAGES,
+            from: memberEntity,
+            to: teamEntity,
+          }),
         );
       }
     }
@@ -89,7 +98,11 @@ export async function fetchTeams({
         );
       }
       await jobState.addRelationship(
-        toTeamAllowsRepoRelationship(teamEntity, repoEntity, repo.permission),
+        createDirectRelationship({
+          _class: RelationshipClass.ALLOWS,
+          from: teamEntity,
+          to: repoEntity,
+        }),
       );
     }
   });

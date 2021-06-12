@@ -3,16 +3,13 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   IntegrationMissingKeyError,
+  createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import {
-  toOrganizationMemberEntity,
-  toOrganizationHasMemberRelationship,
-  toMemberManagesOrganizationRelationship,
-} from '../sync/converters';
+import { toOrganizationMemberEntity } from '../sync/converters';
 import { AccountEntity, UserEntity, IdEntityMap } from '../types';
 import { OrgMemberRole } from '../client/GraphQLClient';
 import {
@@ -53,12 +50,20 @@ export async function fetchMembers({
     memberByLoginMap[member.login] = memberEntity;
 
     await jobState.addRelationship(
-      toOrganizationHasMemberRelationship(accountEntity, memberEntity),
+      createDirectRelationship({
+        _class: RelationshipClass.HAS,
+        from: accountEntity,
+        to: memberEntity,
+      }),
     );
 
     if (memberEntity.role === OrgMemberRole.Admin) {
       await jobState.addRelationship(
-        toMemberManagesOrganizationRelationship(accountEntity, memberEntity),
+        createDirectRelationship({
+          _class: RelationshipClass.MANAGES,
+          from: memberEntity,
+          to: accountEntity,
+        }),
       );
     }
   });

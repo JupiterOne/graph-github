@@ -75,6 +75,22 @@ export default class OrganizationAccountClient {
     logger: IntegrationLogger;
     /**
      * Whether or not pull request commits should be analyzed for approval.
+     *
+     * Specifically, if this boolean is true, the pull-request entity gets
+     * for the following fields:
+     *  approved
+     *  validated
+     *  commits
+     *  commitMessages
+     *  commitsApproved
+     *  commitsNotApproved
+     *  commitsByUnknownAuthor
+     *  approvers
+     *  approverLogins
+     *
+     * All these fields will be set to undefined if analyzeCommitApproval
+     * is false. If set to true, there will be an additional 2 calls to the
+     * API per pull-request, plus a fair bit of processing.
      */
     analyzeCommitApproval: boolean;
   }) {
@@ -298,9 +314,13 @@ export default class OrganizationAccountClient {
     account: AccountEntity,
     repo: RepoEntity,
     id: number,
-    teamMembers?: UserEntity[],
-    teamMemberMap?: IdEntityMap<UserEntity>,
+    teamMembers: UserEntity[],
+    teamMemberMap: IdEntityMap<UserEntity>,
   ): Promise<PullRequestEntity | undefined> {
+    // This function is meant to be used for ingesting a single
+    //specific PR on-demand. For that reason, it automatically
+    //does the commit and approval analysis regardless of the
+    //analyzeCommitApproval config boolean
     if (!this.authorizedForPullRequests) {
       return undefined;
     }
@@ -318,8 +338,6 @@ export default class OrganizationAccountClient {
 
       this.v3RateLimitConsumed++;
 
-      // We don't check the analyzeCommitApproval option here because it is used
-      // for ingesting specific, single PRs.
       const {
         allCommits,
         approvedCommits,
@@ -346,8 +364,8 @@ export default class OrganizationAccountClient {
   async getPullRequestEntities(
     account: AccountEntity,
     repo: RepoEntity,
-    teamMembers?: UserEntity[],
-    teamMemberMap?: IdEntityMap<UserEntity>,
+    teamMembers: UserEntity[],
+    teamMemberMap: IdEntityMap<UserEntity>,
   ): Promise<Array<PullRequestEntity> | undefined> {
     if (!this.authorizedForPullRequests) {
       return undefined;

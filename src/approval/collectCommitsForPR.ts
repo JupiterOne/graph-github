@@ -24,18 +24,7 @@ export default async function collectCommitsForPR(
   github: OrganizationAccountClient,
   account: AccountEntity,
   pr: PullsListResponseItem,
-  /**
-   * The members of the organization that the PR belongs to.
-   *
-   * This property is optional because we may be syncing in an organization or
-   * in an individual's account. If we are syncing in an organization context,
-   * we should provide the approval calculation code with the members of the
-   * organization team so that it can discard commits and approvals from users
-   * outside of the team. If we are in an account context, there are no team
-   * members, so anything goes (but in the future, we may want to limit valid
-   * commit authors and approvers to repo contributors).
-   */
-  teamMembers?: UserEntity[]
+  teamMembers: UserEntity[],
 ): Promise<PRApprovalData> {
   const teamMemberLogins = toLogins(teamMembers);
 
@@ -45,21 +34,21 @@ export default async function collectCommitsForPR(
     .filter(isApprovalReview)
     .reduce(addReviewToApprovals, [])
     .filter(
-      approval =>
+      (approval) =>
         hasTeamApprovals(approval, teamMemberLogins) &&
-        hasPeerApprovals(approval, commits)
+        hasPeerApprovals(approval, commits),
     );
 
   let approvedCommits: PullsListCommitsResponseItem[] = [];
   if (approvals.length > 0) {
     approvedCommits = getCommitsToDestination(
       commits,
-      approvals[approvals.length - 1].commit
+      approvals[approvals.length - 1].commit,
     );
   }
 
-  const commitsByUnknownAuthor = commits.filter(commit =>
-    fromUnknownAuthor(commit, teamMemberLogins)
+  const commitsByUnknownAuthor = commits.filter((commit) =>
+    fromUnknownAuthor(commit, teamMemberLogins),
   );
 
   return {
@@ -70,14 +59,11 @@ export default async function collectCommitsForPR(
   };
 }
 
-function toLogins(teamMembers?: UserEntity[]) {
-  let teamMemberLogins: string[] | undefined;
-  if (teamMembers) {
-    teamMemberLogins = teamMembers.reduce(
-      (logins: string[], member) => [...logins, member.login],
-      []
-    );
-  }
+function toLogins(teamMembers: UserEntity[]) {
+  const teamMemberLogins = teamMembers.reduce(
+    (logins: string[], member) => [...logins, member.login],
+    [],
+  );
   return teamMemberLogins;
 }
 
@@ -87,7 +73,7 @@ function isApprovalReview(review: PullsListReviewsResponseItem) {
 
 function hasPeerApprovals(
   approval: Approval,
-  commits: PullsListCommitsResponseItem[]
+  commits: PullsListCommitsResponseItem[],
 ) {
   const associatedCommits = getCommitsToDestination(commits, approval.commit);
   const commitAuthors = associatedCommits.reduce(
@@ -95,10 +81,10 @@ function hasPeerApprovals(
       ...authors,
       commit.author ? commit.author.login : '',
     ],
-    []
+    [],
   );
   const validApprovers = approval.approverUsernames.filter(
-    approver => !commitAuthors.includes(approver)
+    (approver) => !commitAuthors.includes(approver),
   );
   return validApprovers.length > 0;
 }
@@ -107,20 +93,16 @@ function userOutsideOfTeam(login: string, teamMembers: string[]) {
   return !teamMembers.includes(login);
 }
 
-function hasTeamApprovals(approval: Approval, teamMembers?: string[]) {
-  if (!teamMembers) {
-    return true;
-  }
-
-  const teamApprovers = approval.approverUsernames.filter(approver =>
-    teamMembers.includes(approver)
+function hasTeamApprovals(approval: Approval, teamMembers: string[]) {
+  const teamApprovers = approval.approverUsernames.filter((approver) =>
+    teamMembers.includes(approver),
   );
   return teamApprovers.length > 0;
 }
 
 function fromUnknownAuthor(
   commit: PullsListCommitsResponseItem,
-  teamMembers?: string[]
+  teamMembers?: string[],
 ) {
   if (!commit.author) {
     return true;
@@ -135,7 +117,7 @@ function fromUnknownAuthor(
 
 function addReviewToApprovals(
   approvals: Approval[],
-  approvalReview: PullsListReviewsResponseItem
+  approvalReview: PullsListReviewsResponseItem,
 ) {
   if (!approvalReview.user) {
     // If an approval has no user, don't count it as valid
@@ -143,7 +125,7 @@ function addReviewToApprovals(
   }
 
   const existingApproval = approvals.find(
-    approval => approval.commit === approvalReview.commit_id
+    (approval) => approval.commit === approvalReview.commit_id,
   );
 
   if (existingApproval) {

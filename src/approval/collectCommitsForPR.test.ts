@@ -35,7 +35,7 @@ function collectCommitsForPRTest({
   recordingName: string;
   prId: number;
   expected: any;
-  teamMembers?: any[];
+  teamMembers: any[];
 }) {
   return test(title, async () => {
     p = setupGithubRecording({
@@ -108,6 +108,11 @@ collectCommitsForPRTest({
     commitsByUnknownAuthor: [],
     approvals: [],
   },
+  teamMembers: [
+    { login: 'fomentia' },
+    { login: 'fomentia2' },
+    { login: 'github-user-test' },
+  ],
 });
 
 collectCommitsForPRTest({
@@ -138,6 +143,11 @@ collectCommitsForPRTest({
       },
     ],
   },
+  teamMembers: [
+    { login: 'fomentia' },
+    { login: 'fomentia2' },
+    { login: 'github-user-test' },
+  ],
 });
 
 collectCommitsForPRTest({
@@ -195,6 +205,11 @@ collectCommitsForPRTest({
       },
     ],
   },
+  teamMembers: [
+    { login: 'fomentia' },
+    { login: 'fomentia2' },
+    { login: 'github-user-test' },
+  ],
 });
 
 collectCommitsForPRTest({
@@ -217,6 +232,11 @@ collectCommitsForPRTest({
       },
     ],
   },
+  teamMembers: [
+    { login: 'fomentia' },
+    { login: 'fomentia2' },
+    { login: 'github-user-test' },
+  ],
 });
 
 collectCommitsForPRTest({
@@ -240,4 +260,9 @@ collectCommitsForPRTest({
       },
     ],
   },
+  teamMembers: [
+    { login: 'fomentia' },
+    { login: 'fomentia2' },
+    { login: 'github-user-test' },
+  ],
 });

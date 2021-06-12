@@ -71,6 +71,10 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
 
   /**
    * Whether to analyze commit approvals as part of pull-requests
+   * This turns on a lot of processing of pull-request commit messages
+   * in order to populate extra fields in the pull-request entity.
+   *
+   * For more details, see client/OrganizationAccountClient.ts
    */
   analyzeCommitApproval: boolean;
 

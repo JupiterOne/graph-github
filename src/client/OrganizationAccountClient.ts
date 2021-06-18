@@ -76,8 +76,9 @@ export default class OrganizationAccountClient {
     /**
      * Whether or not pull request commits should be analyzed for approval.
      *
-     * Specifically, if this boolean is true, the pull-request entity gets
-     * for the following fields:
+     * Specifically, if this boolean is true, two additional calls to the
+     * API are executed, and the results processed to give values for the
+     * following properties to the pullrequest entity:
      *  approved
      *  validated
      *  commits
@@ -88,9 +89,8 @@ export default class OrganizationAccountClient {
      *  approvers
      *  approverLogins
      *
-     * All these fields will be set to undefined if analyzeCommitApproval
-     * is false. If set to true, there will be an additional 2 calls to the
-     * API per pull-request, plus a fair bit of processing.
+     * All these properties will be set to undefined if analyzeCommitApproval
+     * is false.
      */
     analyzeCommitApproval: boolean;
   }) {

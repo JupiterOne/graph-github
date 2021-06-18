@@ -7,6 +7,7 @@ import { IntegrationConfig, sanitizeConfig } from '../config';
 import { fetchMembers } from './members';
 import { fetchRepos } from './repos';
 import { fetchTeams } from './teams';
+import { fetchPrs } from './pullrequests';
 import { fetchAccountDetails } from './account';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
@@ -42,6 +43,7 @@ test('should collect data', async () => {
   await fetchMembers(context);
   await fetchRepos(context);
   await fetchTeams(context);
+  await fetchPrs(context);
 
   // Review snapshot, failure is a regression
   expect({
@@ -136,4 +138,26 @@ test('should collect data', async () => {
       required: ['webLink', 'displayName'],
     },
   });
+
+  /*
+  const prs = context.jobState.collectedEntities.filter((e) =>
+    e._class.includes('PR'),
+  );
+  expect(prs.length).toBeGreaterThan(0);
+  expect(prs).toMatchGraphObjectSchema({
+    _class: ['PR'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_pullrequest' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName'],
+    },
+  });*/
 });

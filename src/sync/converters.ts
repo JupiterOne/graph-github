@@ -1,24 +1,17 @@
 import {
   setRawData,
-  RelationshipClass,
   parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
 import {
   AccountEntity,
-  AccountRepoRelationship,
   RepoEntity,
-  OrganizationMemberRelationship,
   UserEntity,
   PullRequestEntity,
-  RepoPullRequestRelationship,
-  UserPullRequestRelationship,
   PRState,
   IdEntityMap,
   TeamEntity,
-  TeamMemberRelationship,
   AccountType,
-  TeamRepoRelationship,
   PullsListResponseItem,
   PullsListCommitsResponseItem,
 } from '../types';
@@ -39,25 +32,14 @@ import {
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
   GITHUB_ACCOUNT_ENTITY_CLASS,
-  GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
-  GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
-  GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_ENTITY_TYPE,
   GITHUB_MEMBER_ENTITY_CLASS,
-  GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_ENTITY_CLASS,
-  GITHUB_REPO_PR_RELATIONSHIP_TYPE,
   GITHUB_PR_ENTITY_TYPE,
   GITHUB_PR_ENTITY_CLASS,
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_TEAM_ENTITY_CLASS,
-  GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
-  GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
 } from '../constants';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
@@ -81,7 +63,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     _type: GITHUB_TEAM_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
-    name: data.slug,
+    name: data.slug, //this works, but why? Where is .slug set?
     displayName: data.name,
     fullName: data.name,
   };
@@ -260,160 +242,4 @@ export function toPullRequestEntity(
   };
   setRawData(entity, { name: 'default', rawData: data });
   return entity;
-}
-
-export function toOrganizationHasMemberRelationship(
-  installationEntity: AccountEntity,
-  userEntity: UserEntity,
-): OrganizationMemberRelationship {
-  return {
-    _key: `${installationEntity._key}|has|${userEntity._key}`,
-    _type: GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
-    _class: RelationshipClass.HAS,
-    _fromEntityKey: installationEntity._key,
-    _toEntityKey: userEntity._key,
-    displayName: RelationshipClass.HAS,
-  };
-}
-
-export function toMemberManagesOrganizationRelationship(
-  installationEntity: AccountEntity,
-  userEntity: UserEntity,
-): OrganizationMemberRelationship {
-  return {
-    _key: `${userEntity._key}|manages|${installationEntity._key}`,
-    _type: GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
-    _class: RelationshipClass.MANAGES,
-    _fromEntityKey: userEntity._key,
-    _toEntityKey: installationEntity._key,
-    displayName: RelationshipClass.MANAGES,
-  };
-}
-
-export function toOrganizationHasTeamRelationship(
-  installationEntity: AccountEntity,
-  teamEntity: TeamEntity,
-): OrganizationMemberRelationship {
-  return {
-    _key: `${installationEntity._key}|has|${teamEntity._key}`,
-    _type: GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
-    _class: RelationshipClass.HAS,
-    _fromEntityKey: installationEntity._key,
-    _toEntityKey: teamEntity._key,
-    displayName: RelationshipClass.HAS,
-  };
-}
-
-export function toTeamHasMemberRelationship(
-  teamEntity: TeamEntity,
-  teamMemberEntity: UserEntity,
-): TeamMemberRelationship {
-  return {
-    _key: `${teamEntity._key}|has|${teamMemberEntity._key}`,
-    _type: GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
-    _class: RelationshipClass.HAS,
-    _fromEntityKey: teamEntity._key,
-    _toEntityKey: teamMemberEntity._key,
-    displayName: RelationshipClass.HAS,
-  };
-}
-
-export function toMemberManagesTeamRelationship(
-  teamMemberEntity: UserEntity,
-  teamEntity: TeamEntity,
-): TeamMemberRelationship {
-  return {
-    _key: `${teamMemberEntity._key}|manages|${teamEntity._key}`,
-    _type: GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
-    _class: RelationshipClass.MANAGES,
-    _fromEntityKey: teamMemberEntity._key,
-    _toEntityKey: teamEntity._key,
-    displayName: RelationshipClass.MANAGES,
-  };
-}
-
-export function toTeamAllowsRepoRelationship(
-  teamEntity: TeamEntity,
-  repoEntity: RepoEntity,
-  permission: string,
-): TeamRepoRelationship {
-  return {
-    _key: `${teamEntity._key}|allows|${repoEntity._key}`,
-    _type: GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
-    _class: RelationshipClass.ALLOWS,
-    _fromEntityKey: teamEntity._key,
-    _toEntityKey: repoEntity._key,
-    permission,
-    displayName: RelationshipClass.ALLOWS,
-  };
-}
-
-export function toAccountOwnsRepoRelationship(
-  installationEntity: AccountEntity,
-  repoEntity: RepoEntity,
-): AccountRepoRelationship {
-  return {
-    _key: `${installationEntity._key}|owns|${repoEntity._key}`,
-    _type: GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
-    _class: RelationshipClass.OWNS,
-    _fromEntityKey: installationEntity._key,
-    _toEntityKey: repoEntity._key,
-    displayName: RelationshipClass.OWNS,
-  };
-}
-
-export function toRepoHasPullRequestRelationship(
-  repoEntity: RepoEntity,
-  pullRequestEntity: PullRequestEntity,
-): RepoPullRequestRelationship {
-  return {
-    _key: `${repoEntity._key}|has|${pullRequestEntity._key}`,
-    _type: GITHUB_REPO_PR_RELATIONSHIP_TYPE,
-    _class: RelationshipClass.HAS,
-    _fromEntityKey: repoEntity._key,
-    _toEntityKey: pullRequestEntity._key,
-    displayName: RelationshipClass.HAS,
-  };
-}
-
-export function toUserOpenedPullRequestRelationship(
-  userEntity: UserEntity,
-  pullRequestEntity: PullRequestEntity,
-): UserPullRequestRelationship {
-  return {
-    _key: `${userEntity._key}|opened|${pullRequestEntity._key}`,
-    _class: RelationshipClass.OPENED,
-    _type: GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
-    _fromEntityKey: userEntity._key,
-    _toEntityKey: pullRequestEntity._key,
-    displayName: RelationshipClass.OPENED,
-  };
-}
-
-export function toUserReviewedPullRequestRelationship(
-  userEntity: UserEntity,
-  pullRequestEntity: PullRequestEntity,
-): UserPullRequestRelationship {
-  return {
-    _key: `${userEntity._key}|reviewed|${pullRequestEntity._key}`,
-    _class: RelationshipClass.REVIEWED,
-    _type: GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
-    _fromEntityKey: userEntity._key,
-    _toEntityKey: pullRequestEntity._key,
-    displayName: RelationshipClass.REVIEWED,
-  };
-}
-
-export function toUserApprovedPullRequestRelationship(
-  userEntity: UserEntity,
-  pullRequestEntity: PullRequestEntity,
-): UserPullRequestRelationship {
-  return {
-    _key: `${userEntity._key}|approved|${pullRequestEntity._key}`,
-    _class: RelationshipClass.APPROVED,
-    _type: GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
-    _fromEntityKey: userEntity._key,
-    _toEntityKey: pullRequestEntity._key,
-    displayName: RelationshipClass.APPROVED,
-  };
 }

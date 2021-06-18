@@ -3,17 +3,13 @@ import {
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
+  createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import {
-  toRepoHasPullRequestRelationship,
-  toUserOpenedPullRequestRelationship,
-  toUserReviewedPullRequestRelationship,
-  toUserApprovedPullRequestRelationship,
-} from '../sync/converters';
+
 import {
   PullRequestEntity,
   UserEntity,
@@ -83,15 +79,20 @@ export async function fetchPrs({
         const prEntity = (await jobState.addEntity(pr)) as PullRequestEntity;
 
         await jobState.addRelationship(
-          toRepoHasPullRequestRelationship(repoEntity, prEntity),
+          createDirectRelationship({
+            _class: RelationshipClass.HAS,
+            from: repoEntity,
+            to: prEntity,
+          }),
         );
 
         if (memberByLoginMap[pr.authorLogin]) {
           await jobState.addRelationship(
-            toUserOpenedPullRequestRelationship(
-              memberByLoginMap[pr.authorLogin],
-              prEntity,
-            ),
+            createDirectRelationship({
+              _class: RelationshipClass.OPENED,
+              from: memberByLoginMap[pr.authorLogin],
+              to: prEntity,
+            }),
           );
         }
 
@@ -99,10 +100,11 @@ export async function fetchPrs({
           for (const reviewer of pr.reviewerLogins) {
             if (memberByLoginMap[reviewer]) {
               await jobState.addRelationship(
-                toUserReviewedPullRequestRelationship(
-                  memberByLoginMap[reviewer],
-                  prEntity,
-                ),
+                createDirectRelationship({
+                  _class: RelationshipClass.REVIEWED,
+                  from: memberByLoginMap[reviewer],
+                  to: prEntity,
+                }),
               );
             }
           }
@@ -112,10 +114,11 @@ export async function fetchPrs({
           for (const approver of pr.approverLogins) {
             if (memberByLoginMap[approver]) {
               await jobState.addRelationship(
-                toUserApprovedPullRequestRelationship(
-                  memberByLoginMap[approver],
-                  prEntity,
-                ),
+                createDirectRelationship({
+                  _class: RelationshipClass.APPROVED,
+                  from: memberByLoginMap[approver],
+                  to: prEntity,
+                }),
               );
             }
           }
@@ -134,6 +137,7 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
         resourceName: 'GitHub Pull Request',
         _type: GITHUB_PR_ENTITY_TYPE,
         _class: GITHUB_PR_ENTITY_CLASS,
+        partial: true,
       },
     ],
     relationships: [
@@ -142,24 +146,28 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
         _class: RelationshipClass.HAS,
         sourceType: GITHUB_REPO_ENTITY_TYPE,
         targetType: GITHUB_PR_ENTITY_TYPE,
+        partial: true,
       },
       {
         _type: GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
         _class: RelationshipClass.APPROVED,
         sourceType: GITHUB_MEMBER_ENTITY_TYPE,
         targetType: GITHUB_PR_ENTITY_TYPE,
+        partial: true,
       },
       {
         _type: GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
         _class: RelationshipClass.OPENED,
         sourceType: GITHUB_MEMBER_ENTITY_TYPE,
         targetType: GITHUB_PR_ENTITY_TYPE,
+        partial: true,
       },
       {
         _type: GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
         _class: RelationshipClass.REVIEWED,
         sourceType: GITHUB_MEMBER_ENTITY_TYPE,
         targetType: GITHUB_PR_ENTITY_TYPE,
+        partial: true,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-users'],

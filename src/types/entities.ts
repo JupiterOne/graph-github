@@ -1,39 +1,20 @@
 import { AccountType } from '.';
-import {
-  Entity,
-  Relationship,
-  ExplicitRelationship,
-} from '@jupiterone/integration-sdk-core';
+import { Entity } from '@jupiterone/integration-sdk-core';
 
-//to simplify diffs:
-export type EntityFromIntegration = Entity;
-
-export interface AccountEntity extends EntityFromIntegration {
+export interface AccountEntity extends Entity {
   accountType: AccountType;
   accountId: string;
   login: string;
   name: string;
 }
 
-export type AccountRepoRelationship = Relationship;
-
-export type OrganizationMemberRelationship = Relationship;
-
-export type OrganizationTeamRelationship = Relationship;
-
-export interface TeamEntity extends EntityFromIntegration {
+export interface TeamEntity extends Entity {
   name: string;
   displayName: string;
   fullName: string;
 }
 
-export type TeamMemberRelationship = Relationship;
-
-export interface TeamRepoRelationship extends ExplicitRelationship {
-  permission: string;
-}
-
-export interface RepoEntity extends EntityFromIntegration {
+export interface RepoEntity extends Entity {
   public: boolean;
   name: string;
   fullName: string;
@@ -43,9 +24,7 @@ export interface RepoEntity extends EntityFromIntegration {
   updatedOn: number | undefined;
 }
 
-export type RepoPullRequestRelationship = Relationship;
-
-export interface UserEntity extends EntityFromIntegration {
+export interface UserEntity extends Entity {
   username: string;
   login: string;
   role: string;
@@ -53,9 +32,7 @@ export interface UserEntity extends EntityFromIntegration {
   siteAdmin?: boolean;
 }
 
-export type UserPullRequestRelationship = Relationship;
-
-export interface PullRequestEntity extends EntityFromIntegration {
+export interface PullRequestEntity extends Entity {
   accountLogin: string;
   repository: string;
   id: string;

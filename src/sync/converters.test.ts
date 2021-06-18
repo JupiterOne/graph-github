@@ -1,15 +1,11 @@
 import { parseTimePropertyValue } from '@jupiterone/integration-sdk-core';
 import {
-  toAccountOwnsRepoRelationship,
   toOrganizationMemberEntity,
-  toOrganizationHasMemberRelationship,
   toRepositoryEntity,
   toAccountEntity,
   toPullRequestEntity,
-  toRepoHasPullRequestRelationship,
-  toUserOpenedPullRequestRelationship,
 } from './converters';
-import { RepoEntity, PullRequestEntity, UserEntity, PRState } from '../types';
+import { UserEntity, PRState } from '../types';
 
 test('toAccountEntity', () => {
   const apiResponse = {
@@ -282,65 +278,5 @@ describe('toPullRequestEntity', () => {
       author: 'somebody',
       reviewers: ['reviewer-user'],
     });
-  });
-});
-
-test('toOrganizationMemberRelationships', () => {
-  const relationship = toOrganizationHasMemberRelationship(
-    { _key: 'account-key' } as any,
-    { _key: 'user-key' } as any,
-  );
-  expect(relationship).toEqual({
-    _key: 'account-key|has|user-key',
-    _type: 'github_account_has_user',
-    _class: 'HAS',
-    _fromEntityKey: 'account-key',
-    _toEntityKey: 'user-key',
-    displayName: 'HAS',
-  });
-});
-
-test('toAccountRepoRelationships', () => {
-  const relationship = toAccountOwnsRepoRelationship(
-    { _key: 'account-key' } as any,
-    { _key: 'repo-key' } as any,
-  );
-  expect(relationship).toEqual({
-    _key: 'account-key|owns|repo-key',
-    _type: 'github_account_owns_repo',
-    _class: 'OWNS',
-    _fromEntityKey: 'account-key',
-    _toEntityKey: 'repo-key',
-    displayName: 'OWNS',
-  });
-});
-
-test('toRepoPullRequestRelationship', () => {
-  const relationship = toRepoHasPullRequestRelationship(
-    { _key: 'repo-key' } as RepoEntity,
-    { _key: 'pr-key' } as PullRequestEntity,
-  );
-  expect(relationship).toEqual({
-    _key: 'repo-key|has|pr-key',
-    _type: 'github_repo_has_pullrequest',
-    _class: 'HAS',
-    _fromEntityKey: 'repo-key',
-    _toEntityKey: 'pr-key',
-    displayName: 'HAS',
-  });
-});
-
-test('toUserPullRequestRelationship', () => {
-  const relationship = toUserOpenedPullRequestRelationship(
-    { _key: 'user-key' } as UserEntity,
-    { _key: 'pr-key' } as PullRequestEntity,
-  );
-  expect(relationship).toEqual({
-    _key: 'user-key|opened|pr-key',
-    _type: 'github_user_opened_pullrequest',
-    _class: 'OPENED',
-    _fromEntityKey: 'user-key',
-    _toEntityKey: 'pr-key',
-    displayName: 'OPENED',
   });
 });

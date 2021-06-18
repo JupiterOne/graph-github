@@ -79,11 +79,11 @@ describe('getPullRequests', () => {
     const client = mockClient(mockGitHub);
 
     await expect(
-      client.getPullRequestEntities(mockAccount, mockPullRequest)
+      client.getPullRequestEntities(mockAccount, mockPullRequest, [], {}),
     ).resolves.toBeUndefined();
     expect(mockLogger.info).toHaveBeenCalledWith(
       { err: new Error('404') },
-      'pulls.list failed'
+      'pulls.list failed',
     );
   });
 
@@ -99,18 +99,18 @@ describe('getPullRequests', () => {
     const client = mockClient(mockGitHub);
 
     await expect(
-      client.getPullRequestEntities(mockAccount, mockPullRequest)
+      client.getPullRequestEntities(mockAccount, mockPullRequest, [], {}),
     ).resolves.toBeUndefined();
     expect(mockGitHub.pulls.list).toHaveBeenCalled();
     expect(mockLogger.info).toHaveBeenCalledWith(
       { err: { status: 403 } },
-      'pulls.list failed'
+      'pulls.list failed',
     );
 
     jest.clearAllMocks();
 
     await expect(
-      client.getPullRequestEntities(mockAccount, mockPullRequest)
+      client.getPullRequestEntities(mockAccount, mockPullRequest, [], {}),
     ).resolves.toBeUndefined();
     expect(mockGitHub.pulls.list).not.toHaveBeenCalled();
     expect(mockLogger.info).not.toHaveBeenCalled();
@@ -127,11 +127,11 @@ describe('getPullRequestReviews', () => {
     const client = mockClient(mockGitHub);
 
     await expect(
-      client.getPullRequestReviews(mockAccount, mockPullRequest)
+      client.getPullRequestReviews(mockAccount, mockPullRequest),
     ).resolves.toEqual([]);
     expect(mockLogger.info).toHaveBeenCalledWith(
       expect.objectContaining({ err: new Error('404') }),
-      'pulls.listReviews failed'
+      'pulls.listReviews failed',
     );
   });
 });
@@ -146,11 +146,11 @@ describe('getPullRequestCommits', () => {
     const client = mockClient(mockGitHub);
 
     await expect(
-      client.getPullRequestCommits(mockAccount, mockPullRequest)
+      client.getPullRequestCommits(mockAccount, mockPullRequest),
     ).resolves.toEqual([]);
     expect(mockLogger.info).toHaveBeenCalledWith(
       expect.objectContaining({ err: new Error('404') }),
-      'pulls.listCommits failed'
+      'pulls.listCommits failed',
     );
   });
 });

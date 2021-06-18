@@ -3,6 +3,7 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   IntegrationMissingKeyError,
+  createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
@@ -11,10 +12,6 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import {
   toTeamEntity,
   toOrganizationMemberEntityFromTeamMember,
-  toOrganizationHasTeamRelationship,
-  toTeamHasMemberRelationship,
-  toMemberManagesTeamRelationship,
-  toTeamAllowsRepoRelationship,
 } from '../sync/converters';
 import { AccountEntity, TeamEntity, UserEntity, RepoEntity } from '../types';
 import sha from '../util/sha';
@@ -47,6 +44,18 @@ export async function fetchTeams({
       `Expected to find Account entity in jobState.`,
     );
   }
+  const repoEntities = await jobState.getData<RepoEntity[]>('REPO_ARRAY');
+  if (!repoEntities) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find repoEntities in jobState.`,
+    );
+  }
+  const memberEntities = await jobState.getData<UserEntity[]>('MEMBER_ARRAY');
+  if (!memberEntities) {
+    throw new IntegrationMissingKeyError(
+      `Expected to find memberEntities in jobState.`,
+    );
+  }
 
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
@@ -54,12 +63,15 @@ export async function fetchTeams({
     )) as TeamEntity;
 
     await jobState.addRelationship(
-      toOrganizationHasTeamRelationship(accountEntity, teamEntity),
+      createDirectRelationship({
+        _class: RelationshipClass.HAS,
+        from: accountEntity,
+        to: teamEntity,
+      }),
     );
 
     for (const member of team.members || []) {
-      let memberEntity = (await jobState.findEntity(member.id)) as UserEntity;
-
+      let memberEntity = memberEntities.find((m) => m._key === member.id);
       if (!memberEntity) {
         memberEntity = (await jobState.addEntity(
           toOrganizationMemberEntityFromTeamMember(member),
@@ -71,25 +83,37 @@ export async function fetchTeams({
       }
 
       await jobState.addRelationship(
-        toTeamHasMemberRelationship(teamEntity, memberEntity),
+        createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          from: teamEntity,
+          to: memberEntity,
+        }),
       );
 
       if (member.role === TeamMemberRole.Maintainer) {
         await jobState.addRelationship(
-          toMemberManagesTeamRelationship(memberEntity, teamEntity),
+          createDirectRelationship({
+            _class: RelationshipClass.MANAGES,
+            from: memberEntity,
+            to: teamEntity,
+          }),
         );
       }
     }
 
     for (const repo of team.repos || []) {
-      const repoEntity = (await jobState.findEntity(repo.id)) as RepoEntity;
+      const repoEntity = repoEntities.find((r) => r._key === repo.id);
       if (!repoEntity) {
         throw new IntegrationMissingKeyError(
-          `Expected repo (CodeRepo) with key to exist (key=${repo.id})`,
+          `Expected repo (CodeRepo) with id to exist (key=${repo.id})`,
         );
       }
       await jobState.addRelationship(
-        toTeamAllowsRepoRelationship(teamEntity, repoEntity, repo.permission),
+        createDirectRelationship({
+          _class: RelationshipClass.ALLOWS,
+          from: teamEntity,
+          to: repoEntity,
+        }),
       );
     }
   });

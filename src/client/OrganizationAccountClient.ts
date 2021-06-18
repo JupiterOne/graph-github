@@ -75,6 +75,22 @@ export default class OrganizationAccountClient {
     logger: IntegrationLogger;
     /**
      * Whether or not pull request commits should be analyzed for approval.
+     *
+     * Specifically, if this boolean is true, two additional calls to the
+     * API are executed, and the results processed to give values for the
+     * following properties to the pullrequest entity:
+     *  approved
+     *  validated
+     *  commits
+     *  commitMessages
+     *  commitsApproved
+     *  commitsNotApproved
+     *  commitsByUnknownAuthor
+     *  approvers
+     *  approverLogins
+     *
+     * All these properties will be set to undefined if analyzeCommitApproval
+     * is false.
      */
     analyzeCommitApproval: boolean;
   }) {
@@ -187,80 +203,89 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getTeamRepositories(
-    useRest: boolean = false,
-  ): Promise<OrgTeamRepoQueryResponse[]> {
-    if (useRest) {
-      if (!this.teams) {
-        throw new Error(
-          'Do not attempt to call REST version of getTeamRepositories without first calling getTeams!',
-        );
-      }
-
-      for (const team of this.teams) {
-        try {
-          const teamRepositories = await this.v3.paginate(
-            'GET /orgs/{org}/teams/{team_slug}/repos', // https://docs.github.com/en/rest/reference/teams#list-team-repositories
-            {
-              org: this.login,
-              team_slug: team.slug,
-              per_page: 100,
-            },
-            (response) => {
-              this.logger.info(
-                {
-                  teamRepositoriesPageLength: response.data.length,
-                  team: sha(team.slug),
-                },
-                'Fetched page of team repositories',
-              );
-              this.v3RateLimitConsumed++;
-              return response.data;
-            },
-          );
-
-          return teamRepositories.map((tr) => {
-            let permission: TeamRepositoryPermission;
-            if (tr.permissions?.admin) {
-              permission = TeamRepositoryPermission.Admin;
-            } else if (tr.permissions?.push) {
-              permission = TeamRepositoryPermission.Write;
-            } else {
-              permission = TeamRepositoryPermission.Read;
-            }
-
-            return {
-              id: tr.node_id,
-              teams: team.id,
-              url: tr.url,
-              name: tr.name,
-              nameWithOwner: tr.full_name,
-              permission,
-              isPrivate: tr.private,
-              isArchived: tr.archived,
-              createdAt: tr.created_at as string,
-              updatedAt: tr.updated_at as string,
-            };
-          });
-        } catch (err) {
-          throw new IntegrationError(err);
-        }
-      }
-    }
-
+  async getTeamRepositories(): Promise<OrgTeamRepoQueryResponse[]> {
+    // For certain unusually long account ids, GraphQL has been known to throw errors on this call
+    // This is a known bug from the Github side, but the exact triggering details are currently unknown
+    // Therefore, the GraphQL call is wrapped here in a try-catch, with a fallback to the REST call
+    // Note, however, that there are subtle differences in the response
+    // For example, if a team has a child team, and both have access to a CodeRepo, the GraphQL will
+    // return two team-repo entries - one showing the parent team allows the repo, and another showing
+    // that the child team also does. The REST client will only return the parent team entry.
     if (!this.teamRepositories) {
-      await this.queryGraphQL('team repositories', async () => {
-        const {
-          teamRepositories,
-          rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.TeamRepositories,
-        ]);
+      try {
+        await this.queryGraphQL('team repositories', async () => {
+          const {
+            teamRepositories,
+            rateLimitConsumed,
+          } = await this.v4.fetchOrganization(this.login, [
+            OrganizationResource.TeamRepositories,
+          ]);
+          this.teamRepositories = teamRepositories;
+          return rateLimitConsumed;
+        });
+      } catch (err) {
+        if (
+          err.message.includes(
+            'Organization query for team repositories failed',
+          )
+        ) {
+          if (!this.teams) {
+            throw new Error(
+              'Do not attempt to call REST version of getTeamRepositories without first calling getTeams!',
+            );
+          }
 
-        this.teamRepositories = teamRepositories;
+          for (const team of this.teams) {
+            try {
+              const teamRepositories = await this.v3.paginate(
+                'GET /orgs/{org}/teams/{team_slug}/repos', // https://docs.github.com/en/rest/reference/teams#list-team-repositories
+                {
+                  org: this.login,
+                  team_slug: team.slug,
+                  per_page: 100,
+                },
+                (response) => {
+                  this.logger.info(
+                    {
+                      teamRepositoriesPageLength: response.data.length,
+                      team: sha(team.slug),
+                    },
+                    'Fetched page of team repositories',
+                  );
+                  this.v3RateLimitConsumed++;
+                  return response.data;
+                },
+              );
 
-        return rateLimitConsumed;
-      });
+              return teamRepositories.map((tr) => {
+                let permission: TeamRepositoryPermission;
+                if (tr.permissions?.admin) {
+                  permission = TeamRepositoryPermission.Admin;
+                } else if (tr.permissions?.push) {
+                  permission = TeamRepositoryPermission.Write;
+                } else {
+                  permission = TeamRepositoryPermission.Read;
+                }
+
+                return {
+                  id: tr.node_id,
+                  teams: team.id,
+                  url: tr.url,
+                  name: tr.name,
+                  nameWithOwner: tr.full_name,
+                  permission,
+                  isPrivate: tr.private,
+                  isArchived: tr.archived,
+                  createdAt: tr.created_at as string,
+                  updatedAt: tr.updated_at as string,
+                };
+              });
+            } catch (err) {
+              throw new IntegrationError(err);
+            }
+          }
+        }
+      } //end of catch and REST call
     }
 
     return this.teamRepositories || [];
@@ -289,9 +314,13 @@ export default class OrganizationAccountClient {
     account: AccountEntity,
     repo: RepoEntity,
     id: number,
-    teamMembers?: UserEntity[],
-    teamMemberMap?: IdEntityMap<UserEntity>,
+    teamMembers: UserEntity[],
+    teamMemberMap: IdEntityMap<UserEntity>,
   ): Promise<PullRequestEntity | undefined> {
+    // This function is meant to be used for ingesting a single
+    //specific PR on-demand. For that reason, it automatically
+    //does the commit and approval analysis regardless of the
+    //analyzeCommitApproval config boolean
     if (!this.authorizedForPullRequests) {
       return undefined;
     }
@@ -309,8 +338,6 @@ export default class OrganizationAccountClient {
 
       this.v3RateLimitConsumed++;
 
-      // We don't check the analyzeCommitApproval option here because it is used
-      // for ingesting specific, single PRs.
       const {
         allCommits,
         approvedCommits,
@@ -337,8 +364,8 @@ export default class OrganizationAccountClient {
   async getPullRequestEntities(
     account: AccountEntity,
     repo: RepoEntity,
-    teamMembers?: UserEntity[],
-    teamMemberMap?: IdEntityMap<UserEntity>,
+    teamMembers: UserEntity[],
+    teamMemberMap: IdEntityMap<UserEntity>,
   ): Promise<Array<PullRequestEntity> | undefined> {
     if (!this.authorizedForPullRequests) {
       return undefined;

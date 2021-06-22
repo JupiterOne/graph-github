@@ -30,8 +30,8 @@ interface Node {
 }
 
 interface Actor {
+  name?: string;
   login: string;
-  name: string;
 }
 
 export type OrgQueryResponse = Node & Actor;
@@ -51,6 +51,7 @@ export interface OrgTeamQueryResponse extends Node {
 }
 
 export interface OrgTeamMemberQueryResponse extends Node {
+  name?: string;
   login: string;
   teams: string;
   role: TeamMemberRole;

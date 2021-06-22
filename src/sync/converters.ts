@@ -51,7 +51,7 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
     accountId: data.login,
     login: data.login,
     name: data.name,
-    displayName: data.name,
+    displayName: data.name || data.login,
   };
   setRawData(accountEntity, { name: 'default', rawData: data });
   return accountEntity;
@@ -99,7 +99,7 @@ export function toOrganizationMemberEntity(
     _key: data.id,
     login: data.login,
     username: data.login,
-    displayName: data.name,
+    displayName: data.name || data.login,
     name: data.name,
     mfaEnabled: data.hasTwoFactorEnabled || false,
     role: data.role,
@@ -118,7 +118,7 @@ export function toOrganizationMemberEntityFromTeamMember(
     _key: data.id,
     login: data.login,
     username: data.login,
-    displayName: data.login,
+    displayName: data.name || data.login,
     name: data.login,
     mfaEnabled: false,
     role: data.role,

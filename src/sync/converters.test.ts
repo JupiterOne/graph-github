@@ -7,28 +7,39 @@ import {
 } from './converters';
 import { UserEntity, PRState } from '../types';
 
-test('toAccountEntity', () => {
+describe('toAccountEntity', () => {
   const apiResponse = {
     id: 'account-node-id',
     login: 'account-login',
     name: 'account-name',
   };
-  const entity = toAccountEntity(apiResponse as any);
-  expect(entity).toEqual({
-    _class: ['Account'],
-    _type: 'github_account',
-    _key: 'account-node-id',
-    _rawData: [
-      {
-        name: 'default',
-        rawData: apiResponse,
-      },
-    ],
-    accountType: 'Organization',
-    accountId: 'account-login',
-    login: 'account-login',
-    name: 'account-name',
-    displayName: 'account-name',
+
+  test('properties transferred', () => {
+    const entity = toAccountEntity(apiResponse as any);
+    expect(entity).toEqual({
+      _class: ['Account'],
+      _type: 'github_account',
+      _key: 'account-node-id',
+      _rawData: [
+        {
+          name: 'default',
+          rawData: apiResponse,
+        },
+      ],
+      accountType: 'Organization',
+      accountId: 'account-login',
+      login: 'account-login',
+      name: 'account-name',
+      displayName: 'account-name',
+    });
+  });
+
+  test('displayName falls back to login', () => {
+    expect(
+      toAccountEntity({ ...apiResponse, name: undefined } as any),
+    ).toMatchObject({
+      displayName: 'account-login',
+    });
   });
 });
 
@@ -62,7 +73,7 @@ test('toRepositoryEntities', () => {
   });
 });
 
-test('toOrganizationMemberEntities', () => {
+describe('toOrganizationMemberEntity', () => {
   const apiResponse = {
     id: 'member-node-id',
     login: 'user-login',
@@ -71,24 +82,35 @@ test('toOrganizationMemberEntities', () => {
     role: 'Maintainer',
     isSiteAdmin: false,
   };
-  const entity = toOrganizationMemberEntity(apiResponse as any);
-  expect(entity).toEqual({
-    _key: 'member-node-id',
-    _type: 'github_user',
-    _class: ['User'],
-    _rawData: [
-      {
-        name: 'default',
-        rawData: apiResponse,
-      },
-    ],
-    login: 'user-login',
-    username: 'user-login',
-    displayName: 'User Flynn',
-    name: 'User Flynn',
-    mfaEnabled: true,
-    role: 'Maintainer',
-    siteAdmin: false,
+
+  test('properties transferred', () => {
+    const entity = toOrganizationMemberEntity(apiResponse as any);
+    expect(entity).toEqual({
+      _key: 'member-node-id',
+      _type: 'github_user',
+      _class: ['User'],
+      _rawData: [
+        {
+          name: 'default',
+          rawData: apiResponse,
+        },
+      ],
+      login: 'user-login',
+      username: 'user-login',
+      displayName: 'User Flynn',
+      name: 'User Flynn',
+      mfaEnabled: true,
+      role: 'Maintainer',
+      siteAdmin: false,
+    });
+  });
+
+  test('displayName falls back to login', () => {
+    expect(
+      toOrganizationMemberEntity({ ...apiResponse, name: undefined } as any),
+    ).toMatchObject({
+      displayName: 'user-login',
+    });
   });
 });
 

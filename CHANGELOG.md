@@ -7,3 +7,8 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+
+- [JupiterOne/integrations#5](https://github.com/JupiterOne/integrations/issues/5)
+  Use `name || login` for `displayName` of `Account` and `User` entities.

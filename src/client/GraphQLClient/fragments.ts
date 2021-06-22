@@ -21,6 +21,7 @@ export default {
     role
   }`,
   teamMemberFields: `on User {
+    name
     login
   }`,
   repositoryFields: `on Repository {
@@ -42,5 +43,5 @@ export default {
       remaining
       resetAt
     }
-  }`
+  }`,
 };

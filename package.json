@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-github",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A JupiterOne Integration",
   "license": "MPL-2.0",
   "main": "dist/index.js",
@@ -40,18 +40,18 @@
   },
   "peerDependencies": {
     "@jupiterone/integration-sdk-core": "^6.6.0",
-    "@octokit/rest": "^18.5.6",
     "@octokit/auth-app": "^3.4.1",
+    "@octokit/core": "^3.4.0",
     "@octokit/plugin-throttling": "^3.4.2",
-    "@octokit/core": "^3.4.0"
+    "@octokit/rest": "^18.5.6"
   },
   "devDependencies": {
     "@jupiterone/integration-sdk-core": "^6.6.0",
     "@jupiterone/integration-sdk-dev-tools": "^6.6.0",
     "@jupiterone/integration-sdk-testing": "^6.6.0",
-    "@octokit/rest": "^18.5.6",
     "@octokit/auth-app": "^3.4.1",
+    "@octokit/core": "^3.4.0",
     "@octokit/plugin-throttling": "^3.4.2",
-    "@octokit/core": "^3.4.0"
+    "@octokit/rest": "^18.5.6"
   }
 }

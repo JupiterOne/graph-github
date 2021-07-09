@@ -128,6 +128,7 @@ export class APIClient {
     repo: RepoEntity,
     memberEntities: UserEntity[],
     memberByLoginMap: IdEntityMap<UserEntity>,
+    logger: IntegrationLogger,
     iteratee: ResourceIteratee<PullRequestEntity>,
   ): Promise<void> {
     if (!this.accountClient) {
@@ -139,6 +140,7 @@ export class APIClient {
       repo,
       memberEntities,
       memberByLoginMap,
+      logger,
     );
     if (pullrequests) {
       for (const pr of pullrequests) {

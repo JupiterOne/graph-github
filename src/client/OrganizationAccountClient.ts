@@ -366,6 +366,7 @@ export default class OrganizationAccountClient {
     repo: RepoEntity,
     teamMembers: UserEntity[],
     teamMemberMap: IdEntityMap<UserEntity>,
+    logger: IntegrationLogger,
   ): Promise<Array<PullRequestEntity> | undefined> {
     if (!this.authorizedForPullRequests) {
       return undefined;
@@ -374,6 +375,10 @@ export default class OrganizationAccountClient {
     let pullRequests: PullsListResponseItem[];
 
     try {
+      logger.info(
+        { repoName: repo.name },
+        'fetching batch of pull requests from repo',
+      );
       const prCount = 100;
       pullRequests = (
         await this.v3.pulls.list({
@@ -389,6 +394,7 @@ export default class OrganizationAccountClient {
       return pMap(
         pullRequests,
         async (pullRequest) => {
+          // This is increadably slow thanks to Github's rate and abuse limiting. Be careful when turning this on!
           if (this.analyzeCommitApproval) {
             const {
               allCommits,
@@ -413,7 +419,7 @@ export default class OrganizationAccountClient {
             return toPullRequestEntity(pullRequest);
           }
         },
-        { concurrency: 2 },
+        { concurrency: 1 },
       );
     } catch (err) {
       this.logger.info({ err }, 'pulls.list failed');

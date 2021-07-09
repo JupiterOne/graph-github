@@ -512,6 +512,14 @@
     ajv "^8.0.0"
     ajv-formats "^2.0.0"
 
+"@jupiterone/data-model@^0.30.0":
+  version "0.30.0"
+  resolved "https://registry.yarnpkg.com/@jupiterone/data-model/-/data-model-0.30.0.tgz#0841b3c89dd059fd41a289787b254caab67f167e"
+  integrity sha512-xYjlfo8VCkucusLXNyQrRaycQq8q2eqRMXyxZgNZb0nsW8pYu2iM2YmejGPjf90V0Jt8SLGWCifl2nOlFIqedQ==
+  dependencies:
+    ajv "^8.0.0"
+    ajv-formats "^2.0.0"
+
 "@jupiterone/integration-sdk-cli@^6.6.0":
   version "6.6.0"
   resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-cli/-/integration-sdk-cli-6.6.0.tgz#6e58e1520b50d7c9247100333d1061d0af412506"
@@ -532,6 +540,15 @@
   integrity sha512-CKdglJhB3/trSteFlUsRElgzc7a8G42rOl3xutZ4a18RFnyhsqeLWzjG5SXDRvlPgIfL8Fm6mAg0qS/BtoZ+8A==
   dependencies:
     "@jupiterone/data-model" "^0.28.0"
+    lodash "^4.17.21"
+    uuid "^8.3.2"
+
+"@jupiterone/integration-sdk-core@^6.8.0":
+  version "6.8.0"
+  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-core/-/integration-sdk-core-6.8.0.tgz#99e07f919d2b1df198abf65d4d935d54cc11f67f"
+  integrity sha512-GVqksxeFCt4RZAmANfFyVhIPzg73aRx9zb+eIaG9ex+iZrKbZ9QLItIPkepQdcHgqKHpTzj/WKNJHjGosgcaEw==
+  dependencies:
+    "@jupiterone/data-model" "^0.30.0"
     lodash "^4.17.21"
     uuid "^8.3.2"
 
@@ -4314,6 +4331,11 @@ lodash.truncate@^4.4.2:
   version "4.4.2"
   resolved "https://registry.yarnpkg.com/lodash.truncate/-/lodash.truncate-4.4.2.tgz#5a350da0b1113b837ecfffd5812cbe58d6eae193"
   integrity sha1-WjUNoLERO4N+z//VgSy+WNbq4ZM=
+
+lodash.uniq@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
+  integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
 
 lodash@4.x, lodash@^4.17.13, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21:
   version "4.17.21"

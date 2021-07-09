@@ -12,6 +12,7 @@ and this project adheres to
 
 ### Changed
 
+- octokit packages to be dependencies instead of peer dependencies.
 - Integration now uses the `@jupiterone/integration-sdk-core`
 - [JupiterOne/integrations#5](https://github.com/JupiterOne/integrations/issues/5)
   Use `name || login` for `displayName` of `Account` and `User` entities.

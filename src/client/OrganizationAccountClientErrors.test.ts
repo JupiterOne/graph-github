@@ -1,5 +1,4 @@
 import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing';
-import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import OrganizationAccountClient from './OrganizationAccountClient';
 
 const throwError = jest.fn().mockImplementation(() => {
@@ -86,7 +85,7 @@ describe('getPullRequests', () => {
         mockPullRequest,
         [],
         {},
-        createMockIntegrationLogger() as IntegrationLogger,
+        createMockIntegrationLogger(),
       ),
     ).resolves.toBeUndefined();
     expect(mockLogger.info).toHaveBeenCalledWith(
@@ -112,7 +111,7 @@ describe('getPullRequests', () => {
         mockPullRequest,
         [],
         {},
-        createMockIntegrationLogger() as IntegrationLogger,
+        createMockIntegrationLogger(),
       ),
     ).resolves.toBeUndefined();
     expect(mockGitHub.pulls.list).toHaveBeenCalled();
@@ -129,7 +128,7 @@ describe('getPullRequests', () => {
         mockPullRequest,
         [],
         {},
-        createMockIntegrationLogger() as IntegrationLogger,
+        createMockIntegrationLogger(),
       ),
     ).resolves.toBeUndefined();
     expect(mockGitHub.pulls.list).not.toHaveBeenCalled();

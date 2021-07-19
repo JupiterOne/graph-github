@@ -40,6 +40,9 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   analyzeCommitApproval: {
     type: 'boolean',
   },
+  useRestForTeamRepos: {
+    type: 'boolean',
+  },
 };
 
 /**
@@ -79,6 +82,14 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   analyzeCommitApproval: boolean;
 
   /**
+   * This is a hack to allow this integration to complete for organizations with lots of Team Repo data.
+   * For unusually large Github accounts, GraphQL has been known to throw errors on TeamRepos calls.
+   * This is a known bug from the Github side, but the exact triggering details are currently unknown.
+   * This hack should get removed once we are confident we can do so without affecting customers.
+   */
+  useRestForTeamRepos: boolean;
+
+  /**
    * Optional. Login is usually derived from a call to the API,
    * but if that fails or is not available, processing can proceed
    * if this var is specified.
@@ -113,6 +124,11 @@ export function sanitizeConfig(config: IntegrationConfig) {
       );
     }
   }
+
+  // Set this as a default as it is a hack that isn't in the regular integration configuration.
+  config.useRestForTeamRepos = config.useRestForTeamRepos
+    ? config.useRestForTeamRepos
+    : false;
 
   if (
     !config.githubAppId ||

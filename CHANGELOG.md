@@ -10,6 +10,11 @@ and this project adheres to
 
 ## 1.0.0 - 2021-07-09
 
+### Added
+
+- new optional config variable `useRestForTeamRepos` that can is sometimes
+  needed to get around a GitHub error when fetching team repos via GraphQL.
+
 ### Changed
 
 - octokit packages to be dependencies instead of peer dependencies.

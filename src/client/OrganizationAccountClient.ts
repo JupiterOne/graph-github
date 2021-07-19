@@ -229,63 +229,70 @@ export default class OrganizationAccountClient {
             'Organization query for team repositories failed',
           )
         ) {
-          if (!this.teams) {
-            throw new Error(
-              'Do not attempt to call REST version of getTeamRepositories without first calling getTeams!',
-            );
-          }
-
-          for (const team of this.teams) {
-            try {
-              const teamRepositories = await this.v3.paginate(
-                'GET /orgs/{org}/teams/{team_slug}/repos', // https://docs.github.com/en/rest/reference/teams#list-team-repositories
-                {
-                  org: this.login,
-                  team_slug: team.slug,
-                  per_page: 100,
-                },
-                (response) => {
-                  this.logger.info(
-                    {
-                      teamRepositoriesPageLength: response.data.length,
-                      team: sha(team.slug),
-                    },
-                    'Fetched page of team repositories',
-                  );
-                  this.v3RateLimitConsumed++;
-                  return response.data;
-                },
-              );
-
-              return teamRepositories.map((tr) => {
-                let permission: TeamRepositoryPermission;
-                if (tr.permissions?.admin) {
-                  permission = TeamRepositoryPermission.Admin;
-                } else if (tr.permissions?.push) {
-                  permission = TeamRepositoryPermission.Write;
-                } else {
-                  permission = TeamRepositoryPermission.Read;
-                }
-
-                return {
-                  id: tr.node_id,
-                  teams: team.id,
-                  url: tr.url,
-                  name: tr.name,
-                  nameWithOwner: tr.full_name,
-                  permission,
-                  isPrivate: tr.private,
-                  isArchived: tr.archived,
-                  createdAt: tr.created_at as string,
-                  updatedAt: tr.updated_at as string,
-                };
-              });
-            } catch (err) {
-              throw new IntegrationError(err);
-            }
-          }
+          return await this.getTeamReposWithRest();
         }
       } //end of catch and REST call
+    }
+
+    return this.teamRepositories || [];
+  }
+
+  // This is a hack to allow large github accounts to bypass a Github error. Please delete this code once that error is fixed.
+  async getTeamReposWithRest(): Promise<OrgTeamRepoQueryResponse[]> {
+    if (!this.teams) {
+      throw new Error(
+        'Do not attempt to call REST version of getTeamRepositories without first calling getTeams!',
+      );
+    }
+
+    for (const team of this.teams) {
+      try {
+        const teamRepositories = await this.v3.paginate(
+          'GET /orgs/{org}/teams/{team_slug}/repos', // https://docs.github.com/en/rest/reference/teams#list-team-repositories
+          {
+            org: this.login,
+            team_slug: team.slug,
+            per_page: 100,
+          },
+          (response) => {
+            this.logger.info(
+              {
+                teamRepositoriesPageLength: response.data.length,
+                team: sha(team.slug),
+              },
+              'Fetched page of team repositories',
+            );
+            this.v3RateLimitConsumed++;
+            return response.data;
+          },
+        );
+
+        return teamRepositories.map((tr) => {
+          let permission: TeamRepositoryPermission;
+          if (tr.permissions?.admin) {
+            permission = TeamRepositoryPermission.Admin;
+          } else if (tr.permissions?.push) {
+            permission = TeamRepositoryPermission.Write;
+          } else {
+            permission = TeamRepositoryPermission.Read;
+          }
+
+          return {
+            id: tr.node_id,
+            teams: team.id,
+            url: tr.url,
+            name: tr.name,
+            nameWithOwner: tr.full_name,
+            permission,
+            isPrivate: tr.private,
+            isArchived: tr.archived,
+            createdAt: tr.created_at as string,
+            updatedAt: tr.updated_at as string,
+          };
+        });
+      } catch (err) {
+        throw new IntegrationError(err);
+      }
     }
 
     return this.teamRepositories || [];

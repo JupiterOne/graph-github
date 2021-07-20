@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-github",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A JupiterOne Integration",
   "license": "MPL-2.0",
   "main": "dist/index.js",
@@ -26,6 +26,10 @@
     "prepack": "yarn build"
   },
   "dependencies": {
+    "@octokit/auth-app": "^3.4.1",
+    "@octokit/core": "^3.4.0",
+    "@octokit/plugin-throttling": "^3.4.2",
+    "@octokit/rest": "^18.5.6",
     "graphql": "^14.0.2",
     "graphql-tools": "^4.0.3",
     "graphql.js": "^0.6.5",
@@ -37,11 +41,7 @@
     "node-fetch": "^2.2.0",
     "p-map": "^2.1.0",
     "qs": "^6.9.1",
-    "uuid": "^3.0.0",
-    "@octokit/auth-app": "^3.4.1",
-    "@octokit/core": "^3.4.0",
-    "@octokit/plugin-throttling": "^3.4.2",
-    "@octokit/rest": "^18.5.6"
+    "uuid": "^3.0.0"
   },
   "peerDependencies": {
     "@jupiterone/integration-sdk-core": "^6.10.0"

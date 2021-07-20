@@ -8,7 +8,21 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.0.0 - 2021-07-09
+
+### Added
+
+- new optional config variable `useRestForTeamRepos` that can is sometimes
+  needed to get around a GitHub error when fetching team repos via GraphQL.
+
 ### Changed
 
+- octokit packages to be dependencies instead of peer dependencies.
+- Integration now uses the `@jupiterone/integration-sdk-core`
 - [JupiterOne/integrations#5](https://github.com/JupiterOne/integrations/issues/5)
   Use `name || login` for `displayName` of `Account` and `User` entities.
+
+### Fixes
+
+- Duplicate key bug in `github_user` **APPROVED** `github_pullrequest`
+  relationships.

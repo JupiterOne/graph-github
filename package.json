@@ -32,23 +32,24 @@
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
+    "lodash.uniq": "^4.5.0",
     "nested-error-stacks": "^2.1.0",
     "node-fetch": "^2.2.0",
     "p-map": "^2.1.0",
     "qs": "^6.9.1",
-    "uuid": "^3.0.0"
-  },
-  "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^6.6.0",
+    "uuid": "^3.0.0",
     "@octokit/auth-app": "^3.4.1",
     "@octokit/core": "^3.4.0",
     "@octokit/plugin-throttling": "^3.4.2",
     "@octokit/rest": "^18.5.6"
   },
+  "peerDependencies": {
+    "@jupiterone/integration-sdk-core": "^6.10.0"
+  },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^6.6.0",
-    "@jupiterone/integration-sdk-dev-tools": "^6.6.0",
-    "@jupiterone/integration-sdk-testing": "^6.6.0",
+    "@jupiterone/integration-sdk-core": "^6.10.0",
+    "@jupiterone/integration-sdk-dev-tools": "^6.10.0",
+    "@jupiterone/integration-sdk-testing": "^6.10.0",
     "@octokit/auth-app": "^3.4.1",
     "@octokit/core": "^3.4.0",
     "@octokit/plugin-throttling": "^3.4.2",

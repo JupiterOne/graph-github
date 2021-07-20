@@ -1,3 +1,4 @@
+import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing';
 import OrganizationAccountClient from './OrganizationAccountClient';
 
 const throwError = jest.fn().mockImplementation(() => {
@@ -79,7 +80,13 @@ describe('getPullRequests', () => {
     const client = mockClient(mockGitHub);
 
     await expect(
-      client.getPullRequestEntities(mockAccount, mockPullRequest, [], {}),
+      client.getPullRequestEntities(
+        mockAccount,
+        mockPullRequest,
+        [],
+        {},
+        createMockIntegrationLogger(),
+      ),
     ).resolves.toBeUndefined();
     expect(mockLogger.info).toHaveBeenCalledWith(
       { err: new Error('404') },
@@ -99,7 +106,13 @@ describe('getPullRequests', () => {
     const client = mockClient(mockGitHub);
 
     await expect(
-      client.getPullRequestEntities(mockAccount, mockPullRequest, [], {}),
+      client.getPullRequestEntities(
+        mockAccount,
+        mockPullRequest,
+        [],
+        {},
+        createMockIntegrationLogger(),
+      ),
     ).resolves.toBeUndefined();
     expect(mockGitHub.pulls.list).toHaveBeenCalled();
     expect(mockLogger.info).toHaveBeenCalledWith(
@@ -110,7 +123,13 @@ describe('getPullRequests', () => {
     jest.clearAllMocks();
 
     await expect(
-      client.getPullRequestEntities(mockAccount, mockPullRequest, [], {}),
+      client.getPullRequestEntities(
+        mockAccount,
+        mockPullRequest,
+        [],
+        {},
+        createMockIntegrationLogger(),
+      ),
     ).resolves.toBeUndefined();
     expect(mockGitHub.pulls.list).not.toHaveBeenCalled();
     expect(mockLogger.info).not.toHaveBeenCalled();

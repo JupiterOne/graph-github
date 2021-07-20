@@ -41,6 +41,7 @@ import {
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_TEAM_ENTITY_CLASS,
 } from '../constants';
+import uniq from 'lodash.uniq';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -157,8 +158,10 @@ export function toPullRequestEntity(
     : undefined;
 
   const approverLogins = approvals
-    ? flattenMatrix<string>(
-        aggregateProperties<string[]>('approverUsernames', approvals),
+    ? uniq(
+        flattenMatrix<string>(
+          aggregateProperties<string[]>('approverUsernames', approvals),
+        ),
       )
     : undefined;
   const userLogin: string = data.user ? data.user.login : '';

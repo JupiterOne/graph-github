@@ -91,7 +91,13 @@ export class APIClient {
     }
     const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
     const allTeamMembers: OrgTeamMemberQueryResponse[] = await this.accountClient.getTeamMembers();
-    const allTeamRepos: OrgTeamRepoQueryResponse[] = await this.accountClient.getTeamRepositories();
+    // Check 'useRestForTeamRepos' config variable as a hack to allow large github
+    // accounts to bypass a Github error. Please delete this code once that error is fixed.
+    const allTeamRepos: OrgTeamRepoQueryResponse[] = this.config
+      .useRestForTeamRepos
+      ? await this.accountClient.getTeamReposWithRest()
+      : await this.accountClient.getTeamRepositories();
+
     for (const team of teams) {
       team.members = allTeamMembers.filter(
         (member) => member.teams === team.id,
@@ -128,6 +134,7 @@ export class APIClient {
     repo: RepoEntity,
     memberEntities: UserEntity[],
     memberByLoginMap: IdEntityMap<UserEntity>,
+    logger: IntegrationLogger,
     iteratee: ResourceIteratee<PullRequestEntity>,
   ): Promise<void> {
     if (!this.accountClient) {
@@ -139,6 +146,7 @@ export class APIClient {
       repo,
       memberEntities,
       memberByLoginMap,
+      logger,
     );
     if (pullrequests) {
       for (const pr of pullrequests) {

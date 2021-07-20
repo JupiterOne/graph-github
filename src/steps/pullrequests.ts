@@ -71,6 +71,7 @@ export async function fetchPrs({
       repoEntity,
       memberEntities,
       memberByLoginMap,
+      logger,
       async (pr) => {
         //this is a different pattern than for members, teams, and repos
         //because the client call actually returns the finished entity instead of the raw "org response"

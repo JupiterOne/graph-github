@@ -247,12 +247,7 @@ export function toPullRequestEntity(
   const rawDataPropertiesToRemove = ['head', 'base']; // a few particularly large pieces of data that are repeated on every PR
   setRawData(entity, {
     name: 'default',
-    rawData: cloneToDepth(omit(data, rawDataPropertiesToRemove), 4),
+    rawData: omit(data, rawDataPropertiesToRemove),
   });
   return entity;
-}
-
-// clones an object to a specific depth. This is used to prevent runaway graphql links.
-function cloneToDepth(object: Record<any, any>, depth: number) {
-  return JSON.parse(JSON.stringify(object, null, depth));
 }

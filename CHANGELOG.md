@@ -8,6 +8,16 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.0.1 - 2021-07-23
+
+### Removed
+
+- `head` and `base` properties from `github_pull_request` entities' rawData.
+
+### Fixed
+
+- TypeError in `getCommitsToDestination` when a commit does not exist.
+
 ## 1.0.0 - 2021-07-09
 
 ### Added

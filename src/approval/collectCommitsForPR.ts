@@ -36,6 +36,7 @@ export default async function collectCommitsForPR(
     .filter(
       (approval) =>
         hasTeamApprovals(approval, teamMemberLogins) &&
+        approvalHasValidCommit(approval) &&
         hasPeerApprovals(approval, commits),
     );
 
@@ -98,6 +99,10 @@ function hasTeamApprovals(approval: Approval, teamMembers: string[]) {
     teamMembers.includes(approver),
   );
   return teamApprovers.length > 0;
+}
+
+function approvalHasValidCommit(approval: Approval) {
+  return !!approval.commit?.length;
 }
 
 function fromUnknownAuthor(

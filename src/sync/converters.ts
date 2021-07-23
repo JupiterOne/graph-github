@@ -42,6 +42,7 @@ import {
   GITHUB_TEAM_ENTITY_CLASS,
 } from '../constants';
 import uniq from 'lodash.uniq';
+import omit from 'lodash.omit';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -243,6 +244,10 @@ export function toPullRequestEntity(
         ? displayNamesFromLogins(approverLogins, usersByLogin)
         : approverLogins,
   };
-  setRawData(entity, { name: 'default', rawData: data });
+  const rawDataPropertiesToRemove = ['head', 'base']; // a few particularly large pieces of data that are repeated on every PR
+  setRawData(entity, {
+    name: 'default',
+    rawData: omit(data, rawDataPropertiesToRemove),
+  });
   return entity;
 }

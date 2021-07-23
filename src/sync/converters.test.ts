@@ -6,6 +6,7 @@ import {
   toPullRequestEntity,
 } from './converters';
 import { UserEntity, PRState } from '../types';
+import omit from 'lodash.omit';
 
 describe('toAccountEntity', () => {
   const apiResponse = {
@@ -191,7 +192,7 @@ describe('toPullRequestEntity', () => {
     _rawData: [
       {
         name: 'default',
-        rawData: apiResponse,
+        rawData: omit(apiResponse, ['base', 'head']),
       },
     ],
     open: true,
@@ -244,7 +245,7 @@ describe('toPullRequestEntity', () => {
       _rawData: [
         {
           name: 'default',
-          rawData: apiResponseWithoutDescription,
+          rawData: omit(apiResponseWithoutDescription, ['base', 'head']),
         },
       ],
     });
@@ -278,7 +279,7 @@ describe('toPullRequestEntity', () => {
       _rawData: [
         {
           name: 'default',
-          rawData: apiResponseDeclined,
+          rawData: omit(apiResponseDeclined, ['base', 'head']),
         },
       ],
     });

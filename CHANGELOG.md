@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- New properties on `github_pull_request`
+  - `mergedAt`
+  - `mergeCommitHash`
+
 ## 1.0.1 - 2021-07-23
 
 ### Removed

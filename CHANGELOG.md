@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.1.0 - 2021-07-26
+
 ### Added
 
 - New properties on `github_pull_request`

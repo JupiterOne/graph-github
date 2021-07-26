@@ -195,10 +195,10 @@ export function toPullRequestEntity(
     displayName: `${data.base.repo.name}/${data.number}`,
     accountLogin: data.base.repo.owner ? data.base.repo.owner.login : '',
     repository: data.base.repo.name,
-    //the type is hacked here because typing of data properties is controlled by a library call
-    //so I can't just say that data.number is a string
-    //here would be another way to solve it:
-    //id: JSON.stringify(data.number).replace(/\"/g, ''),
+    // the type is hacked here because typing of data properties is controlled by a library call
+    // so I can't just say that data.number is a string
+    // here would be another way to solve it:
+    // id: JSON.stringify(data.number).replace(/\"/g, ''),
     id: <string>(<unknown>data.number),
 
     name: data.title,
@@ -211,6 +211,7 @@ export function toPullRequestEntity(
 
     state: data.state,
     open: data.state === PRState.Open,
+    mergeCommitHash: data.merge_commit_sha,
     merged: (data.merged_at as any) !== null,
     declined: data.state === PRState.Closed && (data.merged_at as any) === null,
     approved,
@@ -227,6 +228,7 @@ export function toPullRequestEntity(
 
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
+    mergedOn: parseTimePropertyValue(data.merged_at),
 
     authorLogin: userLogin,
     author: authorUser

@@ -228,7 +228,7 @@ export function toPullRequestEntity(
 
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
-    mergedAt: parseTimePropertyValue(data.merged_at),
+    mergedOn: parseTimePropertyValue(data.merged_at),
 
     authorLogin: userLogin,
     author: authorUser

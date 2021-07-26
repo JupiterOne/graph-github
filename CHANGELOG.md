@@ -11,7 +11,7 @@ and this project adheres to
 ### Added
 
 - New properties on `github_pull_request`
-  - `mergedAt`
+  - `mergedOn`
   - `mergeCommitHash`
 
 ## 1.0.1 - 2021-07-23

@@ -199,7 +199,7 @@ describe('toPullRequestEntity', () => {
     open: true,
     merged: true,
     declined: false,
-    mergedAt: 1626876373000,
+    mergedOn: 1626876373000,
     mergeCommitHash: 'f8d8a228a6046ead812d9ea0c457e429342a89f7',
   };
 
@@ -283,7 +283,7 @@ describe('toPullRequestEntity', () => {
       open: false,
       declined: true,
       merged: false,
-      mergedAt: undefined,
+      mergedOn: undefined,
       mergeCommitHash: undefined,
       _rawData: [
         {

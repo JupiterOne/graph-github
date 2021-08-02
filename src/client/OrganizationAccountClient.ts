@@ -16,6 +16,7 @@ import {
   OrgTeamRepoQueryResponse,
   TeamRepositoryPermission,
   OrgCollaboratorQueryResponse,
+  OrgAppQueryResponse,
 } from './GraphQLClient';
 import {
   UserEntity,
@@ -156,7 +157,6 @@ export default class OrganizationAccountClient {
         return rateLimitConsumed;
       });
     }
-
     return this.teams || [];
   }
 
@@ -363,6 +363,34 @@ export default class OrganizationAccountClient {
     }
 
     return this.members || [];
+  }
+
+  async getInstalledApps(): Promise<any> {
+    //try {
+    const installedApps = await this.v3.paginate(
+      'GET /orgs/{org}/installations' as any, // https://docs.github.com/en/rest/reference/orgs#list-app-installations-for-an-organization
+      {
+        org: this.login,
+        per_page: 100,
+      },
+      (response) => {
+        this.logger.info(
+          {
+            installedAppsPageLength: response.data.length,
+          },
+          'Fetched page of installed GitHub applications',
+        );
+        this.v3RateLimitConsumed++;
+        return response.data;
+      },
+    );
+    return installedApps;
+    /*
+    } catch (err) {
+      this.logger.warn({}, 'Could not get access to apps');
+      return [];
+      //throw new IntegrationError(err);
+    } */
   }
 
   async getPullRequestEntity(

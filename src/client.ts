@@ -17,11 +17,6 @@ import {
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
-import {
-  GitHubGraphQLClient,
-  OrgCollaboratorQueryResponse,
-  OrgTeamRepoQueryResponse,
-} from './client/GraphQLClient';
 import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
 import {
   OrgMemberQueryResponse,
@@ -29,6 +24,10 @@ import {
   OrgTeamQueryResponse,
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
+  GitHubGraphQLClient,
+  OrgTeamRepoQueryResponse,
+  OrgCollaboratorQueryResponse,
+  OrgAppQueryResponse,
 } from './client/GraphQLClient';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
@@ -106,6 +105,25 @@ export class APIClient {
       );
       team.repos = allTeamRepos.filter((repo) => repo.teams === team.id);
       await iteratee(team);
+    }
+  }
+
+  /**
+   * Iterates each installed GitHub application.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateApps(
+    iteratee: ResourceIteratee<OrgAppQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps();
+    for (const app of apps) {
+      console.log('follows is the app output:');
+      console.log(app); //TODO: delete this
+      await iteratee(app);
     }
   }
 
@@ -217,6 +235,8 @@ export class APIClient {
     }
 
     //checking for proper scopes
+    console.log('scopes:');
+    console.log(myPermissions);
     if (
       !(myPermissions.members === 'read' || myPermissions.members === 'write')
     ) {
@@ -233,6 +253,7 @@ export class APIClient {
         'Integration requires read access to repository metadata. See GitHub App permissions.',
       );
     }
+    //note that ingesting installed applications requires scope organization_administration:read
     //scopes check done
 
     let login: string = this.config.githubAppDefaultLogin;

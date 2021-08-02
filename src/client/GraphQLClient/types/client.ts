@@ -1,3 +1,5 @@
+import { TokenPermissions } from '../../../types';
+
 export enum OrganizationResource {
   Organization = 'organization',
   Members = 'members',
@@ -86,6 +88,21 @@ export interface OrgRepoQueryResponse extends Node {
 export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
   teams: string;
   permission: TeamRepositoryPermission;
+}
+
+export interface OrgAppQueryResponse extends Node {
+  slug: string;
+  node_id: string;
+  owner: Actor;
+  name: string;
+  description: string;
+  external_url: string;
+  html_url: string;
+  created_at: string;
+  updated_at: string;
+  permissions: TokenPermissions;
+  events: string[];
+  installations_count: number;
 }
 
 interface OrganizationResources {

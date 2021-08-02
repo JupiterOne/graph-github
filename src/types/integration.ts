@@ -32,21 +32,32 @@ export interface TokenPermissions {
   team_discussions?: string; //'read' or 'write'
   administration?: string; //'read' or 'write'
   actions?: string;
+  blocking?: string;
   checks?: string;
   contents?: string;
   deployments?: string;
   discussions?: string;
+  emails?: string;
   environments?: string;
+  followers?: string;
+  gists?: string;
+  gpg_keys?: string;
+  interaction_limits?: string;
   issues?: string;
+  keys?: string;
   packages?: string;
   pages?: string;
+  plan?: string;
+  profile?: string;
   pull_requests?: string;
   repository_hooks?: string;
   repository_projects?: string;
   secrets?: string;
   secret_scanning_alerts?: string;
   security_events?: string;
+  starring?: string;
   statuses?: string;
   vulnerability_alerts?: string;
+  watching?: string;
   workflows?: string;
 }

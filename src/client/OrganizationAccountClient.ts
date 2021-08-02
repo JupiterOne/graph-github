@@ -298,6 +298,29 @@ export default class OrganizationAccountClient {
     return this.teamRepositories || [];
   }
 
+  async getRepoCollaborators(repoName: string): Promise<any> {
+    try {
+      const repoCollaborators = await this.v3.paginate(
+        'GET /repos/{owner}/{repo}/collaborators' as any, // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
+        {
+          owner: this.login,
+          repo: repoName,
+          per_page: 100,
+          affiliation: 'direct',
+        },
+        (response) => {
+          this.logger.info('Fetched page of repo collaborators');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+
+      return repoCollaborators;
+    } catch (err) {
+      throw new IntegrationError(err);
+    }
+  }
+
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
     if (!this.members) {
       await this.queryGraphQL('members', async () => {

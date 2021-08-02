@@ -120,6 +120,11 @@ export class APIClient {
     }
     const repos: OrgRepoQueryResponse[] = await this.accountClient.getRepositories();
     for (const repo of repos) {
+      const collaborators: any = await this.accountClient.getRepoCollaborators(
+        repo.name,
+      );
+      console.log('collaborators:');
+      console.log(collaborators);
       await iteratee(repo);
     }
   }

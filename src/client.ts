@@ -91,6 +91,11 @@ export class APIClient {
     }
     const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
     const allTeamMembers: OrgTeamMemberQueryResponse[] = await this.accountClient.getTeamMembers();
+    //to delete:
+    console.log('all team members');
+    for (const tm of allTeamMembers) {
+      console.log(tm);
+    }
     // Check 'useRestForTeamRepos' config variable as a hack to allow large github
     // accounts to bypass a Github error. Please delete this code once that error is fixed.
     const allTeamRepos: OrgTeamRepoQueryResponse[] = this.config

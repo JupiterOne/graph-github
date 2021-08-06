@@ -27,4 +27,5 @@ export const GITHUB_PR_ENTITY_CLASS = 'PR';
 export const GITHUB_TEAM_ENTITY_TYPE = 'github_team';
 export const GITHUB_TEAM_ENTITY_CLASS = 'UserGroup';
 export const GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE = 'github_team_has_user';
-export const GITHUB_TEAM_REPO_RELATIONSHIP_TYPE = 'github_team_allows_repo';
+export const GITHUB_REPO_TEAM_RELATIONSHIP_TYPE = 'github_repo_allows_team';
+export const GITHUB_REPO_USER_RELATIONSHIP_TYPE = 'github_repo_allows_user';

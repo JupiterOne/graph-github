@@ -74,6 +74,7 @@ export class APIClient {
     }
     const members: OrgMemberQueryResponse[] = await this.accountClient.getMembers();
     for (const member of members) {
+      console.log(member);
       await iteratee(member);
     }
   }
@@ -102,6 +103,12 @@ export class APIClient {
       .useRestForTeamRepos
       ? await this.accountClient.getTeamReposWithRest()
       : await this.accountClient.getTeamRepositories();
+
+    //to delete:
+    console.log('all team repo rels');
+    for (const tm of allTeamRepos) {
+      console.log(tm);
+    }
 
     for (const team of teams) {
       team.members = allTeamMembers.filter(

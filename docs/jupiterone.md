@@ -111,12 +111,12 @@ The following relationships are created/mapped:
 | `github_account`      | **HAS**               | `github_team`         |
 | `github_account`      | **HAS**               | `github_user`         |
 | `github_account`      | **OWNS**              | `github_repo`         |
+| `github_repo`         | **ALLOWS**            | `github_team`         |
 | `github_repo`         | **HAS**               | `github_pullrequest`  |
-| `github_team`         | **ALLOWS**            | `github_repo`         |
 | `github_team`         | **HAS**               | `github_user`         |
 | `github_user`         | **APPROVED**          | `github_pullrequest`  |
 | `github_user`         | **MANAGES**           | `github_account`      |
-| `github_team`         | **MANAGES**           | `github_team`         |
+| `github_user`         | **MANAGES**           | `github_team`         |
 | `github_user`         | **OPENED**            | `github_pullrequest`  |
 | `github_user`         | **REVIEWED**          | `github_pullrequest`  |
 

@@ -306,7 +306,7 @@ export default class OrganizationAccountClient {
           owner: this.login,
           repo: repoName,
           per_page: 100,
-          affiliation: 'direct',
+          affiliation: 'all',
         },
         (response) => {
           this.logger.info('Fetched page of repo collaborators');

@@ -1,7 +1,14 @@
 import {
   setRawData,
   parseTimePropertyValue,
+  Relationship,
+  RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
+
+import {
+  GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+} from '../constants';
 
 import {
   AccountEntity,
@@ -14,6 +21,7 @@ import {
   AccountType,
   PullsListResponseItem,
   PullsListCommitsResponseItem,
+  RepoTeamRelationship,
 } from '../types';
 import { Approval } from '../approval/collectCommitsForPR';
 import {
@@ -65,7 +73,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     _type: GITHUB_TEAM_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
-    name: data.slug, //this works, but why? Where is .slug set?
+    name: data.slug,
     displayName: data.name,
     fullName: data.name,
   };
@@ -252,4 +260,44 @@ export function toPullRequestEntity(
     rawData: omit(data, rawDataPropertiesToRemove),
   });
   return entity;
+}
+
+export function createRepoAllowsTeamRelationship(
+  repo: RepoEntity,
+  team: TeamEntity,
+  permission: string,
+): RepoTeamRelationship {
+  return {
+    _key: `${repo._key}|allows|${team._key}`,
+    _class: RelationshipClass.ALLOWS,
+    _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
+    _fromEntityKey: repo._key,
+    _toEntityKey: team._key,
+    displayName: RelationshipClass.ALLOWS,
+    permission: permission,
+  };
+}
+
+export function createRepoAllowsUserRelationship(
+  repo: RepoEntity,
+  user: UserEntity,
+  collaboratorType: string,
+  permissions: {
+    admin: boolean;
+    push: boolean;
+    pull: boolean;
+  },
+): Relationship {
+  return {
+    _key: `${repo._key}|allows|${user._key}`,
+    _class: RelationshipClass.ALLOWS,
+    _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+    _fromEntityKey: repo._key,
+    _toEntityKey: user._key,
+    displayName: RelationshipClass.ALLOWS,
+    admin: permissions.admin,
+    push: permissions.push,
+    pull: permissions.pull,
+    collaboratorType: collaboratorType,
+  };
 }

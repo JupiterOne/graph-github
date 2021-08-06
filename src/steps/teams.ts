@@ -12,8 +12,15 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import {
   toTeamEntity,
   toOrganizationMemberEntityFromTeamMember,
+  createRepoAllowsTeamRelationship,
 } from '../sync/converters';
-import { AccountEntity, TeamEntity, UserEntity, RepoEntity } from '../types';
+import {
+  AccountEntity,
+  TeamEntity,
+  UserEntity,
+  RepoEntity,
+  RepoTeamRelationship,
+} from '../types';
 import sha from '../util/sha';
 import { TeamMemberRole } from '../client/GraphQLClient';
 import {
@@ -23,7 +30,7 @@ import {
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_TEAM_ENTITY_CLASS,
   GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
-  GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
+  GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
@@ -56,6 +63,9 @@ export async function fetchTeams({
       `Expected to find memberEntities in jobState.`,
     );
   }
+
+  //for use later in making Repo ALLOWS User relationships
+  const repoTeamRelationships: RepoTeamRelationship[] = [];
 
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
@@ -108,15 +118,20 @@ export async function fetchTeams({
           `Expected repo (CodeRepo) with id to exist (key=${repo.id})`,
         );
       }
-      await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.ALLOWS,
-          from: teamEntity,
-          to: repoEntity,
-        }),
+      const repoTeamRelationship = createRepoAllowsTeamRelationship(
+        repoEntity,
+        teamEntity,
+        repo.permission,
       );
+      await jobState.addRelationship(repoTeamRelationship);
+      repoTeamRelationships.push(repoTeamRelationship);
     }
   });
+
+  await jobState.setData(
+    'REPO_TEAM_RELATIONSHIPS_ARRAY',
+    repoTeamRelationships,
+  );
 }
 
 export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
@@ -146,14 +161,14 @@ export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
       {
         _type: GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.MANAGES,
-        sourceType: GITHUB_TEAM_ENTITY_TYPE,
+        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
         targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
       {
-        _type: GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
+        _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.ALLOWS,
-        sourceType: GITHUB_TEAM_ENTITY_TYPE,
-        targetType: GITHUB_REPO_ENTITY_TYPE,
+        sourceType: GITHUB_REPO_ENTITY_TYPE,
+        targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-users'],

@@ -15,6 +15,7 @@ import {
   OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
   TeamRepositoryPermission,
+  OrgCollaboratorQueryResponse,
 } from './GraphQLClient';
 import {
   UserEntity,
@@ -42,6 +43,7 @@ export default class OrganizationAccountClient {
   private teamMembers: OrgTeamMemberQueryResponse[] | undefined;
   private teamRepositories: OrgTeamRepoQueryResponse[] | undefined;
   private repositories: OrgRepoQueryResponse[] | undefined;
+  private collaborators: OrgCollaboratorQueryResponse[] | undefined;
 
   v3RateLimitConsumed: number;
   v4RateLimitConsumed: number;
@@ -298,7 +300,7 @@ export default class OrganizationAccountClient {
     return this.teamRepositories || [];
   }
 
-  async getRepoCollaborators(repoName: string): Promise<any> {
+  async getRepoCollaboratorsWithRest(repoName: string): Promise<any> {
     try {
       const repoCollaborators = await this.v3.paginate(
         'GET /repos/{owner}/{repo}/collaborators' as any, // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
@@ -306,7 +308,7 @@ export default class OrganizationAccountClient {
           owner: this.login,
           repo: repoName,
           per_page: 100,
-          affiliation: 'all',
+          affiliation: 'direct',
         },
         (response) => {
           this.logger.info('Fetched page of repo collaborators');
@@ -319,6 +321,25 @@ export default class OrganizationAccountClient {
     } catch (err) {
       throw new IntegrationError(err);
     }
+  }
+
+  async getRepoCollaborators(): Promise<OrgCollaboratorQueryResponse[]> {
+    if (!this.collaborators) {
+      await this.queryGraphQL('collaborators', async () => {
+        const {
+          collaborators,
+          rateLimitConsumed,
+        } = await this.v4.fetchOrganization(this.login, [
+          OrganizationResource.RepositoryCollaborators,
+        ]);
+
+        this.collaborators = collaborators;
+
+        return rateLimitConsumed;
+      });
+    }
+
+    return this.collaborators || [];
   }
 
   async getMembers(): Promise<OrgMemberQueryResponse[]> {

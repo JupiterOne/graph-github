@@ -20,6 +20,7 @@ import {
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
 } from '../constants';
+import { CollaboratorPermissions } from '../client/GraphQLClient';
 
 export async function fetchCollaborators({
   instance,
@@ -49,18 +50,10 @@ export async function fetchCollaborators({
       `Expected to find memberArray in jobState.`,
     );
   }
-  const repoTeamRelationships = await jobState.getData<RepoTeamRelationship[]>(
-    'REPO_TEAM_RELATIONSHIPS_ARRAY',
-  );
-  if (!repoTeamRelationships) {
-    throw new IntegrationMissingKeyError(
-      `Expected to find repoTeamRelationships in jobState.`,
-    );
-  }
 
   for (const repo of repoEntities) {
     //first, process the direct collaborators for this repo
-    const membersAllowed: string[] = []; //for use in team assigns later
+    const directMemberLogins: string[] = []; //for use in team assigns later
     await apiClient.iterateDirectCollaborators(repo, async (collab) => {
       //if the collab is in the user list, it's a team member that is directly
       //assigned to the repo (ie. not just as part of a team)
@@ -79,7 +72,7 @@ export async function fetchCollaborators({
           collab.permissions,
         );
         await jobState.addRelationship(repoUserRelationship);
-        membersAllowed.push(memberByLoginMap[collab.login]._key);
+        directMemberLogins.push(collab.login);
       } else {
         //this is an outside collaborator
         const collabEntity = (await jobState.addEntity(
@@ -93,63 +86,84 @@ export async function fetchCollaborators({
         );
         await jobState.addRelationship(repoUserRelationship);
       }
-    });
+    }); //end of direct collaborators iterateee
 
-    //now, having built relationships for the direct collaborators,
-    //add any relationships needed for members that have access to the
+    //Having built relationships for the direct collaborators,
+    //calculate any relationships needed for members that have access to the
     //repo because of team permissions
-    //for all teams ALLOWED by repo, for all members of
-    //that team, check to see if we already processed them, and if not,
-    //add the rel using the permissions of the team
+    //That is, for all teams ALLOWED by repo, for all members of
+    //that team, note the permissions afforded by that team
+
+    const repoTeamRelationships = await jobState.getData<
+      RepoTeamRelationship[]
+    >('REPO_TEAM_RELATIONSHIPS_ARRAY');
+    if (!repoTeamRelationships) {
+      throw new IntegrationMissingKeyError(
+        `Expected to find repoTeamRelationships in jobState.`,
+      );
+    }
+
+    const teamMemberLoginsMap = await jobState.getData<RepoTeamRelationship[]>(
+      'TEAM_MEMBER_LOGINS_MAP',
+    );
+    if (!teamMemberLoginsMap) {
+      throw new IntegrationMissingKeyError(
+        `Expected to find teamMemberLoginsMap in jobState.`,
+      );
+    }
+
+    //needed to calculate best permissions for a user on many teams
+    const loginPermissionsMap: IdEntityMap<CollaboratorPermissions> = {};
+    const loginsForThisRepo: string[] = [];
+
     const relsToTeams = repoTeamRelationships.filter(
       (rel) => rel._fromEntityKey === repo._key,
     );
-    /*can I do this: (ie. multiple conditions on iteration)
-    await jobState.iterateRelationships(
-      { 
-        _fromEntityKey: repo._key,
-        _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
-       },
-      async (repoTeamRel) => {
-        //stuff
-      }
-    ); */
-
     for (const teamRel of relsToTeams) {
-      const relsToMembers = teamMemberRelationships.filter(
-        (rel) => rel._fromEntityKey === teamRel._toEntityKey,
-      );
-      for (const relToMember of relsToMembers) {
-        if (!membersAllowed.includes(relToMember._toEntityKey)) {
-          const permissions = {
-            //Minimum permissions for any relationship here
-            admin: false,
-            push: false,
-            pull: true,
-          };
-          const teamPerm = teamRel.permission;
-          if (teamPerm === 'WRITE' || teamPerm === 'MAINTAIN') {
-            permissions.push = true;
+      const teamPerm = teamRel.permission;
+      const teamPermissions: CollaboratorPermissions = {
+        //Minimum permissions for any repo-team relationship
+        admin: false,
+        push: false,
+        pull: true,
+      };
+      if (teamPerm === 'WRITE' || teamPerm === 'MAINTAIN') {
+        teamPermissions.push = true;
+      }
+      if (teamPerm === 'ADMIN') {
+        teamPermissions.push = true;
+        teamPermissions.admin = true;
+      }
+      const teamMemberLogins = teamMemberLoginsMap[teamRel._toEntityKey];
+      for (const login of teamMemberLogins) {
+        if (!directMemberLogins.includes(login)) {
+          //the user wasn't a direct member
+          if (memberByLoginMap[login]) {
+            //the userEntity exists, so update user permissions to the best current or previous team permissions
+            if (loginPermissionsMap[login]) {
+              loginPermissionsMap[login].push =
+                loginPermissionsMap[login].push || teamPermissions.push;
+              loginPermissionsMap[login].admin =
+                loginPermissionsMap[login].admin || teamPermissions.admin;
+            } else {
+              loginPermissionsMap[login] = teamPermissions;
+            }
+            if (!loginsForThisRepo.includes(login)) {
+              loginsForThisRepo.push(login);
+            }
           }
-          if (teamRel.permission === 'ADMIN') {
-            permissions.push = true;
-            permissions.admin = true;
-          }
-          const memberEntity = memberArray.find(
-            (m) => m._key === relToMember._toEntityKey,
-          );
-          if (memberEntity) {
-            const repoUserRelationship = createRepoAllowsUserRelationship(
-              repo,
-              memberEntity,
-              'team',
-              permissions,
-            );
-            await jobState.addRelationship(repoUserRelationship);
-          }
-          membersAllowed.push(relToMember._toEntityKey);
         }
       }
+    } // end of team relationships from repo iterator
+    //so now we know the best team permissions applicable for each user for this repo
+    for (const login of loginsForThisRepo) {
+      const repoUserRelationship = createRepoAllowsUserRelationship(
+        repo,
+        memberByLoginMap[login],
+        'team',
+        loginPermissionsMap[login],
+      );
+      await jobState.addRelationship(repoUserRelationship);
     }
   } // end of repo iterator
 }

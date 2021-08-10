@@ -5,8 +5,8 @@ const pageInfo = `pageInfo {
   hasNextPage
 }`;
 
-export default function(
-  pageLimit: number = 100
+export default function (
+  pageLimit: number = 100,
 ): ResourceMap<ResourceMetadata> {
   return {
     [OrganizationResource.Organization]: {
@@ -16,13 +16,13 @@ export default function(
         id
         ...organizationFields
         ${children}
-      }`
+      }`,
     },
     [OrganizationResource.Members]: {
       graphRequestVariable: '$members: String',
       graphProperty: 'membersWithRole',
       factory: (
-        children: string = ''
+        children: string = '',
       ) => `membersWithRole(first: ${pageLimit}, after: $members) {
         edges {
           node {
@@ -35,13 +35,13 @@ export default function(
         }
 
         ${pageInfo}
-      }`
+      }`,
     },
     [OrganizationResource.Teams]: {
       graphRequestVariable: '$teams: String',
       graphProperty: 'teams',
       factory: (
-        children: string = ''
+        children: string = '',
       ) => `teams(first: ${pageLimit}, after: $teams) {
         edges {
           node {
@@ -55,14 +55,14 @@ export default function(
       }`,
       children: [
         OrganizationResource.TeamMembers,
-        OrganizationResource.TeamRepositories
-      ]
+        OrganizationResource.TeamRepositories,
+      ],
     },
     [OrganizationResource.TeamMembers]: {
       graphRequestVariable: '$teamMembers: String',
       graphProperty: 'members',
       factory: (
-        children: string = ''
+        children: string = '',
       ) => `members(first: ${pageLimit}, after: $teamMembers) {
         edges {
           node {
@@ -76,13 +76,13 @@ export default function(
 
         ${pageInfo}
       }`,
-      parent: OrganizationResource.Teams
+      parent: OrganizationResource.Teams,
     },
     [OrganizationResource.TeamRepositories]: {
       graphRequestVariable: '$teamRepositories: String',
       graphProperty: 'repositories',
       factory: (
-        children: string = ''
+        children: string = '',
       ) => `repositories(first: ${pageLimit}, after: $teamRepositories) {
         edges {
           node {
@@ -96,13 +96,13 @@ export default function(
 
         ${pageInfo}
       }`,
-      parent: OrganizationResource.Teams
+      parent: OrganizationResource.Teams,
     },
     [OrganizationResource.Repositories]: {
       graphRequestVariable: '$repositories: String',
       graphProperty: 'repositories',
       factory: (
-        children: string = ''
+        children: string = '',
       ) => `repositories(first: ${pageLimit}, after: $repositories) {
         edges {
           node {
@@ -113,7 +113,30 @@ export default function(
         }
 
         ${pageInfo}
-      }`
-    }
+      }`,
+      children: [OrganizationResource.RepositoryCollaborators],
+    },
+    //this is not quite working right yet
+    [OrganizationResource.RepositoryCollaborators]: {
+      graphRequestVariable: '$repositoryCollaborators: String',
+      graphProperty: 'collaborators',
+      factory: (
+        children: string = '',
+      ) => `collaborators(first: ${pageLimit}, after: $repositoryCollaborators) {
+        edges {
+          node {
+            id
+            ...userFields
+            ${children}
+          }
+         
+        },
+        nodes {
+          ...userFields
+        }
+        ${pageInfo}
+      }`,
+      parent: OrganizationResource.Repositories,
+    },
   };
 }

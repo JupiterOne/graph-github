@@ -20,6 +20,7 @@ import {
   UserEntity,
   RepoEntity,
   RepoTeamRelationship,
+  IdEntityMap,
 } from '../types';
 import sha from '../util/sha';
 import { TeamMemberRole } from '../client/GraphQLClient';
@@ -66,6 +67,7 @@ export async function fetchTeams({
 
   //for use later in making Repo ALLOWS User relationships
   const repoTeamRelationships: RepoTeamRelationship[] = [];
+  const teamMemberLoginsMap: IdEntityMap<string[]> = {};
 
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
@@ -111,6 +113,10 @@ export async function fetchTeams({
       }
     }
 
+    //place an array of team member logins in the map
+    teamMemberLoginsMap[teamEntity._key] =
+      team.members?.map((m) => m.login) || [];
+
     for (const repo of team.repos || []) {
       const repoEntity = repoEntities.find((r) => r._key === repo.id);
       if (!repoEntity) {
@@ -132,6 +138,8 @@ export async function fetchTeams({
     'REPO_TEAM_RELATIONSHIPS_ARRAY',
     repoTeamRelationships,
   );
+
+  await jobState.setData('TEAM_MEMBER_LOGINS_MAP', teamMemberLoginsMap);
 }
 
 export const teamSteps: IntegrationStep<IntegrationConfig>[] = [

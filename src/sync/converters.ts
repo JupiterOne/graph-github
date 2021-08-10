@@ -48,6 +48,7 @@ import {
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgCollaboratorQueryResponse,
+  CollaboratorPermissions,
 } from '../client/GraphQLClient';
 
 import uniq from 'lodash.uniq';
@@ -302,11 +303,7 @@ export function createRepoAllowsUserRelationship(
   repo: RepoEntity,
   user: UserEntity,
   collaboratorType: string,
-  permissions: {
-    admin: boolean;
-    push: boolean;
-    pull: boolean;
-  },
+  permissions: CollaboratorPermissions,
 ): Relationship {
   return {
     _key: `${repo._key}|allows|${user._key}`,
@@ -316,7 +313,9 @@ export function createRepoAllowsUserRelationship(
     _toEntityKey: user._key,
     displayName: RelationshipClass.ALLOWS,
     admin: permissions.admin,
+    maintain: permissions.maintain,
     push: permissions.push,
+    triage: permissions.triage,
     pull: permissions.pull,
     collaboratorType: collaboratorType,
   };

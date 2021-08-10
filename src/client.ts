@@ -19,6 +19,7 @@ import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
 import {
   GitHubGraphQLClient,
+  OrgCollaboratorQueryResponse,
   OrgTeamRepoQueryResponse,
 } from './client/GraphQLClient';
 import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
@@ -132,12 +133,21 @@ export class APIClient {
     }
     const repos: OrgRepoQueryResponse[] = await this.accountClient.getRepositories();
     for (const repo of repos) {
-      const collaborators: any = await this.accountClient.getRepoCollaborators(
+      const collaborators: any = await this.accountClient.getRepoCollaboratorsWithRest(
         repo.name,
       );
       console.log('collaborators:');
       console.log(collaborators);
       await iteratee(repo);
+    }
+
+    //as a seperate issue, let's see if GraphQL can get me all collabs
+
+    const collabs: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaborators();
+    console.log('GraphQL approach to collabs:');
+    console.log(collabs);
+    for (const collab of collabs) {
+      console.log(collab);
     }
   }
 
@@ -169,6 +179,37 @@ export class APIClient {
       for (const pr of pullrequests) {
         await iteratee(pr);
       }
+    }
+  }
+
+  /**
+   * Iterates the collaborators for a repo in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateDirectCollaborators(
+    repo: RepoEntity,
+    iteratee: ResourceIteratee<OrgCollaboratorQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    const collaborators: any = await this.accountClient.getRepoCollaboratorsWithRest(
+      repo.name,
+    );
+    console.log('collaborators:');
+    console.log(collaborators);
+    for (const collab of collaborators) {
+      await iteratee(collab);
+    }
+
+    //as a seperate issue, let's see if GraphQL can get me all collabs
+    //this is how we would prefer to do it
+    const collabs: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaborators();
+    console.log('GraphQL approach to collabs:');
+    console.log(collabs);
+    for (const collab of collabs) {
+      console.log(collab);
     }
   }
 

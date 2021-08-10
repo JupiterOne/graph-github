@@ -7,7 +7,10 @@ import {
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { createRepoAllowsUserRelationship } from '../sync/converters';
+import {
+  createRepoAllowsUserRelationship,
+  toOrganizationCollaboratorEntity,
+} from '../sync/converters';
 import {
   UserEntity,
   RepoEntity,
@@ -16,7 +19,8 @@ import {
 } from '../types';
 import {
   GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_MEMBER_ENTITY_CLASS,
+  GITHUB_COLLABORATOR_ENTITY_TYPE,
+  GITHUB_COLLABORATOR_ENTITY_CLASS,
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
 } from '../constants';
@@ -51,6 +55,9 @@ export async function fetchCollaborators({
     );
   }
 
+  const collaboratorsByLoginMap: IdEntityMap<UserEntity> = {};
+  const collabArray: UserEntity[] = [];
+
   for (const repo of repoEntities) {
     //first, process the direct collaborators for this repo
     const directMemberLogins: string[] = []; //for use in team assigns later
@@ -75,9 +82,17 @@ export async function fetchCollaborators({
         directMemberLogins.push(collab.login);
       } else {
         //this is an outside collaborator
-        const collabEntity = (await jobState.addEntity(
-          createOutsideCollabUser(collab),
-        )) as UserEntity;
+        //did we make a collaborator entity already?
+        let collabEntity;
+        if (collaboratorsByLoginMap[collab.login]) {
+          collabEntity = collaboratorsByLoginMap[collab.login];
+        } else {
+          collabEntity = (await jobState.addEntity(
+            toOrganizationCollaboratorEntity(collab),
+          )) as UserEntity;
+          collaboratorsByLoginMap[collab.login] = collabEntity;
+          collabArray.push(collabEntity);
+        }
         const repoUserRelationship = createRepoAllowsUserRelationship(
           repo,
           collabEntity,
@@ -124,14 +139,27 @@ export async function fetchCollaborators({
       const teamPermissions: CollaboratorPermissions = {
         //Minimum permissions for any repo-team relationship
         admin: false,
+        maintain: false,
         push: false,
+        triage: false,
         pull: true,
       };
-      if (teamPerm === 'WRITE' || teamPerm === 'MAINTAIN') {
+      if (teamPerm === 'TRIAGE') {
+        teamPermissions.triage = true;
+      }
+      if (teamPerm === 'WRITE') {
+        teamPermissions.triage = true;
         teamPermissions.push = true;
       }
-      if (teamPerm === 'ADMIN') {
+      if (teamPerm === 'MAINTAIN') {
+        teamPermissions.triage = true;
         teamPermissions.push = true;
+        teamPermissions.maintain = true;
+      }
+      if (teamPerm === 'ADMIN') {
+        teamPermissions.triage = true;
+        teamPermissions.push = true;
+        teamPermissions.maintain = true;
         teamPermissions.admin = true;
       }
       const teamMemberLogins = teamMemberLoginsMap[teamRel._toEntityKey];
@@ -141,8 +169,12 @@ export async function fetchCollaborators({
           if (memberByLoginMap[login]) {
             //the userEntity exists, so update user permissions to the best current or previous team permissions
             if (loginPermissionsMap[login]) {
+              loginPermissionsMap[login].triage =
+                loginPermissionsMap[login].triage || teamPermissions.triage;
               loginPermissionsMap[login].push =
                 loginPermissionsMap[login].push || teamPermissions.push;
+              loginPermissionsMap[login].maintain =
+                loginPermissionsMap[login].maintain || teamPermissions.maintain;
               loginPermissionsMap[login].admin =
                 loginPermissionsMap[login].admin || teamPermissions.admin;
             } else {
@@ -166,6 +198,13 @@ export async function fetchCollaborators({
       await jobState.addRelationship(repoUserRelationship);
     }
   } // end of repo iterator
+  //save updated user maps and arrays for use in PRs later
+  for (const outsideCollab of collabArray) {
+    memberByLoginMap[outsideCollab.login] = outsideCollab;
+    memberArray.push(outsideCollab);
+  }
+  await jobState.setData('USER_BY_LOGIN_MAP', memberByLoginMap);
+  await jobState.setData('USER_ARRAY', memberArray);
 }
 
 export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
@@ -175,8 +214,8 @@ export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Collaborator',
-        _type: GITHUB_MEMBER_ENTITY_TYPE,
-        _class: GITHUB_MEMBER_ENTITY_CLASS,
+        _type: GITHUB_COLLABORATOR_ENTITY_TYPE,
+        _class: GITHUB_COLLABORATOR_ENTITY_CLASS,
       },
     ],
     relationships: [
@@ -185,6 +224,12 @@ export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
         _class: RelationshipClass.ALLOWS,
         sourceType: GITHUB_REPO_ENTITY_TYPE,
         targetType: GITHUB_MEMBER_ENTITY_TYPE,
+      },
+      {
+        _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+        _class: RelationshipClass.ALLOWS,
+        sourceType: GITHUB_REPO_ENTITY_TYPE,
+        targetType: GITHUB_COLLABORATOR_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-users', 'fetch-teams'],

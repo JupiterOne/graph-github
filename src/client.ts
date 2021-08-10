@@ -122,21 +122,7 @@ export class APIClient {
     }
     const repos: OrgRepoQueryResponse[] = await this.accountClient.getRepositories();
     for (const repo of repos) {
-      const collaborators: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
-        repo.name,
-      );
-      console.log('collaborators:');
-      console.log(collaborators);
       await iteratee(repo);
-    }
-
-    //as a seperate issue, let's see if GraphQL can get me all collabs
-
-    const collabs: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaborators();
-    console.log('GraphQL approach to collabs:');
-    console.log(collabs);
-    for (const collab of collabs) {
-      console.log(collab);
     }
   }
 
@@ -186,20 +172,20 @@ export class APIClient {
     const collaborators: any = await this.accountClient.getRepoCollaboratorsWithRest(
       repo.name,
     );
-    console.log('collaborators:');
-    console.log(collaborators);
     for (const collab of collaborators) {
       await iteratee(collab);
     }
 
-    //as a seperate issue, let's see if GraphQL can get me all collabs
-    //this is how we would prefer to do it
+    //let's see if GraphQL can get all collabs
+    //this is how we would prefer to do it, but it's not working right now
+    /*
     const collabs: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaborators();
     console.log('GraphQL approach to collabs:');
     console.log(collabs);
     for (const collab of collabs) {
       console.log(collab);
     }
+    */
   }
 
   public async setupAccountClient(): Promise<void> {

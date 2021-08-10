@@ -445,7 +445,7 @@ export default class OrganizationAccountClient {
       return pMap(
         pullRequests,
         async (pullRequest) => {
-          // This is increadably slow thanks to Github's rate and abuse limiting. Be careful when turning this on!
+          // This is incredibly slow thanks to Github's rate and abuse limiting. Be careful when turning this on!
           if (this.analyzeCommitApproval) {
             const {
               allCommits,
@@ -633,7 +633,6 @@ export default class OrganizationAccountClient {
       const rateLimitConsumed = await performQuery();
       this.v4RateLimitConsumed += rateLimitConsumed;
     } catch (responseErrors) {
-      console.log(responseErrors);
       throw new IntegrationError(responseErrors);
     }
   }

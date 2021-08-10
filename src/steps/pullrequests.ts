@@ -50,18 +50,19 @@ export async function fetchPrs({
       `Expected to find repoEntities in jobState.`,
     );
   }
-  const memberEntities = await jobState.getData<UserEntity[]>('MEMBER_ARRAY');
-  if (!memberEntities) {
+  const userEntities = await jobState.getData<UserEntity[]>('USER_ARRAY');
+  if (!userEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected to find memberEntities in jobState.`,
+      `Expected to find userEntities in jobState.`,
     );
   }
-  const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
-    'MEMBER_BY_LOGIN_MAP',
+
+  const userByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+    'USER_BY_LOGIN_MAP',
   );
-  if (!memberByLoginMap) {
+  if (!userByLoginMap) {
     throw new IntegrationMissingKeyError(
-      `Expected to find memberByLoginMap in jobState.`,
+      `Expected to find userByLoginMap in jobState.`,
     );
   }
 
@@ -69,8 +70,8 @@ export async function fetchPrs({
     await apiClient.iteratePullRequests(
       accountEntity,
       repoEntity,
-      memberEntities,
-      memberByLoginMap,
+      userEntities,
+      userByLoginMap,
       logger,
       async (pr) => {
         //this is a different pattern than for members, teams, and repos
@@ -87,11 +88,11 @@ export async function fetchPrs({
           }),
         );
 
-        if (memberByLoginMap[pr.authorLogin]) {
+        if (userByLoginMap[pr.authorLogin]) {
           await jobState.addRelationship(
             createDirectRelationship({
               _class: RelationshipClass.OPENED,
-              from: memberByLoginMap[pr.authorLogin],
+              from: userByLoginMap[pr.authorLogin],
               to: prEntity,
             }),
           );
@@ -99,11 +100,11 @@ export async function fetchPrs({
 
         if (pr.reviewerLogins) {
           for (const reviewer of pr.reviewerLogins) {
-            if (memberByLoginMap[reviewer]) {
+            if (userByLoginMap[reviewer]) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.REVIEWED,
-                  from: memberByLoginMap[reviewer],
+                  from: userByLoginMap[reviewer],
                   to: prEntity,
                 }),
               );
@@ -113,11 +114,11 @@ export async function fetchPrs({
 
         if (pr.approverLogins) {
           for (const approver of pr.approverLogins) {
-            if (memberByLoginMap[approver]) {
+            if (userByLoginMap[approver]) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.APPROVED,
-                  from: memberByLoginMap[approver],
+                  from: userByLoginMap[approver],
                   to: prEntity,
                 }),
               );
@@ -171,7 +172,7 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
         partial: true,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users'],
+    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-collaborators'],
     executionHandler: fetchPrs,
   },
 ];

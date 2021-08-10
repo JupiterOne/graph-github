@@ -8,6 +8,18 @@ import {
 import {
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+  GITHUB_ACCOUNT_ENTITY_TYPE,
+  GITHUB_ACCOUNT_ENTITY_CLASS,
+  GITHUB_MEMBER_ENTITY_TYPE,
+  GITHUB_MEMBER_ENTITY_CLASS,
+  GITHUB_REPO_ENTITY_TYPE,
+  GITHUB_REPO_ENTITY_CLASS,
+  GITHUB_PR_ENTITY_TYPE,
+  GITHUB_PR_ENTITY_CLASS,
+  GITHUB_TEAM_ENTITY_TYPE,
+  GITHUB_TEAM_ENTITY_CLASS,
+  GITHUB_COLLABORATOR_ENTITY_CLASS,
+  GITHUB_COLLABORATOR_ENTITY_TYPE,
 } from '../constants';
 
 import {
@@ -35,20 +47,9 @@ import {
   OrgTeamQueryResponse,
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
+  OrgCollaboratorQueryResponse,
 } from '../client/GraphQLClient';
 
-import {
-  GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_ACCOUNT_ENTITY_CLASS,
-  GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_MEMBER_ENTITY_CLASS,
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_REPO_ENTITY_CLASS,
-  GITHUB_PR_ENTITY_TYPE,
-  GITHUB_PR_ENTITY_CLASS,
-  GITHUB_TEAM_ENTITY_TYPE,
-  GITHUB_TEAM_ENTITY_CLASS,
-} from '../constants';
 import uniq from 'lodash.uniq';
 import omit from 'lodash.omit';
 
@@ -132,6 +133,25 @@ export function toOrganizationMemberEntityFromTeamMember(
     name: data.login,
     mfaEnabled: false,
     role: data.role,
+  };
+  setRawData(userEntity, { name: 'default', rawData: data });
+  return userEntity;
+}
+
+export function toOrganizationCollaboratorEntity(
+  data: OrgCollaboratorQueryResponse,
+): UserEntity {
+  const userEntity: UserEntity = {
+    _class: [GITHUB_COLLABORATOR_ENTITY_CLASS],
+    _type: GITHUB_COLLABORATOR_ENTITY_TYPE,
+    _key: data.node_id,
+    login: data.login,
+    username: data.login,
+    displayName: data.name || data.login,
+    name: data.name,
+    mfaEnabled: undefined,
+    role: 'outside collaborator',
+    siteAdmin: false,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;

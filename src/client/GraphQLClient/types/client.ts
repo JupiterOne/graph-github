@@ -44,7 +44,9 @@ export interface OrgCollaboratorQueryResponse extends Node, Actor {
 
 export interface CollaboratorPermissions {
   admin: boolean;
+  maintain?: boolean;
   push: boolean;
+  triage?: boolean;
   pull: boolean;
 }
 

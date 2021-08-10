@@ -94,13 +94,14 @@ https://github.com/JupiterOne/sdk/blob/master/docs/integrations/development.md
 
 The following entities are created:
 
-| Resources           | Entity `_type`       | Entity `_class` |
-| ------------------- | -------------------- | --------------- |
-| Account             | `github_account`     | `Account`       |
-| GitHub Pull Request | `github_pullrequest` | `PR`            |
-| GitHub Team         | `github_team`        | `UserGroup`     |
-| Github Repo         | `github_repo`        | `CodeRepo`      |
-| Github User         | `github_user`        | `User`          |
+| Resources           | Entity `_type`        | Entity `_class` |
+| ------------------- | --------------------- | --------------- |
+| Account             | `github_account`      | `Account`       |
+| GitHub Collaborator | `github_collaborator` | `User`          |
+| GitHub Pull Request | `github_pullrequest`  | `PR`            |
+| GitHub Team         | `github_team`         | `UserGroup`     |
+| Github Repo         | `github_repo`         | `CodeRepo`      |
+| Github User         | `github_user`         | `User`          |
 
 ### Relationships
 
@@ -112,6 +113,7 @@ The following relationships are created/mapped:
 | `github_account`      | **HAS**               | `github_user`         |
 | `github_account`      | **OWNS**              | `github_repo`         |
 | `github_repo`         | **ALLOWS**            | `github_team`         |
+| `github_repo`         | **ALLOWS**            | `github_user`         |
 | `github_repo`         | **HAS**               | `github_pullrequest`  |
 | `github_team`         | **HAS**               | `github_user`         |
 | `github_user`         | **APPROVED**          | `github_pullrequest`  |

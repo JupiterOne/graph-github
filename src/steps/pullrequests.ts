@@ -50,20 +50,30 @@ export async function fetchPrs({
       `Expected to find repoEntities in jobState.`,
     );
   }
-  const userEntities = await jobState.getData<UserEntity[]>('USER_ARRAY');
+  let userEntities = await jobState.getData<UserEntity[]>('USER_ARRAY');
   if (!userEntities) {
-    throw new IntegrationMissingKeyError(
-      `Expected to find userEntities in jobState.`,
-    );
+    //try the members-only (no outside collaborators) array
+    userEntities = await jobState.getData<UserEntity[]>('MEMBER_ARRAY');
+    if (!userEntities) {
+      throw new IntegrationMissingKeyError(
+        `Expected to find userEntities in jobState.`,
+      );
+    }
   }
 
-  const userByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+  let userByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
     'USER_BY_LOGIN_MAP',
   );
   if (!userByLoginMap) {
-    throw new IntegrationMissingKeyError(
-      `Expected to find userByLoginMap in jobState.`,
+    //try the members-only (no outside collaborators) map
+    userByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+      'MEMBER_BY_LOGIN_MAP',
     );
+    if (!userByLoginMap) {
+      throw new IntegrationMissingKeyError(
+        `Expected to find userByLoginMap in jobState.`,
+      );
+    }
   }
 
   for (const repoEntity of repoEntities) {
@@ -88,11 +98,11 @@ export async function fetchPrs({
           }),
         );
 
-        if (userByLoginMap[pr.authorLogin]) {
+        if (userByLoginMap![pr.authorLogin]) {
           await jobState.addRelationship(
             createDirectRelationship({
               _class: RelationshipClass.OPENED,
-              from: userByLoginMap[pr.authorLogin],
+              from: userByLoginMap![pr.authorLogin],
               to: prEntity,
             }),
           );
@@ -100,11 +110,11 @@ export async function fetchPrs({
 
         if (pr.reviewerLogins) {
           for (const reviewer of pr.reviewerLogins) {
-            if (userByLoginMap[reviewer]) {
+            if (userByLoginMap![reviewer]) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.REVIEWED,
-                  from: userByLoginMap[reviewer],
+                  from: userByLoginMap![reviewer],
                   to: prEntity,
                 }),
               );
@@ -114,11 +124,11 @@ export async function fetchPrs({
 
         if (pr.approverLogins) {
           for (const approver of pr.approverLogins) {
-            if (userByLoginMap[approver]) {
+            if (userByLoginMap![approver]) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.APPROVED,
-                  from: userByLoginMap[approver],
+                  from: userByLoginMap![approver],
                   to: prEntity,
                 }),
               );

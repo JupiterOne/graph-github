@@ -94,14 +94,13 @@ https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md
 
 The following entities are created:
 
-| Resources           | Entity `_type`        | Entity `_class` |
-| ------------------- | --------------------- | --------------- |
-| Account             | `github_account`      | `Account`       |
-| GitHub Collaborator | `github_collaborator` | `User`          |
-| GitHub Pull Request | `github_pullrequest`  | `PR`            |
-| GitHub Team         | `github_team`         | `UserGroup`     |
-| Github Repo         | `github_repo`         | `CodeRepo`      |
-| Github User         | `github_user`         | `User`          |
+| Resources           | Entity `_type`       | Entity `_class` |
+| ------------------- | -------------------- | --------------- |
+| Account             | `github_account`     | `Account`       |
+| GitHub Pull Request | `github_pullrequest` | `PR`            |
+| GitHub Team         | `github_team`        | `UserGroup`     |
+| Github Repo         | `github_repo`        | `CodeRepo`      |
+| Github User         | `github_user`        | `User`          |
 
 ### Relationships
 

@@ -7,10 +7,13 @@ import { IntegrationConfig, sanitizeConfig } from '../config';
 import { fetchMembers } from './members';
 import { fetchRepos } from './repos';
 import { fetchTeams } from './teams';
+import { fetchCollaborators } from './collaborators';
 import { fetchPrs } from './pullrequests';
 import { fetchAccountDetails } from './account';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
+
+jest.setTimeout(10000);
 
 let recording: Recording;
 afterEach(async () => {
@@ -43,6 +46,7 @@ test('should collect data', async () => {
   await fetchMembers(context);
   await fetchRepos(context);
   await fetchTeams(context);
+  await fetchCollaborators(context);
   await fetchPrs(context);
 
   // Review snapshot, failure is a regression

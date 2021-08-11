@@ -149,7 +149,7 @@ export function toOrganizationCollaboratorEntity(
     login: data.login,
     username: data.login,
     displayName: data.name || data.login,
-    name: data.name,
+    name: data.name || data.login,
     mfaEnabled: undefined,
     role: 'outside collaborator',
     siteAdmin: false,

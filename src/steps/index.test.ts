@@ -143,7 +143,6 @@ test('should collect data', async () => {
     },
   });
 
-  /*
   const prs = context.jobState.collectedEntities.filter((e) =>
     e._class.includes('PR'),
   );
@@ -163,5 +162,5 @@ test('should collect data', async () => {
       },
       required: ['webLink', 'displayName'],
     },
-  });*/
+  });
 });

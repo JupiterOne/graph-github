@@ -16,7 +16,6 @@ import {
   OrgTeamRepoQueryResponse,
   TeamRepositoryPermission,
   OrgCollaboratorQueryResponse,
-  OrgAppQueryResponse,
 } from './GraphQLClient';
 import {
   UserEntity,
@@ -34,6 +33,7 @@ import {
 import collectCommitsForPR from '../approval/collectCommitsForPR';
 import { toPullRequestEntity } from '../sync/converters';
 import sha from '../util/sha';
+import { request } from '@octokit/request';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -365,32 +365,28 @@ export default class OrganizationAccountClient {
     return this.members || [];
   }
 
-  async getInstalledApps(): Promise<any> {
-    //try {
-    const installedApps = await this.v3.paginate(
-      'GET /orgs/{org}/installations' as any, // https://docs.github.com/en/rest/reference/orgs#list-app-installations-for-an-organization
-      {
-        org: this.login,
-        per_page: 100,
-      },
-      (response) => {
-        this.logger.info(
-          {
-            installedAppsPageLength: response.data.length,
-          },
-          'Fetched page of installed GitHub applications',
-        );
-        this.v3RateLimitConsumed++;
-        return response.data;
-      },
-    );
-    return installedApps;
-    /*
+  async getInstalledApps(ghsToken): Promise<any> {
+    try {
+      const reply = await request(`GET /orgs/${this.login}/installations`, {
+        headers: {
+          authorization: `Bearer ${ghsToken}`,
+        },
+        org: 'octokit',
+        type: 'private',
+      });
+      if (reply.data.installations) {
+        return reply.data.installations;
+      }
+      this.logger.warn({}, 'Found no installed GitHub apps');
+      return [];
     } catch (err) {
-      this.logger.warn({}, 'Could not get access to apps');
+      this.logger.warn(
+        {},
+        'Error while attempting to ingest to installed GitHub apps',
+      );
       return [];
       //throw new IntegrationError(err);
-    } */
+    }
   }
 
   async getPullRequestEntity(

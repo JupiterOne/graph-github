@@ -42,6 +42,8 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
  */
 export class APIClient {
   accountClient: OrganizationAccountClient;
+  ghsToken: string;
+  scopedForApps: boolean;
   constructor(
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
@@ -119,11 +121,16 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps();
-    for (const app of apps) {
-      console.log('follows is the app output:');
-      console.log(app); //TODO: delete this
-      await iteratee(app);
+    if (this.scopedForApps) {
+      const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps(
+        this.ghsToken,
+      );
+      console.log(`apps: ${JSON.stringify(apps, null, 2)}`);
+      /*for (const app of apps) {
+        console.log('follows is the app output:');
+        console.log(app); //TODO: delete this
+        await iteratee(app);
+      }*/
     }
   }
 
@@ -224,6 +231,7 @@ export class APIClient {
         permissions: TokenPermissions;
       };
       myToken = token;
+      this.ghsToken = token;
       myPermissions = permissions;
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
@@ -235,8 +243,6 @@ export class APIClient {
     }
 
     //checking for proper scopes
-    console.log('scopes:');
-    console.log(myPermissions);
     if (
       !(myPermissions.members === 'read' || myPermissions.members === 'write')
     ) {
@@ -253,7 +259,22 @@ export class APIClient {
         'Integration requires read access to repository metadata. See GitHub App permissions.',
       );
     }
+
     //note that ingesting installed applications requires scope organization_administration:read
+    if (
+      !(
+        myPermissions.organization_administration === 'read' ||
+        myPermissions.organization_administration === 'write'
+      )
+    ) {
+      this.scopedForApps = false;
+      this.logger.warn(
+        {},
+        'Token does not have organization_administration scope, so installed GitHub Apps cannot be ingested',
+      );
+    } else {
+      this.scopedForApps = true;
+    }
     //scopes check done
 
     let login: string = this.config.githubAppDefaultLogin;

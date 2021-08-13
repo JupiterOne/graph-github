@@ -16,6 +16,7 @@ import {
   OrgTeamRepoQueryResponse,
   TeamRepositoryPermission,
   OrgCollaboratorQueryResponse,
+  OrgAppQueryResponse,
 } from './GraphQLClient';
 import {
   UserEntity,
@@ -365,7 +366,10 @@ export default class OrganizationAccountClient {
     return this.members || [];
   }
 
-  async getInstalledApps(ghsToken): Promise<any> {
+  async getInstalledApps(ghsToken): Promise<OrgAppQueryResponse[]> {
+    //unable to apply the ghsToken to the Octokit v3 REST client
+    //also unable to find the App node in the GraphQL hierarcy under Organization
+    //and so making a direct @octokit/request call here, since the number of installed Apps is limited
     try {
       const reply = await request(`GET /orgs/${this.login}/installations`, {
         headers: {

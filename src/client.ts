@@ -125,12 +125,9 @@ export class APIClient {
       const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps(
         this.ghsToken,
       );
-      console.log(`apps: ${JSON.stringify(apps, null, 2)}`);
-      /*for (const app of apps) {
-        console.log('follows is the app output:');
-        console.log(app); //TODO: delete this
+      for (const app of apps) {
         await iteratee(app);
-      }*/
+      }
     }
   }
 

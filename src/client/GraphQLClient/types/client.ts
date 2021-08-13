@@ -90,9 +90,11 @@ export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
   permission: TeamRepositoryPermission;
 }
 
-export interface OrgAppQueryResponse extends Node {
+export interface OrgAppQueryResponse {
+  //a REST response, not GraphQL, but everything else is in this file
   id: string; //the installation id
   respository_selection: string;
+  html_url: string;
   app_id: number;
   app_slug: string; //a name for the app
   target_id: number;
@@ -101,11 +103,12 @@ export interface OrgAppQueryResponse extends Node {
   created_at: string;
   updated_at: string;
   events: string[];
-  single_file_name: null;
-  has_multiple_single_files: false;
-  single_file_paths: [];
-  suspended_by: null;
-  suspended_at: null;
+  repository_selection: string; // 'all' || 'selected'  It doesn't actually list which are selected.
+  single_file_name: string;
+  has_multiple_single_files: boolean;
+  single_file_paths: string[];
+  suspended_by: string;
+  suspended_at: string;
 }
 
 interface OrganizationResources {

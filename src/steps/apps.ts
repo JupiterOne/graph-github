@@ -9,7 +9,7 @@ import {
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-//import { toAppEntity } from '../sync/converters';
+import { toAppEntity } from '../sync/converters';
 import { AccountEntity, RepoEntity } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
@@ -37,7 +37,6 @@ export async function fetchApps({
   }
 
   await apiClient.iterateApps(async (app) => {
-    /* while I dial this in
     const appEntity = (await jobState.addEntity(
       toAppEntity(app),
     )) as RepoEntity;
@@ -48,7 +47,7 @@ export async function fetchApps({
         from: accountEntity,
         to: appEntity,
       }),
-    ); */
+    );
   });
 }
 

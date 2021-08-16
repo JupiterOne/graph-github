@@ -38,8 +38,9 @@ export function displayNamesFromLogins(
 export function decomposePermissions(permissions: TokenPermissions) {
   const theKeys = Object.keys(permissions);
   const returnObj = {};
+  const replaceRegex = new RegExp('_', 'g');
   for (const key of theKeys) {
-    const newKey = 'permissions.' + key.replace('_', '-');
+    const newKey = 'permissions.' + key.replace(replaceRegex, '-');
     returnObj[newKey] = permissions[key];
   }
   return returnObj;

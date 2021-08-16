@@ -10,7 +10,7 @@ import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toAppEntity } from '../sync/converters';
-import { AccountEntity, RepoEntity } from '../types';
+import { AccountEntity, AppEntity } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
   GITHUB_APP_ENTITY_TYPE,
@@ -37,9 +37,7 @@ export async function fetchApps({
   }
 
   await apiClient.iterateApps(async (app) => {
-    const appEntity = (await jobState.addEntity(
-      toAppEntity(app),
-    )) as RepoEntity;
+    const appEntity = (await jobState.addEntity(toAppEntity(app))) as AppEntity;
 
     await jobState.addRelationship(
       createDirectRelationship({

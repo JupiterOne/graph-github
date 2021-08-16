@@ -78,7 +78,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   const appEntity: AppEntity = {
     _class: [GITHUB_APP_ENTITY_CLASS],
     _type: GITHUB_APP_ENTITY_TYPE,
-    _key: data.id,
+    _key: 'GitHubAppInstallation_' + data.id,
     name: data.app_slug,
     displayName: data.app_slug,
     webLink: data.html_url,
@@ -92,11 +92,11 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
     updatedAt: data.updated_at,
     events: data.events,
     repositorySelection: data.respository_selection,
-    singleFileName: data.single_file_name,
+    singleFileName: data.single_file_name || '',
     hasMultipleSingleFiles: data.has_multiple_single_files,
     singleFilePaths: data.single_file_paths,
-    suspendedBy: data.suspended_by,
-    suspendedAt: data.suspended_at,
+    suspendedBy: data.suspended_by || '',
+    suspendedAt: data.suspended_at || '',
     ...decomposePermissions(data.permissions),
   };
   setRawData(appEntity, { name: 'default', rawData: data });

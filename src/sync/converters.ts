@@ -43,6 +43,7 @@ import {
   aggregateProperties,
   flattenMatrix,
   displayNamesFromLogins,
+  decomposePermissions,
 } from '../util/propertyHelpers';
 import {
   OrgMemberQueryResponse,
@@ -87,7 +88,6 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
     appSlug: data.app_slug,
     targetId: data.target_id,
     targetType: data.target_type,
-    permissions: JSON.stringify(data.permissions, null, 2), //change to permissions.whatever
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     events: data.events,
@@ -97,6 +97,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
     singleFilePaths: data.single_file_paths,
     suspendedBy: data.suspended_by,
     suspendedAt: data.suspended_at,
+    ...decomposePermissions(data.permissions),
   };
   setRawData(appEntity, { name: 'default', rawData: data });
   return appEntity;

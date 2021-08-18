@@ -1044,9 +1044,9 @@ Object {
       "_type": "github_repo_allows_user",
       "adminPermission": false,
       "displayName": "ALLOWS",
-      "maintainPermission": true,
+      "maintainPermission": false,
       "pullPermission": true,
-      "pushPermission": true,
+      "pushPermission": false,
       "triagePermission": true,
     },
     Object {
@@ -1140,6 +1140,6 @@ Object {
     "github_user_opened_pullrequest",
   ],
   "numCollectedEntities": 14,
-  "numCollectedRelationships": 27,
+  "numCollectedRelationships": 28,
 }
 `;

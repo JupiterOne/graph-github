@@ -182,7 +182,7 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
         partial: true,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-collaborators'],
+    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-direct-collaborators'],
     executionHandler: fetchPrs,
   },
 ];

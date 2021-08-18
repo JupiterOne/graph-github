@@ -169,7 +169,7 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const collaborators: any = await this.accountClient.getRepoCollaboratorsWithRest(
+    const collaborators: any = await this.accountClient.getRepoDirectCollaboratorsWithRest(
       repo.name,
     );
     for (const collab of collaborators) {

@@ -7,7 +7,7 @@ import { IntegrationConfig, sanitizeConfig } from '../config';
 import { fetchMembers } from './members';
 import { fetchRepos } from './repos';
 import { fetchTeams } from './teams';
-import { fetchCollaborators } from './collaborators';
+import { fetchDirectCollaborators } from './directCollaborators';
 import { fetchPrs } from './pullrequests';
 import { fetchAccountDetails } from './account';
 import { GITHUB_REPO_USER_RELATIONSHIP_TYPE } from '../constants';
@@ -47,7 +47,7 @@ test('should collect data', async () => {
   await fetchMembers(context);
   await fetchRepos(context);
   await fetchTeams(context);
-  await fetchCollaborators(context);
+  await fetchDirectCollaborators(context);
   await fetchPrs(context);
 
   // Review snapshot, failure is a regression

@@ -300,7 +300,9 @@ export default class OrganizationAccountClient {
     return this.teamRepositories || [];
   }
 
-  async getRepoDirectCollaboratorsWithRest(repoName: string): Promise<any> {
+  async getRepoCollaboratorsWithRest(
+    repoName: string,
+  ): Promise<OrgCollaboratorQueryResponse[]> {
     try {
       const repoCollaborators = await this.v3.paginate(
         'GET /repos/{owner}/{repo}/collaborators', // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
@@ -308,7 +310,6 @@ export default class OrganizationAccountClient {
           owner: this.login,
           repo: repoName,
           per_page: 100,
-          affiliation: 'direct', //'direct' means directly assigned members or outside collaborators
         },
         (response) => {
           this.logger.info('Fetched page of repo collaborators');

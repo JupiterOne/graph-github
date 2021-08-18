@@ -1,5 +1,5 @@
 import { accountSteps } from './account';
-import { directCollaboratorSteps } from './directCollaborators';
+import { collaboratorSteps } from './collaborators';
 import { memberSteps } from './members';
 import { prSteps } from './pullrequests';
 import { repoSteps } from './repos';
@@ -10,7 +10,7 @@ const integrationSteps = [
   ...memberSteps,
   ...repoSteps,
   ...teamSteps,
-  ...directCollaboratorSteps,
+  ...collaboratorSteps,
   ...prSteps,
 ];
 

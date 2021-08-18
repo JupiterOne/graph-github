@@ -7,7 +7,7 @@ import { IntegrationConfig, sanitizeConfig } from '../config';
 import { fetchMembers } from './members';
 import { fetchRepos } from './repos';
 import { fetchTeams } from './teams';
-import { fetchDirectCollaborators } from './directCollaborators';
+import { fetchCollaborators } from './collaborators';
 import { fetchPrs } from './pullrequests';
 import { fetchAccountDetails } from './account';
 import { GITHUB_REPO_USER_RELATIONSHIP_TYPE } from '../constants';
@@ -47,7 +47,7 @@ test('should collect data', async () => {
   await fetchMembers(context);
   await fetchRepos(context);
   await fetchTeams(context);
-  await fetchDirectCollaborators(context);
+  await fetchCollaborators(context);
   await fetchPrs(context);
 
   // Review snapshot, failure is a regression
@@ -173,7 +173,7 @@ test('should collect data', async () => {
   const outsideCollaboratorRelationships = context.jobState.collectedRelationships.filter(
     (r) =>
       r._type === GITHUB_REPO_USER_RELATIONSHIP_TYPE &&
-      r.collaboratorType === 'outside',
+      r.collaboratorType === 'outside collaborator',
   );
   expect(outsideCollaboratorRelationships.length).toBeGreaterThan(0);
 });

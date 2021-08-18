@@ -162,22 +162,22 @@ export class APIClient {
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
-  public async iterateDirectCollaborators(
+  public async iterateCollaborators(
     repo: RepoEntity,
     iteratee: ResourceIteratee<OrgCollaboratorQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const collaborators: any = await this.accountClient.getRepoDirectCollaboratorsWithRest(
+    const collaborators: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
       repo.name,
     );
     for (const collab of collaborators) {
       await iteratee(collab);
     }
 
-    //let's see if GraphQL can get all collabs
-    //this is how we would prefer to do it, but it's not working right now
+    //we would prefer to use GraphQL to get collabs, but we haven't figured out how to make that work
+    //this code for future dev
     /*
     const collabs: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaborators();
     console.log('GraphQL approach to collabs:');

@@ -14,14 +14,7 @@ import {
   toOrganizationMemberEntityFromTeamMember,
   createRepoAllowsTeamRelationship,
 } from '../sync/converters';
-import {
-  AccountEntity,
-  TeamEntity,
-  UserEntity,
-  RepoEntity,
-  RepoTeamRelationship,
-  IdEntityMap,
-} from '../types';
+import { AccountEntity, TeamEntity, UserEntity, RepoEntity } from '../types';
 import sha from '../util/sha';
 import { TeamMemberRole } from '../client/GraphQLClient';
 import {
@@ -64,10 +57,6 @@ export async function fetchTeams({
       `Expected to find memberEntities in jobState.`,
     );
   }
-
-  //for use later in making Repo ALLOWS User relationships
-  const repoTeamRelationships: RepoTeamRelationship[] = [];
-  const teamMemberLoginsMap: IdEntityMap<string[]> = {};
 
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
@@ -113,10 +102,6 @@ export async function fetchTeams({
       }
     }
 
-    //place an array of team member logins in the map
-    teamMemberLoginsMap[teamEntity._key] =
-      team.members?.map((m) => m.login) || [];
-
     for (const repo of team.repos || []) {
       const repoEntity = repoEntities.find((r) => r._key === repo.id);
       if (!repoEntity) {
@@ -130,16 +115,8 @@ export async function fetchTeams({
         repo.permission,
       );
       await jobState.addRelationship(repoTeamRelationship);
-      repoTeamRelationships.push(repoTeamRelationship);
     }
   });
-
-  await jobState.setData(
-    'REPO_TEAM_RELATIONSHIPS_ARRAY',
-    repoTeamRelationships,
-  );
-
-  await jobState.setData('TEAM_MEMBER_LOGINS_MAP', teamMemberLoginsMap);
 }
 
 export const teamSteps: IntegrationStep<IntegrationConfig>[] = [

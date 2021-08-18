@@ -303,7 +303,7 @@ export default class OrganizationAccountClient {
   async getRepoCollaboratorsWithRest(repoName: string): Promise<any> {
     try {
       const repoCollaborators = await this.v3.paginate(
-        'GET /repos/{owner}/{repo}/collaborators' as any, // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
+        'GET /repos/{owner}/{repo}/collaborators', // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
         {
           owner: this.login,
           repo: repoName,
@@ -317,12 +317,14 @@ export default class OrganizationAccountClient {
         },
       );
 
-      return repoCollaborators;
+      this.collaborators = repoCollaborators;
+      return this.collaborators || [];
     } catch (err) {
       throw new IntegrationError(err);
     }
   }
 
+  /* currently not being used because GraphQL is not cooperating, but here's the code for future research
   async getRepoCollaborators(): Promise<OrgCollaboratorQueryResponse[]> {
     if (!this.collaborators) {
       await this.queryGraphQL('collaborators', async () => {
@@ -341,6 +343,7 @@ export default class OrganizationAccountClient {
 
     return this.collaborators || [];
   }
+  */
 
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
     if (!this.members) {

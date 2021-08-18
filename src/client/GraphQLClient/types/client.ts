@@ -37,9 +37,11 @@ interface Actor {
 
 export type OrgQueryResponse = Node & Actor;
 
-export interface OrgCollaboratorQueryResponse extends Node, Actor {
-  permissions: CollaboratorPermissions;
-  node_id: string; //this matches a member's id, whereas the id here is unique to the collab
+export interface OrgCollaboratorQueryResponse extends Actor {
+  //choosing not to extend Node here because the REST call that retrieves Collaborators insists that `id` is a number
+  id: number;
+  permissions?: CollaboratorPermissions | undefined;
+  node_id: string; //Collaborator `node_id` matches a User `id`, whereas Collaborator `id` is just a unique index for the Collaborator object
 }
 
 export interface CollaboratorPermissions {

@@ -22,6 +22,10 @@ and this project adheres to
   and added `permissions` property ('READ' | 'TRIAGE' | 'WRITE' | 'MAINTAIN' |
   'ADMIN')
 
+### Fixed
+
+- Removed incorrect relationship listing in documentation.
+
 ## 1.1.0 - 2021-07-26
 
 ### Added

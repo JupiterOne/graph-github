@@ -312,11 +312,11 @@ export function createRepoAllowsUserRelationship(
     _fromEntityKey: repo._key,
     _toEntityKey: user._key,
     displayName: RelationshipClass.ALLOWS,
-    admin: permissions.admin,
-    maintain: permissions.maintain,
-    push: permissions.push,
-    triage: permissions.triage,
-    pull: permissions.pull,
+    adminPermission: permissions.admin,
+    maintainPermission: permissions.maintain,
+    pushPermission: permissions.push,
+    triagePermission: permissions.triage,
+    pullPermission: permissions.pull,
     collaboratorType: collaboratorType,
   };
 }

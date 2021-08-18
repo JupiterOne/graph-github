@@ -18,6 +18,10 @@ import {
   GITHUB_COLLABORATOR_ENTITY_CLASS,
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+  GITHUB_REPO_ARRAY,
+  GITHUB_MEMBER_BY_LOGIN_MAP,
+  GITHUB_MEMBER_ARRAY,
+  GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
 
 export async function fetchCollaborators({
@@ -28,24 +32,24 @@ export async function fetchCollaborators({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const repoEntities = await jobState.getData<RepoEntity[]>('REPO_ARRAY');
+  const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected to find repoEntities in jobState.`,
+      `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
     );
   }
   const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
-    'MEMBER_BY_LOGIN_MAP',
+    GITHUB_MEMBER_BY_LOGIN_MAP,
   );
   if (!memberByLoginMap) {
     throw new IntegrationMissingKeyError(
-      `Expected to find memberByLoginMap in jobState.`,
+      `Expected members.ts to have set GITHUB_MEMBER_BY_LOGIN_MAP in jobState.`,
     );
   }
-  const memberArray = await jobState.getData<UserEntity[]>('MEMBER_ARRAY');
+  const memberArray = await jobState.getData<UserEntity[]>(GITHUB_MEMBER_ARRAY);
   if (!memberArray) {
     throw new IntegrationMissingKeyError(
-      `Expected to find memberArray in jobState.`,
+      `Expected members.ts to have set GITHUB_MEMBER_ARRAY in jobState.`,
     );
   }
 
@@ -56,48 +60,38 @@ export async function fetchCollaborators({
     await apiClient.iterateCollaborators(repo, async (collab) => {
       //a collaborator is either an organization member or an outside collaborator
       //we can tell the difference based on whether the login was discovered in members.ts
+      let userEntity;
       if (memberByLoginMap[collab.login]) {
         //if the organization member has repo permission via both direct assignment and some team membership(s),
         //where the permissions for the repo are different between the direct assignment and team(s) assignments,
         //GitHub has already taken that into account and returned the best applicable permissions for this collaborator
-        const repoUserRelationship = createRepoAllowsUserRelationship(
-          repo,
-          memberByLoginMap[collab.login],
-          'organization member',
-          collab.permissions,
-        );
-        await jobState.addRelationship(repoUserRelationship);
+        userEntity = memberByLoginMap[collab.login];
       } else {
-        //this is an outside collaborator
-        //if we have already created an entity for this outside collaborator, retrieve it
-        //otherwise, create it
-        let collabEntity;
+        //retrieve or create outside collaborator entity
         if (outsideCollaboratorsByLoginMap[collab.login]) {
-          collabEntity = outsideCollaboratorsByLoginMap[collab.login];
+          userEntity = outsideCollaboratorsByLoginMap[collab.login];
         } else {
-          collabEntity = (await jobState.addEntity(
+          userEntity = (await jobState.addEntity(
             toOrganizationCollaboratorEntity(collab),
           )) as UserEntity;
-          outsideCollaboratorsByLoginMap[collab.login] = collabEntity;
-          outsideCollaboratorsArray.push(collabEntity);
+          outsideCollaboratorsByLoginMap[collab.login] = userEntity;
+          outsideCollaboratorsArray.push(userEntity);
         }
-        const repoUserRelationship = createRepoAllowsUserRelationship(
-          repo,
-          collabEntity,
-          'outside collaborator',
-          collab.permissions,
-        );
-        await jobState.addRelationship(repoUserRelationship);
       }
+      const repoUserRelationship = createRepoAllowsUserRelationship(
+        repo,
+        userEntity,
+        collab.permissions,
+      );
+      await jobState.addRelationship(repoUserRelationship);
     });
   } // end of repo iterator
-  //save updated user maps and arrays for use in PRs later
-  for (const outsideCollab of outsideCollaboratorsArray) {
-    memberByLoginMap[outsideCollab.login] = outsideCollab;
-    memberArray.push(outsideCollab);
-  }
-  await jobState.setData('USER_BY_LOGIN_MAP', memberByLoginMap);
-  await jobState.setData('USER_ARRAY', memberArray);
+
+  //pullrequests.ts will want the outside collaborator info later
+  await jobState.setData(
+    GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+    outsideCollaboratorsArray,
+  );
 }
 
 export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [

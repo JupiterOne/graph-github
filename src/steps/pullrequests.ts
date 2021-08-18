@@ -26,6 +26,10 @@ import {
   GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
   GITHUB_REPO_PR_RELATIONSHIP_TYPE,
+  GITHUB_REPO_ARRAY,
+  GITHUB_MEMBER_ARRAY,
+  GITHUB_MEMBER_BY_LOGIN_MAP,
+  GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
 
 export async function fetchPrs({
@@ -44,36 +48,54 @@ export async function fetchPrs({
     );
   }
 
-  const repoEntities = await jobState.getData<RepoEntity[]>('REPO_ARRAY');
+  const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected to find repoEntities in jobState.`,
+      `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
     );
   }
-  let userEntities = await jobState.getData<UserEntity[]>('USER_ARRAY');
+
+  //to assign correct relationships to PRs, we need an array of users and a map of users by login
+  //there are two sources for each of these, one for members and another for outside collaborators
+  //we'll combine those so the PRs have the most complete info
+
+  //we can actually run the step without some or all of this information
+  //if a PR is opened/approved/reviewed by an unknown GitHub login, it gets marked
+  //as a commit by an unknown author (which might trigger security alerts).
+
+  let userEntities = await jobState.getData<UserEntity[]>(GITHUB_MEMBER_ARRAY);
   if (!userEntities) {
-    //try the members-only (no outside collaborators) array
-    userEntities = await jobState.getData<UserEntity[]>('MEMBER_ARRAY');
-    if (!userEntities) {
-      throw new IntegrationMissingKeyError(
-        `Expected to find userEntities in jobState.`,
-      );
-    }
+    logger.warn(
+      {},
+      `Expected members.ts to have set GITHUB_MEMBER_ARRAY in jobState. Proceeding anyway.`,
+    );
+    userEntities = [];
   }
 
   let userByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
-    'USER_BY_LOGIN_MAP',
+    GITHUB_MEMBER_BY_LOGIN_MAP,
   );
   if (!userByLoginMap) {
-    //try the members-only (no outside collaborators) map
-    userByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
-      'MEMBER_BY_LOGIN_MAP',
+    logger.warn(
+      {},
+      `Expected members.ts to have set GITHUB_MEMBER_ARRAY in jobState. Proceeding anyway.`,
     );
-    if (!userByLoginMap) {
-      throw new IntegrationMissingKeyError(
-        `Expected to find userByLoginMap in jobState.`,
-      );
+    userByLoginMap = {};
+  }
+
+  const outsideCollaboratorEntities = await jobState.getData<UserEntity[]>(
+    GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  );
+  if (outsideCollaboratorEntities) {
+    for (const collab of outsideCollaboratorEntities) {
+      userEntities.push(collab);
+      userByLoginMap[collab.login] = collab;
     }
+  } else {
+    logger.warn(
+      {},
+      `Expected collaborators.ts to have set GITHUB_OUTSIDE_COLLABORATOR_ARRAY in jobState. Proceeding anyway.`,
+    );
   }
 
   for (const repoEntity of repoEntities) {

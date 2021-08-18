@@ -13,8 +13,7 @@ and this project adheres to
 - Outside collaborators on repos are now ingested
 - New relationship `github_repo_allows_user` with properties defining the
   users's permissions on the repo: admin: boolean; maintain: boolean; push:
-  boolean; triage: boolean; pull: boolean; collaboratorType: 'team' | 'direct' |
-  'outside';
+  boolean; triage: boolean; pull: boolean;
 
 ### Changed
 

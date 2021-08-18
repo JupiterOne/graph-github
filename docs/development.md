@@ -94,3 +94,17 @@ https://github.com/settings/apps/{YOURAPPNAME}/permissions
 When you update your development app permissions, you must also update the app
 installation permissions here:
 https://github.com/organizations/{ORG_NAME}/settings/installations/{INSTALLATION_ID}
+
+## Collaborators vs Members
+
+A GitHub organization member is part of the organization. A repo collaborator
+can be an organization member or an outside collaborator. In this integration,
+the term 'collaborator' is used in this sense, and so 'members' is a subset of
+'collaborators'. Both are User entities.
+
+To find all outside collaborators for an organization, filter for `github_user`
+with `User.role` === 'outside collaborator'
+
+To find all collaborators for a repo, filter for relationship
+'github_repo_allows_user' from that repo. These relationships will point to both
+organization members and outside collaborators.

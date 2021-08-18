@@ -302,7 +302,6 @@ export function createRepoAllowsTeamRelationship(
 export function createRepoAllowsUserRelationship(
   repo: RepoEntity,
   user: UserEntity,
-  collaboratorType: string,
   permissions?: CollaboratorPermissions,
 ): Relationship {
   return {
@@ -317,6 +316,5 @@ export function createRepoAllowsUserRelationship(
     pushPermission: permissions?.push,
     triagePermission: permissions?.triage,
     pullPermission: permissions?.pull,
-    collaboratorType: collaboratorType,
   };
 }

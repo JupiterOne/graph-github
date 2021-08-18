@@ -10,6 +10,7 @@ import { fetchTeams } from './teams';
 import { fetchCollaborators } from './collaborators';
 import { fetchPrs } from './pullrequests';
 import { fetchAccountDetails } from './account';
+import { GITHUB_REPO_USER_RELATIONSHIP_TYPE } from '../constants';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 
@@ -163,4 +164,16 @@ test('should collect data', async () => {
       required: ['webLink', 'displayName'],
     },
   });
+
+  const repoUserRelationships = context.jobState.collectedRelationships.filter(
+    (r) => r._type === GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+  );
+  expect(repoUserRelationships.length).toBeGreaterThan(0);
+
+  const outsideCollaboratorRelationships = context.jobState.collectedRelationships.filter(
+    (r) =>
+      r._type === GITHUB_REPO_USER_RELATIONSHIP_TYPE &&
+      r.collaboratorType === 'outside',
+  );
+  expect(outsideCollaboratorRelationships.length).toBeGreaterThan(0);
 });

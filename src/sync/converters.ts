@@ -303,7 +303,7 @@ export function createRepoAllowsUserRelationship(
   repo: RepoEntity,
   user: UserEntity,
   collaboratorType: string,
-  permissions: CollaboratorPermissions,
+  permissions?: CollaboratorPermissions,
 ): Relationship {
   return {
     _key: `${repo._key}|allows|${user._key}`,
@@ -312,11 +312,11 @@ export function createRepoAllowsUserRelationship(
     _fromEntityKey: repo._key,
     _toEntityKey: user._key,
     displayName: RelationshipClass.ALLOWS,
-    adminPermission: permissions.admin,
-    maintainPermission: permissions.maintain,
-    pushPermission: permissions.push,
-    triagePermission: permissions.triage,
-    pullPermission: permissions.pull,
+    adminPermission: permissions?.admin,
+    maintainPermission: permissions?.maintain,
+    pushPermission: permissions?.push,
+    triagePermission: permissions?.triage,
+    pullPermission: permissions?.pull,
     collaboratorType: collaboratorType,
   };
 }

@@ -16,6 +16,7 @@ import {
   OrgTeamRepoQueryResponse,
   TeamRepositoryPermission,
   OrgCollaboratorQueryResponse,
+  OrgAppQueryResponse,
 } from './GraphQLClient';
 import {
   UserEntity,
@@ -33,6 +34,7 @@ import {
 import collectCommitsForPR from '../approval/collectCommitsForPR';
 import { toPullRequestEntity } from '../sync/converters';
 import sha from '../util/sha';
+import { request } from '@octokit/request';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -156,7 +158,6 @@ export default class OrganizationAccountClient {
         return rateLimitConsumed;
       });
     }
-
     return this.teams || [];
   }
 
@@ -363,6 +364,45 @@ export default class OrganizationAccountClient {
     }
 
     return this.members || [];
+  }
+
+  async getInstalledApps(ghsToken): Promise<OrgAppQueryResponse[]> {
+    //the endpoint needed is /orgs/${this.login}/installations
+    //when we try to call it from the Octokit v3 REST client paginate function, we get 'bad credentials'
+    //per GitHub tech support, this endpoint requires a token that starts with 'ghs'
+    //the v3 Octokit REST client .auth call returns such a token, which we pass to the
+    //v4 GraphQL client. However, the v4 GraphQL client does not appear to have access
+    //to the Apps Nodes (as far as we can currently tell), and the v3 REST client does not
+    //appear to use the 'ghs' token that it returns. When we use curl or a direct request
+    //via @octokit/request, using the ghs token, the endpoint works. Attempts to override
+    //the v3 REST client headers in the paginate function, in order to force it to use the
+    //ghs token, have been unsuccessful. After several hours of experimentation and research,
+    //the only thing that has worked in this direct call to @octokit/request.
+    //This is not ideal, since it is not a paginated call. We could build our own pagination and
+    //rate-limit aware wrapper for it, but if this endpoint is the only time we need @octokit/request,
+    //we will probably be okay without pagination and rate-limit aware features, because there are
+    //typically only going to be a few GitHub apps installed in a given organization.
+    //TODO: a more elegant solution. Possibly making our own pagination and rate-limit aware wrapper.
+    try {
+      const reply = await request(`GET /orgs/${this.login}/installations`, {
+        headers: {
+          authorization: `Bearer ${ghsToken}`,
+        },
+        org: 'octokit',
+        type: 'private',
+      });
+      if (reply.data.installations) {
+        return reply.data.installations;
+      }
+      this.logger.warn({}, 'Found no installed GitHub apps');
+      return [];
+    } catch (err) {
+      this.logger.warn(
+        {},
+        'Error while attempting to ingest to installed GitHub apps',
+      );
+      throw new IntegrationError(err);
+    }
   }
 
   async getPullRequestEntity(

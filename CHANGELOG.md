@@ -10,6 +10,7 @@ and this project adheres to
 
 ### Added
 
+- GitHub Apps are now ingested
 - Outside collaborators on repos are now ingested
 - New relationship `github_repo_allows_user` with properties defining the
   users's permissions on the repo: admin: boolean; maintain: boolean; push:

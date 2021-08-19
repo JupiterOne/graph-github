@@ -17,11 +17,6 @@ import {
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
-import {
-  GitHubGraphQLClient,
-  OrgCollaboratorQueryResponse,
-  OrgTeamRepoQueryResponse,
-} from './client/GraphQLClient';
 import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
 import {
   OrgMemberQueryResponse,
@@ -29,6 +24,10 @@ import {
   OrgTeamQueryResponse,
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
+  GitHubGraphQLClient,
+  OrgTeamRepoQueryResponse,
+  OrgCollaboratorQueryResponse,
+  OrgAppQueryResponse,
 } from './client/GraphQLClient';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
@@ -43,6 +42,8 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
  */
 export class APIClient {
   accountClient: OrganizationAccountClient;
+  ghsToken: string;
+  scopedForApps: boolean;
   constructor(
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
@@ -106,6 +107,27 @@ export class APIClient {
       );
       team.repos = allTeamRepos.filter((repo) => repo.teams === team.id);
       await iteratee(team);
+    }
+  }
+
+  /**
+   * Iterates each installed GitHub application.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateApps(
+    iteratee: ResourceIteratee<OrgAppQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopedForApps) {
+      const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps(
+        this.ghsToken,
+      );
+      for (const app of apps) {
+        await iteratee(app);
+      }
     }
   }
 
@@ -206,6 +228,7 @@ export class APIClient {
         permissions: TokenPermissions;
       };
       myToken = token;
+      this.ghsToken = token;
       myPermissions = permissions;
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
@@ -232,6 +255,22 @@ export class APIClient {
       throw new IntegrationValidationError(
         'Integration requires read access to repository metadata. See GitHub App permissions.',
       );
+    }
+
+    //note that ingesting installed applications requires scope organization_administration:read
+    if (
+      !(
+        myPermissions.organization_administration === 'read' ||
+        myPermissions.organization_administration === 'write'
+      )
+    ) {
+      this.scopedForApps = false;
+      this.logger.warn(
+        {},
+        'Token does not have organization_administration scope, so installed GitHub Apps cannot be ingested',
+      );
+    } else {
+      this.scopedForApps = true;
     }
     //scopes check done
 

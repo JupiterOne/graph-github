@@ -1,4 +1,4 @@
-import { IdEntityMap, UserEntity } from '../types';
+import { IdEntityMap, UserEntity, TokenPermissions } from '../types';
 
 export function aggregateProperties<T>(
   property: string,
@@ -33,4 +33,19 @@ export function displayNamesFromLogins(
     }
     return approverNames;
   }, []);
+}
+
+export function decomposePermissions(permissions: TokenPermissions) {
+  const theKeys = Object.keys(permissions);
+  const returnObj = {};
+  const replaceRegex = new RegExp('_', 'g');
+  for (const key of theKeys) {
+    const newKey = 'permissions.' + key.replace(replaceRegex, '-');
+    returnObj[newKey] = permissions[key];
+  }
+  return returnObj;
+}
+
+export function getAppEntityKey(installId): string {
+  return 'GitHubAppInstallation_' + installId;
 }

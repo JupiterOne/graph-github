@@ -32,6 +32,11 @@ export const GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE = 'github_team_has_user';
 export const GITHUB_REPO_TEAM_RELATIONSHIP_TYPE = 'github_repo_allows_team';
 export const GITHUB_REPO_USER_RELATIONSHIP_TYPE = 'github_repo_allows_user';
 
+export const GITHUB_APP_ENTITY_TYPE = 'github_app';
+export const GITHUB_APP_ENTITY_CLASS = 'Application';
+export const GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE =
+  'github_account_installed_app';
+
 //these constants are names used to save and retrieve data between steps
 //they are constants instead of strings so that TypeScript will detect spelling errors
 export const GITHUB_MEMBER_ARRAY = 'GITHUB_MEMBER_ARRAY';

@@ -20,10 +20,13 @@ import {
   GITHUB_TEAM_ENTITY_CLASS,
   GITHUB_COLLABORATOR_ENTITY_CLASS,
   GITHUB_COLLABORATOR_ENTITY_TYPE,
+  GITHUB_APP_ENTITY_CLASS,
+  GITHUB_APP_ENTITY_TYPE,
 } from '../constants';
 
 import {
   AccountEntity,
+  AppEntity,
   RepoEntity,
   UserEntity,
   PullRequestEntity,
@@ -40,6 +43,8 @@ import {
   aggregateProperties,
   flattenMatrix,
   displayNamesFromLogins,
+  decomposePermissions,
+  getAppEntityKey,
 } from '../util/propertyHelpers';
 import {
   OrgMemberQueryResponse,
@@ -49,6 +54,7 @@ import {
   OrgTeamMemberQueryResponse,
   OrgCollaboratorQueryResponse,
   CollaboratorPermissions,
+  OrgAppQueryResponse,
 } from '../client/GraphQLClient';
 
 import uniq from 'lodash.uniq';
@@ -67,6 +73,35 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   };
   setRawData(accountEntity, { name: 'default', rawData: data });
   return accountEntity;
+}
+
+export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
+  const appEntity: AppEntity = {
+    _class: [GITHUB_APP_ENTITY_CLASS],
+    _type: GITHUB_APP_ENTITY_TYPE,
+    _key: getAppEntityKey(data.id),
+    name: data.app_slug,
+    displayName: data.app_slug,
+    webLink: data.html_url,
+    installationId: data.id, //the installation id
+    respositorySelection: data.respository_selection,
+    appId: data.app_id,
+    appSlug: data.app_slug,
+    targetId: data.target_id,
+    targetType: data.target_type,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    events: data.events,
+    repositorySelection: data.respository_selection,
+    singleFileName: data.single_file_name || '',
+    hasMultipleSingleFiles: data.has_multiple_single_files,
+    singleFilePaths: data.single_file_paths,
+    suspendedBy: data.suspended_by || '',
+    suspendedAt: data.suspended_at || '',
+    ...decomposePermissions(data.permissions),
+  };
+  setRawData(appEntity, { name: 'default', rawData: data });
+  return appEntity;
 }
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {

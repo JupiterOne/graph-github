@@ -19,6 +19,7 @@ import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
 import {
   GitHubGraphQLClient,
+  OrgCollaboratorQueryResponse,
   OrgTeamRepoQueryResponse,
 } from './client/GraphQLClient';
 import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
@@ -91,6 +92,7 @@ export class APIClient {
     }
     const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
     const allTeamMembers: OrgTeamMemberQueryResponse[] = await this.accountClient.getTeamMembers();
+
     // Check 'useRestForTeamRepos' config variable as a hack to allow large github
     // accounts to bypass a Github error. Please delete this code once that error is fixed.
     const allTeamRepos: OrgTeamRepoQueryResponse[] = this.config
@@ -153,6 +155,37 @@ export class APIClient {
         await iteratee(pr);
       }
     }
+  }
+
+  /**
+   * Iterates the collaborators for a repo in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateCollaborators(
+    repo: RepoEntity,
+    iteratee: ResourceIteratee<OrgCollaboratorQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    const collaborators: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
+      repo.name,
+    );
+    for (const collab of collaborators) {
+      await iteratee(collab);
+    }
+
+    //we would prefer to use GraphQL to get collabs, but we haven't figured out how to make that work
+    //this code for future dev
+    /*
+    const collabs: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaborators();
+    console.log('GraphQL approach to collabs:');
+    console.log(collabs);
+    for (const collab of collabs) {
+      console.log(collab);
+    }
+    */
   }
 
   public async setupAccountClient(): Promise<void> {

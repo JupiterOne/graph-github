@@ -15,6 +15,7 @@ import {
   OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
   TeamRepositoryPermission,
+  OrgCollaboratorQueryResponse,
 } from './GraphQLClient';
 import {
   UserEntity,
@@ -42,6 +43,7 @@ export default class OrganizationAccountClient {
   private teamMembers: OrgTeamMemberQueryResponse[] | undefined;
   private teamRepositories: OrgTeamRepoQueryResponse[] | undefined;
   private repositories: OrgRepoQueryResponse[] | undefined;
+  private collaborators: OrgCollaboratorQueryResponse[] | undefined;
 
   v3RateLimitConsumed: number;
   v4RateLimitConsumed: number;
@@ -298,6 +300,52 @@ export default class OrganizationAccountClient {
     return this.teamRepositories || [];
   }
 
+  async getRepoCollaboratorsWithRest(
+    repoName: string,
+  ): Promise<OrgCollaboratorQueryResponse[]> {
+    try {
+      const repoCollaborators = await this.v3.paginate(
+        'GET /repos/{owner}/{repo}/collaborators', // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
+        {
+          owner: this.login,
+          repo: repoName,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of repo collaborators');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+
+      this.collaborators = repoCollaborators;
+      return this.collaborators || [];
+    } catch (err) {
+      throw new IntegrationError(err);
+    }
+  }
+
+  /* currently not being used because GraphQL is not cooperating, but here's the code for future research
+  async getRepoCollaborators(): Promise<OrgCollaboratorQueryResponse[]> {
+    if (!this.collaborators) {
+      await this.queryGraphQL('collaborators', async () => {
+        const {
+          collaborators,
+          rateLimitConsumed,
+        } = await this.v4.fetchOrganization(this.login, [
+          OrganizationResource.RepositoryCollaborators,
+        ]);
+
+        this.collaborators = collaborators;
+
+        return rateLimitConsumed;
+      });
+    }
+
+    return this.collaborators || [];
+  }
+  */
+
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
     if (!this.members) {
       await this.queryGraphQL('members', async () => {
@@ -401,7 +449,7 @@ export default class OrganizationAccountClient {
       return pMap(
         pullRequests,
         async (pullRequest) => {
-          // This is increadably slow thanks to Github's rate and abuse limiting. Be careful when turning this on!
+          // This is incredibly slow thanks to Github's rate and abuse limiting. Be careful when turning this on!
           if (this.analyzeCommitApproval) {
             const {
               allCommits,
@@ -589,7 +637,6 @@ export default class OrganizationAccountClient {
       const rateLimitConsumed = await performQuery();
       this.v4RateLimitConsumed += rateLimitConsumed;
     } catch (responseErrors) {
-      console.log(responseErrors);
       throw new IntegrationError(responseErrors);
     }
   }

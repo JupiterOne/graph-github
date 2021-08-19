@@ -8,6 +8,23 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Outside collaborators on repos are now ingested
+- New relationship `github_repo_allows_user` with properties defining the
+  users's permissions on the repo: admin: boolean; maintain: boolean; push:
+  boolean; triage: boolean; pull: boolean;
+
+### Changed
+
+- Changed relationship `github_team_allows_repo` to `github_repo_allows_team`,
+  and added `permissions` property ('READ' | 'TRIAGE' | 'WRITE' | 'MAINTAIN' |
+  'ADMIN')
+
+### Fixed
+
+- Removed incorrect relationship listing in documentation.
+
 ## 1.1.0 - 2021-07-26
 
 ### Added

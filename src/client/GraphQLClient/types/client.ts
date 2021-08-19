@@ -5,6 +5,7 @@ export enum OrganizationResource {
   TeamMembers = 'teamMembers',
   TeamRepositories = 'teamRepositories',
   Repositories = 'repositories',
+  RepositoryCollaborators = 'repositoryCollaborators',
 }
 
 export enum OrgMemberRole {
@@ -35,6 +36,21 @@ interface Actor {
 }
 
 export type OrgQueryResponse = Node & Actor;
+
+export interface OrgCollaboratorQueryResponse extends Actor {
+  //choosing not to extend Node here because the REST call that retrieves Collaborators insists that `id` is a number
+  id: number;
+  permissions?: CollaboratorPermissions | undefined;
+  node_id: string; //Collaborator `node_id` matches a User `id`, whereas Collaborator `id` is just a unique index for the Collaborator object
+}
+
+export interface CollaboratorPermissions {
+  admin: boolean;
+  maintain?: boolean;
+  push: boolean;
+  triage?: boolean;
+  pull: boolean;
+}
 
 export interface OrgMemberQueryResponse extends Node, Actor {
   hasTwoFactorEnabled: boolean;
@@ -79,6 +95,7 @@ interface OrganizationResources {
   teamMembers: OrgTeamMemberQueryResponse[];
   teamRepositories: OrgTeamRepoQueryResponse[];
   repositories: OrgRepoQueryResponse[];
+  collaborators: OrgCollaboratorQueryResponse[];
 }
 
 export type OrganizationResourcesQueryResponse = {

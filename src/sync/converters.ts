@@ -1,7 +1,26 @@
 import {
   setRawData,
   parseTimePropertyValue,
+  Relationship,
+  RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
+
+import {
+  GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+  GITHUB_ACCOUNT_ENTITY_TYPE,
+  GITHUB_ACCOUNT_ENTITY_CLASS,
+  GITHUB_MEMBER_ENTITY_TYPE,
+  GITHUB_MEMBER_ENTITY_CLASS,
+  GITHUB_REPO_ENTITY_TYPE,
+  GITHUB_REPO_ENTITY_CLASS,
+  GITHUB_PR_ENTITY_TYPE,
+  GITHUB_PR_ENTITY_CLASS,
+  GITHUB_TEAM_ENTITY_TYPE,
+  GITHUB_TEAM_ENTITY_CLASS,
+  GITHUB_COLLABORATOR_ENTITY_CLASS,
+  GITHUB_COLLABORATOR_ENTITY_TYPE,
+} from '../constants';
 
 import {
   AccountEntity,
@@ -14,6 +33,7 @@ import {
   AccountType,
   PullsListResponseItem,
   PullsListCommitsResponseItem,
+  RepoTeamRelationship,
 } from '../types';
 import { Approval } from '../approval/collectCommitsForPR';
 import {
@@ -27,20 +47,10 @@ import {
   OrgTeamQueryResponse,
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
+  OrgCollaboratorQueryResponse,
+  CollaboratorPermissions,
 } from '../client/GraphQLClient';
 
-import {
-  GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_ACCOUNT_ENTITY_CLASS,
-  GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_MEMBER_ENTITY_CLASS,
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_REPO_ENTITY_CLASS,
-  GITHUB_PR_ENTITY_TYPE,
-  GITHUB_PR_ENTITY_CLASS,
-  GITHUB_TEAM_ENTITY_TYPE,
-  GITHUB_TEAM_ENTITY_CLASS,
-} from '../constants';
 import uniq from 'lodash.uniq';
 import omit from 'lodash.omit';
 
@@ -65,7 +75,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     _type: GITHUB_TEAM_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
-    name: data.slug, //this works, but why? Where is .slug set?
+    name: data.slug,
     displayName: data.name,
     fullName: data.name,
   };
@@ -124,6 +134,25 @@ export function toOrganizationMemberEntityFromTeamMember(
     name: data.login,
     mfaEnabled: false,
     role: data.role,
+  };
+  setRawData(userEntity, { name: 'default', rawData: data });
+  return userEntity;
+}
+
+export function toOrganizationCollaboratorEntity(
+  data: OrgCollaboratorQueryResponse,
+): UserEntity {
+  const userEntity: UserEntity = {
+    _class: [GITHUB_COLLABORATOR_ENTITY_CLASS],
+    _type: GITHUB_COLLABORATOR_ENTITY_TYPE,
+    _key: data.node_id,
+    login: data.login,
+    username: data.login,
+    displayName: data.name || data.login,
+    name: data.name || data.login,
+    mfaEnabled: undefined,
+    role: 'outside collaborator',
+    siteAdmin: false,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -252,4 +281,40 @@ export function toPullRequestEntity(
     rawData: omit(data, rawDataPropertiesToRemove),
   });
   return entity;
+}
+
+export function createRepoAllowsTeamRelationship(
+  repo: RepoEntity,
+  team: TeamEntity,
+  permission: string,
+): RepoTeamRelationship {
+  return {
+    _key: `${repo._key}|allows|${team._key}`,
+    _class: RelationshipClass.ALLOWS,
+    _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
+    _fromEntityKey: repo._key,
+    _toEntityKey: team._key,
+    displayName: RelationshipClass.ALLOWS,
+    permission: permission,
+  };
+}
+
+export function createRepoAllowsUserRelationship(
+  repo: RepoEntity,
+  user: UserEntity,
+  permissions?: CollaboratorPermissions,
+): Relationship {
+  return {
+    _key: `${repo._key}|allows|${user._key}`,
+    _class: RelationshipClass.ALLOWS,
+    _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+    _fromEntityKey: repo._key,
+    _toEntityKey: user._key,
+    displayName: RelationshipClass.ALLOWS,
+    adminPermission: permissions?.admin,
+    maintainPermission: permissions?.maintain,
+    pushPermission: permissions?.push,
+    triagePermission: permissions?.triage,
+    pullPermission: permissions?.pull,
+  };
 }

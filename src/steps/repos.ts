@@ -16,6 +16,7 @@ import {
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_ENTITY_CLASS,
   GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
+  GITHUB_REPO_ARRAY,
 } from '../constants';
 
 export async function fetchRepos({
@@ -54,7 +55,7 @@ export async function fetchRepos({
     );
   });
 
-  await jobState.setData('REPO_ARRAY', repoEntities);
+  await jobState.setData(GITHUB_REPO_ARRAY, repoEntities);
 }
 
 export const repoSteps: IntegrationStep<IntegrationConfig>[] = [

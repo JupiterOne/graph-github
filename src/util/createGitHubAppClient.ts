@@ -58,13 +58,6 @@ export default function createGitHubAppClient(
         }
       },
     },
-    /*
-    log: {
-      debug: console.log,
-      info: console.log,
-      warn: console.warn,
-      error: console.error,
-    }, */
   });
 
   return v3;

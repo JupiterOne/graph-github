@@ -44,6 +44,7 @@ import {
   flattenMatrix,
   displayNamesFromLogins,
   decomposePermissions,
+  getAppEntityKey,
 } from '../util/propertyHelpers';
 import {
   OrgMemberQueryResponse,
@@ -78,7 +79,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   const appEntity: AppEntity = {
     _class: [GITHUB_APP_ENTITY_CLASS],
     _type: GITHUB_APP_ENTITY_TYPE,
-    _key: 'GitHubAppInstallation_' + data.id,
+    _key: getAppEntityKey(data.id),
     name: data.app_slug,
     displayName: data.app_slug,
     webLink: data.html_url,

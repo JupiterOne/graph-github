@@ -388,8 +388,7 @@ export default class OrganizationAccountClient {
         {},
         'Error while attempting to ingest to installed GitHub apps',
       );
-      return [];
-      //throw new IntegrationError(err);
+      throw new IntegrationError(err);
     }
   }
 

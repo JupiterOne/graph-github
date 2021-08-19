@@ -45,3 +45,7 @@ export function decomposePermissions(permissions: TokenPermissions) {
   }
   return returnObj;
 }
+
+export function getAppEntityKey(installId): string {
+  return 'GitHubAppInstallation_' + installId;
+}

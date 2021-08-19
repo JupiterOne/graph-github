@@ -27,7 +27,11 @@ export interface AppEntity extends Entity {
   singleFilePaths: string[];
   suspendedBy: string;
   suspendedAt: string;
-  //plus permissions.whatever fields drawn from the permissions API object
+  //plus permissions.{fieldname} fields drawn from the permissions API object
+  //for example, 'permissions.members', 'permissions.metadata', or 'permissions.organization-administration'
+  //for a more complete list of possibilities, see src/types/integration.ts/TokenPermissions
+  //note that TokenPermissions with underscores are modified to use dashes instead,
+  //in src/util/propertyHelpers.ts/decomposePermissions
 }
 
 export interface TeamEntity extends Entity {

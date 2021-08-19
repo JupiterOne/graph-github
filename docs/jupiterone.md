@@ -2,19 +2,22 @@
 
 ## GitHub + JupiterOne Integration Benefits
 
-- Visualize GitHub users, groups, code repositories, and pull requests in the
-  JupiterOne graph.
+- Visualize GitHub users, teams, code repositories, pull requests, and installed
+  GitHub applications in the JupiterOne graph.
 - Map GitHub users to employees in your JupiterOne account.
 - Map GitHub users to development/security trainings.
 - Monitor Github software development activities within repositories including
-  changes and approvals.
-- Monitor changes to GitHub user groups, users, code repositories, and pull
+  changes, reviews and approvals.
+- Monitor changes to GitHub user teams, users, code repositories, and pull
   requests using JupiterOne alerts.
+- Monitor installations of GitHub Apps using JupiterOne alerts.
+- Monitor and audit outside collaborators on code repositories.
 
 ## How it Works
 
-- JupiterOne periodically fetches GitHub users, code repositories, and pull
-  requests in those repositories to update the graph.
+- JupiterOne periodically fetches installed GitHub apps, GitHub users, teams,
+  code repositories, and pull requests in those repositories to update the
+  graph.
 - Write JupiterOne queries to review and monitor updates to the graph.
 - Configure alerts to take action when the JupiterOne graph changes.
 

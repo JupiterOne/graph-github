@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.2.0 - 2021-08-19
+
 ### Added
 
 - GitHub Apps are now ingested

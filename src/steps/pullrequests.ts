@@ -26,6 +26,10 @@ import {
   GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
   GITHUB_REPO_PR_RELATIONSHIP_TYPE,
+  GITHUB_REPO_ARRAY,
+  GITHUB_MEMBER_ARRAY,
+  GITHUB_MEMBER_BY_LOGIN_MAP,
+  GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
 
 export async function fetchPrs({
@@ -44,24 +48,53 @@ export async function fetchPrs({
     );
   }
 
-  const repoEntities = await jobState.getData<RepoEntity[]>('REPO_ARRAY');
+  const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected to find repoEntities in jobState.`,
+      `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
     );
   }
-  const memberEntities = await jobState.getData<UserEntity[]>('MEMBER_ARRAY');
-  if (!memberEntities) {
-    throw new IntegrationMissingKeyError(
-      `Expected to find memberEntities in jobState.`,
+
+  //to assign correct relationships to PRs, we need an array of users and a map of users by login
+  //there are two sources for each of these, one for members and another for outside collaborators
+  //we'll combine those so the PRs have the most complete info
+
+  //we can actually run the step without some or all of this information
+  //if a PR is opened/approved/reviewed by an unknown GitHub login, it gets marked
+  //as a commit by an unknown author (which might trigger security alerts).
+
+  let userEntities = await jobState.getData<UserEntity[]>(GITHUB_MEMBER_ARRAY);
+  if (!userEntities) {
+    logger.warn(
+      {},
+      `Expected members.ts to have set GITHUB_MEMBER_ARRAY in jobState. Proceeding anyway.`,
     );
+    userEntities = [];
   }
-  const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
-    'MEMBER_BY_LOGIN_MAP',
+
+  let userByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+    GITHUB_MEMBER_BY_LOGIN_MAP,
   );
-  if (!memberByLoginMap) {
-    throw new IntegrationMissingKeyError(
-      `Expected to find memberByLoginMap in jobState.`,
+  if (!userByLoginMap) {
+    logger.warn(
+      {},
+      `Expected members.ts to have set GITHUB_MEMBER_ARRAY in jobState. Proceeding anyway.`,
+    );
+    userByLoginMap = {};
+  }
+
+  const outsideCollaboratorEntities = await jobState.getData<UserEntity[]>(
+    GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  );
+  if (outsideCollaboratorEntities) {
+    for (const collab of outsideCollaboratorEntities) {
+      userEntities.push(collab);
+      userByLoginMap[collab.login] = collab;
+    }
+  } else {
+    logger.warn(
+      {},
+      `Expected collaborators.ts to have set GITHUB_OUTSIDE_COLLABORATOR_ARRAY in jobState. Proceeding anyway.`,
     );
   }
 
@@ -69,8 +102,9 @@ export async function fetchPrs({
     await apiClient.iteratePullRequests(
       accountEntity,
       repoEntity,
-      memberEntities,
-      memberByLoginMap,
+      userEntities,
+      userByLoginMap,
+      logger,
       async (pr) => {
         //this is a different pattern than for members, teams, and repos
         //because the client call actually returns the finished entity instead of the raw "org response"
@@ -86,11 +120,11 @@ export async function fetchPrs({
           }),
         );
 
-        if (memberByLoginMap[pr.authorLogin]) {
+        if (userByLoginMap![pr.authorLogin]) {
           await jobState.addRelationship(
             createDirectRelationship({
               _class: RelationshipClass.OPENED,
-              from: memberByLoginMap[pr.authorLogin],
+              from: userByLoginMap![pr.authorLogin],
               to: prEntity,
             }),
           );
@@ -98,11 +132,11 @@ export async function fetchPrs({
 
         if (pr.reviewerLogins) {
           for (const reviewer of pr.reviewerLogins) {
-            if (memberByLoginMap[reviewer]) {
+            if (userByLoginMap![reviewer]) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.REVIEWED,
-                  from: memberByLoginMap[reviewer],
+                  from: userByLoginMap![reviewer],
                   to: prEntity,
                 }),
               );
@@ -112,11 +146,11 @@ export async function fetchPrs({
 
         if (pr.approverLogins) {
           for (const approver of pr.approverLogins) {
-            if (memberByLoginMap[approver]) {
+            if (userByLoginMap![approver]) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.APPROVED,
-                  from: memberByLoginMap[approver],
+                  from: userByLoginMap![approver],
                   to: prEntity,
                 }),
               );
@@ -170,7 +204,7 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
         partial: true,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users'],
+    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-collaborators'],
     executionHandler: fetchPrs,
   },
 ];

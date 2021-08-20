@@ -8,6 +8,32 @@ export interface AccountEntity extends Entity {
   name?: string;
 }
 
+export interface AppEntity extends Entity {
+  name: string;
+  displayName: string;
+  webLink: string;
+  installationId: string; //the installation id
+  respositorySelection: string;
+  appId: number;
+  appSlug: string; //a name for the app
+  targetId: number;
+  targetType: string; // typically "Organization"
+  createdAt: string;
+  updatedAt: string;
+  events: string[];
+  repositorySelection: string;
+  singleFileName: string;
+  hasMultipleSingleFiles: boolean;
+  singleFilePaths: string[];
+  suspendedBy: string;
+  suspendedAt: string;
+  //plus permissions.{fieldname} fields drawn from the permissions API object
+  //for example, 'permissions.members', 'permissions.metadata', or 'permissions.organization-administration'
+  //for a more complete list of possibilities, see src/types/integration.ts/TokenPermissions
+  //note that TokenPermissions with underscores are modified to use dashes instead,
+  //in src/util/propertyHelpers.ts/decomposePermissions
+}
+
 export interface TeamEntity extends Entity {
   name: string;
   displayName: string;

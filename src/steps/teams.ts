@@ -12,6 +12,7 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import {
   toTeamEntity,
   toOrganizationMemberEntityFromTeamMember,
+  createRepoAllowsTeamRelationship,
 } from '../sync/converters';
 import { AccountEntity, TeamEntity, UserEntity, RepoEntity } from '../types';
 import sha from '../util/sha';
@@ -23,9 +24,11 @@ import {
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_TEAM_ENTITY_CLASS,
   GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
-  GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
+  GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_REPO_ARRAY,
+  GITHUB_MEMBER_ARRAY,
 } from '../constants';
 
 export async function fetchTeams({
@@ -44,16 +47,18 @@ export async function fetchTeams({
       `Expected to find Account entity in jobState.`,
     );
   }
-  const repoEntities = await jobState.getData<RepoEntity[]>('REPO_ARRAY');
+  const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected to find repoEntities in jobState.`,
+      `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
     );
   }
-  const memberEntities = await jobState.getData<UserEntity[]>('MEMBER_ARRAY');
+  const memberEntities = await jobState.getData<UserEntity[]>(
+    GITHUB_MEMBER_ARRAY,
+  );
   if (!memberEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected to find memberEntities in jobState.`,
+      `Expected members.ts to have set GITHUB_MEMBER_ARRAY in jobState.`,
     );
   }
 
@@ -108,13 +113,12 @@ export async function fetchTeams({
           `Expected repo (CodeRepo) with id to exist (key=${repo.id})`,
         );
       }
-      await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.ALLOWS,
-          from: teamEntity,
-          to: repoEntity,
-        }),
+      const repoTeamRelationship = createRepoAllowsTeamRelationship(
+        repoEntity,
+        teamEntity,
+        repo.permission,
       );
+      await jobState.addRelationship(repoTeamRelationship);
     }
   });
 }
@@ -146,14 +150,14 @@ export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
       {
         _type: GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.MANAGES,
-        sourceType: GITHUB_TEAM_ENTITY_TYPE,
+        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
         targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
       {
-        _type: GITHUB_TEAM_REPO_RELATIONSHIP_TYPE,
+        _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.ALLOWS,
-        sourceType: GITHUB_TEAM_ENTITY_TYPE,
-        targetType: GITHUB_REPO_ENTITY_TYPE,
+        sourceType: GITHUB_REPO_ENTITY_TYPE,
+        targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-users'],

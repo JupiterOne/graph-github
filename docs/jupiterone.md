@@ -2,21 +2,30 @@
 
 ## GitHub + JupiterOne Integration Benefits
 
-- Visualize GitHub users, groups, code repositories, and pull requests in the
-  JupiterOne graph.
+- Visualize GitHub users, teams, code repositories, pull requests, and installed
+  GitHub applications in the JupiterOne graph.
 - Map GitHub users to employees in your JupiterOne account.
 - Map GitHub users to development/security trainings.
 - Monitor Github software development activities within repositories including
-  changes and approvals.
-- Monitor changes to GitHub user groups, users, code repositories, and pull
+  changes, reviews and approvals.
+- Monitor changes to GitHub user teams, users, code repositories, and pull
   requests using JupiterOne alerts.
+- Monitor installations of GitHub Apps using JupiterOne alerts.
+- Monitor and audit outside collaborators on code repositories.
 
 ## How it Works
 
-- JupiterOne periodically fetches GitHub users, code repositories, and recently
-  created/changed pull requests in those repositories to update the graph.
+- JupiterOne periodically fetches installed GitHub apps, GitHub users, teams,
+  code repositories, and recently created/changed pull requests in those
+  repositories to update the graph.
 - Write JupiterOne queries to review and monitor updates to the graph.
 - Configure alerts to take action when the JupiterOne graph changes.
+
+!!! note
+    The integration limits ingestion of pull requests during each execution to
+    100 of those most recently created/modified. This is an accumulative process
+    so that PRs which have been ingested but are not changing remain in the
+    graph.
 
 ## Requirements
 
@@ -99,6 +108,7 @@ The following entities are created:
 | Account             | `github_account`     | `Account`       |
 | GitHub Pull Request | `github_pullrequest` | `PR`            |
 | GitHub Team         | `github_team`        | `UserGroup`     |
+| Github App          | `github_app`         | `Application`   |
 | Github Repo         | `github_repo`        | `CodeRepo`      |
 | Github User         | `github_user`        | `User`          |
 
@@ -110,13 +120,15 @@ The following relationships are created/mapped:
 | --------------------- | --------------------- | --------------------- |
 | `github_account`      | **HAS**               | `github_team`         |
 | `github_account`      | **HAS**               | `github_user`         |
+| `github_account`      | **INSTALLED**         | `github_app`          |
 | `github_account`      | **OWNS**              | `github_repo`         |
+| `github_repo`         | **ALLOWS**            | `github_team`         |
+| `github_repo`         | **ALLOWS**            | `github_user`         |
 | `github_repo`         | **HAS**               | `github_pullrequest`  |
-| `github_team`         | **ALLOWS**            | `github_repo`         |
 | `github_team`         | **HAS**               | `github_user`         |
 | `github_user`         | **APPROVED**          | `github_pullrequest`  |
 | `github_user`         | **MANAGES**           | `github_account`      |
-| `github_team`         | **MANAGES**           | `github_team`         |
+| `github_user`         | **MANAGES**           | `github_team`         |
 | `github_user`         | **OPENED**            | `github_pullrequest`  |
 | `github_user`         | **REVIEWED**          | `github_pullrequest`  |
 
@@ -126,9 +138,3 @@ END OF GENERATED DOCUMENTATION AFTER BELOW MARKER
 ********************************************************************************
 -->
 <!-- {J1_DOCUMENTATION_MARKER_END} -->
-
-!!! note
-    The integration limits ingestion of pull requests during each execution to
-    100 of those most recently created/modified. This is an accumulative process
-    so that PRs which have been ingested but are not changing remain in the
-    graph.

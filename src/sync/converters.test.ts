@@ -6,6 +6,7 @@ import {
   toPullRequestEntity,
 } from './converters';
 import { UserEntity, PRState } from '../types';
+import omit from 'lodash.omit';
 
 describe('toAccountEntity', () => {
   const apiResponse = {
@@ -153,7 +154,8 @@ describe('toPullRequestEntity', () => {
     },
     created_at: '2001-09-11T08:46:00Z',
     updated_at: '2001-09-11T20:30:00Z',
-    merged_at: null,
+    merged_at: '2021-07-21T14:06:13Z',
+    merge_commit_sha: 'f8d8a228a6046ead812d9ea0c457e429342a89f7',
     url: 'https://api.github.com/repos/JupiterOne/jupiter-project-repo/pulls/1',
     html_url: 'https://github.com/JupiterOne/jupiter-project-repo/pulls/1',
   };
@@ -191,12 +193,14 @@ describe('toPullRequestEntity', () => {
     _rawData: [
       {
         name: 'default',
-        rawData: apiResponse,
+        rawData: omit(apiResponse, ['base', 'head']),
       },
     ],
     open: true,
-    merged: false,
+    merged: true,
     declined: false,
+    mergedOn: 1626876373000,
+    mergeCommitHash: 'f8d8a228a6046ead812d9ea0c457e429342a89f7',
   };
 
   test('with description', () => {
@@ -244,7 +248,7 @@ describe('toPullRequestEntity', () => {
       _rawData: [
         {
           name: 'default',
-          rawData: apiResponseWithoutDescription,
+          rawData: omit(apiResponseWithoutDescription, ['base', 'head']),
         },
       ],
     });
@@ -254,6 +258,9 @@ describe('toPullRequestEntity', () => {
     const apiResponseDeclined = {
       ...apiResponse,
       state: PRState.Closed,
+      merged: false,
+      merged_at: null,
+      merge_commit_sha: undefined,
     };
     const entity = toPullRequestEntity(
       apiResponseDeclined as any,
@@ -275,10 +282,13 @@ describe('toPullRequestEntity', () => {
       state: PRState.Closed,
       open: false,
       declined: true,
+      merged: false,
+      mergedOn: undefined,
+      mergeCommitHash: undefined,
       _rawData: [
         {
           name: 'default',
-          rawData: apiResponseDeclined,
+          rawData: omit(apiResponseDeclined, ['base', 'head']),
         },
       ],
     });

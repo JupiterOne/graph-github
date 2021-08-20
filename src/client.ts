@@ -17,10 +17,6 @@ import {
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
-import {
-  GitHubGraphQLClient,
-  OrgTeamRepoQueryResponse,
-} from './client/GraphQLClient';
 import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
 import {
   OrgMemberQueryResponse,
@@ -28,6 +24,10 @@ import {
   OrgTeamQueryResponse,
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
+  GitHubGraphQLClient,
+  OrgTeamRepoQueryResponse,
+  OrgCollaboratorQueryResponse,
+  OrgAppQueryResponse,
 } from './client/GraphQLClient';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
@@ -42,6 +42,8 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
  */
 export class APIClient {
   accountClient: OrganizationAccountClient;
+  ghsToken: string;
+  scopedForApps: boolean;
   constructor(
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
@@ -91,13 +93,41 @@ export class APIClient {
     }
     const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
     const allTeamMembers: OrgTeamMemberQueryResponse[] = await this.accountClient.getTeamMembers();
-    const allTeamRepos: OrgTeamRepoQueryResponse[] = await this.accountClient.getTeamRepositories();
+
+    // Check 'useRestForTeamRepos' config variable as a hack to allow large github
+    // accounts to bypass a Github error. Please delete this code once that error is fixed.
+    const allTeamRepos: OrgTeamRepoQueryResponse[] = this.config
+      .useRestForTeamRepos
+      ? await this.accountClient.getTeamReposWithRest()
+      : await this.accountClient.getTeamRepositories();
+
     for (const team of teams) {
       team.members = allTeamMembers.filter(
         (member) => member.teams === team.id,
       );
       team.repos = allTeamRepos.filter((repo) => repo.teams === team.id);
       await iteratee(team);
+    }
+  }
+
+  /**
+   * Iterates each installed GitHub application.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateApps(
+    iteratee: ResourceIteratee<OrgAppQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopedForApps) {
+      const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps(
+        this.ghsToken,
+      );
+      for (const app of apps) {
+        await iteratee(app);
+      }
     }
   }
 
@@ -128,6 +158,7 @@ export class APIClient {
     repo: RepoEntity,
     memberEntities: UserEntity[],
     memberByLoginMap: IdEntityMap<UserEntity>,
+    logger: IntegrationLogger,
     iteratee: ResourceIteratee<PullRequestEntity>,
   ): Promise<void> {
     if (!this.accountClient) {
@@ -139,12 +170,44 @@ export class APIClient {
       repo,
       memberEntities,
       memberByLoginMap,
+      logger,
     );
     if (pullrequests) {
       for (const pr of pullrequests) {
         await iteratee(pr);
       }
     }
+  }
+
+  /**
+   * Iterates the collaborators for a repo in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateCollaborators(
+    repo: RepoEntity,
+    iteratee: ResourceIteratee<OrgCollaboratorQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    const collaborators: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
+      repo.name,
+    );
+    for (const collab of collaborators) {
+      await iteratee(collab);
+    }
+
+    //we would prefer to use GraphQL to get collabs, but we haven't figured out how to make that work
+    //this code for future dev
+    /*
+    const collabs: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaborators();
+    console.log('GraphQL approach to collabs:');
+    console.log(collabs);
+    for (const collab of collabs) {
+      console.log(collab);
+    }
+    */
   }
 
   public async setupAccountClient(): Promise<void> {
@@ -165,6 +228,7 @@ export class APIClient {
         permissions: TokenPermissions;
       };
       myToken = token;
+      this.ghsToken = token;
       myPermissions = permissions;
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
@@ -191,6 +255,22 @@ export class APIClient {
       throw new IntegrationValidationError(
         'Integration requires read access to repository metadata. See GitHub App permissions.',
       );
+    }
+
+    //note that ingesting installed applications requires scope organization_administration:read
+    if (
+      !(
+        myPermissions.organization_administration === 'read' ||
+        myPermissions.organization_administration === 'write'
+      )
+    ) {
+      this.scopedForApps = false;
+      this.logger.warn(
+        {},
+        'Token does not have organization_administration scope, so installed GitHub Apps cannot be ingested',
+      );
+    } else {
+      this.scopedForApps = true;
     }
     //scopes check done
 

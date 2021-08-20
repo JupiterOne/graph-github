@@ -8,7 +8,59 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.2.0 - 2021-08-19
+
+### Added
+
+- GitHub Apps are now ingested
+- Outside collaborators on repos are now ingested
+- New relationship `github_repo_allows_user` with properties defining the
+  users's permissions on the repo: admin: boolean; maintain: boolean; push:
+  boolean; triage: boolean; pull: boolean;
+
 ### Changed
 
+- Changed relationship `github_team_allows_repo` to `github_repo_allows_team`,
+  and added `permissions` property ('READ' | 'TRIAGE' | 'WRITE' | 'MAINTAIN' |
+  'ADMIN')
+
+### Fixed
+
+- Removed incorrect relationship listing in documentation.
+
+## 1.1.0 - 2021-07-26
+
+### Added
+
+- New properties on `github_pull_request`
+  - `mergedOn`
+  - `mergeCommitHash`
+
+## 1.0.1 - 2021-07-23
+
+### Removed
+
+- `head` and `base` properties from `github_pull_request` entities' rawData.
+
+### Fixed
+
+- TypeError in `getCommitsToDestination` when a commit does not exist.
+
+## 1.0.0 - 2021-07-09
+
+### Added
+
+- new optional config variable `useRestForTeamRepos` that can is sometimes
+  needed to get around a GitHub error when fetching team repos via GraphQL.
+
+### Changed
+
+- octokit packages to be dependencies instead of peer dependencies.
+- Integration now uses the `@jupiterone/integration-sdk-core`
 - [JupiterOne/integrations#5](https://github.com/JupiterOne/integrations/issues/5)
   Use `name || login` for `displayName` of `Account` and `User` entities.
+
+### Fixes
+
+- Duplicate key bug in `github_user` **APPROVED** `github_pullrequest`
+  relationships.

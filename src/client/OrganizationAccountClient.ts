@@ -15,6 +15,8 @@ import {
   OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
   TeamRepositoryPermission,
+  OrgCollaboratorQueryResponse,
+  OrgAppQueryResponse,
 } from './GraphQLClient';
 import {
   UserEntity,
@@ -32,6 +34,7 @@ import {
 import collectCommitsForPR from '../approval/collectCommitsForPR';
 import { toPullRequestEntity } from '../sync/converters';
 import sha from '../util/sha';
+import { request } from '@octokit/request';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -42,6 +45,7 @@ export default class OrganizationAccountClient {
   private teamMembers: OrgTeamMemberQueryResponse[] | undefined;
   private teamRepositories: OrgTeamRepoQueryResponse[] | undefined;
   private repositories: OrgRepoQueryResponse[] | undefined;
+  private collaborators: OrgCollaboratorQueryResponse[] | undefined;
 
   v3RateLimitConsumed: number;
   v4RateLimitConsumed: number;
@@ -154,7 +158,6 @@ export default class OrganizationAccountClient {
         return rateLimitConsumed;
       });
     }
-
     return this.teams || [];
   }
 
@@ -229,67 +232,120 @@ export default class OrganizationAccountClient {
             'Organization query for team repositories failed',
           )
         ) {
-          if (!this.teams) {
-            throw new Error(
-              'Do not attempt to call REST version of getTeamRepositories without first calling getTeams!',
-            );
-          }
-
-          for (const team of this.teams) {
-            try {
-              const teamRepositories = await this.v3.paginate(
-                'GET /orgs/{org}/teams/{team_slug}/repos', // https://docs.github.com/en/rest/reference/teams#list-team-repositories
-                {
-                  org: this.login,
-                  team_slug: team.slug,
-                  per_page: 100,
-                },
-                (response) => {
-                  this.logger.info(
-                    {
-                      teamRepositoriesPageLength: response.data.length,
-                      team: sha(team.slug),
-                    },
-                    'Fetched page of team repositories',
-                  );
-                  this.v3RateLimitConsumed++;
-                  return response.data;
-                },
-              );
-
-              return teamRepositories.map((tr) => {
-                let permission: TeamRepositoryPermission;
-                if (tr.permissions?.admin) {
-                  permission = TeamRepositoryPermission.Admin;
-                } else if (tr.permissions?.push) {
-                  permission = TeamRepositoryPermission.Write;
-                } else {
-                  permission = TeamRepositoryPermission.Read;
-                }
-
-                return {
-                  id: tr.node_id,
-                  teams: team.id,
-                  url: tr.url,
-                  name: tr.name,
-                  nameWithOwner: tr.full_name,
-                  permission,
-                  isPrivate: tr.private,
-                  isArchived: tr.archived,
-                  createdAt: tr.created_at as string,
-                  updatedAt: tr.updated_at as string,
-                };
-              });
-            } catch (err) {
-              throw new IntegrationError(err);
-            }
-          }
+          return await this.getTeamReposWithRest();
         }
       } //end of catch and REST call
     }
 
     return this.teamRepositories || [];
   }
+
+  // This is a hack to allow large github accounts to bypass a Github error. Please delete this code once that error is fixed.
+  async getTeamReposWithRest(): Promise<OrgTeamRepoQueryResponse[]> {
+    if (!this.teams) {
+      throw new Error(
+        'Do not attempt to call REST version of getTeamRepositories without first calling getTeams!',
+      );
+    }
+
+    for (const team of this.teams) {
+      try {
+        const teamRepositories = await this.v3.paginate(
+          'GET /orgs/{org}/teams/{team_slug}/repos', // https://docs.github.com/en/rest/reference/teams#list-team-repositories
+          {
+            org: this.login,
+            team_slug: team.slug,
+            per_page: 100,
+          },
+          (response) => {
+            this.logger.info(
+              {
+                teamRepositoriesPageLength: response.data.length,
+                team: sha(team.slug),
+              },
+              'Fetched page of team repositories',
+            );
+            this.v3RateLimitConsumed++;
+            return response.data;
+          },
+        );
+
+        return teamRepositories.map((tr) => {
+          let permission: TeamRepositoryPermission;
+          if (tr.permissions?.admin) {
+            permission = TeamRepositoryPermission.Admin;
+          } else if (tr.permissions?.push) {
+            permission = TeamRepositoryPermission.Write;
+          } else {
+            permission = TeamRepositoryPermission.Read;
+          }
+
+          return {
+            id: tr.node_id,
+            teams: team.id,
+            url: tr.url,
+            name: tr.name,
+            nameWithOwner: tr.full_name,
+            permission,
+            isPrivate: tr.private,
+            isArchived: tr.archived,
+            createdAt: tr.created_at as string,
+            updatedAt: tr.updated_at as string,
+          };
+        });
+      } catch (err) {
+        throw new IntegrationError(err);
+      }
+    }
+
+    return this.teamRepositories || [];
+  }
+
+  async getRepoCollaboratorsWithRest(
+    repoName: string,
+  ): Promise<OrgCollaboratorQueryResponse[]> {
+    try {
+      const repoCollaborators = await this.v3.paginate(
+        'GET /repos/{owner}/{repo}/collaborators', // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
+        {
+          owner: this.login,
+          repo: repoName,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of repo collaborators');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+
+      this.collaborators = repoCollaborators;
+      return this.collaborators || [];
+    } catch (err) {
+      throw new IntegrationError(err);
+    }
+  }
+
+  /* currently not being used because GraphQL is not cooperating, but here's the code for future research
+  async getRepoCollaborators(): Promise<OrgCollaboratorQueryResponse[]> {
+    if (!this.collaborators) {
+      await this.queryGraphQL('collaborators', async () => {
+        const {
+          collaborators,
+          rateLimitConsumed,
+        } = await this.v4.fetchOrganization(this.login, [
+          OrganizationResource.RepositoryCollaborators,
+        ]);
+
+        this.collaborators = collaborators;
+
+        return rateLimitConsumed;
+      });
+    }
+
+    return this.collaborators || [];
+  }
+  */
 
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
     if (!this.members) {
@@ -308,6 +364,45 @@ export default class OrganizationAccountClient {
     }
 
     return this.members || [];
+  }
+
+  async getInstalledApps(ghsToken): Promise<OrgAppQueryResponse[]> {
+    //the endpoint needed is /orgs/${this.login}/installations
+    //when we try to call it from the Octokit v3 REST client paginate function, we get 'bad credentials'
+    //per GitHub tech support, this endpoint requires a token that starts with 'ghs'
+    //the v3 Octokit REST client .auth call returns such a token, which we pass to the
+    //v4 GraphQL client. However, the v4 GraphQL client does not appear to have access
+    //to the Apps Nodes (as far as we can currently tell), and the v3 REST client does not
+    //appear to use the 'ghs' token that it returns. When we use curl or a direct request
+    //via @octokit/request, using the ghs token, the endpoint works. Attempts to override
+    //the v3 REST client headers in the paginate function, in order to force it to use the
+    //ghs token, have been unsuccessful. After several hours of experimentation and research,
+    //the only thing that has worked in this direct call to @octokit/request.
+    //This is not ideal, since it is not a paginated call. We could build our own pagination and
+    //rate-limit aware wrapper for it, but if this endpoint is the only time we need @octokit/request,
+    //we will probably be okay without pagination and rate-limit aware features, because there are
+    //typically only going to be a few GitHub apps installed in a given organization.
+    //TODO: a more elegant solution. Possibly making our own pagination and rate-limit aware wrapper.
+    try {
+      const reply = await request(`GET /orgs/${this.login}/installations`, {
+        headers: {
+          authorization: `Bearer ${ghsToken}`,
+        },
+        org: 'octokit',
+        type: 'private',
+      });
+      if (reply.data.installations) {
+        return reply.data.installations;
+      }
+      this.logger.warn({}, 'Found no installed GitHub apps');
+      return [];
+    } catch (err) {
+      this.logger.warn(
+        {},
+        'Error while attempting to ingest to installed GitHub apps',
+      );
+      throw new IntegrationError(err);
+    }
   }
 
   async getPullRequestEntity(
@@ -366,6 +461,7 @@ export default class OrganizationAccountClient {
     repo: RepoEntity,
     teamMembers: UserEntity[],
     teamMemberMap: IdEntityMap<UserEntity>,
+    logger: IntegrationLogger,
   ): Promise<Array<PullRequestEntity> | undefined> {
     if (!this.authorizedForPullRequests) {
       return undefined;
@@ -374,6 +470,10 @@ export default class OrganizationAccountClient {
     let pullRequests: PullsListResponseItem[];
 
     try {
+      logger.info(
+        { repoName: repo.name },
+        'fetching batch of pull requests from repo',
+      );
       const prCount = 100;
       pullRequests = (
         await this.v3.pulls.list({
@@ -389,6 +489,7 @@ export default class OrganizationAccountClient {
       return pMap(
         pullRequests,
         async (pullRequest) => {
+          // This is incredibly slow thanks to Github's rate and abuse limiting. Be careful when turning this on!
           if (this.analyzeCommitApproval) {
             const {
               allCommits,
@@ -413,7 +514,7 @@ export default class OrganizationAccountClient {
             return toPullRequestEntity(pullRequest);
           }
         },
-        { concurrency: 2 },
+        { concurrency: 1 },
       );
     } catch (err) {
       this.logger.info({ err }, 'pulls.list failed');
@@ -576,7 +677,6 @@ export default class OrganizationAccountClient {
       const rateLimitConsumed = await performQuery();
       this.v4RateLimitConsumed += rateLimitConsumed;
     } catch (responseErrors) {
-      console.log(responseErrors);
       throw new IntegrationError(responseErrors);
     }
   }

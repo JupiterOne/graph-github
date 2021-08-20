@@ -20,4 +20,5 @@ export const integrationConfig: IntegrationConfig = {
     Number(process.env.INSTALLATION_ID) || DEFAULT_INSTALLATION_ID,
   analyzeCommitApproval: true,
   githubAppDefaultLogin: 'something', //can be set manually in tests
-};
+  // useRestForTeamRepos: false
+} as IntegrationConfig; // casting config instead of setting useRestForTeamRepos to imitate configs already in production

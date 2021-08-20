@@ -9,17 +9,16 @@ import {
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import { toRepositoryEntity } from '../sync/converters';
-import { AccountEntity, RepoEntity } from '../types';
+import { toAppEntity } from '../sync/converters';
+import { AccountEntity, AppEntity } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_REPO_ENTITY_CLASS,
-  GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ARRAY,
+  GITHUB_APP_ENTITY_TYPE,
+  GITHUB_APP_ENTITY_CLASS,
+  GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
 } from '../constants';
 
-export async function fetchRepos({
+export async function fetchApps({
   instance,
   logger,
   jobState,
@@ -37,47 +36,39 @@ export async function fetchRepos({
     );
   }
 
-  const repoEntities: RepoEntity[] = []; //for use later in PRs
-
-  await apiClient.iterateRepos(async (repo) => {
-    const repoEntity = (await jobState.addEntity(
-      toRepositoryEntity(repo),
-    )) as RepoEntity;
-
-    repoEntities.push(repoEntity);
+  await apiClient.iterateApps(async (app) => {
+    const appEntity = (await jobState.addEntity(toAppEntity(app))) as AppEntity;
 
     await jobState.addRelationship(
       createDirectRelationship({
-        _class: RelationshipClass.OWNS,
+        _class: RelationshipClass.INSTALLED,
         from: accountEntity,
-        to: repoEntity,
+        to: appEntity,
       }),
     );
   });
-
-  await jobState.setData(GITHUB_REPO_ARRAY, repoEntities);
 }
 
-export const repoSteps: IntegrationStep<IntegrationConfig>[] = [
+export const appSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-repos',
-    name: 'Fetch Repos',
+    id: 'fetch-apps',
+    name: 'Fetch Apps',
     entities: [
       {
-        resourceName: 'Github Repo',
-        _type: GITHUB_REPO_ENTITY_TYPE,
-        _class: GITHUB_REPO_ENTITY_CLASS,
+        resourceName: 'Github App',
+        _type: GITHUB_APP_ENTITY_TYPE,
+        _class: GITHUB_APP_ENTITY_CLASS,
       },
     ],
     relationships: [
       {
-        _type: GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.OWNS,
+        _type: GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
+        _class: RelationshipClass.INSTALLED,
         sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
-        targetType: GITHUB_REPO_ENTITY_TYPE,
+        targetType: GITHUB_APP_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-account'],
-    executionHandler: fetchRepos,
+    executionHandler: fetchApps,
   },
 ];

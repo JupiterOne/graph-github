@@ -1,3 +1,5 @@
+import { TokenPermissions } from '../../../types';
+
 export enum OrganizationResource {
   Organization = 'organization',
   Members = 'members',
@@ -5,6 +7,7 @@ export enum OrganizationResource {
   TeamMembers = 'teamMembers',
   TeamRepositories = 'teamRepositories',
   Repositories = 'repositories',
+  RepositoryCollaborators = 'repositoryCollaborators',
 }
 
 export enum OrgMemberRole {
@@ -35,6 +38,21 @@ interface Actor {
 }
 
 export type OrgQueryResponse = Node & Actor;
+
+export interface OrgCollaboratorQueryResponse extends Actor {
+  //choosing not to extend Node here because the REST call that retrieves Collaborators insists that `id` is a number
+  id: number;
+  permissions?: CollaboratorPermissions | undefined;
+  node_id: string; //Collaborator `node_id` matches a User `id`, whereas Collaborator `id` is just a unique index for the Collaborator object
+}
+
+export interface CollaboratorPermissions {
+  admin: boolean;
+  maintain?: boolean;
+  push: boolean;
+  triage?: boolean;
+  pull: boolean;
+}
 
 export interface OrgMemberQueryResponse extends Node, Actor {
   hasTwoFactorEnabled: boolean;
@@ -72,6 +90,27 @@ export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
   permission: TeamRepositoryPermission;
 }
 
+export interface OrgAppQueryResponse {
+  //a REST response, not GraphQL, but everything else is in this file
+  id: string; //the installation id
+  respository_selection: string;
+  html_url: string;
+  app_id: number;
+  app_slug: string; //a name for the app
+  target_id: number;
+  target_type: string; // typically "Organization"
+  permissions: TokenPermissions;
+  created_at: string;
+  updated_at: string;
+  events: string[];
+  repository_selection: string; // 'all' || 'selected'  It doesn't actually list which are selected.
+  single_file_name: string;
+  has_multiple_single_files: boolean;
+  single_file_paths: string[];
+  suspended_by: string;
+  suspended_at: string;
+}
+
 interface OrganizationResources {
   organization: OrgQueryResponse[];
   members: OrgMemberQueryResponse[];
@@ -79,6 +118,7 @@ interface OrganizationResources {
   teamMembers: OrgTeamMemberQueryResponse[];
   teamRepositories: OrgTeamRepoQueryResponse[];
   repositories: OrgRepoQueryResponse[];
+  collaborators: OrgCollaboratorQueryResponse[];
 }
 
 export type OrganizationResourcesQueryResponse = {

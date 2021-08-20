@@ -7,10 +7,18 @@ import { IntegrationConfig, sanitizeConfig } from '../config';
 import { fetchMembers } from './members';
 import { fetchRepos } from './repos';
 import { fetchTeams } from './teams';
+import { fetchCollaborators } from './collaborators';
 import { fetchPrs } from './pullrequests';
 import { fetchAccountDetails } from './account';
+import {
+  GITHUB_COLLABORATOR_ENTITY_TYPE,
+  GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+} from '../constants';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
+import { fetchApps } from './apps';
+
+jest.setTimeout(10000);
 
 let recording: Recording;
 afterEach(async () => {
@@ -25,6 +33,9 @@ test('should collect data', async () => {
       matchRequestsBy: {
         headers: false,
         order: false, //this is needed for index.test.ts
+        url: {
+          query: false,
+        },
       },
     },
   });
@@ -40,9 +51,11 @@ test('should collect data', async () => {
   // Simulates dependency graph execution.
   // See https://github.com/JupiterOne/sdk/issues/262.
   await fetchAccountDetails(context);
+  await fetchApps(context);
   await fetchMembers(context);
   await fetchRepos(context);
   await fetchTeams(context);
+  await fetchCollaborators(context);
   await fetchPrs(context);
 
   // Review snapshot, failure is a regression
@@ -73,6 +86,28 @@ test('should collect data', async () => {
         },
       },
       required: ['accountId'],
+    },
+  });
+
+  const apps = context.jobState.collectedEntities.filter((e) =>
+    e._class.includes('Application'),
+  );
+  expect(apps.length).toBeGreaterThan(0);
+  expect(apps).toMatchGraphObjectSchema({
+    _class: ['Application'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_app' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        webLink: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['name', 'displayName', 'webLink'],
     },
   });
 
@@ -139,7 +174,6 @@ test('should collect data', async () => {
     },
   });
 
-  /*
   const prs = context.jobState.collectedEntities.filter((e) =>
     e._class.includes('PR'),
   );
@@ -159,5 +193,17 @@ test('should collect data', async () => {
       },
       required: ['webLink', 'displayName'],
     },
-  });*/
+  });
+
+  const repoUserRelationships = context.jobState.collectedRelationships.filter(
+    (r) => r._type === GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+  );
+  expect(repoUserRelationships.length).toBeGreaterThan(0);
+
+  const outsideCollaboratorEntities = context.jobState.collectedEntities.filter(
+    (e) =>
+      e._type === GITHUB_COLLABORATOR_ENTITY_TYPE &&
+      e.role === 'outside collaborator',
+  );
+  expect(outsideCollaboratorEntities.length).toBeGreaterThan(0);
 });

@@ -16,10 +16,16 @@
 ## How it Works
 
 - JupiterOne periodically fetches installed GitHub apps, GitHub users, teams,
-  code repositories, and pull requests in those repositories to update the
-  graph.
+  code repositories, and recently created/changed pull requests in those
+  repositories to update the graph.
 - Write JupiterOne queries to review and monitor updates to the graph.
 - Configure alerts to take action when the JupiterOne graph changes.
+
+!!! note
+    The integration limits ingestion of pull requests during each execution to
+    100 of those most recently created/modified. This is an accumulative process
+    so that PRs which have been ingested but are not changing remain in the
+    graph.
 
 ## Requirements
 

@@ -21,11 +21,9 @@
 - Write JupiterOne queries to review and monitor updates to the graph.
 - Configure alerts to take action when the JupiterOne graph changes.
 
-!!! note
-    The integration limits ingestion of pull requests during each execution to
-    100 of those most recently created/modified. This is an accumulative process
-    so that PRs which have been ingested but are not changing remain in the
-    graph.
+!!! note The integration limits ingestion of pull requests during each execution
+to 100 of those most recently created/modified. This is an accumulative process
+so that PRs which have been ingested but are not changing remain in the graph.
 
 ## Requirements
 
@@ -93,7 +91,7 @@ NOTE: ALL OF THE FOLLOWING DOCUMENTATION IS GENERATED USING THE
 "j1-integration document" COMMAND. DO NOT EDIT BY HAND! PLEASE SEE THE DEVELOPER
 DOCUMENTATION FOR USAGE INFORMATION:
 
-https://github.com/JupiterOne/sdk/blob/master/docs/integrations/development.md
+https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md
 ********************************************************************************
 -->
 

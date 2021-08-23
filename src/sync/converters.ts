@@ -186,7 +186,7 @@ export function toOrganizationCollaboratorEntity(
     displayName: data.name || data.login,
     name: data.name || data.login,
     mfaEnabled: undefined,
-    role: 'outside collaborator',
+    role: 'OUTSIDE',
     siteAdmin: false,
   };
   setRawData(userEntity, { name: 'default', rawData: data });

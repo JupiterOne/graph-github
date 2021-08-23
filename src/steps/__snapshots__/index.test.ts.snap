@@ -609,7 +609,7 @@ Object {
       "login": "austinkelleher",
       "mfaEnabled": undefined,
       "name": "austinkelleher",
-      "role": "outside collaborator",
+      "role": "OUTSIDE",
       "siteAdmin": false,
       "username": "austinkelleher",
     },

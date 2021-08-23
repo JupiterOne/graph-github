@@ -201,9 +201,7 @@ test('should collect data', async () => {
   expect(repoUserRelationships.length).toBeGreaterThan(0);
 
   const outsideCollaboratorEntities = context.jobState.collectedEntities.filter(
-    (e) =>
-      e._type === GITHUB_COLLABORATOR_ENTITY_TYPE &&
-      e.role === 'outside collaborator',
+    (e) => e._type === GITHUB_COLLABORATOR_ENTITY_TYPE && e.role === 'OUTSIDE',
   );
   expect(outsideCollaboratorEntities.length).toBeGreaterThan(0);
 });

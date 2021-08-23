@@ -23,6 +23,8 @@ and this project adheres to
 
 - Retrying "Secondary Rate Limit" errors on graphQL queries.
 - Better logging of graphQL queries.
+- Organization, repo and environmental Secrets are now ingested (names and properties 
+  of secrets, not actual values)
 
 ## 1.3.0 - 2021-08-27
 

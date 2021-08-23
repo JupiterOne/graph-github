@@ -15,11 +15,8 @@ import {
   TeamRepositoryPermission,
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
-<<<<<<< HEAD
   GithubResource,
-=======
   OrgSecretQueryResponse,
->>>>>>> Starting secret ingestion
 } from './GraphQLClient';
 import {
   RepoEntity,

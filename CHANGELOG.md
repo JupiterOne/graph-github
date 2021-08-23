@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.2.3 - 2021-08-23
+
 ### Changed
 
 - Role property for outside collaborators is now 'OUTSIDE'
@@ -16,11 +18,19 @@ and this project adheres to
 
 ### Added
 
-- GitHub Apps are now ingested
-- Outside collaborators on repos are now ingested
-- New relationship `github_repo_allows_user` with properties defining the
-  users's permissions on the repo: admin: boolean; maintain: boolean; push:
-  boolean; triage: boolean; pull: boolean;
+- Added support for ingesting the following **new** entities:
+
+  | Entity                            |
+  | --------------------------------- |
+  | `github_app`                      |
+  | `github_user` (`role: 'OUTSIDE'`) |
+
+- Added support for ingesting the following **new** relationships:
+
+  | Source           | class         | Target                            |
+  | ---------------- | ------------- | --------------------------------- |
+  | `github_account` | **INSTALLED** | `github_app`                      |
+  | `github_repo`    | **ALLOWS**    | `github_user` (`role: 'OUTSIDE'`) |
 
 ### Changed
 

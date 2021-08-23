@@ -150,6 +150,7 @@ export function toOrganizationMemberEntity(
     mfaEnabled: data.hasTwoFactorEnabled || false,
     role: data.role,
     siteAdmin: data.isSiteAdmin,
+    webLink: 'https://github.com/' + data.login,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -168,6 +169,7 @@ export function toOrganizationMemberEntityFromTeamMember(
     name: data.login,
     mfaEnabled: false,
     role: data.role,
+    webLink: 'https://github.com/' + data.login,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -187,6 +189,7 @@ export function toOrganizationCollaboratorEntity(
     mfaEnabled: undefined,
     role: 'OUTSIDE',
     siteAdmin: false,
+    webLink: 'https://github.com/' + data.login,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -326,7 +329,6 @@ export function createRepoAllowsTeamRelationship(
   let maintain = false;
   let push = false;
   let triage = false;
-  const pull = true;
   if (permission === 'TRIAGE') {
     triage = true;
   }
@@ -352,12 +354,12 @@ export function createRepoAllowsTeamRelationship(
     _fromEntityKey: repo._key,
     _toEntityKey: team._key,
     displayName: RelationshipClass.ALLOWS,
-    permissionType: permission,
+    role: permission,
     adminPermission: admin,
     maintainPermission: maintain,
     pushPermission: push,
     triagePermission: triage,
-    pullPermission: pull,
+    pullPermission: true, //always true if there is a relationship
   };
 }
 
@@ -366,18 +368,18 @@ export function createRepoAllowsUserRelationship(
   user: UserEntity,
   permissions?: CollaboratorPermissions,
 ): RepoAllowRelationship {
-  let permissionType = 'READ';
+  let role = 'READ';
   if (permissions?.triage) {
-    permissionType = 'TRIAGE';
+    role = 'TRIAGE';
   }
   if (permissions?.push) {
-    permissionType = 'WRITE';
+    role = 'WRITE';
   }
   if (permissions?.maintain) {
-    permissionType = 'MAINTAIN';
+    role = 'MAINTAIN';
   }
   if (permissions?.admin) {
-    permissionType = 'ADMIN';
+    role = 'ADMIN';
   }
   return {
     _key: `${repo._key}|allows|${user._key}`,
@@ -386,11 +388,11 @@ export function createRepoAllowsUserRelationship(
     _fromEntityKey: repo._key,
     _toEntityKey: user._key,
     displayName: RelationshipClass.ALLOWS,
-    permissionType: permissionType,
+    role: role,
     adminPermission: permissions?.admin || false,
     maintainPermission: permissions?.maintain || false,
     pushPermission: permissions?.push || false,
     triagePermission: permissions?.triage || false,
-    pullPermission: permissions?.pull || false,
+    pullPermission: true, //always true if there is a relationship
   };
 }

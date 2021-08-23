@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Role property for outside collaborators is now 'OUTSIDE'
+
 ## 1.2.0 - 2021-08-19
 
 ### Added

@@ -36,7 +36,7 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 export class APIClient {
   accountClient: OrganizationAccountClient;
   ghsToken: string;
-  scopedForApps: boolean;
+  orgAdminScope: boolean;
   constructor(
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
@@ -114,12 +114,37 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.scopedForApps) {
+    if (this.orgAdminScope) {
       const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps(
         this.ghsToken,
       );
       for (const app of apps) {
         await iteratee(app);
+      }
+    }
+  }
+
+  /**
+   * Iterates each organization and repo GitHub Secret.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateSecrets(
+    repos: RepoEntity[],
+    iteratee: ResourceIteratee<OrgSecretQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.orgAdminScope) {
+      const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets(
+        this.ghsToken,
+      );
+      //then get repo secrets
+      //for each repo, call the repo secrets
+      //make repos for a secret an array field
+      for (const secret of secrets) {
+        await iteratee(secret);
       }
     }
   }
@@ -230,20 +255,20 @@ export class APIClient {
       );
     }
 
-    //note that ingesting installed applications requires scope organization_administration:read
+    //note that ingesting installed applications or org secrets requires scope organization_administration:read
     if (
       !(
         myPermissions.organization_administration === 'read' ||
         myPermissions.organization_administration === 'write'
       )
     ) {
-      this.scopedForApps = false;
-      this.logger.warn(
+      this.orgAdminScope = false;
+      this.logger.info(
         {},
-        'Token does not have organization_administration scope, so installed GitHub Apps cannot be ingested',
+        'Token does not have organization_administration scope. Some entities (installed GitHub Apps, organizational Secrets) cannot be ingested',
       );
     } else {
-      this.scopedForApps = true;
+      this.orgAdminScope = true;
     }
     //scopes check done
 

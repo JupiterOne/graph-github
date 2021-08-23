@@ -8,8 +8,6 @@ and this project adheres to
 
 ## [Unreleased]
 
-## 1.2.3 - 2021-08-23
-
 ### Added
 
 - Added properties to `github_repo_allows_team` relationship - adminPermission:
@@ -22,9 +20,14 @@ and this project adheres to
 
 ### Changed
 
-- Role property for outside collaborators is now 'OUTSIDE'
 - Changed name of `github_repo_allows_team` relationship property `permissions`
   to `role` to match GitHub UI instead of API
+
+## 1.2.3 - 2021-08-23
+
+### Changed
+
+- Role property for outside collaborators is now 'OUTSIDE'
 
 ## 1.2.0 - 2021-08-19
 
@@ -39,10 +42,10 @@ and this project adheres to
 
 - Added support for ingesting the following **new** relationships:
 
-  | Source           | class         | Target                            |
-  | ---------------- | ------------- | --------------------------------- |
-  | `github_account` | **INSTALLED** | `github_app`                      |
-  | `github_repo`    | **ALLOWS**    | `github_user`                     |
+  | Source           | class         | Target        |
+  | ---------------- | ------------- | ------------- |
+  | `github_account` | **INSTALLED** | `github_app`  |
+  | `github_repo`    | **ALLOWS**    | `github_user` |
 
 ### Changed
 

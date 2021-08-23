@@ -34,6 +34,15 @@ export interface AppEntity extends Entity {
   //in src/util/propertyHelpers.ts/decomposePermissions
 }
 
+export interface SecretEntity extends Entity {
+  name: string;
+  displayName: string;
+  createdAt: string;
+  updatedAt: string;
+  visibility: string; // 'private' | 'all' | 'selected'. This means how many repos can use this secret
+  selected_repositories_url?: string;
+}
+
 export interface TeamEntity extends Entity {
   name: string;
   displayName: string;

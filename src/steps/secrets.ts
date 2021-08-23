@@ -9,19 +9,16 @@ import {
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import {
-  toTeamEntity,
-  toOrganizationMemberEntityFromTeamMember,
-  createRepoAllowsTeamRelationship,
-} from '../sync/converters';
-import { AccountEntity, TeamEntity, UserEntity, RepoEntity } from '../types';
+import //toSecretEntity,
+'../sync/converters';
+import { AccountEntity, RepoEntity, SecretEntity } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_MEMBER_ENTITY_TYPE,
   GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_TEAM_ENTITY_TYPE,
-  GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_SECRET_ENTITY_TYPE,
+  GITHUB_SECRET_ENTITY_CLASS,
+  GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
+  GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ARRAY,
 } from '../constants';
 
@@ -81,18 +78,6 @@ export const secretSteps: IntegrationStep<IntegrationConfig>[] = [
         _class: RelationshipClass.HAS,
         sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
         targetType: GITHUB_SECRET_ENTITY_TYPE,
-      },
-      {
-        _type: GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GITHUB_TEAM_ENTITY_TYPE,
-        targetType: GITHUB_MEMBER_ENTITY_TYPE,
-      },
-      {
-        _type: GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.MANAGES,
-        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
-        targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
       {
         _type: GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,

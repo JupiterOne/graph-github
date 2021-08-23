@@ -37,6 +37,14 @@ export const GITHUB_APP_ENTITY_CLASS = 'Application';
 export const GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE =
   'github_account_installed_app';
 
+export const GITHUB_SECRET_ENTITY_TYPE = 'github_secret';
+export const GITHUB_SECRET_ENTITY_CLASS = 'Record'; //TODO: make this 'Secret' once SDK supports it
+export const GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE =
+  'github_account_has_secret';
+export const GITHUB_REPO_SECRET_RELATIONSHIP_TYPE = 'github_repo_has_secret';
+export const GITHUB_SECRET_SECRET_RELATIONSHIP_TYPE =
+  'github_secret_overrides_secret';
+
 //these constants are names used to save and retrieve data between steps
 //they are constants instead of strings so that TypeScript will detect spelling errors
 export const GITHUB_MEMBER_ARRAY = 'GITHUB_MEMBER_ARRAY';

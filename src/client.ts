@@ -20,6 +20,7 @@ import {
   OrgTeamRepoQueryResponse,
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
+  OrgSecretQueryResponse,
 } from './client/GraphQLClient';
 import { PullRequest } from './client/GraphQLClient/types';
 
@@ -144,6 +145,7 @@ export class APIClient {
       //for each repo, call the repo secrets
       //make repos for a secret an array field
       for (const secret of secrets) {
+        console.log(secret);
         await iteratee(secret);
       }
     }

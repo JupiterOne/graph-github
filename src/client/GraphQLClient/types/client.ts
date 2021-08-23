@@ -111,7 +111,7 @@ export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
 }
 
 export interface OrgAppQueryResponse {
-  //a REST response, not GraphQL, but everything else is in this file
+  //a REST response, not GraphQL
   id: string; //the installation id
   respository_selection: string;
   html_url: string;
@@ -129,6 +129,15 @@ export interface OrgAppQueryResponse {
   single_file_paths: string[];
   suspended_by: string;
   suspended_at: string;
+}
+
+export interface OrgSecretQueryResponse {
+  //a REST response, not GraphQL
+  name: string;
+  created_at: string;
+  updated_at: string;
+  visibility: string; // 'private' | 'all' | 'selected'. This means how many repos can use this secret
+  selected_repositories_url?: string; //a webpage url, not a REST API url
 }
 
 interface GithubResources {

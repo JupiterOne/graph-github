@@ -10,9 +10,19 @@ and this project adheres to
 
 ## 1.2.3 - 2021-08-23
 
+### Added
+
+- Added properties to `github_repo_allows_team` relationship - adminPermission:
+  boolean; maintainPermission: boolean; pushPermission: boolean;
+  triagePermission: boolean; pullPermission: boolean;
+- Added `permissionType` property to `github_repo_allows_user` relationship
+  ('READ' | 'TRIAGE' | 'WRITE' | 'MAINTAIN' | 'ADMIN')
+
 ### Changed
 
 - Role property for outside collaborators is now 'OUTSIDE'
+- Changed `github_repo_allows_team` relationship property `permissions` to
+  `permissionType`
 
 ## 1.2.0 - 2021-08-19
 
@@ -30,7 +40,7 @@ and this project adheres to
   | Source           | class         | Target                            |
   | ---------------- | ------------- | --------------------------------- |
   | `github_account` | **INSTALLED** | `github_app`                      |
-  | `github_repo`    | **ALLOWS**    | `github_user` (`role: 'OUTSIDE'`) |
+  | `github_repo`    | **ALLOWS**    | `github_user`                     |
 
 ### Changed
 

@@ -38,6 +38,7 @@ export class APIClient {
   accountClient: OrganizationAccountClient;
   ghsToken: string;
   orgAdminScope: boolean;
+  secretsScope: boolean;
   constructor(
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
@@ -137,11 +138,25 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.orgAdminScope) {
+    if (this.secretsScope) {
       const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets(
         this.ghsToken,
       );
+      for (const secret of secrets) {
+        secret.secretOwner = 'Organization';
+      }
       //then get repo secrets
+      for (const repo of repos) {
+        const repoSecrets: OrgSecretQueryResponse[] = await this.accountClient.getRepoSecrets(
+          this.ghsToken,
+          repo,
+        );
+        for (const secret of repoSecrets) {
+          secret.visibility = 'selected';
+          secret.secretOwner = repo.name + 'Repo';
+          secrets.push(secret);
+        }
+      }
       //for each repo, call the repo secrets
       //make repos for a secret an array field
       for (const secret of secrets) {
@@ -257,7 +272,7 @@ export class APIClient {
       );
     }
 
-    //note that ingesting installed applications or org secrets requires scope organization_administration:read
+    //note that ingesting installed applications requires scope organization_administration:read
     if (
       !(
         myPermissions.organization_administration === 'read' ||
@@ -267,10 +282,23 @@ export class APIClient {
       this.orgAdminScope = false;
       this.logger.info(
         {},
-        'Token does not have organization_administration scope. Some entities (installed GitHub Apps, organizational Secrets) cannot be ingested',
+        'Token does not have organization_administration scope. Installed GitHub Apps cannot be ingested',
       );
     } else {
       this.orgAdminScope = true;
+    }
+
+    //ingesting org secrets requires scope secrets:read
+    if (
+      !(myPermissions.secrets === 'read' || myPermissions.secrets === 'write')
+    ) {
+      this.secretsScope = false;
+      this.logger.info(
+        {},
+        "Token does not have 'secrets' scope. Organization secrets cannot be ingested",
+      );
+    } else {
+      this.secretsScope = true;
     }
     //scopes check done
 

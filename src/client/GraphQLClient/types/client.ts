@@ -138,6 +138,7 @@ export interface OrgSecretQueryResponse {
   updated_at: string;
   visibility?: string; // 'private' | 'all' | 'selected'. This means how many repos can use this secret
   selected_repositories_url?: string; //a webpage url, not a REST API url
+  secretOwner?: string; // 'organization' | '${repo.name}Repo', to be set by integration code
 }
 
 interface GithubResources {

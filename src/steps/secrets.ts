@@ -21,6 +21,7 @@ import {
   GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ARRAY,
 } from '../constants';
+import { toSecretEntity } from '../sync/converters';
 
 export async function fetchSecrets({
   instance,
@@ -46,18 +47,20 @@ export async function fetchSecrets({
   }
 
   await apiClient.iterateSecrets(repoEntities, async (secret) => {
-    /*const secretEntity = (await jobState.addEntity(
-      toSecret(secret),
-    )) as TeamEntity;
+    const secretEntity = (await jobState.addEntity(
+      toSecretEntity(secret),
+    )) as SecretEntity;
 
-    await jobState.addRelationship(
-      createDirectRelationship({
-        _class: RelationshipClass.HAS,
-        from: accountEntity,
-        to: teamEntity,
-      }),
-    );
-    */
+    if (secret.secretOwner === 'Organization') {
+      await jobState.addRelationship(
+        createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          from: accountEntity,
+          to: secretEntity,
+        }),
+      );
+    }
+    //somehow have to get repo-secret rels in here too
   });
 }
 

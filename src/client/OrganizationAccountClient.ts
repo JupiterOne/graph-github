@@ -352,7 +352,6 @@ export default class OrganizationAccountClient {
         headers: {
           authorization: `Bearer ${ghsToken}`,
         },
-        org: 'octokit',
         type: 'private',
       });
       if (reply.data.installations) {
@@ -377,12 +376,10 @@ export default class OrganizationAccountClient {
         headers: {
           authorization: `Bearer ${ghsToken}`,
         },
-        //org: 'octokit',
         type: 'private',
       });
       if (reply.data) {
-        console.log(reply.data);
-        //return reply.data.installations;
+        return reply.data.secrets;
       }
       this.logger.info({}, 'Found no organization secrets');
       return [];
@@ -391,6 +388,32 @@ export default class OrganizationAccountClient {
         {},
         'Error while attempting to ingest organization secrets',
       );
+      throw new IntegrationError(err);
+    }
+  }
+
+  async getRepoSecrets(
+    ghsToken: string,
+    repo: RepoEntity,
+  ): Promise<OrgSecretQueryResponse[]> {
+    //the endpoint needed is /repos/{owner}/{repo}/actions/secrets
+    //for why we are using request here, see comment on getInstalledApps
+    try {
+      const reply = await request(
+        `GET /repos/${this.login}/${repo.name}/actions/secrets`,
+        {
+          headers: {
+            authorization: `Bearer ${ghsToken}`,
+          },
+          type: 'private',
+        },
+      );
+      if (reply.data) {
+        return reply.data.secrets;
+      }
+      return [];
+    } catch (err) {
+      this.logger.warn({}, 'Error while attempting to ingest repo secrets');
       throw new IntegrationError(err);
     }
   }

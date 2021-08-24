@@ -22,11 +22,14 @@ import {
   GITHUB_COLLABORATOR_ENTITY_TYPE,
   GITHUB_APP_ENTITY_CLASS,
   GITHUB_APP_ENTITY_TYPE,
+  GITHUB_SECRET_ENTITY_CLASS,
+  GITHUB_SECRET_ENTITY_TYPE,
 } from '../constants';
 
 import {
   AccountEntity,
   AppEntity,
+  SecretEntity,
   RepoEntity,
   UserEntity,
   PullRequestEntity,
@@ -35,7 +38,15 @@ import {
   AccountType,
   RepoAllowRelationship,
 } from '../types';
-import { decomposePermissions, getAppEntityKey } from '../util/propertyHelpers';
+import { Approval } from '../approval/collectCommitsForPR';
+import {
+  aggregateProperties,
+  flattenMatrix,
+  displayNamesFromLogins,
+  decomposePermissions,
+  getAppEntityKey,
+  getSecretEntityKey,
+} from '../util/propertyHelpers';
 import {
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
@@ -45,6 +56,7 @@ import {
   OrgCollaboratorQueryResponse,
   CollaboratorPermissions,
   OrgAppQueryResponse,
+  OrgSecretQueryResponse,
 } from '../client/GraphQLClient';
 
 import { uniq, last, compact } from 'lodash';
@@ -93,6 +105,23 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   };
   setRawData(appEntity, { name: 'default', rawData: data });
   return appEntity;
+}
+
+export function toSecretEntity(data: OrgSecretQueryResponse): SecretEntity {
+  const secretEntity: SecretEntity = {
+    _class: [GITHUB_SECRET_ENTITY_CLASS],
+    _type: GITHUB_SECRET_ENTITY_TYPE,
+    _key: getSecretEntityKey(data.name, data.secretOwner || ''),
+    name: data.name,
+    displayName: data.name,
+    //webLink: data.html_url,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    visibility: data.visibility,
+    selectedRepositoriesLink: data.selected_repositories_url,
+  };
+  setRawData(secretEntity, { name: 'default', rawData: data });
+  return secretEntity;
 }
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {

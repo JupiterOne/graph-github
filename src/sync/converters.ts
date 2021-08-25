@@ -108,13 +108,24 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
 }
 
 export function toSecretEntity(data: OrgSecretQueryResponse): SecretEntity {
+  let webLink: string = '';
+  if (data.secretOwnerType === 'org') {
+    webLink = `https://github.com/organizations/${data.orgLogin}/settings/secrets/actions/${data.name}`;
+  }
+  if (data.secretOwnerType === 'repo') {
+    webLink = `https://github.com/${data.orgLogin}/${data.secretOwnerName}/settings/secrets/actions/${data.name}`;
+  }
   const secretEntity: SecretEntity = {
     _class: [GITHUB_SECRET_ENTITY_CLASS],
     _type: GITHUB_SECRET_ENTITY_TYPE,
-    _key: getSecretEntityKey(data.name, data.secretOwner || ''),
+    _key: getSecretEntityKey(
+      data.name,
+      data.secretOwnerType || '',
+      data.secretOwnerName || '',
+    ),
     name: data.name,
     displayName: data.name,
-    //webLink: data.html_url,
+    webLink: webLink,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     visibility: data.visibility,

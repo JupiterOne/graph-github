@@ -50,6 +50,12 @@ export function getAppEntityKey(installId): string {
   return 'GitHubAppInstallation_' + installId;
 }
 
-export function getSecretEntityKey(name, secretType): string {
-  return 'GitHub_' + secretType + '_Secret_' + name;
+export function getSecretEntityKey(
+  name,
+  secretOwnerType,
+  secretOwnerName,
+): string {
+  return (
+    'GitHub_' + secretOwnerType + '_' + secretOwnerName + '_Secret_' + name
+  );
 }

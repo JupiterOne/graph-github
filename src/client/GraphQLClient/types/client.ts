@@ -1,4 +1,4 @@
-import { TokenPermissions } from '../../../types';
+import { RepoEntity, TokenPermissions } from '../../../types';
 
 /**
  * From the name given to the data for the JupiterOne use case to the specific Github
@@ -103,6 +103,7 @@ export interface OrgRepoQueryResponse extends Node {
   isArchived: boolean | undefined;
   createdAt: string;
   updatedAt: string;
+  node_id?: string;
 }
 
 export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
@@ -138,7 +139,11 @@ export interface OrgSecretQueryResponse {
   updated_at: string;
   visibility?: string; // 'private' | 'all' | 'selected'. This means how many repos can use this secret
   selected_repositories_url?: string; //a webpage url, not a REST API url
-  secretOwner?: string; // 'organization' | '${repo.name}Repo', to be set by integration code
+  //the following fields are set by the integration code, not received from the REST API
+  orgLogin?: string; //for use in constructing weblinks
+  secretOwnerType?: string; // 'org' | 'repo' | 'env'
+  secretOwnerName?: string;
+  repos?: RepoEntity[];
 }
 
 interface GithubResources {

@@ -9,8 +9,6 @@ import {
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import //toSecretEntity,
-'../sync/converters';
 import { AccountEntity, RepoEntity, SecretEntity } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
@@ -46,12 +44,12 @@ export async function fetchSecrets({
     );
   }
 
-  await apiClient.iterateSecrets(repoEntities, async (secret) => {
+  await apiClient.iterateOrgSecrets(repoEntities, async (secret) => {
     const secretEntity = (await jobState.addEntity(
       toSecretEntity(secret),
     )) as SecretEntity;
 
-    if (secret.secretOwner === 'Organization') {
+    if (secret.secretOwnerType === 'organization') {
       await jobState.addRelationship(
         createDirectRelationship({
           _class: RelationshipClass.HAS,
@@ -60,7 +58,27 @@ export async function fetchSecrets({
         }),
       );
     }
-    //somehow have to get repo-secret rels in here too
+    if (secret.secretOwnerType === 'repo' && secret.repos) {
+      await jobState.addRelationship(
+        createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          from: secret.repos[0],
+          to: secretEntity,
+        }),
+      );
+    }
+    //for every org type, add a USES relationship for all repos with access to secret
+    if (secret.repos) {
+      for (const repoEntity of secret.repos) {
+        await jobState.addRelationship(
+          createDirectRelationship({
+            _class: RelationshipClass.USES,
+            from: repoEntity,
+            to: secretEntity,
+          }),
+        );
+      }
+    }
   });
 }
 

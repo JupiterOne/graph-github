@@ -131,8 +131,8 @@ export class APIClient {
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
-  public async iterateSecrets(
-    repos: RepoEntity[],
+  public async iterateOrgSecrets(
+    allRepos: RepoEntity[],
     iteratee: ResourceIteratee<OrgSecretQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
@@ -143,24 +143,44 @@ export class APIClient {
         this.ghsToken,
       );
       for (const secret of secrets) {
-        secret.secretOwner = 'Organization';
+        secret.orgLogin = this.accountClient.login;
+        secret.secretOwnerType = 'organization';
+        secret.secretOwnerName = this.accountClient.login;
+        secret.repos = [];
+        secret.visibility === 'all'
+          ? (secret.repos = allRepos)
+          : (secret.repos = []);
+        if (secret.visibility === 'selected') {
+          //go get the list of repos and add them
+          const reposForOrgSecret = await this.accountClient.getReposForOrgSecret(
+            this.ghsToken,
+            secret.name,
+          );
+          const secretRepos: RepoEntity[] = [];
+          for (const repo of reposForOrgSecret) {
+            const repoEntity = allRepos.find((r) => r._key === repo.node_id);
+            if (repoEntity) {
+              secretRepos.push(repoEntity);
+            }
+          }
+          secret.repos = secretRepos;
+        }
       }
-      //then get repo secrets
-      for (const repo of repos) {
+      //then get repo-level secrets (ie. secrets owned by a repo)
+      for (const repo of allRepos) {
         const repoSecrets: OrgSecretQueryResponse[] = await this.accountClient.getRepoSecrets(
           this.ghsToken,
           repo,
         );
         for (const secret of repoSecrets) {
           secret.visibility = 'selected';
-          secret.secretOwner = repo.name + 'Repo';
+          secret.secretOwnerType = 'repo';
+          secret.secretOwnerName = repo.name;
+          secret.repos = [repo];
           secrets.push(secret);
         }
       }
-      //for each repo, call the repo secrets
-      //make repos for a secret an array field
       for (const secret of secrets) {
-        console.log(secret);
         await iteratee(secret);
       }
     }

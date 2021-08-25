@@ -392,6 +392,39 @@ export default class OrganizationAccountClient {
     }
   }
 
+  async getReposForOrgSecret(
+    ghsToken,
+    secretName,
+  ): Promise<OrgRepoQueryResponse[]> {
+    //the endpoint needed is /orgs/{org}/actions/secrets/{secret_name}/repositories
+    //for why we are using request here, see comment on getInstalledApps
+    try {
+      const reply = await request(
+        `GET /orgs/${this.login}/actions/secrets/${secretName}/repositories`,
+        {
+          headers: {
+            authorization: `Bearer ${ghsToken}`,
+          },
+          type: 'private',
+        },
+      );
+      if (reply.data) {
+        return reply.data.repositories;
+      }
+      this.logger.info(
+        {},
+        `Expected but did not find repos for org secret ${secretName}`,
+      );
+      return [];
+    } catch (err) {
+      this.logger.warn(
+        {},
+        'Error while attempting to ingest repos for an organization secret',
+      );
+      throw new IntegrationError(err);
+    }
+  }
+
   async getRepoSecrets(
     ghsToken: string,
     repo: RepoEntity,

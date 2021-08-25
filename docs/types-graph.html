@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Integration SDK Graph</title>
+  </head>
+  <body style="height: 100vh; width: 100%;">
+    <div id="integration-graph" style="height: 100vh; width: 100%;"></div>
+    <script
+      type="text/javascript"
+      src="https://unpkg.com/vis-network@7.6.1/standalone/umd/vis-network.min.js"
+    ></script>
+    <script type="text/javascript">
+      var nodes = new vis.DataSet([
+        { id: 'github_account', label: 'Account\ngithub_account\nAccount' },
+        {
+          id: 'github_pullrequest',
+          label: 'GitHub Pull Request\ngithub_pullrequest\nPR',
+        },
+        { id: 'github_team', label: 'GitHub Team\ngithub_team\nUserGroup' },
+        { id: 'github_app', label: 'Github App\ngithub_app\nApplication' },
+        { id: 'github_repo', label: 'Github Repo\ngithub_repo\nCodeRepo' },
+        { id: 'github_user', label: 'Github User\ngithub_user\nUser' },
+      ]);
+      var edges = new vis.DataSet([
+        { from: 'github_account', to: 'github_team', label: 'HAS' },
+        { from: 'github_account', to: 'github_user', label: 'HAS' },
+        { from: 'github_account', to: 'github_app', label: 'INSTALLED' },
+        { from: 'github_account', to: 'github_repo', label: 'OWNS' },
+        { from: 'github_repo', to: 'github_team', label: 'ALLOWS' },
+        { from: 'github_repo', to: 'github_user', label: 'ALLOWS' },
+        { from: 'github_repo', to: 'github_pullrequest', label: 'HAS' },
+        { from: 'github_team', to: 'github_user', label: 'HAS' },
+        { from: 'github_user', to: 'github_pullrequest', label: 'APPROVED' },
+        { from: 'github_user', to: 'github_account', label: 'MANAGES' },
+        { from: 'github_user', to: 'github_team', label: 'MANAGES' },
+        { from: 'github_user', to: 'github_pullrequest', label: 'OPENED' },
+        { from: 'github_user', to: 'github_pullrequest', label: 'REVIEWED' },
+      ]);
+      // create a network
+      var container = document.getElementById('integration-graph');
+      var data = {
+        nodes: nodes,
+        edges: edges,
+      };
+      var options = {
+        edges: { color: '#6647ff', arrows: { to: { enabled: true } } },
+        nodes: { color: { border: '#6647ff', background: '#3ce3b5' } },
+        physics: { barnesHut: { springLength: 300, centralGravity: 0.03 } },
+      };
+      var network = new vis.Network(container, data, options);
+    </script>
+  </body>
+</html>

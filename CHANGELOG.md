@@ -8,20 +8,27 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.3.0 - 2021-08-27
+
 ### Added
 
-- Added properties to `github_repo_allows_team` relationship - adminPermission:
-  boolean; maintainPermission: boolean; pushPermission: boolean;
-  triagePermission: boolean; pullPermission: boolean;
-- Added `role` property to `github_repo_allows_user` relationship ('READ' |
-  'TRIAGE' | 'WRITE' | 'MAINTAIN' | 'ADMIN')
-- Added `webLink` property to `github_user` entities with a link to their GitHub
-  user page
+- Properties added to graph objects:
 
-### Changed
+  | Entity / Relationship     | Property                                                   | Notes               |
+  | ------------------------- | ---------------------------------------------------------- | ------------------- |
+  | `github_repo_allows_team` | `adminPermission: boolean`                                 |                     |
+  | `github_repo_allows_team` | `maintainPermission: boolean`                              |                     |
+  | `github_repo_allows_team` | `pushPermission: boolean`                                  |                     |
+  | `github_repo_allows_team` | `triagePermission: boolean`                                |                     |
+  | `github_repo_allows_team` | `pullPermission: boolean`                                  |                     |
+  | `github_repo_allows_user` | `role: 'READ' | 'TRIAGE' | 'WRITE' | 'MAINTAIN' | 'ADMIN'` |                     |
+  | `github_user`             | `webLink: string`                                          | GitHub user profile |
 
-- Changed name of `github_repo_allows_team` relationship property `permissions`
-  to `role` to match GitHub UI instead of API
+- Properties changed on graph objects:
+
+  | Entity / Relationship     | Old                   | New            | Notes           |
+  | ------------------------- | --------------------- | -------------- | --------------- |
+  | `github_repo_allows_team` | `permissions: string` | `role: string` | Match GitHub UI |
 
 ## 1.2.3 - 2021-08-23
 

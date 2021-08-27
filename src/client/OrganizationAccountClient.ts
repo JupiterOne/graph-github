@@ -395,30 +395,22 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getReposForOrgSecret(
-    ghsToken,
-    secretName,
-  ): Promise<OrgRepoQueryResponse[]> {
-    //the endpoint needed is /orgs/{org}/actions/secrets/{secret_name}/repositories
-    //for why we are using request here, see comment on getInstalledApps
+  async getReposForOrgSecret(secretName): Promise<OrgRepoQueryResponse[]> {
     try {
-      const reply = await request(
-        `GET /orgs/${this.login}/actions/secrets/${secretName}/repositories`,
+      const reposForSecret = await this.v3.paginate(
+        'GET /orgs/{org}/actions/secrets/{secret_name}/repositories' as any,
         {
-          headers: {
-            authorization: `Bearer ${ghsToken}`,
-          },
-          type: 'private',
+          org: this.login,
+          secret_name: secretName,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of repos for a secret');
+          this.v3RateLimitConsumed++;
+          return response.data;
         },
       );
-      if (reply.data) {
-        return reply.data.repositories;
-      }
-      this.logger.info(
-        {},
-        `Expected but did not find repos for org secret ${secretName}`,
-      );
-      return [];
+      return reposForSecret || [];
     } catch (err) {
       this.logger.warn(
         {},

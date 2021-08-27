@@ -16,7 +16,7 @@ import {
   GITHUB_ORG_SECRET_ENTITY_TYPE,
   GITHUB_SECRET_ENTITY_CLASS,
   GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
+  GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ARRAY,
 } from '../constants';
 import { toSecretEntity } from '../sync/converters';
@@ -58,15 +58,6 @@ export async function fetchOrgSecrets({
         }),
       );
     }
-    if (secret.secretOwnerType === 'repo' && secret.repos) {
-      await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.HAS,
-          from: secret.repos[0],
-          to: secretEntity,
-        }),
-      );
-    }
     //for every org type, add a USES relationship for all repos with access to secret
     if (secret.repos) {
       for (const repoEntity of secret.repos) {
@@ -101,7 +92,7 @@ export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,
       },
       {
-        _type: GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
+        _type: GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.USES,
         sourceType: GITHUB_REPO_ENTITY_TYPE,
         targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,

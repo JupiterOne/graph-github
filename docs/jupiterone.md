@@ -102,7 +102,7 @@ The following entities are created:
 | Resources           | Entity `_type`       | Entity `_class` |
 | ------------------- | -------------------- | --------------- |
 | Account             | `github_account`     | `Account`       |
-| GitHub Org Secret   | `github_org_secret`  | `Record`        |
+| GitHub Org Secret   | `github_org_secret`  | `Secret`        |
 | GitHub Pull Request | `github_pullrequest` | `PR`            |
 | GitHub Team         | `github_team`        | `UserGroup`     |
 | Github App          | `github_app`         | `Application`   |

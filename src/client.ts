@@ -144,6 +144,51 @@ export class APIClient {
         secret.orgLogin = this.accountClient.login;
         secret.secretOwnerType = 'organization';
         secret.secretOwnerName = this.accountClient.login;
+        secret.visibility === 'all'
+          ? (secret.repos = allRepos)
+          : (secret.repos = []);
+        if (
+          secret.visibility === 'selected' ||
+          secret.visibility === 'private'
+        ) {
+          //go get the list of repos and add them
+          const reposForOrgSecret = await this.accountClient.getReposForOrgSecret(
+            secret.name,
+          );
+          const secretRepos: RepoEntity[] = [];
+          for (const repo of reposForOrgSecret) {
+            const repoEntity = allRepos.find((r) => r._key === repo.node_id);
+            if (repoEntity) {
+              secretRepos.push(repoEntity);
+            }
+          }
+          secret.repos = secretRepos;
+        }
+      }
+      for (const secret of secrets) {
+        await iteratee(secret);
+      }
+    }
+  }
+
+  /**
+   * Iterates each Github repo, repo environment, and environment secret.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateRepoSecrets(
+    allRepos: RepoEntity[],
+    iteratee: ResourceIteratee<OrgSecretQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.secretsScope) {
+      const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
+      for (const secret of secrets) {
+        secret.orgLogin = this.accountClient.login;
+        secret.secretOwnerType = 'organization';
+        secret.secretOwnerName = this.accountClient.login;
         secret.repos = [];
         secret.visibility === 'all'
           ? (secret.repos = allRepos)

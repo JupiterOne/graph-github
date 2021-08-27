@@ -39,6 +39,7 @@ export default class OrganizationAccountClient {
   private teamRepositories: OrgTeamRepoQueryResponse[] | undefined;
   private repositories: OrgRepoQueryResponse[] | undefined;
   private collaborators: OrgCollaboratorQueryResponse[] | undefined;
+  private orgSecrets: OrgSecretQueryResponse[] | undefined;
 
   v3RateLimitConsumed: number;
   v4RateLimitConsumed: number;
@@ -368,21 +369,23 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getOrganizationSecrets(ghsToken): Promise<OrgSecretQueryResponse[]> {
-    //the endpoint needed is /orgs/{org}/actions/secrets
-    //for why we are using request here, see comment on getInstalledApps
+  async getOrganizationSecrets(): Promise<OrgSecretQueryResponse[]> {
     try {
-      const reply = await request(`GET /orgs/${this.login}/actions/secrets`, {
-        headers: {
-          authorization: `Bearer ${ghsToken}`,
+      const orgSecrets = await this.v3.paginate(
+        'GET /orgs/{org}/actions/secrets' as any,
+        {
+          org: this.login,
+          per_page: 100,
         },
-        type: 'private',
-      });
-      if (reply.data) {
-        return reply.data.secrets;
-      }
-      this.logger.info({}, 'Found no organization secrets');
-      return [];
+        (response) => {
+          this.logger.info('Fetched page of org secrets');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+
+      this.orgSecrets = orgSecrets;
+      return this.orgSecrets || [];
     } catch (err) {
       this.logger.warn(
         {},

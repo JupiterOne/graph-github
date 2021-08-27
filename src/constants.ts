@@ -1,3 +1,4 @@
+//core entities
 export const GITHUB_ACCOUNT_ENTITY_TYPE = 'github_account';
 export const GITHUB_ACCOUNT_ENTITY_CLASS = 'Account';
 export const GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE =
@@ -32,18 +33,29 @@ export const GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE = 'github_team_has_user';
 export const GITHUB_REPO_TEAM_RELATIONSHIP_TYPE = 'github_repo_allows_team';
 export const GITHUB_REPO_USER_RELATIONSHIP_TYPE = 'github_repo_allows_user';
 
+//apps
 export const GITHUB_APP_ENTITY_TYPE = 'github_app';
 export const GITHUB_APP_ENTITY_CLASS = 'Application';
 export const GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE =
   'github_account_installed_app';
 
-export const GITHUB_SECRET_ENTITY_TYPE = 'github_secret';
+//secrets
+export const GITHUB_ORG_SECRET_ENTITY_TYPE = 'github_org_secret';
+export const GITHUB_REPO_SECRET_ENTITY_TYPE = 'github_repo_secret';
+export const GITHUB_ENV_SECRET_ENTITY_TYPE = 'github_env_secret';
 export const GITHUB_SECRET_ENTITY_CLASS = 'Record'; //TODO: make this 'Secret' once SDK supports it
+export const GITHUB_ENVIRONMENT_ENTITY_TYPE = 'github_environment';
+export const GITHUB_ENVIRONMENT_ENTITY_CLASS = 'Configuration';
 export const GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE =
-  'github_account_has_secret';
-export const GITHUB_REPO_SECRET_RELATIONSHIP_TYPE = 'github_repo_has_secret';
-export const GITHUB_SECRET_SECRET_RELATIONSHIP_TYPE =
-  'github_secret_overrides_secret';
+  'github_account_has_org_secret';
+export const GITHUB_REPO_SECRET_RELATIONSHIP_TYPE =
+  'github_repo_has_repo_secret';
+export const GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE =
+  'github_repo_has_environment';
+export const GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE =
+  'github_environment_has_env_secret';
+export const GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE =
+  'github_repo_secret_overrides_org_secret';
 
 //these constants are names used to save and retrieve data between steps
 //they are constants instead of strings so that TypeScript will detect spelling errors

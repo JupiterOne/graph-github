@@ -23,7 +23,9 @@ import {
   GITHUB_APP_ENTITY_CLASS,
   GITHUB_APP_ENTITY_TYPE,
   GITHUB_SECRET_ENTITY_CLASS,
-  GITHUB_SECRET_ENTITY_TYPE,
+  GITHUB_ORG_SECRET_ENTITY_TYPE,
+  GITHUB_REPO_SECRET_ENTITY_TYPE,
+  GITHUB_ENV_SECRET_ENTITY_TYPE,
 } from '../constants';
 
 import {
@@ -109,15 +111,23 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
 
 export function toSecretEntity(data: OrgSecretQueryResponse): SecretEntity {
   let webLink: string = '';
+  let entityType: string = GITHUB_ORG_SECRET_ENTITY_TYPE;
   if (data.secretOwnerType === 'org') {
     webLink = `https://github.com/organizations/${data.orgLogin}/settings/secrets/actions/${data.name}`;
   }
   if (data.secretOwnerType === 'repo') {
     webLink = `https://github.com/${data.orgLogin}/${data.secretOwnerName}/settings/secrets/actions/${data.name}`;
+    entityType = GITHUB_REPO_SECRET_ENTITY_TYPE;
+  }
+  if (data.secretOwnerType === 'env') {
+    // example : https://github.com/Kei-Institute/Test-repo/settings/environments/288429400/edit
+    // need to rethink how this gets generated - maybe just make the link at a higher level?
+    webLink = `https://github.com/${data.orgLogin}/${data.secretOwnerName}/settings/environments/`;
+    entityType = GITHUB_ENV_SECRET_ENTITY_TYPE;
   }
   const secretEntity: SecretEntity = {
     _class: [GITHUB_SECRET_ENTITY_CLASS],
-    _type: GITHUB_SECRET_ENTITY_TYPE,
+    _type: entityType,
     _key: getSecretEntityKey(
       data.name,
       data.secretOwnerType || '',

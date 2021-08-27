@@ -13,7 +13,7 @@ import { AccountEntity, RepoEntity, SecretEntity } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
   GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_SECRET_ENTITY_TYPE,
+  GITHUB_ORG_SECRET_ENTITY_TYPE,
   GITHUB_SECRET_ENTITY_CLASS,
   GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
@@ -21,7 +21,7 @@ import {
 } from '../constants';
 import { toSecretEntity } from '../sync/converters';
 
-export async function fetchSecrets({
+export async function fetchOrgSecrets({
   instance,
   logger,
   jobState,
@@ -82,14 +82,14 @@ export async function fetchSecrets({
   });
 }
 
-export const secretSteps: IntegrationStep<IntegrationConfig>[] = [
+export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-secrets',
-    name: 'Fetch Secrets',
+    id: 'fetch-org-secrets',
+    name: 'Fetch Organization Secrets',
     entities: [
       {
-        resourceName: 'GitHub Secret',
-        _type: GITHUB_SECRET_ENTITY_TYPE,
+        resourceName: 'GitHub Org Secret',
+        _type: GITHUB_ORG_SECRET_ENTITY_TYPE,
         _class: GITHUB_SECRET_ENTITY_CLASS,
       },
     ],
@@ -98,16 +98,16 @@ export const secretSteps: IntegrationStep<IntegrationConfig>[] = [
         _type: GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
         sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
-        targetType: GITHUB_SECRET_ENTITY_TYPE,
+        targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,
       },
       {
         _type: GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.USES,
         sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_SECRET_ENTITY_TYPE,
+        targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-account', 'fetch-repos'],
-    executionHandler: fetchSecrets,
+    executionHandler: fetchOrgSecrets,
   },
 ];

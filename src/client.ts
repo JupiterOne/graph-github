@@ -127,7 +127,7 @@ export class APIClient {
   }
 
   /**
-   * Iterates each organization and repo GitHub Secret.
+   * Iterates each Github organization secret.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
@@ -139,9 +139,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.secretsScope) {
-      const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets(
-        this.ghsToken,
-      );
+      const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
       for (const secret of secrets) {
         secret.orgLogin = this.accountClient.login;
         secret.secretOwnerType = 'organization';

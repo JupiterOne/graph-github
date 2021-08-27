@@ -1,7 +1,6 @@
 import {
   setRawData,
   parseTimePropertyValue,
-  Relationship,
   RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 
@@ -36,7 +35,7 @@ import {
   AccountType,
   PullsListResponseItem,
   PullsListCommitsResponseItem,
-  RepoTeamRelationship,
+  RepoAllowRelationship,
 } from '../types';
 import { Approval } from '../approval/collectCommitsForPR';
 import {
@@ -151,6 +150,7 @@ export function toOrganizationMemberEntity(
     mfaEnabled: data.hasTwoFactorEnabled || false,
     role: data.role,
     siteAdmin: data.isSiteAdmin,
+    webLink: 'https://github.com/' + data.login,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -169,6 +169,7 @@ export function toOrganizationMemberEntityFromTeamMember(
     name: data.login,
     mfaEnabled: false,
     role: data.role,
+    webLink: 'https://github.com/' + data.login,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -188,6 +189,7 @@ export function toOrganizationCollaboratorEntity(
     mfaEnabled: undefined,
     role: 'OUTSIDE',
     siteAdmin: false,
+    webLink: 'https://github.com/' + data.login,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -322,7 +324,29 @@ export function createRepoAllowsTeamRelationship(
   repo: RepoEntity,
   team: TeamEntity,
   permission: string,
-): RepoTeamRelationship {
+): RepoAllowRelationship {
+  let admin = false;
+  let maintain = false;
+  let push = false;
+  let triage = false;
+  if (permission === 'TRIAGE') {
+    triage = true;
+  }
+  if (permission === 'WRITE') {
+    triage = true;
+    push = true;
+  }
+  if (permission === 'MAINTAIN') {
+    triage = true;
+    push = true;
+    maintain = true;
+  }
+  if (permission === 'ADMIN') {
+    triage = true;
+    push = true;
+    maintain = true;
+    admin = true;
+  }
   return {
     _key: `${repo._key}|allows|${team._key}`,
     _class: RelationshipClass.ALLOWS,
@@ -330,7 +354,12 @@ export function createRepoAllowsTeamRelationship(
     _fromEntityKey: repo._key,
     _toEntityKey: team._key,
     displayName: RelationshipClass.ALLOWS,
-    permission: permission,
+    role: permission,
+    adminPermission: admin,
+    maintainPermission: maintain,
+    pushPermission: push,
+    triagePermission: triage,
+    pullPermission: true, //always true if there is a relationship
   };
 }
 
@@ -338,7 +367,20 @@ export function createRepoAllowsUserRelationship(
   repo: RepoEntity,
   user: UserEntity,
   permissions?: CollaboratorPermissions,
-): Relationship {
+): RepoAllowRelationship {
+  let role = 'READ';
+  if (permissions?.triage) {
+    role = 'TRIAGE';
+  }
+  if (permissions?.push) {
+    role = 'WRITE';
+  }
+  if (permissions?.maintain) {
+    role = 'MAINTAIN';
+  }
+  if (permissions?.admin) {
+    role = 'ADMIN';
+  }
   return {
     _key: `${repo._key}|allows|${user._key}`,
     _class: RelationshipClass.ALLOWS,
@@ -346,10 +388,11 @@ export function createRepoAllowsUserRelationship(
     _fromEntityKey: repo._key,
     _toEntityKey: user._key,
     displayName: RelationshipClass.ALLOWS,
-    adminPermission: permissions?.admin,
-    maintainPermission: permissions?.maintain,
-    pushPermission: permissions?.push,
-    triagePermission: permissions?.triage,
-    pullPermission: permissions?.pull,
+    role: role,
+    adminPermission: permissions?.admin || false,
+    maintainPermission: permissions?.maintain || false,
+    pushPermission: permissions?.push || false,
+    triagePermission: permissions?.triage || false,
+    pullPermission: true, //always true if there is a relationship
   };
 }

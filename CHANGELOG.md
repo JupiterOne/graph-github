@@ -8,6 +8,21 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Added properties to `github_repo_allows_team` relationship - adminPermission:
+  boolean; maintainPermission: boolean; pushPermission: boolean;
+  triagePermission: boolean; pullPermission: boolean;
+- Added `role` property to `github_repo_allows_user` relationship ('READ' |
+  'TRIAGE' | 'WRITE' | 'MAINTAIN' | 'ADMIN')
+- Added `webLink` property to `github_user` entities with a link to their GitHub
+  user page
+
+### Changed
+
+- Changed name of `github_repo_allows_team` relationship property `permissions`
+  to `role` to match GitHub UI instead of API
+
 ## 1.2.3 - 2021-08-23
 
 ### Changed
@@ -27,10 +42,10 @@ and this project adheres to
 
 - Added support for ingesting the following **new** relationships:
 
-  | Source           | class         | Target                            |
-  | ---------------- | ------------- | --------------------------------- |
-  | `github_account` | **INSTALLED** | `github_app`                      |
-  | `github_repo`    | **ALLOWS**    | `github_user` (`role: 'OUTSIDE'`) |
+  | Source           | class         | Target        |
+  | ---------------- | ------------- | ------------- |
+  | `github_account` | **INSTALLED** | `github_app`  |
+  | `github_repo`    | **ALLOWS**    | `github_user` |
 
 ### Changed
 

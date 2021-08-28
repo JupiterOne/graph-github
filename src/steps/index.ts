@@ -6,6 +6,7 @@ import { prSteps } from './pullrequests';
 import { repoSteps } from './repos';
 import { teamSteps } from './teams';
 import { orgSecretSteps } from './orgsecrets';
+import { repoSecretSteps } from './reposecrets';
 
 const integrationSteps = [
   ...accountSteps,
@@ -16,6 +17,7 @@ const integrationSteps = [
   ...prSteps,
   ...appSteps,
   ...orgSecretSteps,
+  ...repoSecretSteps,
 ];
 
 export { integrationSteps };

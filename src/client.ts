@@ -141,9 +141,7 @@ export class APIClient {
     if (this.secretsScope) {
       const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
       for (const secret of secrets) {
-        secret.orgLogin = this.accountClient.login;
-        secret.secretOwnerType = 'organization';
-        secret.secretOwnerName = this.accountClient.login;
+        //set repos that use this secret, so we can make relationships in iteratree
         secret.visibility === 'all'
           ? (secret.repos = allRepos)
           : (secret.repos = []);
@@ -164,8 +162,6 @@ export class APIClient {
           }
           secret.repos = secretRepos;
         }
-      }
-      for (const secret of secrets) {
         await iteratee(secret);
       }
     }
@@ -177,53 +173,17 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateRepoSecrets(
-    allRepos: RepoEntity[],
+    repoName: string,
     iteratee: ResourceIteratee<OrgSecretQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     if (this.secretsScope) {
-      const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
-      for (const secret of secrets) {
-        secret.orgLogin = this.accountClient.login;
-        secret.secretOwnerType = 'organization';
-        secret.secretOwnerName = this.accountClient.login;
-        secret.repos = [];
-        secret.visibility === 'all'
-          ? (secret.repos = allRepos)
-          : (secret.repos = []);
-        if (secret.visibility === 'selected') {
-          //go get the list of repos and add them
-          const reposForOrgSecret = await this.accountClient.getReposForOrgSecret(
-            this.ghsToken,
-            secret.name,
-          );
-          const secretRepos: RepoEntity[] = [];
-          for (const repo of reposForOrgSecret) {
-            const repoEntity = allRepos.find((r) => r._key === repo.node_id);
-            if (repoEntity) {
-              secretRepos.push(repoEntity);
-            }
-          }
-          secret.repos = secretRepos;
-        }
-      }
-      //then get repo-level secrets (ie. secrets owned by a repo)
-      for (const repo of allRepos) {
-        const repoSecrets: OrgSecretQueryResponse[] = await this.accountClient.getRepoSecrets(
-          this.ghsToken,
-          repo,
-        );
-        for (const secret of repoSecrets) {
-          secret.visibility = 'selected';
-          secret.secretOwnerType = 'repo';
-          secret.secretOwnerName = repo.name;
-          secret.repos = [repo];
-          secrets.push(secret);
-        }
-      }
-      for (const secret of secrets) {
+      const repoSecrets: OrgSecretQueryResponse[] = await this.accountClient.getRepoSecrets(
+        repoName,
+      );
+      for (const secret of repoSecrets) {
         await iteratee(secret);
       }
     }

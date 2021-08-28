@@ -52,10 +52,9 @@ export const GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE =
 export const GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE =
   'github_repo_uses_org_secret';
 //repo secrets
-export const GITHUB_REPO_SECRET_RELATIONSHIP_TYPE =
-  'github_repo_has_repo_secret';
+export const GITHUB_REPO_SECRET_RELATIONSHIP_TYPE = 'github_repo_has_secret'; //apparently `github_repo HAS github_repo_secret` reduces to 'github_repo_has_secret' and not 'github_repo_has_repo_secret'
 export const GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE =
-  'github_repo_uses_repo_secret';
+  'github_repo_uses_secret'; //see 'github_repo_has_secret'
 export const GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE =
   'github_repo_secret_overrides_org_secret';
 //env secrets
@@ -77,3 +76,4 @@ export const GITHUB_MEMBER_BY_LOGIN_MAP = 'GITHUB_MEMBER_BY_LOGIN_MAP';
 export const GITHUB_OUTSIDE_COLLABORATOR_ARRAY =
   'GITHUB_OUTSIDE_COLLABORATOR_ARRAY';
 export const GITHUB_REPO_ARRAY = 'GITHUB_REPO_ARRAY';
+export const GITHUB_ORG_SECRET_BY_NAME_MAP = 'GITHUB_ORG_SECRET_BY_NAME_MAP';

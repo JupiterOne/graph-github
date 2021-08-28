@@ -109,37 +109,62 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   return appEntity;
 }
 
-export function toSecretEntity(data: OrgSecretQueryResponse): SecretEntity {
-  let webLink: string = '';
-  let entityType: string = GITHUB_ORG_SECRET_ENTITY_TYPE;
-  if (data.secretOwnerType === 'org') {
-    webLink = `https://github.com/organizations/${data.orgLogin}/settings/secrets/actions/${data.name}`;
-  }
-  if (data.secretOwnerType === 'repo') {
-    webLink = `https://github.com/${data.orgLogin}/${data.secretOwnerName}/settings/secrets/actions/${data.name}`;
-    entityType = GITHUB_REPO_SECRET_ENTITY_TYPE;
-  }
-  if (data.secretOwnerType === 'env') {
-    // example : https://github.com/Kei-Institute/Test-repo/settings/environments/288429400/edit
-    // need to rethink how this gets generated - maybe just make the link at a higher level?
-    webLink = `https://github.com/${data.orgLogin}/${data.secretOwnerName}/settings/environments/`;
-    entityType = GITHUB_ENV_SECRET_ENTITY_TYPE;
-  }
+export function toOrgSecretEntity(
+  data: OrgSecretQueryResponse,
+  orgLogin: string,
+): SecretEntity {
   const secretEntity: SecretEntity = {
     _class: [GITHUB_SECRET_ENTITY_CLASS],
-    _type: entityType,
-    _key: getSecretEntityKey(
-      data.name,
-      data.secretOwnerType || '',
-      data.secretOwnerName || '',
-    ),
+    _type: GITHUB_ORG_SECRET_ENTITY_TYPE,
+    _key: getSecretEntityKey(data.name, 'Org', orgLogin),
     name: data.name,
     displayName: data.name,
-    webLink: webLink,
+    webLink: `https://github.com/organizations/${orgLogin}/settings/secrets/actions/${data.name}`,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     visibility: data.visibility,
     selectedRepositoriesLink: data.selected_repositories_url,
+  };
+  setRawData(secretEntity, { name: 'default', rawData: data });
+  return secretEntity;
+}
+
+export function toRepoSecretEntity(
+  data: OrgSecretQueryResponse,
+  orgLogin: string,
+  repoName: string,
+): SecretEntity {
+  const secretEntity: SecretEntity = {
+    _class: [GITHUB_SECRET_ENTITY_CLASS],
+    _type: GITHUB_REPO_SECRET_ENTITY_TYPE,
+    _key: getSecretEntityKey(data.name, 'Repo', repoName),
+    name: data.name,
+    displayName: data.name,
+    webLink: `https://github.com/${orgLogin}/${repoName}/settings/secrets/actions/${data.name}`,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    visibility: 'selected',
+  };
+  setRawData(secretEntity, { name: 'default', rawData: data });
+  return secretEntity;
+}
+
+export function toEnvSecretEntity(
+  data: OrgSecretQueryResponse,
+  orgLogin: string,
+  repoName: string,
+  environment: EnvironmentEntity,
+): SecretEntity {
+  const secretEntity: SecretEntity = {
+    _class: [GITHUB_SECRET_ENTITY_CLASS],
+    _type: GITHUB_ENV_SECRET_ENTITY_TYPE,
+    _key: getSecretEntityKey(data.name, 'Env', environment.name),
+    name: data.name,
+    displayName: data.name,
+    webLink: `https://github.com/${orgLogin}/${repoName}/settings/environments/${environment.id}/edit`,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    visibility: 'selected',
   };
   setRawData(secretEntity, { name: 'default', rawData: data });
   return secretEntity;

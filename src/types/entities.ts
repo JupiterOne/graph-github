@@ -39,7 +39,7 @@ export interface SecretEntity extends Entity {
   displayName: string;
   createdAt: string;
   updatedAt: string;
-  visibility?: string; // 'private' | 'all' | 'selected'. This means how many repos can use this secret
+  visibility?: string; // 'private' | 'all' | 'selected'. This means which repos can use this secret. 'private' means only private repos.
   selected_repositories_url?: string;
 }
 

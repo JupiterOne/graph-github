@@ -9,7 +9,7 @@ import {
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import { AccountEntity, RepoEntity, SecretEntity } from '../types';
+import { AccountEntity, IdEntityMap, RepoEntity, SecretEntity } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
   GITHUB_REPO_ENTITY_TYPE,
@@ -18,8 +18,9 @@ import {
   GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ARRAY,
+  GITHUB_ORG_SECRET_BY_NAME_MAP,
 } from '../constants';
-import { toSecretEntity } from '../sync/converters';
+import { toOrgSecretEntity } from '../sync/converters';
 
 export async function fetchOrgSecrets({
   instance,
@@ -44,20 +45,21 @@ export async function fetchOrgSecrets({
     );
   }
 
+  const orgSecretsByNameMap: IdEntityMap<SecretEntity> = {};
+
   await apiClient.iterateOrgSecrets(repoEntities, async (secret) => {
     const secretEntity = (await jobState.addEntity(
-      toSecretEntity(secret),
+      toOrgSecretEntity(secret, apiClient.accountClient.login || ''),
     )) as SecretEntity;
 
-    if (secret.secretOwnerType === 'organization') {
-      await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.HAS,
-          from: accountEntity,
-          to: secretEntity,
-        }),
-      );
-    }
+    await jobState.addRelationship(
+      createDirectRelationship({
+        _class: RelationshipClass.HAS,
+        from: accountEntity,
+        to: secretEntity,
+      }),
+    );
+
     //for every org type, add a USES relationship for all repos with access to secret
     if (secret.repos) {
       for (const repoEntity of secret.repos) {
@@ -70,7 +72,10 @@ export async function fetchOrgSecrets({
         );
       }
     }
+    orgSecretsByNameMap[secret.name] = secretEntity;
   });
+
+  await jobState.setData(GITHUB_ORG_SECRET_BY_NAME_MAP, orgSecretsByNameMap);
 }
 
 export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [

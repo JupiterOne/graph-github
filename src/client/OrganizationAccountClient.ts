@@ -420,26 +420,22 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getRepoSecrets(
-    ghsToken: string,
-    repo: RepoEntity,
-  ): Promise<OrgSecretQueryResponse[]> {
-    //the endpoint needed is /repos/{owner}/{repo}/actions/secrets
-    //for why we are using request here, see comment on getInstalledApps
+  async getRepoSecrets(repoName: string): Promise<OrgSecretQueryResponse[]> {
     try {
-      const reply = await request(
-        `GET /repos/${this.login}/${repo.name}/actions/secrets`,
+      const repoSecrets = await this.v3.paginate(
+        'GET /repos/{owner}/{repo}/actions/secrets' as any,
         {
-          headers: {
-            authorization: `Bearer ${ghsToken}`,
-          },
-          type: 'private',
+          owner: this.login,
+          repo: repoName,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of secrets for a repo');
+          this.v3RateLimitConsumed++;
+          return response.data;
         },
       );
-      if (reply.data) {
-        return reply.data.secrets;
-      }
-      return [];
+      return repoSecrets || [];
     } catch (err) {
       this.logger.warn({}, 'Error while attempting to ingest repo secrets');
       throw new IntegrationError(err);

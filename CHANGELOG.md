@@ -8,7 +8,7 @@ and this project adheres to
 
 ## [Unreleased]
 
-## 1.3.0 - 2021-08-30
+## 1.4.0 - 2021-08-30
 
 ### Changed
 
@@ -19,6 +19,28 @@ and this project adheres to
 
 - Github organizations that do not have any teams will no longer error on step
   `fetch-teams`
+
+## 1.3.0 - 2021-08-27
+
+### Added
+
+- Properties added to graph objects:
+
+  | Entity / Relationship     | Property                                                   | Notes               |
+  | ------------------------- | ---------------------------------------------------------- | ------------------- |
+  | `github_repo_allows_team` | `adminPermission: boolean`                                 |                     |
+  | `github_repo_allows_team` | `maintainPermission: boolean`                              |                     |
+  | `github_repo_allows_team` | `pushPermission: boolean`                                  |                     |
+  | `github_repo_allows_team` | `triagePermission: boolean`                                |                     |
+  | `github_repo_allows_team` | `pullPermission: boolean`                                  |                     |
+  | `github_repo_allows_user` | `role: 'READ' | 'TRIAGE' | 'WRITE' | 'MAINTAIN' | 'ADMIN'` |                     |
+  | `github_user`             | `webLink: string`                                          | GitHub user profile |
+
+- Properties changed on graph objects:
+
+  | Entity / Relationship     | Old                   | New            | Notes           |
+  | ------------------------- | --------------------- | -------------- | --------------- |
+  | `github_repo_allows_team` | `permissions: string` | `role: string` | Match GitHub UI |
 
 ## 1.2.3 - 2021-08-23
 
@@ -39,10 +61,10 @@ and this project adheres to
 
 - Added support for ingesting the following **new** relationships:
 
-  | Source           | class         | Target                            |
-  | ---------------- | ------------- | --------------------------------- |
-  | `github_account` | **INSTALLED** | `github_app`                      |
-  | `github_repo`    | **ALLOWS**    | `github_user` (`role: 'OUTSIDE'`) |
+  | Source           | class         | Target        |
+  | ---------------- | ------------- | ------------- |
+  | `github_account` | **INSTALLED** | `github_app`  |
+  | `github_repo`    | **ALLOWS**    | `github_user` |
 
 ### Changed
 

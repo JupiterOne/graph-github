@@ -346,6 +346,7 @@ Object {
       "role": "MEMBER",
       "siteAdmin": false,
       "username": "erichs",
+      "webLink": "https://github.com/erichs",
     },
     Object {
       "_class": Array [
@@ -375,6 +376,7 @@ Object {
       "role": "MEMBER",
       "siteAdmin": false,
       "username": "mknoedel",
+      "webLink": "https://github.com/mknoedel",
     },
     Object {
       "_class": Array [
@@ -404,6 +406,7 @@ Object {
       "role": "ADMIN",
       "siteAdmin": false,
       "username": "kevincasey1222",
+      "webLink": "https://github.com/kevincasey1222",
     },
     Object {
       "_class": Array [
@@ -612,6 +615,7 @@ Object {
       "role": "OUTSIDE",
       "siteAdmin": false,
       "username": "austinkelleher",
+      "webLink": "https://github.com/austinkelleher",
     },
     Object {
       "_class": Array [
@@ -1047,6 +1051,7 @@ Object {
       "maintainPermission": false,
       "pullPermission": true,
       "pushPermission": false,
+      "role": "TRIAGE",
       "triagePermission": true,
     },
     Object {
@@ -1060,6 +1065,7 @@ Object {
       "maintainPermission": false,
       "pullPermission": true,
       "pushPermission": false,
+      "role": "READ",
       "triagePermission": false,
     },
     Object {
@@ -1073,6 +1079,7 @@ Object {
       "maintainPermission": true,
       "pullPermission": true,
       "pushPermission": true,
+      "role": "MAINTAIN",
       "triagePermission": true,
     },
     Object {
@@ -1086,6 +1093,7 @@ Object {
       "maintainPermission": true,
       "pullPermission": true,
       "pushPermission": true,
+      "role": "ADMIN",
       "triagePermission": true,
     },
     Object {

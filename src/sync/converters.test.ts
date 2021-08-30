@@ -1,6 +1,7 @@
 import { parseTimePropertyValue } from '@jupiterone/integration-sdk-core';
 import {
   toOrganizationMemberEntity,
+  toOrganizationCollaboratorEntity,
   toRepositoryEntity,
   toAccountEntity,
   toPullRequestEntity,
@@ -103,6 +104,46 @@ describe('toOrganizationMemberEntity', () => {
       mfaEnabled: true,
       role: 'Maintainer',
       siteAdmin: false,
+      webLink: 'https://github.com/user-login',
+    });
+  });
+
+  test('displayName falls back to login', () => {
+    expect(
+      toOrganizationMemberEntity({ ...apiResponse, name: undefined } as any),
+    ).toMatchObject({
+      displayName: 'user-login',
+    });
+  });
+});
+
+describe('toOrganizationCollaboratorEntity', () => {
+  const apiResponse = {
+    node_id: 'member-node-id',
+    login: 'user-login',
+    name: 'User Flynn',
+  };
+
+  test('properties transferred', () => {
+    const entity = toOrganizationCollaboratorEntity(apiResponse as any);
+    expect(entity).toEqual({
+      _key: 'member-node-id',
+      _type: 'github_user',
+      _class: ['User'],
+      _rawData: [
+        {
+          name: 'default',
+          rawData: apiResponse,
+        },
+      ],
+      login: 'user-login',
+      username: 'user-login',
+      displayName: 'User Flynn',
+      name: 'User Flynn',
+      mfaEnabled: undefined,
+      role: 'OUTSIDE',
+      siteAdmin: false,
+      webLink: 'https://github.com/user-login',
     });
   });
 

@@ -40,7 +40,7 @@ necessarily prevent the ingestion of other, unrelated data. That should be
 enough information to allow you to get started coding!
 
 See the
-[SDK development documentation](https://github.com/JupiterOne/sdk/blob/master/docs/integrations/development.md)
+[SDK development documentation](https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md)
 for a deep dive into the mechanics of how integrations work.
 
 See [docs/development.md](docs/development.md) for any additional details about

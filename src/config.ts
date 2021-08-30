@@ -4,7 +4,7 @@ import {
   IntegrationInstanceConfigFieldMap,
   IntegrationInstanceConfig,
 } from '@jupiterone/integration-sdk-core';
-import { createAPIClient } from './client';
+import { APIClient } from './client';
 const fs = require('fs');
 
 /**
@@ -103,7 +103,7 @@ export async function validateInvocation(
   const { config } = context.instance;
 
   sanitizeConfig(config); //mutate the config as needed
-  const apiClient = createAPIClient(config, context.logger);
+  const apiClient = new APIClient(context);
   await apiClient.verifyAuthentication();
 }
 

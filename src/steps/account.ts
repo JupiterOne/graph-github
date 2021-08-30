@@ -4,7 +4,7 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from '../config';
-import { createAPIClient } from '../client';
+import { APIClient } from '../client';
 import { toAccountEntity } from '../sync/converters';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
@@ -13,13 +13,11 @@ import {
 
 export const DATA_ACCOUNT_ENTITY = 'DATA_ACCOUNT_ENTITY';
 
-export async function fetchAccountDetails({
-  jobState,
-  instance,
-  logger,
-}: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const config = instance.config;
-  const apiClient = createAPIClient(config, logger);
+export async function fetchAccountDetails(
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
+) {
+  const { jobState } = context;
+  const apiClient = new APIClient(context);
   const accountEntity = await jobState.addEntity(
     toAccountEntity(await apiClient.getAccountDetails()),
   );

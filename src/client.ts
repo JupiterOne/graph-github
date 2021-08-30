@@ -2,6 +2,7 @@ import {
   IntegrationLogger,
   IntegrationValidationError,
   IntegrationProviderAuthenticationError,
+  IntegrationExecutionContext,
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
@@ -45,8 +46,7 @@ export class APIClient {
   ghsToken: string;
   scopedForApps: boolean;
   constructor(
-    readonly config: IntegrationConfig,
-    readonly logger: IntegrationLogger,
+    readonly context: IntegrationExecutionContext<IntegrationConfig>,
   ) {}
 
   public async verifyAuthentication(): Promise<void> {
@@ -96,8 +96,8 @@ export class APIClient {
 
     // Check 'useRestForTeamRepos' config variable as a hack to allow large github
     // accounts to bypass a Github error. Please delete this code once that error is fixed.
-    const allTeamRepos: OrgTeamRepoQueryResponse[] = this.config
-      .useRestForTeamRepos
+    const allTeamRepos: OrgTeamRepoQueryResponse[] = this.context.instance
+      .config.useRestForTeamRepos
       ? await this.accountClient.getTeamReposWithRest()
       : await this.accountClient.getTeamRepositories();
 
@@ -174,7 +174,9 @@ export class APIClient {
     );
     if (pullrequests) {
       for (const pr of pullrequests) {
-        await iteratee(pr);
+        if (pr) {
+          await iteratee(pr);
+        }
       }
     }
   }
@@ -211,13 +213,17 @@ export class APIClient {
   }
 
   public async setupAccountClient(): Promise<void> {
-    if (isNaN(this.config.installationId)) {
+    const {
+      instance: { config },
+      logger,
+    } = this.context;
+    if (isNaN(config.installationId)) {
       throw new IntegrationValidationError(
         'Integration id should be a number.',
       );
     }
-    const installationId = Number(this.config.installationId);
-    const appClient = createGitHubAppClient(this.config, this.logger);
+    const installationId = Number(config.installationId);
+    const appClient = createGitHubAppClient(config, logger);
     let myToken: string;
     let myPermissions: TokenPermissions;
     try {
@@ -233,7 +239,7 @@ export class APIClient {
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: `https://api.github.com/app/installations/${this.config.installation_id}/access_tokens`,
+        endpoint: `https://api.github.com/app/installations/${config.installation_id}/access_tokens`,
         status: err.status,
         statusText: err.statusText,
       });
@@ -265,7 +271,7 @@ export class APIClient {
       )
     ) {
       this.scopedForApps = false;
-      this.logger.warn(
+      logger.warn(
         {},
         'Token does not have organization_administration scope, so installed GitHub Apps cannot be ingested',
       );
@@ -274,7 +280,7 @@ export class APIClient {
     }
     //scopes check done
 
-    let login: string = this.config.githubAppDefaultLogin;
+    let login: string = config.githubAppDefaultLogin;
     const installation = await getInstallation(appClient, installationId);
     if (installation.target_type !== AccountType.Org) {
       throw new IntegrationValidationError(
@@ -282,7 +288,7 @@ export class APIClient {
       );
     }
     if (installation.account) {
-      login = installation.account.login || this.config.githubAppDefaultLogin;
+      login = installation.account.login || config.githubAppDefaultLogin;
     }
 
     this.accountClient = new OrganizationAccountClient({
@@ -291,17 +297,10 @@ export class APIClient {
       graphqlClient: new GitHubGraphQLClient(
         myToken,
         resourceMetadataMap(),
-        this.logger,
+        logger,
       ),
-      logger: this.logger,
-      analyzeCommitApproval: this.config.analyzeCommitApproval,
+      analyzeCommitApproval: config.analyzeCommitApproval,
+      context: this.context,
     });
   }
-}
-
-export function createAPIClient(
-  config: IntegrationConfig,
-  logger: IntegrationLogger,
-): APIClient {
-  return new APIClient(config, logger);
 }

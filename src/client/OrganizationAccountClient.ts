@@ -2,7 +2,9 @@ import pMap from 'p-map';
 import { Octokit } from '@octokit/rest';
 import {
   IntegrationError,
+  IntegrationExecutionContext,
   IntegrationLogger,
+  parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -35,6 +37,7 @@ import collectCommitsForPR from '../approval/collectCommitsForPR';
 import { toPullRequestEntity } from '../sync/converters';
 import sha from '../util/sha';
 import { request } from '@octokit/request';
+import { IntegrationConfig } from '../config';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -53,8 +56,8 @@ export default class OrganizationAccountClient {
   readonly login: string;
   readonly v3: Octokit;
   readonly v4: GitHubGraphQLClient;
-  readonly logger: IntegrationLogger;
   readonly analyzeCommitApproval: boolean;
+  readonly context: IntegrationExecutionContext<IntegrationConfig>;
 
   constructor(options: {
     /**
@@ -72,11 +75,6 @@ export default class OrganizationAccountClient {
      * https://developer.github.com/v4/query/.
      */
     graphqlClient: GitHubGraphQLClient;
-    /**
-     * A logger supplied by the managed integration SDK, used for logging
-     * information about non-fatal errors.
-     */
-    logger: IntegrationLogger;
     /**
      * Whether or not pull request commits should be analyzed for approval.
      *
@@ -97,16 +95,17 @@ export default class OrganizationAccountClient {
      * is false.
      */
     analyzeCommitApproval: boolean;
+    context: IntegrationExecutionContext<IntegrationConfig>;
   }) {
     this.login = options.login;
     this.v3 = options.restClient;
     this.v4 = options.graphqlClient;
-    this.logger = options.logger;
     this.analyzeCommitApproval = options.analyzeCommitApproval;
 
     this.authorizedForPullRequests = true;
     this.v3RateLimitConsumed = 0;
     this.v4RateLimitConsumed = 0;
+    this.context = options.context;
   }
 
   async getAccount(allData: boolean = true): Promise<OrgQueryResponse> {
@@ -153,7 +152,7 @@ export default class OrganizationAccountClient {
           OrganizationResource.Teams,
         ]);
 
-        this.teams = teams;
+        this.teams = teams ?? [];
 
         return rateLimitConsumed;
       });
@@ -258,7 +257,7 @@ export default class OrganizationAccountClient {
             per_page: 100,
           },
           (response) => {
-            this.logger.info(
+            this.context.logger.info(
               {
                 teamRepositoriesPageLength: response.data.length,
                 team: sha(team.slug),
@@ -313,7 +312,7 @@ export default class OrganizationAccountClient {
           per_page: 100,
         },
         (response) => {
-          this.logger.info('Fetched page of repo collaborators');
+          this.context.logger.info('Fetched page of repo collaborators');
           this.v3RateLimitConsumed++;
           return response.data;
         },
@@ -394,10 +393,10 @@ export default class OrganizationAccountClient {
       if (reply.data.installations) {
         return reply.data.installations;
       }
-      this.logger.warn({}, 'Found no installed GitHub apps');
+      this.context.logger.warn({}, 'Found no installed GitHub apps');
       return [];
     } catch (err) {
-      this.logger.warn(
+      this.context.logger.warn(
         {},
         'Error while attempting to ingest to installed GitHub apps',
       );
@@ -448,7 +447,7 @@ export default class OrganizationAccountClient {
         teamMemberMap,
       );
     } catch (err) {
-      this.logger.info({ err }, 'pulls.get failed');
+      this.context.logger.info({ err }, 'pulls.get failed');
 
       if (err.status === 403) {
         this.authorizedForPullRequests = false;
@@ -462,7 +461,7 @@ export default class OrganizationAccountClient {
     teamMembers: UserEntity[],
     teamMemberMap: IdEntityMap<UserEntity>,
     logger: IntegrationLogger,
-  ): Promise<Array<PullRequestEntity> | undefined> {
+  ): Promise<Array<PullRequestEntity | undefined> | undefined> {
     if (!this.authorizedForPullRequests) {
       return undefined;
     }
@@ -480,15 +479,24 @@ export default class OrganizationAccountClient {
           owner: account.login,
           repo: repo.name,
           per_page: prCount,
+          sort: 'created',
+          direction: 'desc', // newest to oldest
           state: 'all',
         })
       ).data;
 
+      const lastSuccessfulExecutionTime =
+        this.context.executionHistory.lastSuccessful?.startedOn || 0;
       this.v3RateLimitConsumed++;
 
       return pMap(
         pullRequests,
         async (pullRequest) => {
+          // Only ingest PR if it was not already ingested in the previous integration run
+          const createdOn = parseTimePropertyValue(pullRequest.created_at);
+          if (createdOn && createdOn < lastSuccessfulExecutionTime) {
+            return undefined;
+          }
           // This is incredibly slow thanks to Github's rate and abuse limiting. Be careful when turning this on!
           if (this.analyzeCommitApproval) {
             const {
@@ -517,7 +525,7 @@ export default class OrganizationAccountClient {
         { concurrency: 1 },
       );
     } catch (err) {
-      this.logger.info({ err }, 'pulls.list failed');
+      this.context.logger.info({ err }, 'pulls.list failed');
 
       if (err.status === 403) {
         this.authorizedForPullRequests = false;
@@ -541,7 +549,7 @@ export default class OrganizationAccountClient {
       this.v3RateLimitConsumed++;
       return reviews;
     } catch (err) {
-      this.logger.info({ err }, 'pulls.listReviews failed');
+      this.context.logger.info({ err }, 'pulls.listReviews failed');
       return [];
     }
   }
@@ -572,7 +580,10 @@ export default class OrganizationAccountClient {
       this.v3RateLimitConsumed++;
       return commits;
     } catch (err) {
-      this.logger.info({ err, listOptions }, 'pulls.listCommits failed');
+      this.context.logger.info(
+        { err, listOptions },
+        'pulls.listCommits failed',
+      );
 
       return [];
     }
@@ -598,7 +609,7 @@ export default class OrganizationAccountClient {
 
       return comparison;
     } catch (err) {
-      this.logger.error({ err }, 'repos.compareCommits failed');
+      this.context.logger.error({ err }, 'repos.compareCommits failed');
 
       throw err;
     }

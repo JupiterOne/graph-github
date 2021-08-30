@@ -287,8 +287,8 @@ export function toPullRequestEntity(
     commitsNotApproved,
     commitsByUnknownAuthor: commitsByUnknownAuthorHashes,
 
-    source: data.head.ref,
-    target: data.base.ref,
+    source: data.head?.ref,
+    target: data.base?.ref,
 
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),

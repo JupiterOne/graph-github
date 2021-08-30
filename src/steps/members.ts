@@ -6,7 +6,6 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toOrganizationMemberEntity } from '../sync/converters';
@@ -21,14 +20,13 @@ import {
   GITHUB_MEMBER_ARRAY,
   GITHUB_MEMBER_BY_LOGIN_MAP,
 } from '../constants';
+import { APIClient } from '../client';
 
-export async function fetchMembers({
-  instance,
-  logger,
-  jobState,
-}: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const config = instance.config;
-  const apiClient = createAPIClient(config, logger);
+export async function fetchMembers(
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
+) {
+  const { jobState } = context;
+  const apiClient = new APIClient(context);
 
   const accountEntity = (await jobState.getData<AccountEntity>(
     DATA_ACCOUNT_ENTITY,

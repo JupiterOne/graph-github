@@ -33,7 +33,7 @@ interface Node {
 }
 
 interface Actor {
-  name?: string;
+  name?: string | null;
   login: string;
 }
 

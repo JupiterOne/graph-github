@@ -1,13 +1,13 @@
 import {
-  createMockStepExecutionContext,
   Recording,
   createMockIntegrationLogger,
+  createMockExecutionContext,
 } from '@jupiterone/integration-sdk-testing';
 
 import collectCommitsForPR from './collectCommitsForPR';
 import { AccountEntity, PullsListResponseItem } from '../types';
 import { setupGithubRecording } from '../../test/recording';
-import { IntegrationConfig, sanitizeConfig } from '../config';
+import { sanitizeConfig } from '../config';
 import { integrationConfig } from '../../test/config';
 import createGitHubAppClient from '../util/createGitHubAppClient';
 import resourceMetadataMap from '../client/GraphQLClient/resourceMetadataMap';
@@ -48,16 +48,17 @@ function collectCommitsForPRTest({
       },
     });
 
-    const context = createMockStepExecutionContext<IntegrationConfig>({
+    const logger = createMockIntegrationLogger();
+    const context = createMockExecutionContext({
       instanceConfig: integrationConfig,
     });
+    context.logger = logger;
 
     //mutate config with installation ID 953957, which is used in recordings
     const config = context.instance.config;
     sanitizeConfig(config);
     config.installationId = 953957;
 
-    const logger = createMockIntegrationLogger();
     const token = 'faketoken';
     const appClient = createGitHubAppClient(config, logger);
     const accountClient = new OrganizationAccountClient({
@@ -68,7 +69,7 @@ function collectCommitsForPRTest({
         resourceMetadataMap(),
         logger,
       ),
-      logger: logger,
+      context,
       analyzeCommitApproval: config.analyzeCommitApproval,
     });
 

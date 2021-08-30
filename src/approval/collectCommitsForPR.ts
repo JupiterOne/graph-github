@@ -27,7 +27,6 @@ export default async function collectCommitsForPR(
   teamMembers: UserEntity[],
 ): Promise<PRApprovalData> {
   const teamMemberLogins = toLogins(teamMembers);
-
   const commits = await github.getPullRequestCommits(account, pr);
   const reviews = await github.getPullRequestReviews(account, pr);
   const approvals = reviews

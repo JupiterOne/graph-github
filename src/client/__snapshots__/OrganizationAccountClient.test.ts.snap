@@ -1,0 +1,156 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getPullRequests should create entities for pull requests 1`] = `
+Array [
+  Object {
+    "_class": Array [
+      "PR",
+    ],
+    "_key": "undefined/pull-requests/420",
+    "_rawData": Array [
+      Object {
+        "name": "default",
+        "rawData": Object {
+          "number": 420,
+        },
+      },
+    ],
+    "_type": "github_pullrequest",
+    "accountLogin": "",
+    "approved": undefined,
+    "approverLogins": undefined,
+    "approvers": undefined,
+    "author": "",
+    "authorLogin": "",
+    "commitMessages": undefined,
+    "commits": undefined,
+    "commitsApproved": undefined,
+    "commitsByUnknownAuthor": undefined,
+    "commitsNotApproved": undefined,
+    "createdOn": undefined,
+    "declined": false,
+    "description": undefined,
+    "displayName": "repo-name/420",
+    "id": 420,
+    "mergeCommitHash": undefined,
+    "merged": true,
+    "mergedOn": undefined,
+    "name": undefined,
+    "open": false,
+    "repository": "repo-name",
+    "reviewerLogins": Array [],
+    "reviewers": Array [],
+    "source": undefined,
+    "state": undefined,
+    "target": undefined,
+    "title": undefined,
+    "updatedOn": undefined,
+    "validated": undefined,
+    "webLink": undefined,
+  },
+]
+`;
+
+exports[`getPullRequests should create entities for pull requests when this is the first integration run 1`] = `
+Array [
+  Object {
+    "_class": Array [
+      "PR",
+    ],
+    "_key": "undefined/pull-requests/420",
+    "_rawData": Array [
+      Object {
+        "name": "default",
+        "rawData": Object {
+          "created_at": 2021-09-01T00:00:00.000Z,
+          "number": 420,
+        },
+      },
+    ],
+    "_type": "github_pullrequest",
+    "accountLogin": "",
+    "approved": undefined,
+    "approverLogins": undefined,
+    "approvers": undefined,
+    "author": "",
+    "authorLogin": "",
+    "commitMessages": undefined,
+    "commits": undefined,
+    "commitsApproved": undefined,
+    "commitsByUnknownAuthor": undefined,
+    "commitsNotApproved": undefined,
+    "createdOn": 1630454400000,
+    "declined": false,
+    "description": undefined,
+    "displayName": "repo-name/420",
+    "id": 420,
+    "mergeCommitHash": undefined,
+    "merged": true,
+    "mergedOn": undefined,
+    "name": undefined,
+    "open": false,
+    "repository": "repo-name",
+    "reviewerLogins": Array [],
+    "reviewers": Array [],
+    "source": undefined,
+    "state": undefined,
+    "target": undefined,
+    "title": undefined,
+    "updatedOn": undefined,
+    "validated": undefined,
+    "webLink": undefined,
+  },
+]
+`;
+
+exports[`getPullRequests should pull commits and reviews from GitHub when when analyzeCommitApproval is enabled 1`] = `
+Array [
+  Object {
+    "_class": Array [
+      "PR",
+    ],
+    "_key": "undefined/pull-requests/420",
+    "_rawData": Array [
+      Object {
+        "name": "default",
+        "rawData": Object {
+          "created_at": 2021-09-01T00:00:00.000Z,
+          "number": 420,
+        },
+      },
+    ],
+    "_type": "github_pullrequest",
+    "accountLogin": "",
+    "approved": true,
+    "approverLogins": Array [],
+    "approvers": Array [],
+    "author": "",
+    "authorLogin": "",
+    "commitMessages": Array [],
+    "commits": Array [],
+    "commitsApproved": Array [],
+    "commitsByUnknownAuthor": Array [],
+    "commitsNotApproved": Array [],
+    "createdOn": 1630454400000,
+    "declined": false,
+    "description": undefined,
+    "displayName": "repo-name/420",
+    "id": 420,
+    "mergeCommitHash": undefined,
+    "merged": true,
+    "mergedOn": undefined,
+    "name": undefined,
+    "open": false,
+    "repository": "repo-name",
+    "reviewerLogins": Array [],
+    "reviewers": Array [],
+    "source": undefined,
+    "state": undefined,
+    "target": undefined,
+    "title": undefined,
+    "updatedOn": undefined,
+    "validated": true,
+    "webLink": undefined,
+  },
+]
+`;

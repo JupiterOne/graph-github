@@ -8,6 +8,18 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.3.0 - 2021-08-30
+
+### Changed
+
+- Only `github_pull_request`s that were created in Github after the last
+  successful execution of this integration instance will be ingested.
+
+### Fixed
+
+- Github organizations that do not have any teams will no longer error on step
+  `fetch-teams`
+
 ## 1.2.3 - 2021-08-23
 
 ### Changed

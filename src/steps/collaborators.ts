@@ -5,7 +5,6 @@ import {
   IntegrationMissingKeyError,
 } from '@jupiterone/integration-sdk-core';
 
-import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import {
   createRepoAllowsUserRelationship,
@@ -23,14 +22,13 @@ import {
   GITHUB_MEMBER_ARRAY,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
+import { APIClient } from '../client';
 
-export async function fetchCollaborators({
-  instance,
-  logger,
-  jobState,
-}: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const config = instance.config;
-  const apiClient = createAPIClient(config, logger);
+export async function fetchCollaborators(
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
+) {
+  const { jobState } = context;
+  const apiClient = new APIClient(context);
 
   const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {

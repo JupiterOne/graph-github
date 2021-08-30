@@ -1,4 +1,8 @@
-import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing';
+import {
+  createMockExecutionContext,
+  createMockIntegrationLogger,
+} from '@jupiterone/integration-sdk-testing';
+import { integrationConfig } from '../../test/config';
 import OrganizationAccountClient from './OrganizationAccountClient';
 
 const throwError = jest.fn().mockImplementation(() => {
@@ -8,6 +12,10 @@ const throwError = jest.fn().mockImplementation(() => {
 const mockLogger: any = {
   info: jest.fn(),
 };
+const context = createMockExecutionContext({
+  instanceConfig: integrationConfig,
+});
+context.logger = mockLogger;
 
 const mockAccount: any = {
   login: 'account',
@@ -31,7 +39,7 @@ function mockClient(mockGitHub: any) {
     login: 'asdf',
     restClient: mockGitHub,
     graphqlClient: {} as any,
-    logger: mockLogger,
+    context,
     analyzeCommitApproval: true,
   });
 }
@@ -45,12 +53,14 @@ describe('handles undefined resources from graphql', () => {
         rateLimitConsumed: 1,
       }),
     } as any,
-    logger: mockLogger,
+    context,
     analyzeCommitApproval: true,
   });
 
   test('getTeams', async () => {
-    await expect(client.getTeams()).resolves.toEqual([]);
+    const teamsResponse = [];
+    await expect(client.getTeams()).resolves.toEqual(teamsResponse);
+    expect(((client as any).teams = teamsResponse));
   });
 
   test('getTeamMembers', async () => {
@@ -71,6 +81,128 @@ describe('handles undefined resources from graphql', () => {
 });
 
 describe('getPullRequests', () => {
+  it('should create entities for pull requests', async () => {
+    const mockV3GitHub = {
+      pulls: {
+        list: () => {
+          return { data: [mockPullRequest] };
+        },
+      },
+    };
+    const client = mockClient(mockV3GitHub);
+    (client as any).v3 = mockV3GitHub;
+    (client as any).analyzeCommitApproval = false;
+
+    const pullRequestEntities = await client.getPullRequestEntities(
+      mockAccount,
+      mockPullRequest,
+      [],
+      {},
+      createMockIntegrationLogger(),
+    );
+    expect(pullRequestEntities?.length).toEqual(1);
+    expect(pullRequestEntities).toMatchSnapshot();
+  });
+
+  test('should not create entities for pull requests that are older than the last successful integration run', async () => {
+    const mockV3GitHub = {
+      pulls: {
+        list: () => {
+          return {
+            data: [
+              {
+                ...mockPullRequest,
+                created_at: new Date(Date.UTC(2021, 8, 1)), // August 1st 2021
+              },
+            ],
+          };
+        },
+      },
+    };
+    const client = mockClient(mockV3GitHub);
+    (client as any).v3 = mockV3GitHub;
+    (client as any).analyzeCommitApproval = false;
+    (client as any).context.executionHistory = {
+      lastSuccessful: {
+        startedOn: new Date(Date.UTC(2021, 9, 1)), // September 1st 2021 (one month later)
+      },
+    };
+
+    const pullRequestEntities = await client.getPullRequestEntities(
+      mockAccount,
+      mockPullRequest,
+      [],
+      {},
+      createMockIntegrationLogger(),
+    );
+    expect(pullRequestEntities).toEqual([undefined]);
+  });
+
+  test('should create entities for pull requests when this is the first integration run', async () => {
+    const mockV3GitHub = {
+      pulls: {
+        list: () => {
+          return {
+            data: [
+              {
+                ...mockPullRequest,
+                created_at: new Date(Date.UTC(2021, 8, 1)), // August 1st 2021
+              },
+            ],
+          };
+        },
+      },
+    };
+    const client = mockClient(mockV3GitHub);
+    (client as any).v3 = mockV3GitHub;
+    (client as any).analyzeCommitApproval = false;
+    (client as any).context.executionHistory = {}; // first execution
+
+    const pullRequestEntities = await client.getPullRequestEntities(
+      mockAccount,
+      mockPullRequest,
+      [],
+      {},
+      createMockIntegrationLogger(),
+    );
+    expect(pullRequestEntities?.length).toEqual(1);
+    expect(pullRequestEntities).toMatchSnapshot();
+  });
+
+  test('should pull commits and reviews from GitHub when when analyzeCommitApproval is enabled', async () => {
+    const mockV3GitHub = {
+      pulls: {
+        list: () => {
+          return {
+            data: [
+              {
+                ...mockPullRequest,
+                created_at: new Date(Date.UTC(2021, 8, 1)), // August 1st 2021
+              },
+            ],
+          };
+        },
+      },
+    };
+    const client = mockClient(mockV3GitHub);
+    (client as any).v3 = mockV3GitHub;
+    (client as any).analyzeCommitApproval = true;
+    (client as any).getPullRequestCommits = jest.fn().mockResolvedValue([]);
+    (client as any).getPullRequestReviews = jest.fn().mockResolvedValue([]);
+
+    const pullRequestEntities = await client.getPullRequestEntities(
+      mockAccount,
+      mockPullRequest,
+      [],
+      {},
+      createMockIntegrationLogger(),
+    );
+    expect(pullRequestEntities?.length).toEqual(1);
+    expect(pullRequestEntities).toMatchSnapshot();
+    expect(client.getPullRequestCommits).toHaveBeenCalledTimes(1);
+    expect(client.getPullRequestReviews).toHaveBeenCalledTimes(1);
+  });
+
   test('logs info error when pulls.list fails and returns undefined', async () => {
     const mockGitHub = {
       pulls: {

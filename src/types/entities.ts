@@ -5,7 +5,7 @@ export interface AccountEntity extends Entity {
   accountType: AccountType;
   accountId: string;
   login: string;
-  name?: string;
+  name?: string | null;
 }
 
 export interface AppEntity extends Entity {

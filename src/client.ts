@@ -168,7 +168,7 @@ export class APIClient {
   }
 
   /**
-   * Iterates each Github repo, repo environment, and environment secret.
+   * Iterates each Github repo secret.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */

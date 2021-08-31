@@ -106,6 +106,19 @@ export interface OrgRepoQueryResponse extends Node {
   node_id?: string;
 }
 
+export interface OrgSecretRepoQueryResponse {
+  id: number;
+  node_id: string;
+  name: string;
+  full_name: string;
+  owner?: object;
+  private: boolean;
+  html_url: string;
+  description: string;
+  fork: boolean;
+  url: string;
+}
+
 export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
   teams: string;
   permission: TeamRepositoryPermission;

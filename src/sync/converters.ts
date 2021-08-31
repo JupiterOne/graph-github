@@ -25,7 +25,7 @@ import {
   GITHUB_SECRET_ENTITY_CLASS,
   GITHUB_ORG_SECRET_ENTITY_TYPE,
   GITHUB_REPO_SECRET_ENTITY_TYPE,
-  GITHUB_ENV_SECRET_ENTITY_TYPE,
+  //GITHUB_ENV_SECRET_ENTITY_TYPE,
 } from '../constants';
 
 import {
@@ -149,6 +149,7 @@ export function toRepoSecretEntity(
   return secretEntity;
 }
 
+/* for use later
 export function toEnvSecretEntity(
   data: OrgSecretQueryResponse,
   orgLogin: string,
@@ -169,6 +170,7 @@ export function toEnvSecretEntity(
   setRawData(secretEntity, { name: 'default', rawData: data });
   return secretEntity;
 }
+*/
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {

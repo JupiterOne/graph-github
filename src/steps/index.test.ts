@@ -10,13 +10,13 @@ import { fetchTeams } from './teams';
 import { fetchCollaborators } from './collaborators';
 import { fetchPrs } from './pullrequests';
 import { fetchAccountDetails } from './account';
+import { fetchApps } from './apps';
 import {
   GITHUB_COLLABORATOR_ENTITY_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
 } from '../constants';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import { fetchApps } from './apps';
 jest.setTimeout(10000);
 
 let recording: Recording;

@@ -17,6 +17,7 @@ import {
   OrgAppQueryResponse,
   GithubResource,
   OrgSecretQueryResponse,
+  OrgSecretRepoQueryResponse,
 } from './GraphQLClient';
 import {
   RepoEntity,
@@ -372,7 +373,7 @@ export default class OrganizationAccountClient {
   async getOrganizationSecrets(): Promise<OrgSecretQueryResponse[]> {
     try {
       const orgSecrets = await this.v3.paginate(
-        'GET /orgs/{org}/actions/secrets' as any,
+        'GET /orgs/{org}/actions/secrets', //https://docs.github.com/en/rest/reference/actions#list-organization-secrets
         {
           org: this.login,
           per_page: 100,
@@ -395,10 +396,12 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getReposForOrgSecret(secretName): Promise<OrgRepoQueryResponse[]> {
+  async getReposForOrgSecret(
+    secretName,
+  ): Promise<OrgSecretRepoQueryResponse[]> {
     try {
       const reposForSecret = await this.v3.paginate(
-        'GET /orgs/{org}/actions/secrets/{secret_name}/repositories' as any,
+        'GET /orgs/{org}/actions/secrets/{secret_name}/repositories', //https://docs.github.com/en/rest/reference/actions#list-selected-repositories-for-an-organization-secret
         {
           org: this.login,
           secret_name: secretName,
@@ -423,7 +426,7 @@ export default class OrganizationAccountClient {
   async getRepoSecrets(repoName: string): Promise<OrgSecretQueryResponse[]> {
     try {
       const repoSecrets = await this.v3.paginate(
-        'GET /repos/{owner}/{repo}/actions/secrets' as any,
+        'GET /repos/{owner}/{repo}/actions/secrets', //https://docs.github.com/en/rest/reference/actions#list-repository-secrets
         {
           owner: this.login,
           repo: repoName,

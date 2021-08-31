@@ -2,8 +2,9 @@
 
 ## GitHub + JupiterOne Integration Benefits
 
-- Visualize GitHub users, teams, code repositories, pull requests, and installed
-  GitHub applications in the JupiterOne graph.
+- Visualize GitHub users, teams, code repositories, pull requests, installed
+  GitHub applications, organizational secrets, and repo secrets in the
+  JupiterOne graph.
 - Map GitHub users to employees in your JupiterOne account.
 - Map GitHub users to development/security trainings.
 - Monitor Github software development activities within repositories including

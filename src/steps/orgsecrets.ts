@@ -41,7 +41,7 @@ export async function fetchOrgSecrets({
   const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
+      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
     );
   }
 

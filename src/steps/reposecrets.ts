@@ -19,6 +19,7 @@ import {
   GITHUB_REPO_ARRAY,
   GITHUB_ORG_SECRET_BY_NAME_MAP,
   GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
+  GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
 } from '../constants';
 import { toRepoSecretEntity } from '../sync/converters';
 
@@ -33,7 +34,7 @@ export async function fetchRepoSecrets({
   const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
+      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
     );
   }
 
@@ -42,11 +43,15 @@ export async function fetchRepoSecrets({
   );
   if (!orgSecretEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected orgsecrets.ts to have set GITHUB_ORG_SECRET_BY_NAME_MAP in jobState.`,
+      `Expected orgsecrets.ts to have set ${GITHUB_ORG_SECRET_BY_NAME_MAP} in jobState.`,
     );
   }
 
+  //for use in detecting overrides by environmental secrets
+  const repoSecretEntitiesByRepoNameMap = {};
+
   for (const repoEntity of repoEntities) {
+    const repoSecretEntities: SecretEntity[] = [];
     await apiClient.iterateRepoSecrets(repoEntity.name, async (secret) => {
       const secretEntity = (await jobState.addEntity(
         toRepoSecretEntity(
@@ -55,6 +60,7 @@ export async function fetchRepoSecrets({
           repoEntity.name,
         ),
       )) as SecretEntity;
+      repoSecretEntities.push(secretEntity);
 
       await jobState.addRelationship(
         createDirectRelationship({
@@ -80,7 +86,12 @@ export async function fetchRepoSecrets({
         );
       }
     });
+    repoSecretEntitiesByRepoNameMap[repoEntity.name] = repoSecretEntities;
   }
+  await jobState.setData(
+    GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
+    repoSecretEntitiesByRepoNameMap,
+  );
 }
 
 export const repoSecretSteps: IntegrationStep<IntegrationConfig>[] = [

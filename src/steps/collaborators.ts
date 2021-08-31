@@ -34,7 +34,7 @@ export async function fetchCollaborators({
   const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {
     throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
+      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
     );
   }
   const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
@@ -42,7 +42,7 @@ export async function fetchCollaborators({
   );
   if (!memberByLoginMap) {
     throw new IntegrationMissingKeyError(
-      `Expected members.ts to have set GITHUB_MEMBER_BY_LOGIN_MAP in jobState.`,
+      `Expected members.ts to have set ${GITHUB_MEMBER_BY_LOGIN_MAP} in jobState.`,
     );
   }
 

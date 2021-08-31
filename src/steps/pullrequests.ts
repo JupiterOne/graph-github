@@ -49,12 +49,25 @@ export async function fetchPrs({
   }
 
   let UsersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
-    GITHUB_MEMBER_BY_LOGIN_MAP,
-  );
+  const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
+  if (!repoEntities) {
+    throw new IntegrationMissingKeyError(
+      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
+    );
+  }
+
+  //to assign correct relationships to PRs, we need an array of users and a map of users by login
+  //there are two sources for each of these, one for members and another for outside collaborators
+  //we'll combine those so the PRs have the most complete info
+
+  //we can actually run the step without some or all of this information
+  //if a PR is opened/approved/reviewed by an unknown GitHub login, it gets marked
+  //as a commit by an unknown author (which might trigger security alerts).
+
   if (!UsersByLoginMap) {
     logger.warn(
       {},
-      `Expected members.ts to have set GITHUB_MEMBER_BY_LOGIN_MAP in jobState. Proceeding anyway.`,
+      `Expected members.ts to have set ${GITHUB_MEMBER_BY_LOGIN_MAP} in jobState. Proceeding anyway.`,
     );
     UsersByLoginMap = {};
   }
@@ -70,7 +83,7 @@ export async function fetchPrs({
   } else {
     logger.warn(
       {},
-      `Expected collaborators.ts to have set GITHUB_OUTSIDE_COLLABORATOR_ARRAY in jobState. Proceeding anyway.`,
+      `Expected collaborators.ts to have set ${GITHUB_OUTSIDE_COLLABORATOR_ARRAY} in jobState. Proceeding anyway.`,
     );
   }
 

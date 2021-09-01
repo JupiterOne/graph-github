@@ -1,16 +1,25 @@
 import {
-  OrganizationResource,
+  GithubResource,
   QueryHierarchy,
   ResourceMap,
-  ResourceMetadata
+  ResourceMetadata,
 } from './types';
 
 export default function buildGraphQL(
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
-  queryResources: OrganizationResource[]
+  parentResource: GithubResource,
+  queryResources: GithubResource[],
 ): string {
-  const variables: string[] = ['$login: String!'];
   const queries: QueryHierarchy[] = [];
+  const variables: string[] = [];
+
+  // TODO: make this not super ugly
+  if (resourceMetadataMap[parentResource].graphRequestVariable) {
+    variables.push(resourceMetadataMap[parentResource].graphRequestVariable);
+  }
+  if (resourceMetadataMap[parentResource].graphRequestVariable2) {
+    variables.push(resourceMetadataMap[parentResource].graphRequestVariable2!);
+  }
 
   for (const r of queryResources) {
     let resourceMetadata = resourceMetadataMap[r];
@@ -25,34 +34,42 @@ export default function buildGraphQL(
       resourceMetadata = resourceMetadataMap[parent];
     }
 
-    variables.push(resourceMetadata.graphRequestVariable);
+    if (resourceMetadata.graphRequestVariable) {
+      variables.push(resourceMetadata.graphRequestVariable);
+    }
+    if (resourceMetadata.graphRequestVariable2) {
+      variables.push(resourceMetadata.graphRequestVariable2);
+    }
 
     const includedChildren = resourceMetadata.children
       ? resourceMetadata.children.reduce(
-          (included: OrganizationResource[], c: OrganizationResource) => {
+          (included: GithubResource[], c: GithubResource) => {
             if (queryResources.includes(c)) {
               included.push(c);
             }
 
             return included;
           },
-          []
+          [],
         )
       : [];
 
     if (resourceMetadata.children && includedChildren.length > 0) {
-      variables.push(
-        ...includedChildren.map(
-          (c: OrganizationResource) =>
-            resourceMetadataMap[c].graphRequestVariable
-        )
-      );
+      includedChildren.forEach((c: GithubResource) => {
+        if (resourceMetadataMap[c].graphRequestVariable) {
+          variables.push(resourceMetadataMap[c].graphRequestVariable);
+        }
+        // TODO: Do this better
+        if (resourceMetadataMap[c].graphRequestVariable2) {
+          variables.push(resourceMetadataMap[c].graphRequestVariable2!);
+        }
+      });
       queries.push({
         self: resourceMetadata.factory,
-        children: includedChildren.map((c: OrganizationResource) => ({
+        children: includedChildren.map((c: GithubResource) => ({
           self: () => resourceMetadataMap[c].factory(),
-          children: []
-        }))
+          children: [],
+        })),
       });
     } else {
       queries.push({ self: resourceMetadata.factory, children: [] });
@@ -61,13 +78,13 @@ export default function buildGraphQL(
 
   const fragmentHierarchy: QueryHierarchy[] = [
     {
-      self: resourceMetadataMap[OrganizationResource.Organization].factory,
-      children: [...queries]
+      self: resourceMetadataMap[parentResource].factory,
+      children: [...queries],
     },
     {
       self: () => '...rateLimit',
-      children: []
-    }
+      children: [],
+    },
   ];
 
   return `query (${variables.join(', ')}) {
@@ -77,7 +94,7 @@ export default function buildGraphQL(
 
 function collapseFragments(fragments: QueryHierarchy[]): string {
   return fragments
-    .map(f => {
+    .map((f) => {
       return f.self(collapseFragments(f.children));
     })
     .join('\n');

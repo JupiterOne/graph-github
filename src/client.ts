@@ -197,17 +197,6 @@ export class APIClient {
     for (const collab of collaborators) {
       await iteratee(collab);
     }
-
-    //we would prefer to use GraphQL to get collabs, but we haven't figured out how to make that work
-    //this code for future dev
-    /*
-    const collabs: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaborators();
-    console.log('GraphQL approach to collabs:');
-    console.log(collabs);
-    for (const collab of collabs) {
-      console.log(collab);
-    }
-    */
   }
 
   public async setupAccountClient(): Promise<void> {

@@ -128,7 +128,11 @@ export default class OrganizationAccountClient {
           teamMembers,
           repositories,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, fetchResources);
+        } = await this.v4.fetchSingle(
+          OrganizationResource.Organization,
+          fetchResources,
+          { login: this.login },
+        );
 
         this.members = members;
         this.teams = teams;
@@ -149,9 +153,11 @@ export default class OrganizationAccountClient {
         const {
           teams,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.Teams,
-        ]);
+        } = await this.v4.fetchSingle(
+          OrganizationResource.Organization,
+          [OrganizationResource.Teams],
+          { login: this.login },
+        );
 
         this.teams = teams;
 
@@ -167,9 +173,11 @@ export default class OrganizationAccountClient {
         const {
           teamMembers,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.TeamMembers,
-        ]);
+        } = await this.v4.fetchSingle(
+          OrganizationResource.Organization,
+          [OrganizationResource.TeamMembers],
+          { login: this.login },
+        );
 
         this.teamMembers = teamMembers;
 
@@ -186,9 +194,11 @@ export default class OrganizationAccountClient {
         const {
           repositories,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.Repositories,
-        ]);
+        } = await this.v4.fetchSingle(
+          OrganizationResource.Organization,
+          [OrganizationResource.Repositories],
+          { login: this.login },
+        );
 
         this.repositories = repositories;
 
@@ -220,9 +230,11 @@ export default class OrganizationAccountClient {
           const {
             teamRepositories,
             rateLimitConsumed,
-          } = await this.v4.fetchOrganization(this.login, [
-            OrganizationResource.TeamRepositories,
-          ]);
+          } = await this.v4.fetchSingle(
+            OrganizationResource.Organization,
+            [OrganizationResource.TeamRepositories],
+            { login: this.login },
+          );
           this.teamRepositories = teamRepositories;
           return rateLimitConsumed;
         });
@@ -333,7 +345,7 @@ export default class OrganizationAccountClient {
         const {
           collaborators,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
+        } = await this.v4.fetchSingle(this.login, [
           OrganizationResource.RepositoryCollaborators,
         ]);
 
@@ -353,9 +365,11 @@ export default class OrganizationAccountClient {
         const {
           members,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.Members,
-        ]);
+        } = await this.v4.fetchSingle(
+          OrganizationResource.Organization,
+          [OrganizationResource.Members],
+          { login: this.login },
+        );
 
         this.members = members;
 

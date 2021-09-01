@@ -1,4 +1,4 @@
-import { OrganizationResource } from '.';
+import { GithubResource } from './client';
 
 export interface ResourceMap<T> {
   [resource: string]: T;
@@ -35,11 +35,21 @@ export interface ResourceMetadata {
    * The resources that are nested within this resource. For example, Team
    * Members is a child of Teams.
    */
-  children?: OrganizationResource[];
+  children?: GithubResource[];
   /*
    * The resource that this resource is nested within.
    */
-  parent?: OrganizationResource;
+  parent?: GithubResource;
+  /*
+   * The GraphQL variable that's used as the end cursor for pagination in the
+   * request to GitHub. Should be in the format of "$variable: String" for
+   * direct interpolation into the GraphQL.
+   */
+  graphRequestVariable2?: string; //TODO: Do this better
+  /*
+   * The path to extract the relevant data from the graphQL response
+   */
+  pathToDataInGraphQlResponse?: string; //TODO: Do this better as well
 }
 
 /*

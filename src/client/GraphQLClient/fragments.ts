@@ -44,4 +44,85 @@ export default {
       resetAt
     }
   }`,
+  commitFields: `on Commit {
+    id
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        ...userFields
+      }
+    }
+  }`,
+  reviewFields: `on PullRequestReview {
+    id
+    author {
+      ...userFields
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }`,
+  pullRequestFields: `on PullRequest {
+    additions
+    author {
+      ...userFields
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      id
+      name
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments(first: 100) {  # Might be nice to know who is commenting
+    # commits(first: 100) {  # Handling in the query builder
+    createdAt
+    deletions
+    editor {
+      ...userFields
+    }
+    # files(first: 100) {  # Someday it would be great to connect PRs to files that create infrastructure
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...userFields
+      }
+    }
+    isDraft
+    # labels(first 100) {  # Handling in the query builder
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...commitFields
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...userFields
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests(first: 100) {  # Someday it would be nice to see how many users reviewed that were requested
+    # reviews(first: 100) {  # Handling in the query builder
+    state
+    # suggestedReviewers  # Might be fun to know if the suggested reviewers were used or not
+    title
+    updatedAt
+    url
+  }`,
 };

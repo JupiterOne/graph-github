@@ -1,4 +1,9 @@
-import { ResourceMap, OrganizationResource, ResourceMetadata } from './types';
+import {
+  ResourceMap,
+  OrganizationResource,
+  ResourceMetadata,
+  PullRequestResource,
+} from './types';
 
 const pageInfo = `pageInfo {
   endCursor
@@ -9,8 +14,84 @@ export default function (
   pageLimit: number = 100,
 ): ResourceMap<ResourceMetadata> {
   return {
+    [PullRequestResource.PullRequests]: {
+      graphRequestVariable: `$pullRequests: String`,
+      graphRequestVariable2: '$query: String!',
+      pathToDataInGraphQlResponse: 'search.edges[0].node',
+      graphProperty: 'pullRequests',
+      factory: (
+        children: string = '',
+      ) => `search(first: ${pageLimit}, after: $pullRequests, type: ISSUE, query: $query) {
+        issueCount
+        edges {
+          node {
+            ...pullRequestFields
+            ${children}
+          }
+        }
+
+        ${pageInfo}
+      }`,
+      children: [
+        PullRequestResource.Commits,
+        PullRequestResource.Reviews,
+        PullRequestResource.Labels,
+      ],
+    },
+    [PullRequestResource.Commits]: {
+      graphRequestVariable: '$commits: String',
+      graphProperty: 'commits',
+      factory: () => `... on PullRequest {
+        commits(first: ${pageLimit}, after: $commits) {
+          totalCount
+          edges {
+            node {
+              commit {
+                ...commitFields
+              }
+            }
+          }
+
+          ${pageInfo}
+        }
+      }`,
+    },
+    [PullRequestResource.Reviews]: {
+      graphRequestVariable: '$reviews: String',
+      graphProperty: 'reviews',
+      factory: () => `... on PullRequest {
+        reviews(first: ${pageLimit}, after: $reviews) {
+          totalCount
+          edges {
+            node {
+              ...reviewFields
+            }
+          }
+
+          ${pageInfo}
+        }
+      }`,
+    },
+    [PullRequestResource.Labels]: {
+      graphRequestVariable: '$labels: String',
+      graphProperty: 'labels',
+      factory: () => `... on PullRequest {
+          labels(first: ${pageLimit}, after: $labels) {
+          totalCount
+          edges {
+            node {
+              id
+              name
+            }
+          }
+
+          ${pageInfo}
+        }
+      }`,
+    },
     [OrganizationResource.Organization]: {
       graphRequestVariable: '$login: String!',
+      pathToDataInGraphQlResponse: 'organization',
       graphProperty: 'organization',
       factory: (children: string = '') => `organization(login: $login) {
         id

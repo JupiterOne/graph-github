@@ -2,7 +2,7 @@ import {
   ResourceMetadata,
   ResourceMap,
   CursorHierarchy,
-  OrganizationResource,
+  GithubResource,
 } from './types';
 
 export function mapResponseCursorsForQuery(
@@ -53,7 +53,7 @@ export function mapResponseCursorsForQuery(
 export function mapResponseResourcesForQuery(
   cursors: ResourceMap<CursorHierarchy>,
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
-  selectedResources: OrganizationResource[],
+  selectedResources: GithubResource[],
 ): string[] {
   const resources: string[] = [];
   for (const [resource, hierarchy] of Object.entries(cursors)) {
@@ -72,9 +72,10 @@ export function mapResponseResourcesForQuery(
 }
 
 export function extractSelectedResources(
-  selectedResources: OrganizationResource[],
+  selectedResources: GithubResource[],
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
   data: any,
+  base: GithubResource,
 ) {
   const resources: ResourceMap<any> = {};
   const cursors: ResourceMap<CursorHierarchy> = {};
@@ -85,6 +86,7 @@ export function extractSelectedResources(
     resources,
     cursors,
     selectedResources,
+    base,
   );
 
   return {
@@ -98,9 +100,9 @@ function extractSelectedResourceFromData(
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
   resources: ResourceMap<any>,
   cursors: ResourceMap<CursorHierarchy>,
-  selectedResources: OrganizationResource[],
-  selectedResource: OrganizationResource = OrganizationResource.Organization,
-  parentResource?: [OrganizationResource, string],
+  selectedResources: GithubResource[],
+  selectedResource: GithubResource,
+  parentResource?: [GithubResource, string],
   edge?: any,
 ) {
   const node: { [key: string]: any } = { ...edge };
@@ -116,7 +118,7 @@ function extractSelectedResourceFromData(
                 resourceMetadataMap[resourceKey].parent === selectedResource))
           );
         },
-      ) as OrganizationResource | undefined;
+      ) as GithubResource | undefined;
       if (!nestedResource) {
         continue;
       }
@@ -190,7 +192,7 @@ function addResourcesFromHierarchy(
   key: string,
   hierarchy: CursorHierarchy,
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
-  selectedResources: OrganizationResource[],
+  selectedResources: GithubResource[],
 ): string[] {
   if (!(Object.keys(hierarchy.children).length > 0)) {
     const metadata = resourceMetadataMap[key];

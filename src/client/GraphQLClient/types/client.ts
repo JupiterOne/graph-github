@@ -10,6 +10,15 @@ export enum OrganizationResource {
   RepositoryCollaborators = 'repositoryCollaborators',
 }
 
+export enum PullRequestResource {
+  PullRequests = 'pullRequests',
+  Commits = 'commits',
+  Labels = 'labels',
+  Reviews = 'reviews',
+}
+
+export type GithubResource = OrganizationResource | PullRequestResource;
+
 export enum OrgMemberRole {
   Admin = 'ADMIN',
   Member = 'MEMBER',

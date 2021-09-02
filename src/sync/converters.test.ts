@@ -4,10 +4,17 @@ import {
   toOrganizationCollaboratorEntity,
   toRepositoryEntity,
   toAccountEntity,
+  toPullRequestEntityOld,
   toPullRequestEntity,
 } from './converters';
 import { UserEntity, PRState } from '../types';
 import omit from 'lodash.omit';
+import { PullRequest } from '../client/GraphQLClient/types';
+import {
+  fixturePullRequest,
+  fixtureUser,
+  fixtureReviewerUser,
+} from './fixtures/pullRequest';
 
 describe('toAccountEntity', () => {
   const apiResponse = {
@@ -156,7 +163,7 @@ describe('toOrganizationCollaboratorEntity', () => {
   });
 });
 
-describe('toPullRequestEntity', () => {
+describe('toPullRequestEntityOld', () => {
   const user = {
     displayName: 'Some Body',
     login: 'somebody',
@@ -245,7 +252,7 @@ describe('toPullRequestEntity', () => {
   };
 
   test('with description', () => {
-    const entity = toPullRequestEntity(
+    const entity = toPullRequestEntityOld(
       apiResponse as any,
       [
         { sha: 'commit_a', commit: { message: 'Commit A' } } as any,
@@ -268,7 +275,7 @@ describe('toPullRequestEntity', () => {
       ...apiResponse,
       body: null,
     };
-    const entity = toPullRequestEntity(
+    const entity = toPullRequestEntityOld(
       apiResponseWithoutDescription as any,
       [
         { sha: 'commit_a', commit: { message: 'Commit A' } } as any,
@@ -303,7 +310,7 @@ describe('toPullRequestEntity', () => {
       merged_at: null,
       merge_commit_sha: undefined,
     };
-    const entity = toPullRequestEntity(
+    const entity = toPullRequestEntityOld(
       apiResponseDeclined as any,
       [
         { sha: 'commit_a', commit: { message: 'Commit A' } } as any,
@@ -336,7 +343,7 @@ describe('toPullRequestEntity', () => {
   });
 
   test('without commit analysis', () => {
-    const entity = toPullRequestEntity(apiResponse as any);
+    const entity = toPullRequestEntityOld(apiResponse as any);
     expect(entity).toEqual({
       ...expectedEntity,
       approved: undefined,
@@ -350,6 +357,61 @@ describe('toPullRequestEntity', () => {
       approverLogins: undefined,
       author: 'somebody',
       reviewers: ['reviewer-user'],
+    });
+  });
+});
+
+describe('toPullRequestEntity', () => {
+  test('with all commits approved', () => {
+    const entity = toPullRequestEntity(fixturePullRequest, {
+      [fixtureUser.login!]: fixtureUser as UserEntity,
+      [fixtureReviewerUser.login!]: fixtureReviewerUser as UserEntity,
+    });
+    expect(entity).toMatchSnapshot();
+  });
+
+  test('declined', () => {
+    const declinedPullRequest: PullRequest = {
+      ...fixturePullRequest,
+      state: 'CLOSED',
+      merged: false,
+      mergedAt: undefined,
+      mergeCommit: undefined,
+    };
+    const entity = toPullRequestEntity(declinedPullRequest, {
+      [fixtureUser.login]: fixtureUser as UserEntity,
+      [fixtureReviewerUser.login]: fixtureReviewerUser as UserEntity,
+    });
+    expect(entity).toMatchObject({
+      state: 'CLOSED',
+      open: false,
+      declined: true,
+      merged: false,
+      mergedOn: undefined,
+      mergeCommitHash: undefined,
+    });
+  });
+
+  test('with no known user approvals', () => {
+    const entity = toPullRequestEntity(fixturePullRequest, {});
+    expect(entity).toMatchObject({
+      allCommitsApproved: false,
+      validated: false,
+      commits: fixturePullRequest.commits?.map((c) => c.oid),
+      commitMessages: fixturePullRequest.commits?.map((c) => c.message),
+      commitsApproved: [],
+      commitsNotApproved: fixturePullRequest.commits?.map((c) => c.oid),
+      commitsByUnknownAuthor: fixturePullRequest.commits?.map((c) => c.oid),
+      approvers: [fixtureReviewerUser.displayName],
+      approverLogins: [fixtureReviewerUser.login],
+      author: fixtureUser.displayName,
+      reviewers: [fixtureReviewerUser.displayName],
+      _rawData: [
+        {
+          name: 'default',
+          rawData: fixturePullRequest,
+        },
+      ],
     });
   });
 });

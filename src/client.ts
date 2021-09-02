@@ -5,15 +5,7 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
-import {
-  AccountEntity,
-  AccountType,
-  IdEntityMap,
-  PullRequestEntity,
-  RepoEntity,
-  TokenPermissions,
-  UserEntity,
-} from './types';
+import { AccountType, RepoEntity, TokenPermissions } from './types';
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
@@ -29,6 +21,7 @@ import {
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
 } from './client/GraphQLClient';
+import { PullRequest } from './client/GraphQLClient/types';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -154,29 +147,20 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iteratePullRequests(
-    account: AccountEntity,
     repo: RepoEntity,
-    memberEntities: UserEntity[],
-    memberByLoginMap: IdEntityMap<UserEntity>,
     logger: IntegrationLogger,
-    iteratee: ResourceIteratee<PullRequestEntity>,
+    iteratee: ResourceIteratee<PullRequest>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-
-    const pullrequests = await this.accountClient.getPullRequestEntities(
-      account,
-      repo,
-      memberEntities,
-      memberByLoginMap,
-      logger,
+    const {
+      rateLimitConsumed,
+    } = await this.accountClient.iteratePullRequestEntities(repo, iteratee);
+    logger.info(
+      { rateLimitConsumed },
+      'Rate limit consumed while fetching Pull Requests.',
     );
-    if (pullrequests) {
-      for (const pr of pullrequests) {
-        await iteratee(pr);
-      }
-    }
   }
 
   /**
@@ -222,7 +206,7 @@ export class APIClient {
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: `https://api.github.com/app/installations/${this.config.installation_id}/access_tokens`,
+        endpoint: `https://api.github.com/app/installations/${this.config.installationId}/access_tokens`,
         status: err.status,
         statusText: err.statusText,
       });

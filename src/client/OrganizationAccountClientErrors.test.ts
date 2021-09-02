@@ -41,7 +41,7 @@ describe('handles undefined resources from graphql', () => {
     login: 'asdf',
     restClient: {} as any,
     graphqlClient: {
-      fetchSingle: jest.fn().mockResolvedValue({
+      fetchFromSingle: jest.fn().mockResolvedValue({
         rateLimitConsumed: 1,
       }),
     } as any,

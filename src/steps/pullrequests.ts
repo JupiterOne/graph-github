@@ -31,6 +31,7 @@ import {
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
+import { toPullRequestEntity } from '../sync/converters';
 
 export async function fetchPrs({
   instance,
@@ -100,16 +101,10 @@ export async function fetchPrs({
 
   for (const repoEntity of repoEntities) {
     await apiClient.iteratePullRequests(
-      accountEntity,
       repoEntity,
-      userEntities,
-      userByLoginMap,
       logger,
-      async (pr) => {
-        //this is a different pattern than for members, teams, and repos
-        //because the client call actually returns the finished entity instead of the raw "org response"
-        //therefore, we just add the entity directly instead of calling a converter here
-        //it seems to be like that in the old code because of the commit analysis functions
+      async (pullRequest) => {
+        const pr = toPullRequestEntity(pullRequest, userByLoginMap!);
         const prEntity = (await jobState.addEntity(pr)) as PullRequestEntity;
 
         await jobState.addRelationship(

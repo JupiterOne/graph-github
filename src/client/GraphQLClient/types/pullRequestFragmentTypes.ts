@@ -1,13 +1,14 @@
 import { PullRequestResource } from './client';
 
 export type PullRequestUser = {
-  login: string;
+  login?: string;
   name?: string;
-  isSiteAdmin: string;
+  isSiteAdmin?: string;
 };
 
 export type Commit = {
   id: string;
+  oid: string; // This is the sha
   message: string;
   authoredDate: string;
   changedFiles: number;
@@ -25,6 +26,9 @@ export type Label = {
 
 export type Review = {
   id: string;
+  commit?: {
+    oid: string; // This is the sha
+  };
   author?: PullRequestUser;
   state:
     | 'PENDING'
@@ -44,26 +48,27 @@ export type PullRequest = {
   baseRefName: string;
   baseRefOid: string;
   baseRepository?: {
-    id: string;
     name: string;
+    owner: PullRequestUser;
   };
-  body: string;
+  body?: string;
   changedFiles: number;
   checksUrl: string;
   closed: boolean;
   closedAt?: string;
   createdAt: string;
   deletions: number;
-  editor: PullRequestUser;
+  editor?: PullRequestUser;
   headRefName: string;
   headRefOid: string;
   headRepository?: {
     name: string;
     owner: PullRequestUser;
   };
+  id: string;
   isDraft: boolean;
   lastEditedAt?: string;
-  locked: string;
+  locked: boolean;
   mergeCommit?: Commit;
   mergeable: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN';
   merged: boolean;

@@ -17,7 +17,6 @@ import {
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import { fetchApps } from './apps';
-
 jest.setTimeout(10000);
 
 let recording: Recording;
@@ -29,20 +28,10 @@ test('should collect data', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
     name: 'steps', //redaction of headers is in setupGithubRecording
-    options: {
-      matchRequestsBy: {
-        headers: false,
-        order: false, //this is needed for index.test.ts
-        url: {
-          query: false,
-        },
-      },
-    },
   });
 
   sanitizeConfig(integrationConfig);
-  integrationConfig.installationId = 17214088; //this is the id the recordings are under
-  integrationConfig.githubAppDefaultLogin = 'Kei-Institute'; //this is the login for the recordings
+  integrationConfig.installationId = 19232829; //this is the id the recordings are under
 
   const context = createMockStepExecutionContext<IntegrationConfig>({
     instanceConfig: integrationConfig,

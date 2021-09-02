@@ -96,7 +96,7 @@ export class GitHubGraphQLClient {
 
         // This indicates that we were not able to fetch all commits, reviews, etc for this PR
         if (Object.keys(innerResourceCursors).length) {
-          console.info(
+          this.logger.info(
             {
               pageCursors: innerResourceCursors,
               pullRequest: pullRequestQueryData.node.title,
@@ -105,7 +105,7 @@ export class GitHubGraphQLClient {
           );
 
           // Fetch the remaining inner resources on this PR (this should be rare)
-          const innerResourceResponse = await this.fetchSingle(
+          const innerResourceResponse = await this.fetchFromSingle(
             PullRequestResource.PullRequests,
             selectedResources,
             { query: `${pullRequestQueryData.node.title} in:title` },
@@ -145,7 +145,7 @@ export class GitHubGraphQLClient {
 
   /**
    * Handles GraphQL requests on single resources that may contain
-   * many nested resorces that each need to be cursed through.
+   * many nested resorces that each may need to be cursed through.
    *
    * @param baseResource - The first GraphQL resource to query for. Ex: pullRequests
    * @param selectedResources - The sub-objects to additionally query for. Ex: [commits]
@@ -153,7 +153,7 @@ export class GitHubGraphQLClient {
    * @param queryCursors - Any cursors you have from previous GraphQL searches. Ex: { pullRequests: ==abcdefg }
    * @returns A all resources that were queried for in a destructured object. Ex: { pullRequests: [{...}], commits: [{...}] }
    */
-  public async fetchSingle<T extends GithubResource>(
+  public async fetchFromSingle<T extends GithubResource>(
     baseResource: T,
     selectedResources: GithubResource[],
     extraQueryParams?: { [k: string]: string },

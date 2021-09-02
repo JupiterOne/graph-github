@@ -134,7 +134,7 @@ describe('results and pagination', () => {
     });
     const client = await getClient();
 
-    const data = await client.fetchSingle(
+    const data = await client.fetchFromSingle(
       OrganizationResource.Organization,
       [OrganizationResource.Repositories],
       { login: 'Kei-Institute' },
@@ -160,7 +160,7 @@ describe('results and pagination', () => {
     });
     const client = await getClient();
 
-    const data = await client.fetchSingle(
+    const data = await client.fetchFromSingle(
       OrganizationResource.Organization,
       [OrganizationResource.Members],
       { login: 'Kei-Institute' },
@@ -186,7 +186,7 @@ describe('results and pagination', () => {
     });
     const client = await getClient();
 
-    const data = await client.fetchSingle(
+    const data = await client.fetchFromSingle(
       OrganizationResource.Organization,
       [OrganizationResource.TeamMembers],
       { login: 'Kei-Institute' },
@@ -256,7 +256,7 @@ describe('results and pagination', () => {
     });
     const client = await getClient();
 
-    const data = await client.fetchSingle(
+    const data = await client.fetchFromSingle(
       OrganizationResource.Organization,
       [
         OrganizationResource.TeamMembers,

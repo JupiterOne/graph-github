@@ -2,6 +2,7 @@ import {
   setRawData,
   parseTimePropertyValue,
   RelationshipClass,
+  createIntegrationEntity,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -29,20 +30,20 @@ import {
   RepoEntity,
   UserEntity,
   PullRequestEntity,
-  PRState,
   IdEntityMap,
   TeamEntity,
   AccountType,
-  PullsListResponseItem,
-  PullsListCommitsResponseItem,
   RepoAllowRelationship,
+  PRState,
+  PullsListCommitsResponseItem,
+  PullsListResponseItem,
 } from '../types';
 import { Approval } from '../approval/collectCommitsForPR';
 import {
   aggregateProperties,
-  flattenMatrix,
-  displayNamesFromLogins,
   decomposePermissions,
+  displayNamesFromLogins,
+  flattenMatrix,
   getAppEntityKey,
 } from '../util/propertyHelpers';
 import {
@@ -56,7 +57,8 @@ import {
   OrgAppQueryResponse,
 } from '../client/GraphQLClient';
 
-import uniq from 'lodash.uniq';
+import { uniq } from 'lodash';
+import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';
 import omit from 'lodash.omit';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
@@ -195,7 +197,7 @@ export function toOrganizationCollaboratorEntity(
   return userEntity;
 }
 
-export function toPullRequestEntity(
+export function toPullRequestEntityOld(
   data: PullsListResponseItem,
   commits?: PullsListCommitsResponseItem[],
   commitsApproved?: PullsListCommitsResponseItem[],
@@ -395,4 +397,207 @@ export function createRepoAllowsUserRelationship(
     triagePermission: permissions?.triage || false,
     pullPermission: true, //always true if there is a relationship
   };
+}
+
+// Pull Request Stuff
+
+export function toPullRequestEntity(
+  pullRequest: PullRequest,
+  teamMembersByLogin: IdEntityMap<UserEntity>,
+): PullRequestEntity {
+  const commits = pullRequest.commits ?? [];
+  const reviews = pullRequest.reviews ?? [];
+
+  // TODO: figure out what is going on with this.
+  const approvals = reviews
+    .filter(isApprovalReview)
+    .reduce(addReviewToApprovals, [])
+    .filter(
+      (approval) =>
+        hasTeamApprovals(approval, teamMembersByLogin) &&
+        approvalHasValidCommit(approval) &&
+        hasPeerApprovals(approval, commits),
+    );
+
+  let commitsApproved: Commit[] = [];
+  if (approvals.length > 0) {
+    commitsApproved = getCommitsToDestination(
+      commits,
+      approvals[approvals.length - 1].commit,
+    );
+  }
+  const commitsApprovedHashes = commitsApproved?.map((c) => c.oid);
+  const commitHashes = commits?.map((c) => c.oid);
+  const commitsNotApproved = commitHashes?.filter(
+    (c) => !commitsApprovedHashes!.includes(c),
+  );
+
+  const commitsByUnknownAuthor = commits.filter((commit) =>
+    fromUnknownAuthor(commit, teamMembersByLogin),
+  );
+
+  return createIntegrationEntity({
+    entityData: {
+      source: pullRequest,
+      assign: {
+        _type: GITHUB_PR_ENTITY_TYPE,
+        _class: [GITHUB_PR_ENTITY_CLASS],
+        _key: `${pullRequest.baseRefName}/pull-requests/${pullRequest.number}`,
+        displayName: `${pullRequest.baseRefName}/${pullRequest.number}`,
+        accountLogin: pullRequest.baseRepository?.owner?.login
+          ? pullRequest.baseRepository.owner.login
+          : '',
+        repository: pullRequest.baseRefName,
+        // The number is NOT the id of the Pull Request. Hopefully no one gets bit from that later
+        id: pullRequest.number ? String(pullRequest.number) : '',
+        // This is actually what the pull request id is...
+        pullRequestId: pullRequest.id,
+        name: pullRequest.title,
+        title: pullRequest.title,
+        description:
+          pullRequest.body && pullRequest.body.length > 0
+            ? `${pullRequest.body.substring(0, 80)}...`
+            : undefined,
+        webLink: pullRequest.url,
+
+        state: pullRequest.state,
+        open: pullRequest.state === 'OPEN',
+        mergeCommitHash: pullRequest.mergeCommit?.oid,
+        merged: pullRequest.merged,
+        declined: pullRequest.state === 'CLOSED' && !pullRequest.merged,
+        approved: pullRequest.reviewDecision === 'APPROVED',
+        allCommitsApproved: commitsNotApproved
+          ? commitsNotApproved.length === 0
+          : undefined,
+
+        commits: commitHashes,
+        commitMessages: commits?.map((c) => c.message),
+        commitsApproved: commitsApprovedHashes,
+        commitsNotApproved,
+        commitsByUnknownAuthor: commitsByUnknownAuthor?.map((c) => c.oid),
+        validated: commitsByUnknownAuthor
+          ? commitsByUnknownAuthor.length === 0
+          : undefined,
+
+        source: pullRequest.baseRefName,
+        target: pullRequest.headRefName,
+
+        createdOn: parseTimePropertyValue(pullRequest.createdAt),
+        updatedOn: parseTimePropertyValue(pullRequest.updatedAt),
+        mergedOn: parseTimePropertyValue(pullRequest.mergedAt),
+
+        authorLogin: pullRequest.author?.login ?? '',
+        author: pullRequest.author?.name ?? pullRequest.author?.login ?? '',
+
+        reviewerLogins: uniq(
+          reviews.map((review) => review.author?.login),
+        ).filter(isDefined) as string[],
+        reviewers: uniq(reviews.map((review) => review.author?.name)).filter(
+          isDefined,
+        ) as string[],
+        approverLogins: uniq(
+          reviews?.filter(isApprovalReview)?.map((r) => r.author?.login),
+        ).filter(isDefined) as string[],
+        approvers: uniq(
+          reviews?.filter(isApprovalReview)?.map((r) => r.author?.name),
+        ).filter(isDefined) as string[],
+      },
+    },
+  }) as PullRequestEntity;
+}
+
+function isDefined(any: any) {
+  return !!any;
+}
+function isApprovalReview(review: Review) {
+  return review.state === 'APPROVED' || review.state === 'DISMISSED';
+}
+
+function hasPeerApprovals(approval: Approval, commits: Commit[]) {
+  const associatedCommits = getCommitsToDestination(commits, approval.commit);
+  const commitAuthors = associatedCommits.reduce(
+    (authors: string[], commit) => [
+      ...authors,
+      commit.author.user?.login ? commit.author.user?.login : '',
+    ],
+    [],
+  );
+  const validApprovers = approval.approverUsernames.filter(
+    (approver) => !commitAuthors.includes(approver),
+  );
+  return validApprovers.length > 0;
+}
+
+function userOutsideOfTeam(
+  login: string | undefined,
+  usersByLogin: IdEntityMap<UserEntity>,
+) {
+  return !login || !usersByLogin[login];
+}
+
+function hasTeamApprovals(
+  approval: Approval,
+  usersByLogin: IdEntityMap<UserEntity>,
+) {
+  return approval.approverUsernames.some((approver) => usersByLogin[approver]);
+}
+
+function approvalHasValidCommit(approval: Approval) {
+  return !!approval.commit?.length;
+}
+
+function fromUnknownAuthor(
+  commit: Commit,
+  usersByLogin: IdEntityMap<UserEntity>,
+) {
+  if (!commit.author) {
+    return true;
+  }
+  if (usersByLogin) {
+    return userOutsideOfTeam(commit.author.user?.login, usersByLogin);
+  }
+  return false;
+}
+
+function addReviewToApprovals(approvals: Approval[], approvalReview: Review) {
+  if (!approvalReview.author?.login || !approvalReview.commit?.oid) {
+    // If an approval has no user, don't count it as valid
+    return approvals;
+  }
+
+  const existingApproval = approvals.find(
+    (approval) => approval.commit === approvalReview.commit!.oid,
+  );
+
+  if (existingApproval) {
+    existingApproval.approverUsernames.push(approvalReview.author.login);
+    return approvals;
+  } else {
+    const approval: Approval = {
+      commit: approvalReview.commit.oid,
+      approverUsernames: [approvalReview.author.login],
+    };
+    return [...approvals, approval];
+  }
+}
+
+function commitMatches(commit: string, match: string): boolean {
+  // using the length of the proposed match allows for matching shas of
+  // different length, so that abcdefghij12345678 matches abcdefghij
+  return !!match?.length && commit.slice(0, match.length) === match;
+}
+
+export default function getCommitsToDestination(
+  commits: Commit[],
+  destination: string,
+) {
+  const destinationIndex = commits.findIndex((commit) =>
+    commitMatches(commit.oid, destination),
+  );
+
+  if (destinationIndex < 0) {
+    return [];
+  }
+
+  return commits.slice(0, destinationIndex + 1);
 }

@@ -17,6 +17,7 @@ import {
   TeamRepositoryPermission,
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
+  PullRequestResource,
 } from './GraphQLClient';
 import {
   UserEntity,
@@ -32,9 +33,11 @@ import {
   ReposListCommitsResponseItem,
 } from '../types';
 import collectCommitsForPR from '../approval/collectCommitsForPR';
-import { toPullRequestEntity } from '../sync/converters';
+import { toPullRequestEntityOld } from '../sync/converters';
 import sha from '../util/sha';
 import { request } from '@octokit/request';
+import { ResourceIteratee } from '../client';
+import { PullRequest, PullRequestQueryResponse } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -128,7 +131,7 @@ export default class OrganizationAccountClient {
           teamMembers,
           repositories,
           rateLimitConsumed,
-        } = await this.v4.fetchSingle(
+        } = await this.v4.fetchFromSingle(
           OrganizationResource.Organization,
           fetchResources,
           { login: this.login },
@@ -153,7 +156,7 @@ export default class OrganizationAccountClient {
         const {
           teams,
           rateLimitConsumed,
-        } = await this.v4.fetchSingle(
+        } = await this.v4.fetchFromSingle(
           OrganizationResource.Organization,
           [OrganizationResource.Teams],
           { login: this.login },
@@ -173,7 +176,7 @@ export default class OrganizationAccountClient {
         const {
           teamMembers,
           rateLimitConsumed,
-        } = await this.v4.fetchSingle(
+        } = await this.v4.fetchFromSingle(
           OrganizationResource.Organization,
           [OrganizationResource.TeamMembers],
           { login: this.login },
@@ -194,7 +197,7 @@ export default class OrganizationAccountClient {
         const {
           repositories,
           rateLimitConsumed,
-        } = await this.v4.fetchSingle(
+        } = await this.v4.fetchFromSingle(
           OrganizationResource.Organization,
           [OrganizationResource.Repositories],
           { login: this.login },
@@ -230,7 +233,7 @@ export default class OrganizationAccountClient {
           const {
             teamRepositories,
             rateLimitConsumed,
-          } = await this.v4.fetchSingle(
+          } = await this.v4.fetchFromSingle(
             OrganizationResource.Organization,
             [OrganizationResource.TeamRepositories],
             { login: this.login },
@@ -365,7 +368,7 @@ export default class OrganizationAccountClient {
         const {
           members,
           rateLimitConsumed,
-        } = await this.v4.fetchSingle(
+        } = await this.v4.fetchFromSingle(
           OrganizationResource.Organization,
           [OrganizationResource.Members],
           { login: this.login },
@@ -453,7 +456,7 @@ export default class OrganizationAccountClient {
         commitsByUnknownAuthor,
         approvals,
       } = await collectCommitsForPR(this, account, pullRequest, teamMembers);
-      return toPullRequestEntity(
+      return toPullRequestEntityOld(
         pullRequest,
         allCommits,
         approvedCommits,
@@ -468,6 +471,26 @@ export default class OrganizationAccountClient {
         this.authorizedForPullRequests = false;
       }
     }
+  }
+
+  async iteratePullRequestEntities(
+    repo: RepoEntity,
+    iteratee: ResourceIteratee<PullRequest>,
+  ): Promise<PullRequestQueryResponse> {
+    if (!this.authorizedForPullRequests) {
+      return { rateLimitConsumed: 0 };
+    }
+    // TODO: add sort
+    const query = `is:pr repo:${repo.fullName}`;
+    return await this.v4.iteratePullRequests(
+      query,
+      [
+        PullRequestResource.Commits,
+        PullRequestResource.Reviews,
+        PullRequestResource.Labels,
+      ],
+      iteratee,
+    );
   }
 
   async getPullRequestEntities(
@@ -516,7 +539,7 @@ export default class OrganizationAccountClient {
               pullRequest,
               teamMembers,
             );
-            return toPullRequestEntity(
+            return toPullRequestEntityOld(
               pullRequest,
               allCommits,
               approvedCommits,
@@ -525,7 +548,7 @@ export default class OrganizationAccountClient {
               teamMemberMap,
             );
           } else {
-            return toPullRequestEntity(pullRequest);
+            return toPullRequestEntityOld(pullRequest);
           }
         },
         { concurrency: 1 },

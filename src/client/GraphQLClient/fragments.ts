@@ -46,6 +46,7 @@ export default {
   }`,
   commitFields: `on Commit {
     id
+    oid
     message
     authoredDate
     changedFiles
@@ -59,6 +60,9 @@ export default {
   }`,
   reviewFields: `on PullRequestReview {
     id
+    commit {
+      oid
+    }
     author {
       ...userFields
     }
@@ -76,8 +80,10 @@ export default {
     baseRefName
     baseRefOid
     baseRepository {
-      id
       name
+      owner {
+        ...userFields
+      }
     }
     body
     changedFiles
@@ -100,6 +106,7 @@ export default {
         ...userFields
       }
     }
+    id
     isDraft
     # labels(first 100) {  # Handling in the query builder
     lastEditedAt

@@ -14,6 +14,7 @@ import createGitHubAppClient from '../../util/createGitHubAppClient';
 import { IntegrationConfig, sanitizeConfig } from '../../config';
 import { integrationConfig } from '../../../test/config';
 import { PullRequest } from './types';
+jest.setTimeout(20000);
 
 async function getAccess() {
   const context = createMockStepExecutionContext<IntegrationConfig>({
@@ -109,9 +110,24 @@ describe('pull requests', () => {
         pullRequests.push(pr);
       },
     );
-    expect(pullRequests.length).toEqual(4);
-    expect(data.rateLimitConsumed).toEqual(8);
-    expect(pullRequests).toMatchSnapshot();
+    expect(pullRequests.length).toEqual(4); // 2 rate limits
+    expect(data.rateLimitConsumed).toEqual(9); // 7 unaccounted for extras
+    let pullRequest = pullRequests[0]; // 2 extra
+    expect(pullRequest.commits?.length).toEqual(4); // 1 extra rate limit (There is supposed to be 5 commits here but one got removed somehow)
+    expect(pullRequest.reviews?.length).toEqual(4); // 1 extra rate limit
+    expect(pullRequest.labels?.length).toEqual(0);
+    pullRequest = pullRequests[1]; // 1 extra
+    expect(pullRequest.commits?.length).toEqual(4); // 1 extra rate limit
+    expect(pullRequest.reviews?.length).toEqual(3); // 1 extra rate limit
+    expect(pullRequest.labels?.length).toEqual(0);
+    pullRequest = pullRequests[2]; // 4 extra
+    expect(pullRequest.commits?.length).toEqual(4); // 1 extra rate limit
+    expect(pullRequest.reviews?.length).toEqual(9); // 4 extra rate limits
+    expect(pullRequest.labels?.length).toEqual(0);
+    pullRequest = pullRequests[3]; // 0 extra
+    expect(pullRequest.commits?.length).toEqual(1);
+    expect(pullRequest.reviews?.length).toEqual(1);
+    expect(pullRequest.labels?.length).toEqual(0);
   });
 });
 

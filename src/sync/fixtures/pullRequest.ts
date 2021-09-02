@@ -18,6 +18,7 @@ export const fixturePullRequest: PullRequest = {
   baseRefOid: '989c2e36df5b7d2e77ff1ab33aaee49bea705066',
   baseRepository: {
     name: 'jupiter-integration-aws',
+    nameWithOwner: 'JupiterOne/jupiter-integration-aws',
     owner: {},
   },
   body: 'This is some discription or something',
@@ -32,6 +33,7 @@ export const fixturePullRequest: PullRequest = {
   headRefOid: '1103a7a2e976439ca184f775196759084f16e42f',
   headRepository: {
     name: 'jupiter-integration-aws',
+    nameWithOwner: 'JupiterOne/jupiter-integration-aws',
     owner: {},
   },
   id: 'MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1',

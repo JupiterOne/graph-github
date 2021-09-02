@@ -103,13 +103,29 @@ export class GitHubGraphQLClient {
             },
             'Unable to fetch all inner resources. Attempting to fetch more.',
           );
+          if (!pullRequestResponse.headRepository) {
+            this.logger.warn(
+              { pullRequestUrl: pullRequestResponse.url },
+              'Unable to fetch inner resources because there is no headRepository for this pull request',
+            );
+            await iteratee(pullRequestResponse);
+            continue;
+          }
 
           // Fetch the remaining inner resources on this PR (this should be rare)
+          const [
+            repoOwner,
+            repoName,
+          ] = pullRequestResponse.headRepository.nameWithOwner.split('/');
           const innerResourceResponse = await this.fetchFromSingle(
-            PullRequestResource.PullRequests,
+            PullRequestResource.PullRequest,
             selectedResources,
-            { query: `${pullRequestQueryData.node.title} in:title` },
-            mapResponseCursorsForQuery(innerResourceCursors, queryCursors),
+            {
+              pullRequestNumber: pullRequestResponse.number,
+              repoName,
+              repoOwner,
+            },
+            mapResponseCursorsForQuery(innerResourceCursors, {}),
           );
 
           rateLimitConsumed += innerResourceResponse.rateLimitConsumed;
@@ -156,7 +172,7 @@ export class GitHubGraphQLClient {
   public async fetchFromSingle<T extends GithubResource>(
     baseResource: T,
     selectedResources: GithubResource[],
-    extraQueryParams?: { [k: string]: string },
+    extraQueryParams?: { [k: string]: string | number },
     queryCursors: ResourceMap<string> = {},
   ): Promise<QueryResponse<T>> {
     let resources: ResourceMap<any> = {};

@@ -81,6 +81,7 @@ export default {
     baseRefOid
     baseRepository {
       name
+      nameWithOwner
       owner {
         ...userFields
       }
@@ -102,6 +103,7 @@ export default {
     headRefOid
     headRepository {
       name
+      nameWithOwner
       owner {
         ...userFields
       }

@@ -46,6 +46,7 @@ export interface ResourceMetadata {
    * direct interpolation into the GraphQL.
    */
   graphRequestVariable2?: string; //TODO: Do this better
+  graphRequestVariable3?: string; //TODO: Do this better
   /*
    * The path to extract the relevant data from the graphQL response
    */

@@ -49,6 +49,7 @@ export type PullRequest = {
   baseRefOid: string;
   baseRepository?: {
     name: string;
+    nameWithOwner: string;
     owner: PullRequestUser;
   };
   body?: string;
@@ -63,6 +64,7 @@ export type PullRequest = {
   headRefOid: string;
   headRepository?: {
     name: string;
+    nameWithOwner: string;
     owner: PullRequestUser;
   };
   id: string;

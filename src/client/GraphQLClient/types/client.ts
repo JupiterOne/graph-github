@@ -12,6 +12,7 @@ export enum OrganizationResource {
 
 export enum PullRequestResource {
   PullRequests = 'pullRequests',
+  PullRequest = 'pullRequest',
   Commits = 'commits',
   Labels = 'labels',
   Reviews = 'reviews',

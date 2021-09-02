@@ -21,6 +21,7 @@ Object {
         "baseRefOid": "989c2e36df5b7d2e77ff1ab33aaee49bea705066",
         "baseRepository": Object {
           "name": "jupiter-integration-aws",
+          "nameWithOwner": "JupiterOne/jupiter-integration-aws",
           "owner": Object {},
         },
         "body": "This is some discription or something",
@@ -84,6 +85,7 @@ Object {
         "headRefOid": "1103a7a2e976439ca184f775196759084f16e42f",
         "headRepository": Object {
           "name": "jupiter-integration-aws",
+          "nameWithOwner": "JupiterOne/jupiter-integration-aws",
           "owner": Object {},
         },
         "id": "MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1",

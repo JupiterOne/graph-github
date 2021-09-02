@@ -20,6 +20,9 @@ export default function buildGraphQL(
   if (resourceMetadataMap[parentResource].graphRequestVariable2) {
     variables.push(resourceMetadataMap[parentResource].graphRequestVariable2!);
   }
+  if (resourceMetadataMap[parentResource].graphRequestVariable3) {
+    variables.push(resourceMetadataMap[parentResource].graphRequestVariable3!);
+  }
 
   for (const r of queryResources) {
     let resourceMetadata = resourceMetadataMap[r];
@@ -39,6 +42,9 @@ export default function buildGraphQL(
     }
     if (resourceMetadata.graphRequestVariable2) {
       variables.push(resourceMetadata.graphRequestVariable2);
+    }
+    if (resourceMetadata.graphRequestVariable3) {
+      variables.push(resourceMetadata.graphRequestVariable3);
     }
 
     const includedChildren = resourceMetadata.children
@@ -62,6 +68,9 @@ export default function buildGraphQL(
         // TODO: Do this better
         if (resourceMetadataMap[c].graphRequestVariable2) {
           variables.push(resourceMetadataMap[c].graphRequestVariable2!);
+        }
+        if (resourceMetadataMap[c].graphRequestVariable3) {
+          variables.push(resourceMetadataMap[c].graphRequestVariable3!);
         }
       });
       queries.push({

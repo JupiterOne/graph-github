@@ -14,10 +14,30 @@ export default function (
   pageLimit: number = 100,
 ): ResourceMap<ResourceMetadata> {
   return {
+    [PullRequestResource.PullRequest]: {
+      graphRequestVariable: '$pullRequestNumber: Int!',
+      graphRequestVariable2: '$repoName: String!',
+      graphRequestVariable3: '$repoOwner: String!',
+      pathToDataInGraphQlResponse: 'repository.pullRequest', // No need to split this into 2 queries as we don't need any fields on repository
+      graphProperty: 'pullRequest',
+      factory: (
+        children: string = '',
+      ) => `repository(name: $repoName, owner: $repoOwner) {
+          pullRequest(number: $pullRequestNumber) {
+            ...pullRequestFields
+            ${children}
+          }
+      }`,
+      children: [
+        PullRequestResource.Commits,
+        PullRequestResource.Reviews,
+        PullRequestResource.Labels,
+      ],
+    },
     [PullRequestResource.PullRequests]: {
       graphRequestVariable: `$pullRequests: String`,
       graphRequestVariable2: '$query: String!',
-      pathToDataInGraphQlResponse: 'search.edges[0].node',
+      pathToDataInGraphQlResponse: 'search',
       graphProperty: 'pullRequests',
       factory: (
         children: string = '',
@@ -98,6 +118,12 @@ export default function (
         ...organizationFields
         ${children}
       }`,
+      children: [
+        OrganizationResource.Members,
+        OrganizationResource.Teams,
+        OrganizationResource.TeamMembers,
+        OrganizationResource.Repositories,
+      ],
     },
     [OrganizationResource.Members]: {
       graphRequestVariable: '$members: String',

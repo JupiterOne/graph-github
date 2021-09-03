@@ -7,12 +7,11 @@ import fragments from './fragments';
 import {
   ResourceMap,
   ResourceMetadata,
-  PullRequestResource,
-  GithubResource,
   PullRequest,
   PullRequestQueryResponse,
-  OrganizationResourcesQueryResponse,
-  OrganizationResource,
+  GithubResourcesQueryResponse,
+  GithubResource,
+  Node,
 } from './types';
 import buildGraphQL from './buildGraphQL';
 import {
@@ -23,9 +22,9 @@ import {
 import { ResourceIteratee } from '../../client';
 
 // Conditional type to map the GraphQL response based on the base resource
-type QueryResponse<T> = T extends OrganizationResource
-  ? OrganizationResourcesQueryResponse
-  : T extends PullRequestResource
+type QueryResponse<T> = T extends GithubResource
+  ? GithubResourcesQueryResponse
+  : T extends GithubResource
   ? PullRequestQueryResponse
   : never;
 
@@ -54,7 +53,7 @@ export class GitHubGraphQLClient {
 
   public async iteratePullRequests(
     query: string,
-    selectedResources: PullRequestResource[],
+    selectedResources: GithubResource[],
     iteratee: ResourceIteratee<PullRequest>,
   ): Promise<PullRequestQueryResponse> {
     let queryCursors: ResourceMap<string> = {};
@@ -62,21 +61,21 @@ export class GitHubGraphQLClient {
 
     const pullRequestQueryString = buildGraphQL(
       this.resourceMetadataMap,
-      PullRequestResource.PullRequests,
+      GithubResource.PullRequests,
       selectedResources,
     );
     const queryPullRequests = this.graph(pullRequestQueryString);
 
     do {
-      const response = await queryPullRequests({
+      const pullRequestResponse = await queryPullRequests({
         query,
         ...queryCursors,
       });
 
-      const rateLimit = response.rateLimit;
+      const rateLimit = pullRequestResponse.rateLimit;
       rateLimitConsumed += rateLimit.cost;
 
-      for (const pullRequestQueryData of response.search.edges) {
+      for (const pullRequestQueryData of pullRequestResponse.search.edges) {
         const {
           resources: pageResources,
           cursors: innerResourceCursors,
@@ -84,12 +83,13 @@ export class GitHubGraphQLClient {
           selectedResources,
           this.resourceMetadataMap,
           pullRequestQueryData.node,
-          PullRequestResource.PullRequests,
+          GithubResource.PullRequests,
         );
 
+        // Construct the pull request
         const pullRequestResponse: PullRequest = {
-          ...pageResources.pullRequests[0], // There will only be one PR because we are iterating on each PR
-          commits: pageResources.commits ?? [],
+          ...pageResources.pullRequests[0], // There will only be one PR because of the for loop
+          commits: (pageResources.commits ?? []).map((c) => c.commit),
           reviews: pageResources.reviews ?? [],
           labels: pageResources.labels ?? [],
         };
@@ -99,7 +99,7 @@ export class GitHubGraphQLClient {
           this.logger.info(
             {
               pageCursors: innerResourceCursors,
-              pullRequest: pullRequestQueryData.node.title,
+              pullRequest: pullRequestResponse.title,
             },
             'Unable to fetch all inner resources. Attempting to fetch more.',
           );
@@ -118,7 +118,7 @@ export class GitHubGraphQLClient {
             repoName,
           ] = pullRequestResponse.headRepository.nameWithOwner.split('/');
           const innerResourceResponse = await this.fetchFromSingle(
-            PullRequestResource.PullRequest,
+            GithubResource.PullRequest,
             selectedResources,
             {
               pullRequestNumber: pullRequestResponse.number,
@@ -132,7 +132,7 @@ export class GitHubGraphQLClient {
 
           // Add the additional inner resources to the initial call
           pullRequestResponse.commits = pullRequestResponse.commits!.concat(
-            innerResourceResponse.commits ?? [],
+            (innerResourceResponse.commits ?? []).map((c) => c.commit),
           );
           pullRequestResponse.reviews = pullRequestResponse.reviews!.concat(
             innerResourceResponse.reviews ?? [],
@@ -146,10 +146,11 @@ export class GitHubGraphQLClient {
 
       // Check to see if we have iterated through every PR yet. We do not need to care about inner resources at this point.
       queryCursors =
-        response.search.pageInfo && response.search.pageInfo.hasNextPage
+        pullRequestResponse.search.pageInfo &&
+        pullRequestResponse.search.pageInfo.hasNextPage
           ? {
-              [this.resourceMetadataMap[PullRequestResource.PullRequests]
-                .graphProperty]: response.search.pageInfo.endCursor,
+              [GithubResource.PullRequests]:
+                pullRequestResponse.search.pageInfo.endCursor,
             }
           : {};
     } while (Object.values(queryCursors).some((c) => !!c));
@@ -224,10 +225,11 @@ export class GitHubGraphQLClient {
     } as QueryResponse<T>;
   }
 
-  private extractPageResources(
-    pageResources: ResourceMap<any>,
-    resources: ResourceMap<any>,
-  ): ResourceMap<any> {
+  // TODO: make sure commits are pulled correctly
+  private extractPageResources<T extends Node>(
+    pageResources: ResourceMap<T[]>,
+    resources: ResourceMap<T[]>,
+  ): ResourceMap<T[]> {
     for (const [resource, data] of Object.entries(pageResources)) {
       if (!resources[resource]) {
         resources[resource] = data;
@@ -235,8 +237,8 @@ export class GitHubGraphQLClient {
       }
       for (const item of data) {
         if (
-          !resources[resource].find((r: any) => {
-            const found = r.id === item.id;
+          !resources[resource].find((r: T) => {
+            const found = r.id === item.id; // This is enforced with the Node type
             const metadata = this.resourceMetadataMap[resource];
             if (metadata && metadata.parent) {
               return found && r[metadata.parent] === item[metadata.parent];

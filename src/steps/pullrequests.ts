@@ -49,6 +49,7 @@ export async function fetchPrs({
     );
   }
 
+  // TODO: iterate Repo entities
   const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {
     throw new IntegrationMissingKeyError(

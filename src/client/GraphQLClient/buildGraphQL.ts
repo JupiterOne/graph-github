@@ -13,15 +13,10 @@ export default function buildGraphQL(
   const queries: QueryHierarchy[] = [];
   const variables: string[] = [];
 
-  // TODO: make this not super ugly
-  if (resourceMetadataMap[parentResource].graphRequestVariable) {
-    variables.push(resourceMetadataMap[parentResource].graphRequestVariable);
-  }
-  if (resourceMetadataMap[parentResource].graphRequestVariable2) {
-    variables.push(resourceMetadataMap[parentResource].graphRequestVariable2!);
-  }
-  if (resourceMetadataMap[parentResource].graphRequestVariable3) {
-    variables.push(resourceMetadataMap[parentResource].graphRequestVariable3!);
+  if (resourceMetadataMap[parentResource].graphRequestVariables) {
+    variables.push(
+      ...resourceMetadataMap[parentResource].graphRequestVariables,
+    );
   }
 
   for (const r of queryResources) {
@@ -37,14 +32,8 @@ export default function buildGraphQL(
       resourceMetadata = resourceMetadataMap[parent];
     }
 
-    if (resourceMetadata.graphRequestVariable) {
-      variables.push(resourceMetadata.graphRequestVariable);
-    }
-    if (resourceMetadata.graphRequestVariable2) {
-      variables.push(resourceMetadata.graphRequestVariable2);
-    }
-    if (resourceMetadata.graphRequestVariable3) {
-      variables.push(resourceMetadata.graphRequestVariable3);
+    if (resourceMetadata.graphRequestVariables) {
+      variables.push(...resourceMetadata.graphRequestVariables);
     }
 
     const includedChildren = resourceMetadata.children
@@ -53,7 +42,6 @@ export default function buildGraphQL(
             if (queryResources.includes(c)) {
               included.push(c);
             }
-
             return included;
           },
           [],
@@ -62,15 +50,8 @@ export default function buildGraphQL(
 
     if (resourceMetadata.children && includedChildren.length > 0) {
       includedChildren.forEach((c: GithubResource) => {
-        if (resourceMetadataMap[c].graphRequestVariable) {
-          variables.push(resourceMetadataMap[c].graphRequestVariable);
-        }
-        // TODO: Do this better
-        if (resourceMetadataMap[c].graphRequestVariable2) {
-          variables.push(resourceMetadataMap[c].graphRequestVariable2!);
-        }
-        if (resourceMetadataMap[c].graphRequestVariable3) {
-          variables.push(resourceMetadataMap[c].graphRequestVariable3!);
+        if (resourceMetadataMap[c].graphRequestVariables) {
+          variables.push(...resourceMetadataMap[c].graphRequestVariables);
         }
       });
       queries.push({

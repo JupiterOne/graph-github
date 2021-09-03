@@ -1,24 +1,20 @@
 import { TokenPermissions } from '../../../types';
 
-export enum OrganizationResource {
+// From whatever name given the JupiterOne use for the data to the specific Github GraphQl query to fetch that data (gotten via introspection)
+export enum GithubResource {
   Organization = 'organization',
-  Members = 'members',
+  OrganizationMembers = 'membersWithRole',
   Teams = 'teams',
-  TeamMembers = 'teamMembers',
+  TeamMembers = 'members',
   TeamRepositories = 'teamRepositories',
   Repositories = 'repositories',
-  RepositoryCollaborators = 'repositoryCollaborators',
-}
-
-export enum PullRequestResource {
   PullRequests = 'pullRequests',
   PullRequest = 'pullRequest',
   Commits = 'commits',
   Labels = 'labels',
   Reviews = 'reviews',
+  // RepositoryCollaborators = 'repositoryCollaborators',
 }
-
-export type GithubResource = OrganizationResource | PullRequestResource;
 
 export enum OrgMemberRole {
   Admin = 'ADMIN',
@@ -38,7 +34,8 @@ export enum TeamRepositoryPermission {
   Write = 'WRITE',
 }
 
-interface Node {
+// All Nodes MUST have an id or else they will not be parsed correctly
+export interface Node {
   id: string;
 }
 
@@ -49,6 +46,9 @@ interface Actor {
 
 export type OrgQueryResponse = Node & Actor;
 
+/**
+ * Organization GraphQL Fragment Types
+ */
 export interface OrgCollaboratorQueryResponse extends Actor {
   //choosing not to extend Node here because the REST call that retrieves Collaborators insists that `id` is a number
   id: number;
@@ -121,16 +121,124 @@ export interface OrgAppQueryResponse {
   suspended_at: string;
 }
 
-interface OrganizationResources {
-  organization: OrgQueryResponse[];
-  members: OrgMemberQueryResponse[];
-  teams: OrgTeamQueryResponse[];
-  teamMembers: OrgTeamMemberQueryResponse[];
-  teamRepositories: OrgTeamRepoQueryResponse[];
-  repositories: OrgRepoQueryResponse[];
-  collaborators: OrgCollaboratorQueryResponse[];
+interface GithubResources {
+  [GithubResource.Organization]: OrgQueryResponse[];
+  [GithubResource.OrganizationMembers]: OrgMemberQueryResponse[];
+  [GithubResource.Teams]: OrgTeamQueryResponse[];
+  [GithubResource.TeamMembers]: OrgTeamMemberQueryResponse[];
+  [GithubResource.TeamRepositories]: OrgTeamRepoQueryResponse[];
+  [GithubResource.Repositories]: OrgRepoQueryResponse[];
+  // [GithubResource. RepositoryCollaborators]: OrgCollaboratorQueryResponse[];
 }
 
-export type OrganizationResourcesQueryResponse = {
+export type GithubResourcesQueryResponse = {
   rateLimitConsumed: number;
-} & Partial<OrganizationResources>;
+} & Partial<GithubResources>;
+
+/**
+ * Pull Request GraphQL Fragment Types
+ */
+export interface PullRequestUser {
+  login?: string;
+  name?: string;
+  isSiteAdmin?: string;
+}
+
+export interface PullRequestCommitQueryResponse {
+  commit: Commit;
+}
+
+export interface Commit extends Node {
+  id: string;
+  oid: string; // This is the sha
+  message: string;
+  authoredDate: string;
+  changedFiles: number;
+  commitUrl: string;
+  author: {
+    date?: string;
+    user?: PullRequestUser;
+  };
+}
+
+export interface Label extends Node {
+  id: string;
+  name: string;
+}
+
+export interface Review extends Node {
+  id: string;
+  commit?: {
+    oid: string; // This is the sha
+  };
+  author?: PullRequestUser;
+  state:
+    | 'PENDING'
+    | 'COMMENTED'
+    | 'APPROVED'
+    | 'CHANGES_REQUESTED'
+    | 'DISMISSED';
+  submittedAt?: string;
+  updatedAt: string;
+  url: string;
+}
+
+export interface PullRequest extends Node {
+  id: string;
+  additions: number;
+  author?: PullRequestUser;
+  authorAssociation: string;
+  baseRefName: string;
+  baseRefOid: string;
+  baseRepository?: {
+    name: string;
+    nameWithOwner: string;
+    owner: PullRequestUser;
+  };
+  body?: string;
+  changedFiles: number;
+  checksUrl: string;
+  closed: boolean;
+  closedAt?: string;
+  createdAt: string;
+  deletions: number;
+  editor?: PullRequestUser;
+  headRefName: string;
+  headRefOid: string;
+  headRepository?: {
+    name: string;
+    nameWithOwner: string;
+    owner: PullRequestUser;
+  };
+  isDraft: boolean;
+  lastEditedAt?: string;
+  locked: boolean;
+  mergeCommit?: Commit;
+  mergeable: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN';
+  merged: boolean;
+  mergedAt?: string;
+  mergedBy?: PullRequestUser;
+  number: number;
+  permalink: string;
+  publishedAt?: string;
+  reviewDecision?: 'CHANGES_REQUESTED' | 'APPROVED' | 'REVIEW_REQUIRED';
+  state: 'OPEN' | 'CLOSED' | 'MERGED';
+  title: string;
+  updatedAt: string;
+  url: string;
+  // Optional extra traversals
+  commits?: Commit[];
+  labels?: Label[];
+  reviews?: Review[];
+}
+
+interface GithubResources {
+  [GithubResource.PullRequests]: PullRequest[];
+  [GithubResource.Commits]: PullRequestCommitQueryResponse[];
+  [GithubResource.Labels]: Label[];
+  [GithubResource.Reviews]: Review[];
+}
+
+export type PullRequestQueryResponse = {
+  rateLimitConsumed: number;
+} & Partial<GithubResources>;

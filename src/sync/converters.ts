@@ -57,9 +57,8 @@ import {
   OrgAppQueryResponse,
 } from '../client/GraphQLClient';
 
-import { uniq } from 'lodash';
+import { omit, uniq, last, compact } from 'lodash';
 import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';
-import omit from 'lodash.omit';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -399,8 +398,7 @@ export function createRepoAllowsUserRelationship(
   };
 }
 
-// Pull Request Stuff
-
+// New Pull Request Stuff
 export function toPullRequestEntity(
   pullRequest: PullRequest,
   teamMembersByLogin: IdEntityMap<UserEntity>,
@@ -408,30 +406,22 @@ export function toPullRequestEntity(
   const commits = pullRequest.commits ?? [];
   const reviews = pullRequest.reviews ?? [];
 
-  // TODO: figure out what is going on with this.
   const approvals = reviews
     .filter(isApprovalReview)
-    .reduce(addReviewToApprovals, [])
+    .reduce(convertToApproval, [])
     .filter(
       (approval) =>
-        hasTeamApprovals(approval, teamMembersByLogin) &&
-        approvalHasValidCommit(approval) &&
-        hasPeerApprovals(approval, commits),
+        didNotSelfApprove(approval, commits) &&
+        hasTeamMemberApprovals(approval, teamMembersByLogin),
     );
 
-  let commitsApproved: Commit[] = [];
-  if (approvals.length > 0) {
-    commitsApproved = getCommitsToDestination(
-      commits,
-      approvals[approvals.length - 1].commit,
-    );
-  }
-  const commitsApprovedHashes = commitsApproved?.map((c) => c.oid);
-  const commitHashes = commits?.map((c) => c.oid);
-  const commitsNotApproved = commitHashes?.filter(
-    (c) => !commitsApprovedHashes!.includes(c),
+  const approvedCommits =
+    getCommitsToDestination(commits, last(approvals)?.commit) ?? [];
+  const approvedCommitHashes = approvedCommits.map((c) => c.oid);
+  const commitHashes = commits.map((c) => c.oid);
+  const commitsNotApproved = commitHashes.filter(
+    (c) => !approvedCommitHashes.includes(c),
   );
-
   const commitsByUnknownAuthor = commits.filter((commit) =>
     fromUnknownAuthor(commit, teamMembersByLogin),
   );
@@ -462,7 +452,7 @@ export function toPullRequestEntity(
 
         state: pullRequest.state,
         open: pullRequest.state === 'OPEN',
-        mergeCommitHash: pullRequest.mergeCommit?.oid,
+        mergeCommitHash: (pullRequest.mergeCommit as any)?.oid, // TODO: fix this type
         merged: pullRequest.merged,
         declined: pullRequest.state === 'CLOSED' && !pullRequest.merged,
         approved: pullRequest.reviewDecision === 'APPROVED',
@@ -472,7 +462,7 @@ export function toPullRequestEntity(
 
         commits: commitHashes,
         commitMessages: commits?.map((c) => c.message),
-        commitsApproved: commitsApprovedHashes,
+        commitsApproved: approvedCommitHashes,
         commitsNotApproved,
         commitsByUnknownAuthor: commitsByUnknownAuthor?.map((c) => c.oid),
         validated: commitsByUnknownAuthor
@@ -489,39 +479,35 @@ export function toPullRequestEntity(
         authorLogin: pullRequest.author?.login ?? '',
         author: pullRequest.author?.name ?? pullRequest.author?.login ?? '',
 
-        reviewerLogins: uniq(
-          reviews.map((review) => review.author?.login),
-        ).filter(isDefined) as string[],
-        reviewers: uniq(reviews.map((review) => review.author?.name)).filter(
-          isDefined,
-        ) as string[],
-        approverLogins: uniq(
-          reviews?.filter(isApprovalReview)?.map((r) => r.author?.login),
-        ).filter(isDefined) as string[],
-        approvers: uniq(
-          reviews?.filter(isApprovalReview)?.map((r) => r.author?.name),
-        ).filter(isDefined) as string[],
+        reviewerLogins: compact(
+          uniq(reviews.map((review) => review.author?.login)),
+        ),
+        reviewers: compact(uniq(reviews.map((review) => review.author?.name))),
+        approverLogins: compact(
+          uniq(reviews?.filter(isApprovalReview)?.map((r) => r.author?.login)),
+        ),
+        approvers: compact(
+          uniq(reviews?.filter(isApprovalReview)?.map((r) => r.author?.name)),
+        ),
       },
     },
   }) as PullRequestEntity;
 }
 
-function isDefined(any: any) {
-  return !!any;
-}
 function isApprovalReview(review: Review) {
-  return review.state === 'APPROVED' || review.state === 'DISMISSED';
+  return ['APPROVED', 'DISMISSED'].includes(review.state); // Not sure why dismissed is an approved state tbh
 }
 
-function hasPeerApprovals(approval: Approval, commits: Commit[]) {
+function didNotSelfApprove(approval: Approval, commits: Commit[]) {
   const associatedCommits = getCommitsToDestination(commits, approval.commit);
-  const commitAuthors = associatedCommits.reduce(
-    (authors: string[], commit) => [
-      ...authors,
-      commit.author.user?.login ? commit.author.user?.login : '',
-    ],
-    [],
-  );
+  const commitAuthors =
+    associatedCommits?.reduce(
+      (authors: string[], commit) => [
+        ...authors,
+        commit.author.user?.login ? commit.author.user?.login : '',
+      ],
+      [],
+    ) ?? [];
   const validApprovers = approval.approverUsernames.filter(
     (approver) => !commitAuthors.includes(approver),
   );
@@ -530,45 +516,38 @@ function hasPeerApprovals(approval: Approval, commits: Commit[]) {
 
 function userOutsideOfTeam(
   login: string | undefined,
-  usersByLogin: IdEntityMap<UserEntity>,
+  teamMembersByLogin: IdEntityMap<UserEntity>,
 ) {
-  return !login || !usersByLogin[login];
+  return !login || !teamMembersByLogin[login];
 }
 
-function hasTeamApprovals(
+function hasTeamMemberApprovals(
   approval: Approval,
-  usersByLogin: IdEntityMap<UserEntity>,
+  teamMembersByLogin: IdEntityMap<UserEntity>,
 ) {
-  return approval.approverUsernames.some((approver) => usersByLogin[approver]);
-}
-
-function approvalHasValidCommit(approval: Approval) {
-  return !!approval.commit?.length;
+  return approval.approverUsernames.some(
+    (approver) => teamMembersByLogin[approver],
+  );
 }
 
 function fromUnknownAuthor(
   commit: Commit,
-  usersByLogin: IdEntityMap<UserEntity>,
+  teamMembersByLogin: IdEntityMap<UserEntity>,
 ) {
-  if (!commit.author) {
-    return true;
-  }
-  if (usersByLogin) {
-    return userOutsideOfTeam(commit.author.user?.login, usersByLogin);
-  }
-  return false;
+  return (
+    !commit.author ||
+    userOutsideOfTeam(commit.author.user?.login, teamMembersByLogin)
+  );
 }
 
-function addReviewToApprovals(approvals: Approval[], approvalReview: Review) {
+function convertToApproval(approvals: Approval[], approvalReview: Review) {
   if (!approvalReview.author?.login || !approvalReview.commit?.oid) {
-    // If an approval has no user, don't count it as valid
+    // If an approval has no user or no commit, don't count it as valid
     return approvals;
   }
-
   const existingApproval = approvals.find(
     (approval) => approval.commit === approvalReview.commit!.oid,
   );
-
   if (existingApproval) {
     existingApproval.approverUsernames.push(approvalReview.author.login);
     return approvals;
@@ -589,15 +568,16 @@ function commitMatches(commit: string, match: string): boolean {
 
 export default function getCommitsToDestination(
   commits: Commit[],
-  destination: string,
-) {
+  destination: string | undefined,
+): Commit[] | undefined {
+  if (!destination) {
+    return undefined;
+  }
   const destinationIndex = commits.findIndex((commit) =>
     commitMatches(commit.oid, destination),
   );
-
   if (destinationIndex < 0) {
     return [];
   }
-
   return commits.slice(0, destinationIndex + 1);
 }

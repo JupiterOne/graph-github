@@ -76,15 +76,15 @@ export function extractSelectedResources(
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
   data: any,
   base: GithubResource,
-) {
-  const resources: ResourceMap<any> = {};
-  const cursors: ResourceMap<CursorHierarchy> = {};
-
-  extractSelectedResourceFromData(
+): {
+  resources: ResourceMap<any>;
+  cursors: ResourceMap<CursorHierarchy>;
+} {
+  const { resources, cursors } = extractSelectedResourceFromData(
     data,
     resourceMetadataMap,
-    resources,
-    cursors,
+    {},
+    {},
     selectedResources,
     base,
   );
@@ -104,7 +104,10 @@ function extractSelectedResourceFromData(
   selectedResource: GithubResource,
   parentResource?: [GithubResource, string],
   edge?: any,
-) {
+): {
+  resources: ResourceMap<any>;
+  cursors: ResourceMap<CursorHierarchy>;
+} {
   const node: { [key: string]: any } = { ...edge };
 
   for (const [key, value] of Object.entries(data)) {
@@ -112,7 +115,8 @@ function extractSelectedResourceFromData(
       const nestedResource = Object.keys(resourceMetadataMap).find(
         (resourceKey) => {
           return (
-            resourceMetadataMap[resourceKey].graphProperty === key &&
+            (resourceMetadataMap[resourceKey].alternateGraphProperty ??
+              resourceKey) === key &&
             (!resourceMetadataMap[resourceKey].parent ||
               (!!parentResource &&
                 resourceMetadataMap[resourceKey].parent === selectedResource))
@@ -160,7 +164,7 @@ function extractSelectedResourceFromData(
       }
 
       for (const child of value.edges) {
-        extractSelectedResourceFromData(
+        const response = extractSelectedResourceFromData(
           child.node,
           resourceMetadataMap,
           resources,
@@ -170,6 +174,8 @@ function extractSelectedResourceFromData(
           [selectedResource, node.id],
           { ...child, node: undefined },
         );
+        resources = response.resources;
+        cursors = response.cursors;
       }
 
       continue;
@@ -186,6 +192,11 @@ function extractSelectedResourceFromData(
   resources[selectedResource]
     ? resources[selectedResource].push(node)
     : (resources[selectedResource] = [node]);
+
+  return {
+    resources,
+    cursors,
+  };
 }
 
 function addResourcesFromHierarchy(

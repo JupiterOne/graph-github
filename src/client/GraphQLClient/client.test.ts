@@ -4,16 +4,12 @@ import {
   createMockIntegrationLogger,
 } from '@jupiterone/integration-sdk-testing';
 import { setupGithubRecording } from '../../../test/recording';
-import {
-  GitHubGraphQLClient,
-  OrganizationResource,
-  PullRequestResource,
-} from '.';
+import { GitHubGraphQLClient, GithubResource } from '.';
 import resourceMetadataMap from './resourceMetadataMap';
 import createGitHubAppClient from '../../util/createGitHubAppClient';
 import { IntegrationConfig, sanitizeConfig } from '../../config';
 import { integrationConfig } from '../../../test/config';
-import { PullRequest } from './types';
+import { Commit, Label, PullRequest, Review } from './types';
 jest.setTimeout(20000);
 
 async function getAccess() {
@@ -24,7 +20,7 @@ async function getAccess() {
   const config = context.instance.config;
   sanitizeConfig(config);
   //the installid in the recordings
-  config.installationId = 7498286;
+  config.installationId = 7498286; // TODO: have the recording standardize the installationIds
 
   const appClient = createGitHubAppClient(
     config,
@@ -47,7 +43,7 @@ async function getClient() {
   );
 }
 
-describe('pull requests', () => {
+describe('pull request resources', () => {
   let p: Recording; //p for polly
 
   afterEach(async () => {
@@ -57,12 +53,42 @@ describe('pull requests', () => {
   test('pullRequest pagination only', async () => {
     p = setupGithubRecording({
       directory: __dirname,
+      name: 'GitHubGraphQLClient.fetchPullRequests.noExtraResources',
+    });
+    const client = await getClient();
+
+    const query = 'is:pr repo:JupiterOne/graph-whitehat is:open';
+    const pullRequests: PullRequest[] = [];
+    const response = await client.iteratePullRequests(query, [], (pr) => {
+      pullRequests.push(pr);
+    });
+    expect(response.rateLimitConsumed).toEqual(3);
+    expect(pullRequests.length).toEqual(6);
+    expect(
+      pullRequests.reduce(
+        (agg, pr) => agg.concat(pr.commits ?? []),
+        [] as Commit[],
+      ).length,
+    ).toEqual(0);
+    expect(
+      pullRequests.reduce(
+        (agg, pr) => agg.concat(pr.reviews ?? []),
+        [] as Review[],
+      ).length,
+    ).toEqual(0);
+    expect(
+      pullRequests.reduce(
+        (agg, pr) => agg.concat(pr.labels ?? []),
+        [] as Label[],
+      ).length,
+    ).toEqual(0);
+    expect(pullRequests).toMatchSnapshot();
+  });
+
+  test('pullRequest pagination only', async () => {
+    p = setupGithubRecording({
+      directory: __dirname,
       name: 'GitHubGraphQLClient.fetchPullRequests.singlePage',
-      options: {
-        matchRequestsBy: {
-          headers: false, //must not set order:false
-        },
-      },
     });
     const client = await getClient();
 
@@ -70,11 +96,7 @@ describe('pull requests', () => {
     const pullRequests: PullRequest[] = [];
     const response = await client.iteratePullRequests(
       query,
-      [
-        PullRequestResource.Commits,
-        PullRequestResource.Reviews,
-        PullRequestResource.Labels,
-      ],
+      [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       (pr) => {
         pullRequests.push(pr);
       },
@@ -88,11 +110,6 @@ describe('pull requests', () => {
     p = setupGithubRecording({
       directory: __dirname,
       name: 'GitHubGraphQLClient.fetchPullRequests.innerPagination',
-      options: {
-        matchRequestsBy: {
-          headers: false, //must not set order:false
-        },
-      },
     });
     const client = await getClient();
 
@@ -101,11 +118,7 @@ describe('pull requests', () => {
     const pullRequests: PullRequest[] = [];
     const data = await client.iteratePullRequests(
       query,
-      [
-        PullRequestResource.Commits,
-        PullRequestResource.Reviews,
-        PullRequestResource.Labels,
-      ],
+      [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       (pr) => {
         pullRequests.push(pr);
       },
@@ -113,7 +126,7 @@ describe('pull requests', () => {
     expect(pullRequests.length).toEqual(4); // 2 rate limits
     expect(data.rateLimitConsumed).toEqual(9); // 7 unaccounted for extras
     let pullRequest = pullRequests[0]; // 2 extra
-    expect(pullRequest.commits?.length).toEqual(4); // 1 extra rate limit (There is supposed to be 5 commits here but one got removed somehow)
+    expect(pullRequest.commits?.length).toEqual(4); // 1 extra rate limit (Actually 2 because 1 commit got filtered out)
     expect(pullRequest.reviews?.length).toEqual(4); // 1 extra rate limit
     expect(pullRequest.labels?.length).toEqual(0);
     pullRequest = pullRequests[1]; // 1 extra
@@ -131,7 +144,7 @@ describe('pull requests', () => {
   });
 });
 
-describe('results and pagination', () => {
+describe('organization resources', () => {
   let p: Recording; //p for polly
 
   afterEach(async () => {
@@ -151,16 +164,16 @@ describe('results and pagination', () => {
     const client = await getClient();
 
     const data = await client.fetchFromSingle(
-      OrganizationResource.Organization,
-      [OrganizationResource.Repositories],
+      GithubResource.Organization,
+      [GithubResource.Repositories],
       { login: 'Kei-Institute' },
     );
 
     expect(data.organization).toBeDefined();
-    expect(data.members).toBeUndefined();
+    expect(data.membersWithRole).toBeUndefined();
     expect(data.repositories).toHaveLength(1);
     expect(data.teams).toBeUndefined();
-    expect(data.teamMembers).toBeUndefined();
+    expect(data.members).toBeUndefined();
     expect(data.rateLimitConsumed).toBe(1);
   });
 
@@ -177,16 +190,16 @@ describe('results and pagination', () => {
     const client = await getClient();
 
     const data = await client.fetchFromSingle(
-      OrganizationResource.Organization,
-      [OrganizationResource.Members],
+      GithubResource.Organization,
+      [GithubResource.OrganizationMembers],
       { login: 'Kei-Institute' },
     );
 
     expect(data.organization).toBeDefined();
-    expect(data.members).toHaveLength(3);
+    expect(data.membersWithRole).toHaveLength(3);
     expect(data.repositories).toBeUndefined();
     expect(data.teams).toBeUndefined();
-    expect(data.teamMembers).toBeUndefined();
+    expect(data.members).toBeUndefined();
     expect(data.rateLimitConsumed).toBe(2);
   });
 
@@ -203,17 +216,17 @@ describe('results and pagination', () => {
     const client = await getClient();
 
     const data = await client.fetchFromSingle(
-      OrganizationResource.Organization,
-      [OrganizationResource.TeamMembers],
+      GithubResource.Organization,
+      [GithubResource.TeamMembers],
       { login: 'Kei-Institute' },
     );
 
     expect(data.organization).toHaveLength(1);
-    expect(data.members).toBeUndefined();
+    expect(data.membersWithRole).toBeUndefined();
     expect(data.repositories).toBeUndefined();
     // expect(data.teams).toBeUndefined();
-    expect(data.teamMembers).toHaveLength(6);
-    expect(data.teamMembers).toEqual([
+    expect(data.members).toHaveLength(6);
+    expect(data.members).toEqual([
       {
         id: 'MDQ6VXNlcjUxMzUyMw==',
         login: 'erichs',
@@ -273,22 +286,22 @@ describe('results and pagination', () => {
     const client = await getClient();
 
     const data = await client.fetchFromSingle(
-      OrganizationResource.Organization,
+      GithubResource.Organization,
       [
-        OrganizationResource.TeamMembers,
-        OrganizationResource.Members,
-        OrganizationResource.Teams,
-        OrganizationResource.Repositories,
-        OrganizationResource.TeamRepositories,
+        GithubResource.TeamMembers,
+        GithubResource.OrganizationMembers,
+        GithubResource.Teams,
+        GithubResource.Repositories,
+        GithubResource.TeamRepositories,
       ],
       { login: 'Kei-Institute' },
     );
 
     expect(data.organization).toBeDefined();
-    expect(data.members).toHaveLength(3);
+    expect(data.membersWithRole).toHaveLength(3);
     expect(data.repositories).toHaveLength(1);
     expect(data.teams).toHaveLength(3);
-    expect(data.teamMembers).toHaveLength(6);
+    expect(data.members).toHaveLength(6);
     //there's just one repo, but it's in a team that is a child of another team
     //that means repos (above) = 1 but teamRepos (below) = 2
     expect(data.teamRepositories).toHaveLength(2);

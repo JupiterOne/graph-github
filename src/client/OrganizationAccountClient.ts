@@ -7,7 +7,6 @@ import {
 
 import {
   GitHubGraphQLClient,
-  OrganizationResource,
   OrgMemberQueryResponse,
   OrgTeamQueryResponse,
   OrgRepoQueryResponse,
@@ -17,7 +16,7 @@ import {
   TeamRepositoryPermission,
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
-  PullRequestResource,
+  GithubResource,
 } from './GraphQLClient';
 import {
   UserEntity,
@@ -116,30 +115,30 @@ export default class OrganizationAccountClient {
     if (!this.account) {
       const fetchResources = allData
         ? [
-            OrganizationResource.Members,
-            OrganizationResource.Teams,
-            OrganizationResource.TeamMembers,
-            OrganizationResource.Repositories,
+            GithubResource.OrganizationMembers,
+            GithubResource.Teams,
+            GithubResource.TeamMembers,
+            GithubResource.Repositories,
           ]
         : [];
 
       await this.queryGraphQL('account and related resources', async () => {
         const {
           organization,
-          members,
+          membersWithRole,
           teams,
-          teamMembers,
+          members,
           repositories,
           rateLimitConsumed,
         } = await this.v4.fetchFromSingle(
-          OrganizationResource.Organization,
+          GithubResource.Organization,
           fetchResources,
           { login: this.login },
         );
 
-        this.members = members;
+        this.members = membersWithRole;
         this.teams = teams;
-        this.teamMembers = teamMembers;
+        this.teamMembers = members;
         this.repositories = repositories;
         this.account = organization![0];
 
@@ -157,8 +156,8 @@ export default class OrganizationAccountClient {
           teams,
           rateLimitConsumed,
         } = await this.v4.fetchFromSingle(
-          OrganizationResource.Organization,
-          [OrganizationResource.Teams],
+          GithubResource.Organization,
+          [GithubResource.Teams],
           { login: this.login },
         );
 
@@ -174,15 +173,15 @@ export default class OrganizationAccountClient {
     if (!this.teamMembers) {
       await this.queryGraphQL('team members', async () => {
         const {
-          teamMembers,
+          members,
           rateLimitConsumed,
         } = await this.v4.fetchFromSingle(
-          OrganizationResource.Organization,
-          [OrganizationResource.TeamMembers],
+          GithubResource.Organization,
+          [GithubResource.TeamMembers],
           { login: this.login },
         );
 
-        this.teamMembers = teamMembers;
+        this.teamMembers = members;
 
         return rateLimitConsumed;
       });
@@ -198,8 +197,8 @@ export default class OrganizationAccountClient {
           repositories,
           rateLimitConsumed,
         } = await this.v4.fetchFromSingle(
-          OrganizationResource.Organization,
-          [OrganizationResource.Repositories],
+          GithubResource.Organization,
+          [GithubResource.Repositories],
           { login: this.login },
         );
 
@@ -234,8 +233,8 @@ export default class OrganizationAccountClient {
             teamRepositories,
             rateLimitConsumed,
           } = await this.v4.fetchFromSingle(
-            OrganizationResource.Organization,
-            [OrganizationResource.TeamRepositories],
+            GithubResource.Organization,
+            [GithubResource.TeamRepositories],
             { login: this.login },
           );
           this.teamRepositories = teamRepositories;
@@ -349,7 +348,7 @@ export default class OrganizationAccountClient {
           collaborators,
           rateLimitConsumed,
         } = await this.v4.fetchSingle(this.login, [
-          OrganizationResource.RepositoryCollaborators,
+          GithubResource.RepositoryCollaborators,
         ]);
 
         this.collaborators = collaborators;
@@ -366,15 +365,15 @@ export default class OrganizationAccountClient {
     if (!this.members) {
       await this.queryGraphQL('members', async () => {
         const {
-          members,
+          membersWithRole,
           rateLimitConsumed,
         } = await this.v4.fetchFromSingle(
-          OrganizationResource.Organization,
-          [OrganizationResource.Members],
+          GithubResource.Organization,
+          [GithubResource.OrganizationMembers],
           { login: this.login },
         );
 
-        this.members = members;
+        this.members = membersWithRole;
 
         return rateLimitConsumed;
       });
@@ -480,15 +479,11 @@ export default class OrganizationAccountClient {
     if (!this.authorizedForPullRequests) {
       return { rateLimitConsumed: 0 };
     }
-    // TODO: add sort
+    // TODO: add sort and update
     const query = `is:pr repo:${repo.fullName}`;
     return await this.v4.iteratePullRequests(
       query,
-      [
-        PullRequestResource.Commits,
-        PullRequestResource.Reviews,
-        PullRequestResource.Labels,
-      ],
+      [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       iteratee,
     );
   }

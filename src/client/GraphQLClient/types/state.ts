@@ -14,17 +14,17 @@ export interface NestedQueryFactory {
  */
 export interface ResourceMetadata {
   /*
-   * The GraphQL variable that's used as the end cursor for pagination in the
-   * request to GitHub. Should be in the format of "$variable: String" for
-   * direct interpolation into the GraphQL.
+   * Any GraphQL variables needed for the query. This usually includes the
+   * end cursor for pagination in the request to GitHub. Should be in the
+   * format of "$variable: String" for direct interpolation into the GraphQL.
    */
-  graphRequestVariable: string;
+  graphRequestVariables: string[];
   /*
    * The GraphQL property of this resource in relation to the root resource.
    * Will be used in the request as a field and to extract the data for that
    * field from the response.
    */
-  graphProperty: string;
+  alternateGraphProperty?: string; // TODO; update description
   /*
    * A function that accepts child resources as a fully resolved GraphQL query
    * and returns the GraphQL for this resource combined with the GraphQL for its
@@ -40,13 +40,6 @@ export interface ResourceMetadata {
    * The resource that this resource is nested within.
    */
   parent?: GithubResource;
-  /*
-   * The GraphQL variable that's used as the end cursor for pagination in the
-   * request to GitHub. Should be in the format of "$variable: String" for
-   * direct interpolation into the GraphQL.
-   */
-  graphRequestVariable2?: string; //TODO: Do this better
-  graphRequestVariable3?: string; //TODO: Do this better
   /*
    * The path to extract the relevant data from the graphQL response
    */

@@ -1,9 +1,4 @@
-import {
-  ResourceMap,
-  OrganizationResource,
-  ResourceMetadata,
-  PullRequestResource,
-} from './types';
+import { ResourceMap, ResourceMetadata, GithubResource } from './types';
 
 const pageInfo = `pageInfo {
   endCursor
@@ -14,34 +9,35 @@ export default function (
   pageLimit: number = 100,
 ): ResourceMap<ResourceMetadata> {
   return {
-    [PullRequestResource.PullRequest]: {
-      graphRequestVariable: '$pullRequestNumber: Int!',
-      graphRequestVariable2: '$repoName: String!',
-      graphRequestVariable3: '$repoOwner: String!',
-      pathToDataInGraphQlResponse: 'repository.pullRequest', // No need to split this into 2 queries as we don't need any fields on repository
-      graphProperty: 'pullRequest',
+    [GithubResource.PullRequest]: {
+      graphRequestVariables: [
+        '$pullRequestNumber: Int!',
+        '$repoName: String!',
+        '$repoOwner: String!',
+      ],
+      pathToDataInGraphQlResponse: 'repository.pullRequest',
       factory: (
         children: string = '',
       ) => `repository(name: $repoName, owner: $repoOwner) {
-          pullRequest(number: $pullRequestNumber) {
+          ${GithubResource.PullRequest}(number: $pullRequestNumber) {
             ...pullRequestFields
             ${children}
           }
       }`,
       children: [
-        PullRequestResource.Commits,
-        PullRequestResource.Reviews,
-        PullRequestResource.Labels,
+        GithubResource.Commits,
+        GithubResource.Reviews,
+        GithubResource.Labels,
       ],
     },
-    [PullRequestResource.PullRequests]: {
-      graphRequestVariable: `$pullRequests: String`,
-      graphRequestVariable2: '$query: String!',
-      pathToDataInGraphQlResponse: 'search',
-      graphProperty: 'pullRequests',
+    [GithubResource.PullRequests]: {
+      graphRequestVariables: [
+        '$query: String!',
+        `$${GithubResource.PullRequests}: String`,
+      ],
       factory: (
         children: string = '',
-      ) => `search(first: ${pageLimit}, after: $pullRequests, type: ISSUE, query: $query) {
+      ) => `search(first: ${pageLimit}, after: $${GithubResource.PullRequests}, type: ISSUE, query: $query) {
         issueCount
         edges {
           node {
@@ -49,20 +45,18 @@ export default function (
             ${children}
           }
         }
-
         ${pageInfo}
       }`,
       children: [
-        PullRequestResource.Commits,
-        PullRequestResource.Reviews,
-        PullRequestResource.Labels,
+        GithubResource.Commits,
+        GithubResource.Reviews,
+        GithubResource.Labels,
       ],
     },
-    [PullRequestResource.Commits]: {
-      graphRequestVariable: '$commits: String',
-      graphProperty: 'commits',
+    [GithubResource.Commits]: {
+      graphRequestVariables: [`$${GithubResource.Commits}: String`],
       factory: () => `... on PullRequest {
-        commits(first: ${pageLimit}, after: $commits) {
+        ${GithubResource.Commits}(first: ${pageLimit}, after: $${GithubResource.Commits}) {
           totalCount
           edges {
             node {
@@ -71,32 +65,28 @@ export default function (
               }
             }
           }
-
           ${pageInfo}
         }
       }`,
     },
-    [PullRequestResource.Reviews]: {
-      graphRequestVariable: '$reviews: String',
-      graphProperty: 'reviews',
+    [GithubResource.Reviews]: {
+      graphRequestVariables: [`$${GithubResource.Reviews}: String`],
       factory: () => `... on PullRequest {
-        reviews(first: ${pageLimit}, after: $reviews) {
+        ${GithubResource.Reviews}(first: ${pageLimit}, after: $${GithubResource.Reviews}) {
           totalCount
           edges {
             node {
               ...reviewFields
             }
           }
-
           ${pageInfo}
         }
       }`,
     },
-    [PullRequestResource.Labels]: {
-      graphRequestVariable: '$labels: String',
-      graphProperty: 'labels',
+    [GithubResource.Labels]: {
+      graphRequestVariables: [`$${GithubResource.Labels}: String`],
       factory: () => `... on PullRequest {
-          labels(first: ${pageLimit}, after: $labels) {
+          ${GithubResource.Labels}(first: ${pageLimit}, after: $${GithubResource.Labels}) {
           totalCount
           edges {
             node {
@@ -104,52 +94,48 @@ export default function (
               name
             }
           }
-
           ${pageInfo}
         }
       }`,
     },
-    [OrganizationResource.Organization]: {
-      graphRequestVariable: '$login: String!',
-      pathToDataInGraphQlResponse: 'organization',
-      graphProperty: 'organization',
-      factory: (children: string = '') => `organization(login: $login) {
+    [GithubResource.Organization]: {
+      graphRequestVariables: ['$login: String!'],
+      pathToDataInGraphQlResponse: 'organization', // TODO: figure out if this is necessary
+      factory: (
+        children: string = '',
+      ) => `${GithubResource.Organization}(login: $login) {
         id
         ...organizationFields
         ${children}
       }`,
       children: [
-        OrganizationResource.Members,
-        OrganizationResource.Teams,
-        OrganizationResource.TeamMembers,
-        OrganizationResource.Repositories,
+        GithubResource.OrganizationMembers,
+        GithubResource.Teams,
+        GithubResource.TeamMembers,
+        GithubResource.Repositories,
       ],
     },
-    [OrganizationResource.Members]: {
-      graphRequestVariable: '$members: String',
-      graphProperty: 'membersWithRole',
+    [GithubResource.OrganizationMembers]: {
+      graphRequestVariables: [`$${GithubResource.OrganizationMembers}: String`],
       factory: (
         children: string = '',
-      ) => `membersWithRole(first: ${pageLimit}, after: $members) {
+      ) => `${GithubResource.OrganizationMembers}(first: ${pageLimit}, after: $${GithubResource.OrganizationMembers}) {
         edges {
           node {
             id
             ...userFields
             ${children}
           }
-
           ...userEdgeFields
         }
-
         ${pageInfo}
       }`,
     },
-    [OrganizationResource.Teams]: {
-      graphRequestVariable: '$teams: String',
-      graphProperty: 'teams',
+    [GithubResource.Teams]: {
+      graphRequestVariables: ['$teams: String'],
       factory: (
         children: string = '',
-      ) => `teams(first: ${pageLimit}, after: $teams) {
+      ) => `${GithubResource.Teams}(first: ${pageLimit}, after: $teams) {
         edges {
           node {
             id
@@ -157,60 +143,50 @@ export default function (
             ${children}
           }
         }
-
         ${pageInfo}
       }`,
-      children: [
-        OrganizationResource.TeamMembers,
-        OrganizationResource.TeamRepositories,
-      ],
+      children: [GithubResource.TeamMembers, GithubResource.TeamRepositories],
     },
-    [OrganizationResource.TeamMembers]: {
-      graphRequestVariable: '$teamMembers: String',
-      graphProperty: 'members',
+    [GithubResource.TeamMembers]: {
+      graphRequestVariables: [`$${GithubResource.TeamMembers}: String`],
       factory: (
         children: string = '',
-      ) => `members(first: ${pageLimit}, after: $teamMembers) {
+      ) => `${GithubResource.TeamMembers}(first: ${pageLimit}, after: $${GithubResource.TeamMembers}) {
         edges {
           node {
             id
             ...teamMemberFields
             ${children}
           }
-
           ...teamMemberEdgeFields
         }
-
         ${pageInfo}
       }`,
-      parent: OrganizationResource.Teams,
+      parent: GithubResource.Teams,
     },
-    [OrganizationResource.TeamRepositories]: {
-      graphRequestVariable: '$teamRepositories: String',
-      graphProperty: 'repositories',
+    [GithubResource.TeamRepositories]: {
+      graphRequestVariables: [`$${GithubResource.TeamRepositories}: String`],
+      alternateGraphProperty: GithubResource.Repositories, // Need this alternative graphProperty in order to because still searching for repositories, just under teams
       factory: (
         children: string = '',
-      ) => `repositories(first: ${pageLimit}, after: $teamRepositories) {
+      ) => `${GithubResource.Repositories}(first: ${pageLimit}, after: $${GithubResource.TeamRepositories}) {
         edges {
           node {
             id
             ...repositoryFields
             ${children}
           }
-
           ...teamRepositoryEdgeFields
         }
-
         ${pageInfo}
       }`,
-      parent: OrganizationResource.Teams,
+      parent: GithubResource.Teams,
     },
-    [OrganizationResource.Repositories]: {
-      graphRequestVariable: '$repositories: String',
-      graphProperty: 'repositories',
+    [GithubResource.Repositories]: {
+      graphRequestVariables: [`$${GithubResource.Repositories}: String`],
       factory: (
         children: string = '',
-      ) => `repositories(first: ${pageLimit}, after: $repositories) {
+      ) => `${GithubResource.Repositories}(first: ${pageLimit}, after: $${GithubResource.Repositories}) {
         edges {
           node {
             id
@@ -218,32 +194,30 @@ export default function (
             ${children}
           }
         }
-
         ${pageInfo}
       }`,
-      children: [OrganizationResource.RepositoryCollaborators],
+      // children: [GithubResource.RepositoryCollaborators],
     },
     //this is not quite working right yet
-    [OrganizationResource.RepositoryCollaborators]: {
-      graphRequestVariable: '$repositoryCollaborators: String',
-      graphProperty: 'collaborators',
-      factory: (
-        children: string = '',
-      ) => `collaborators(first: ${pageLimit}, after: $repositoryCollaborators) {
-        edges {
-          node {
-            id
-            ...userFields
-            ${children}
-          }
-         
-        },
-        nodes {
-          ...userFields
-        }
-        ${pageInfo}
-      }`,
-      parent: OrganizationResource.Repositories,
-    },
+    // [GithubResource.RepositoryCollaborators]: {
+    //   graphRequestVariables: ['$repositoryCollaborators: String'],
+    //   factory: (
+    //     children: string = '',
+    //   ) => `collaborators(first: ${pageLimit}, after: $repositoryCollaborators) {
+    //     edges {
+    //       node {
+    //         id
+    //         ...userFields
+    //         ${children}
+    //       }
+
+    //     },
+    //     nodes {
+    //       ...userFields
+    //     }
+    //     ${pageInfo}
+    //   }`,
+    //   parent: GithubResource.Repositories,
+    // },
   };
 }

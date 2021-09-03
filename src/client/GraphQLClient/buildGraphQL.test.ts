@@ -1,6 +1,6 @@
 import buildGraphQL from './buildGraphQL';
 import resourceMetadataMap from './resourceMetadataMap';
-import { OrganizationResource, PullRequestResource } from './types';
+import { GithubResource } from './types';
 
 describe('pullRequests', () => {
   function clean(gql: string) {
@@ -9,10 +9,10 @@ describe('pullRequests', () => {
 
   const pageLimit = 1;
   const metadataMap = resourceMetadataMap(pageLimit);
-  const gql = (queryResources: PullRequestResource[]) => {
+  const gql = (queryResources: GithubResource[]) => {
     return buildGraphQL(
       metadataMap,
-      PullRequestResource.PullRequests,
+      GithubResource.PullRequests,
       queryResources,
     );
   };
@@ -21,7 +21,7 @@ describe('pullRequests', () => {
     const graphQL = gql([]);
     expect(clean(graphQL)).toMatch(
       clean(`
-      query ($pullRequests:String, $query:String!) {
+      query ($query:String!, $pullRequests:String) {
         search(first: ${pageLimit}, after: $pullRequests, type: ISSUE, query: $query) {
           issueCount
           edges {
@@ -42,7 +42,7 @@ describe('pullRequests', () => {
 
   test('pull request with all children', () => {
     const expected = `
-      query ($pullRequests:String, $query:String!, $commits:String, $reviews:String, $labels:String) {
+      query ($query:String!, $pullRequests:String, $commits:String, $reviews:String, $labels:String) {
         search(first: ${pageLimit}, after: $pullRequests, type: ISSUE, query: $query) {
           issueCount
           edges {
@@ -103,9 +103,9 @@ describe('pullRequests', () => {
       ...rateLimit
     }`;
     const graphQL = gql([
-      PullRequestResource.Commits,
-      PullRequestResource.Reviews,
-      PullRequestResource.Labels,
+      GithubResource.Commits,
+      GithubResource.Reviews,
+      GithubResource.Labels,
     ]);
     expect(clean(graphQL)).toMatch(clean(expected));
   });
@@ -117,10 +117,10 @@ describe('resource-based query generation', () => {
   }
 
   const metadataMap = resourceMetadataMap(1);
-  const gql = (queryResources: OrganizationResource[]) => {
+  const gql = (queryResources: GithubResource[]) => {
     return buildGraphQL(
       metadataMap,
-      OrganizationResource.Organization,
+      GithubResource.Organization,
       queryResources,
     );
   };
@@ -134,7 +134,6 @@ describe('resource-based query generation', () => {
           id
           ...organizationFields
         }
-
         ...rateLimit
       }
     `),
@@ -142,30 +141,27 @@ describe('resource-based query generation', () => {
   });
 
   test('single resource', () => {
-    const graphQL = gql([OrganizationResource.Members]);
+    const graphQL = gql([GithubResource.OrganizationMembers]);
     expect(clean(graphQL)).toMatch(
       clean(`
-      query ($login: String!, $members: String) {
+      query ($login: String!, $membersWithRole: String) {
         organization(login: $login) {
           id
           ...organizationFields
-          membersWithRole(first: 1, after: $members) {
+          membersWithRole(first: 1, after: $membersWithRole) {
             edges {
               node {
                 id
                 ...userFields
               }
-
               ...userEdgeFields
             }
-
             pageInfo {
               endCursor
               hasNextPage
             }
           }
         }
-
         ...rateLimit
       }
     `),
@@ -174,8 +170,8 @@ describe('resource-based query generation', () => {
 
   test('resources with identical graph properties', () => {
     const graphQL = gql([
-      OrganizationResource.TeamRepositories,
-      OrganizationResource.Repositories,
+      GithubResource.TeamRepositories,
+      GithubResource.Repositories,
     ]);
     expect(clean(graphQL)).toMatch(
       clean(`
@@ -194,10 +190,8 @@ describe('resource-based query generation', () => {
                       id
                       ...repositoryFields
                     }
-
                     ...teamRepositoryEdgeFields
                   }
-
                   pageInfo {
                     endCursor
                     hasNextPage
@@ -205,13 +199,11 @@ describe('resource-based query generation', () => {
                 }
               }
             }
-
             pageInfo {
               endCursor
               hasNextPage
             }
           }
-
           repositories(first: 1, after: $repositories) {
             edges {
               node {
@@ -219,14 +211,12 @@ describe('resource-based query generation', () => {
                 ...repositoryFields
               }
             }
-
             pageInfo {
               endCursor
               hasNextPage
             }
           }
         }
-
         ...rateLimit
       }
       `),
@@ -235,7 +225,7 @@ describe('resource-based query generation', () => {
 
   describe('resources with children', () => {
     const expected = `
-      query ($login: String!, $teams: String, $teamMembers: String) {
+      query ($login: String!, $teams: String, $members: String) {
         organization(login: $login) {
           id
           ...organizationFields
@@ -244,16 +234,14 @@ describe('resource-based query generation', () => {
               node {
                 id
                 ...teamFields
-                members(first: 1, after: $teamMembers) {
+                members(first: 1, after: $members) {
                   edges {
                     node {
                       id
                       ...teamMemberFields
                     }
-
                     ...teamMemberEdgeFields
                   }
-
                   pageInfo {
                     endCursor
                     hasNextPage
@@ -261,28 +249,23 @@ describe('resource-based query generation', () => {
                 }
               }
             }
-
             pageInfo {
               endCursor
               hasNextPage
             }
           }
         }
-
         ...rateLimit
       }
     `;
 
     test('child resource only', () => {
-      const graphQL = gql([OrganizationResource.TeamMembers]);
+      const graphQL = gql([GithubResource.TeamMembers]);
       expect(clean(graphQL)).toMatch(clean(expected));
     });
 
     test('child resource before parent', () => {
-      const graphQL = gql([
-        OrganizationResource.TeamMembers,
-        OrganizationResource.Teams,
-      ]);
+      const graphQL = gql([GithubResource.TeamMembers, GithubResource.Teams]);
       expect(clean(graphQL)).toMatch(clean(expected));
     });
   });

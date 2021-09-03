@@ -34,18 +34,8 @@ import {
   TeamEntity,
   AccountType,
   RepoAllowRelationship,
-  PRState,
-  PullsListCommitsResponseItem,
-  PullsListResponseItem,
 } from '../types';
-import { Approval } from '../approval/collectCommitsForPR';
-import {
-  aggregateProperties,
-  decomposePermissions,
-  displayNamesFromLogins,
-  flattenMatrix,
-  getAppEntityKey,
-} from '../util/propertyHelpers';
+import { decomposePermissions, getAppEntityKey } from '../util/propertyHelpers';
 import {
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
@@ -57,8 +47,9 @@ import {
   OrgAppQueryResponse,
 } from '../client/GraphQLClient';
 
-import { omit, uniq, last, compact } from 'lodash';
+import { uniq, last, compact } from 'lodash';
 import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';
+import getCommitsToDestination from '../util/getCommitsToDestination';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -196,131 +187,6 @@ export function toOrganizationCollaboratorEntity(
   return userEntity;
 }
 
-export function toPullRequestEntityOld(
-  data: PullsListResponseItem,
-  commits?: PullsListCommitsResponseItem[],
-  commitsApproved?: PullsListCommitsResponseItem[],
-  commitsByUnknownAuthor?: PullsListCommitsResponseItem[],
-  approvals?: Approval[],
-  usersByLogin?: IdEntityMap<UserEntity>,
-): PullRequestEntity {
-  const commitHashes = commits ? commits.map((c) => c.sha) : undefined;
-  const commitMessages = commits
-    ? commits.map((c) => c.commit.message)
-    : undefined;
-  const commitsApprovedHashes = commitsApproved
-    ? commitsApproved.map((c) => c.sha)
-    : undefined;
-  const commitsByUnknownAuthorHashes = commitsByUnknownAuthor
-    ? commitsByUnknownAuthor.map((c) => c.sha)
-    : undefined;
-  const commitsNotApproved = commitHashes
-    ? commitHashes.filter((c) => !commitsApprovedHashes!.includes(c))
-    : undefined;
-
-  const approved = commitsNotApproved
-    ? commitsNotApproved.length === 0
-    : undefined;
-  const validated = commitsByUnknownAuthor
-    ? commitsByUnknownAuthor.length === 0
-    : undefined;
-
-  const approverLogins = approvals
-    ? uniq(
-        flattenMatrix<string>(
-          aggregateProperties<string[]>('approverUsernames', approvals),
-        ),
-      )
-    : undefined;
-  const userLogin: string = data.user ? data.user.login : '';
-  const authorUser = (usersByLogin || {})[userLogin];
-  let reviewerLogins: string[] = [];
-  let reviewers: string[] = [];
-  if (data.requested_reviewers) {
-    reviewerLogins = aggregateProperties<string>(
-      'login',
-      data.requested_reviewers,
-    );
-    reviewers = data.requested_reviewers.reduce(
-      (reviewers: string[], reviewerData) => {
-        if (reviewerData) {
-          if (usersByLogin && usersByLogin[reviewerData.login]) {
-            reviewers.push(usersByLogin[reviewerData.login].displayName!);
-          } else {
-            reviewers.push(reviewerData.login);
-          }
-        }
-        return reviewers;
-      },
-      [],
-    );
-  }
-  const entity: PullRequestEntity = {
-    _type: GITHUB_PR_ENTITY_TYPE,
-    _class: [GITHUB_PR_ENTITY_CLASS],
-    _key: `${data.base.repo.full_name}/pull-requests/${data.number}`,
-    displayName: `${data.base.repo.name}/${data.number}`,
-    accountLogin: data.base.repo.owner ? data.base.repo.owner.login : '',
-    repository: data.base.repo.name,
-    // the type is hacked here because typing of data properties is controlled by a library call
-    // so I can't just say that data.number is a string
-    // here would be another way to solve it:
-    // id: JSON.stringify(data.number).replace(/\"/g, ''),
-    id: <string>(<unknown>data.number),
-
-    name: data.title,
-    title: data.title,
-    description:
-      data.body && data.body.length > 0
-        ? `${data.body.substring(0, 80)}...`
-        : undefined,
-    webLink: data.html_url,
-
-    state: data.state,
-    open: data.state === PRState.Open,
-    mergeCommitHash: data.merge_commit_sha,
-    merged: (data.merged_at as any) !== null,
-    declined: data.state === PRState.Closed && (data.merged_at as any) === null,
-    approved,
-    validated,
-
-    commits: commitHashes,
-    commitMessages,
-    commitsApproved: commitsApprovedHashes,
-    commitsNotApproved,
-    commitsByUnknownAuthor: commitsByUnknownAuthorHashes,
-
-    source: data.head.ref,
-    target: data.base.ref,
-
-    createdOn: parseTimePropertyValue(data.created_at),
-    updatedOn: parseTimePropertyValue(data.updated_at),
-    mergedOn: parseTimePropertyValue(data.merged_at),
-
-    authorLogin: userLogin,
-    author: authorUser
-      ? // We know displayName is set; see toOrganizationMemberEntity
-        authorUser.displayName!
-      : // Fallback to username. This will always be used when ingesting from a
-        // user account, since we don't ingest team members in that case (there
-        // is no team)
-        userLogin,
-    reviewerLogins: reviewerLogins,
-    reviewers: reviewers,
-    approverLogins,
-    approvers:
-      approverLogins && usersByLogin
-        ? displayNamesFromLogins(approverLogins, usersByLogin)
-        : approverLogins,
-  };
-  const rawDataPropertiesToRemove = ['head', 'base']; // a few particularly large pieces of data that are repeated on every PR
-  setRawData(entity, {
-    name: 'default',
-    rawData: omit(data, rawDataPropertiesToRemove),
-  });
-  return entity;
-}
-
 export function createRepoAllowsTeamRelationship(
   repo: RepoEntity,
   team: TeamEntity,
@@ -398,31 +264,30 @@ export function createRepoAllowsUserRelationship(
   };
 }
 
-// New Pull Request Stuff
 export function toPullRequestEntity(
   pullRequest: PullRequest,
   teamMembersByLogin: IdEntityMap<UserEntity>,
 ): PullRequestEntity {
-  const commits = pullRequest.commits ?? [];
-  const reviews = pullRequest.reviews ?? [];
+  const commits = pullRequest.commits;
+  const reviews = pullRequest.reviews;
 
   const approvals = reviews
-    .filter(isApprovalReview)
+    ?.filter(isApprovalReview)
     .reduce(convertToApproval, [])
     .filter(
       (approval) =>
-        didNotSelfApprove(approval, commits) &&
+        didNotSelfApprove(approval, commits ?? []) &&
         hasTeamMemberApprovals(approval, teamMembersByLogin),
     );
 
   const approvedCommits =
-    getCommitsToDestination(commits, last(approvals)?.commit) ?? [];
-  const approvedCommitHashes = approvedCommits.map((c) => c.oid);
-  const commitHashes = commits.map((c) => c.oid);
-  const commitsNotApproved = commitHashes.filter(
-    (c) => !approvedCommitHashes.includes(c),
+    commits && getCommitsToDestination(commits, last(approvals)?.commit);
+  const approvedCommitHashes = approvedCommits?.map((c) => c.oid);
+  const commitHashes = commits?.map((c) => c.oid);
+  const commitsNotApproved = commitHashes?.filter(
+    (c) => !approvedCommitHashes?.includes(c),
   );
-  const commitsByUnknownAuthor = commits.filter((commit) =>
+  const commitsByUnknownAuthor = commits?.filter((commit) =>
     fromUnknownAuthor(commit, teamMembersByLogin),
   );
 
@@ -432,14 +297,15 @@ export function toPullRequestEntity(
       assign: {
         _type: GITHUB_PR_ENTITY_TYPE,
         _class: [GITHUB_PR_ENTITY_CLASS],
-        _key: `${pullRequest.baseRefName}/pull-requests/${pullRequest.number}`,
-        displayName: `${pullRequest.baseRefName}/${pullRequest.number}`,
-        accountLogin: pullRequest.baseRepository?.owner?.login
+        _key: `${pullRequest.baseRepository.nameWithOwner}/pull-requests/${pullRequest.number}`,
+        displayName: `${pullRequest.baseRepository.name}/${pullRequest.number}`,
+        accountLogin: pullRequest.baseRepository.owner?.login
           ? pullRequest.baseRepository.owner.login
           : '',
-        repository: pullRequest.baseRefName,
+        repository: pullRequest.baseRepository.name,
         // The number is NOT the id of the Pull Request. Hopefully no one gets bit from that later
         id: pullRequest.number ? String(pullRequest.number) : '',
+        number: pullRequest.number,
         // This is actually what the pull request id is...
         pullRequestId: pullRequest.id,
         name: pullRequest.title,
@@ -452,7 +318,7 @@ export function toPullRequestEntity(
 
         state: pullRequest.state,
         open: pullRequest.state === 'OPEN',
-        mergeCommitHash: (pullRequest.mergeCommit as any)?.oid, // TODO: fix this type
+        mergeCommitHash: pullRequest.mergeCommit?.oid,
         merged: pullRequest.merged,
         declined: pullRequest.state === 'CLOSED' && !pullRequest.merged,
         approved: pullRequest.reviewDecision === 'APPROVED',
@@ -469,8 +335,8 @@ export function toPullRequestEntity(
           ? commitsByUnknownAuthor.length === 0
           : undefined,
 
-        source: pullRequest.baseRefName,
-        target: pullRequest.headRefName,
+        source: pullRequest.headRefName,
+        target: pullRequest.baseRefName,
 
         createdOn: parseTimePropertyValue(pullRequest.createdAt),
         updatedOn: parseTimePropertyValue(pullRequest.updatedAt),
@@ -479,19 +345,33 @@ export function toPullRequestEntity(
         authorLogin: pullRequest.author?.login ?? '',
         author: pullRequest.author?.name ?? pullRequest.author?.login ?? '',
 
-        reviewerLogins: compact(
-          uniq(reviews.map((review) => review.author?.login)),
-        ),
-        reviewers: compact(uniq(reviews.map((review) => review.author?.name))),
-        approverLogins: compact(
-          uniq(reviews?.filter(isApprovalReview)?.map((r) => r.author?.login)),
-        ),
-        approvers: compact(
-          uniq(reviews?.filter(isApprovalReview)?.map((r) => r.author?.name)),
-        ),
+        reviewerLogins:
+          reviews &&
+          compact(uniq(reviews.map((review) => review.author?.login))),
+        reviewers:
+          reviews &&
+          compact(uniq(reviews.map((review) => review.author?.name))),
+        approverLogins:
+          reviews &&
+          compact(
+            uniq(reviews.filter(isApprovalReview).map((r) => r.author?.login)),
+          ),
+        approvers:
+          reviews &&
+          compact(
+            uniq(reviews.filter(isApprovalReview).map((r) => r.author?.name)),
+          ),
       },
     },
   }) as PullRequestEntity;
+}
+
+/**
+ * PULL REQUEST HELPER FUNCTIONS
+ */
+export interface Approval {
+  commit: string;
+  approverUsernames: string[];
 }
 
 function isApprovalReview(review: Review) {
@@ -558,26 +438,4 @@ function convertToApproval(approvals: Approval[], approvalReview: Review) {
     };
     return [...approvals, approval];
   }
-}
-
-function commitMatches(commit: string, match: string): boolean {
-  // using the length of the proposed match allows for matching shas of
-  // different length, so that abcdefghij12345678 matches abcdefghij
-  return !!match?.length && commit.slice(0, match.length) === match;
-}
-
-export default function getCommitsToDestination(
-  commits: Commit[],
-  destination: string | undefined,
-): Commit[] | undefined {
-  if (!destination) {
-    return undefined;
-  }
-  const destinationIndex = commits.findIndex((commit) =>
-    commitMatches(commit.oid, destination),
-  );
-  if (destinationIndex < 0) {
-    return [];
-  }
-  return commits.slice(0, destinationIndex + 1);
 }

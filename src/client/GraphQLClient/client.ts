@@ -103,14 +103,6 @@ export class GitHubGraphQLClient {
             },
             'Unable to fetch all inner resources. Attempting to fetch more.',
           );
-          if (!pullRequestResponse.headRepository) {
-            this.logger.warn(
-              { pullRequestUrl: pullRequestResponse.url },
-              'Unable to fetch inner resources because there is no headRepository for this pull request',
-            );
-            await iteratee(pullRequestResponse);
-            continue;
-          }
 
           // Fetch the remaining inner resources on this PR (this should be rare)
           const [

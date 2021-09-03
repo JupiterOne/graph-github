@@ -190,7 +190,7 @@ export interface PullRequest extends Node {
   authorAssociation: string;
   baseRefName: string;
   baseRefOid: string;
-  baseRepository?: {
+  baseRepository: {
     name: string;
     nameWithOwner: string;
     owner: PullRequestUser;
@@ -205,7 +205,7 @@ export interface PullRequest extends Node {
   editor?: PullRequestUser;
   headRefName: string;
   headRefOid: string;
-  headRepository?: {
+  headRepository: {
     name: string;
     nameWithOwner: string;
     owner: PullRequestUser;

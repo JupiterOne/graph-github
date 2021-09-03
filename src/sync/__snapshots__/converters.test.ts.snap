@@ -5,7 +5,7 @@ Object {
   "_class": Array [
     "PR",
   ],
-  "_key": "main/pull-requests/45",
+  "_key": "JupiterOne/jupiter-integration-aws/pull-requests/45",
   "_rawData": Array [
     Object {
       "name": "default",
@@ -177,24 +177,25 @@ Object {
   "createdOn": 1630448107000,
   "declined": false,
   "description": "This is some discription or something...",
-  "displayName": "main/45",
+  "displayName": "jupiter-integration-aws/45",
   "id": "45",
   "mergeCommitHash": "39483af8a356b5684513bf56c044dab0ed4c0c7a",
   "merged": true,
   "mergedOn": 1630461214000,
   "name": "Ingest AutoScaling Policies and build relationships",
+  "number": 45,
   "open": false,
   "pullRequestId": "MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1",
-  "repository": "main",
+  "repository": "jupiter-integration-aws",
   "reviewerLogins": Array [
     "reviewer-user",
   ],
   "reviewers": Array [
     "Reviewer User",
   ],
-  "source": "main",
+  "source": "autoscaling-policies",
   "state": "MERGED",
-  "target": "autoscaling-policies",
+  "target": "main",
   "title": "Ingest AutoScaling Policies and build relationships",
   "updatedOn": 1630461215000,
   "validated": true,

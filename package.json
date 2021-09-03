@@ -37,8 +37,6 @@
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
-    "lodash.omit": "^4.5.0",
-    "lodash.uniq": "^4.5.0",
     "nested-error-stacks": "^2.1.0",
     "node-fetch": "^2.6.1",
     "p-map": "^2.1.0",

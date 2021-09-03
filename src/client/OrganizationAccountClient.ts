@@ -1,4 +1,3 @@
-import pMap from 'p-map';
 import { Octokit } from '@octokit/rest';
 import {
   IntegrationError,
@@ -19,20 +18,11 @@ import {
   GithubResource,
 } from './GraphQLClient';
 import {
-  UserEntity,
   RepoEntity,
-  AccountEntity,
-  IdEntityMap,
-  PullRequestEntity,
   ReposCompareCommitsResponseItem,
   DiffFiles,
-  PullsListResponseItem,
-  PullsListReviewsResponseItem,
-  PullsListCommitsResponseItem,
   ReposListCommitsResponseItem,
 } from '../types';
-import collectCommitsForPR from '../approval/collectCommitsForPR';
-import { toPullRequestEntityOld } from '../sync/converters';
 import sha from '../util/sha';
 import { request } from '@octokit/request';
 import { ResourceIteratee } from '../client';
@@ -421,57 +411,6 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getPullRequestEntity(
-    account: AccountEntity,
-    repo: RepoEntity,
-    id: number,
-    teamMembers: UserEntity[],
-    teamMemberMap: IdEntityMap<UserEntity>,
-  ): Promise<PullRequestEntity | undefined> {
-    // This function is meant to be used for ingesting a single
-    //specific PR on-demand. For that reason, it automatically
-    //does the commit and approval analysis regardless of the
-    //analyzeCommitApproval config boolean
-    if (!this.authorizedForPullRequests) {
-      return undefined;
-    }
-
-    try {
-      const pullRequests = (
-        await this.v3.pulls.list({
-          //changed from .get to .list for typing reasons
-          owner: account.login,
-          repo: repo.name,
-          pull_number: id,
-        })
-      ).data;
-      const pullRequest = pullRequests[0];
-
-      this.v3RateLimitConsumed++;
-
-      const {
-        allCommits,
-        approvedCommits,
-        commitsByUnknownAuthor,
-        approvals,
-      } = await collectCommitsForPR(this, account, pullRequest, teamMembers);
-      return toPullRequestEntityOld(
-        pullRequest,
-        allCommits,
-        approvedCommits,
-        commitsByUnknownAuthor,
-        approvals,
-        teamMemberMap,
-      );
-    } catch (err) {
-      this.logger.info({ err }, 'pulls.get failed');
-
-      if (err.status === 403) {
-        this.authorizedForPullRequests = false;
-      }
-    }
-  }
-
   async iteratePullRequestEntities(
     repo: RepoEntity,
     iteratee: ResourceIteratee<PullRequest>,
@@ -486,128 +425,6 @@ export default class OrganizationAccountClient {
       [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       iteratee,
     );
-  }
-
-  async getPullRequestEntities(
-    account: AccountEntity,
-    repo: RepoEntity,
-    teamMembers: UserEntity[],
-    teamMemberMap: IdEntityMap<UserEntity>,
-    logger: IntegrationLogger,
-  ): Promise<Array<PullRequestEntity> | undefined> {
-    if (!this.authorizedForPullRequests) {
-      return undefined;
-    }
-
-    let pullRequests: PullsListResponseItem[];
-
-    try {
-      logger.info(
-        { repoName: repo.name },
-        'fetching batch of pull requests from repo',
-      );
-      const prCount = 100;
-      pullRequests = (
-        await this.v3.pulls.list({
-          owner: account.login,
-          repo: repo.name,
-          per_page: prCount,
-          state: 'all',
-        })
-      ).data;
-
-      this.v3RateLimitConsumed++;
-
-      return pMap(
-        pullRequests,
-        async (pullRequest) => {
-          // This is incredibly slow thanks to Github's rate and abuse limiting. Be careful when turning this on!
-          if (this.analyzeCommitApproval) {
-            const {
-              allCommits,
-              approvedCommits,
-              commitsByUnknownAuthor,
-              approvals,
-            } = await collectCommitsForPR(
-              this,
-              account,
-              pullRequest,
-              teamMembers,
-            );
-            return toPullRequestEntityOld(
-              pullRequest,
-              allCommits,
-              approvedCommits,
-              commitsByUnknownAuthor,
-              approvals,
-              teamMemberMap,
-            );
-          } else {
-            return toPullRequestEntityOld(pullRequest);
-          }
-        },
-        { concurrency: 1 },
-      );
-    } catch (err) {
-      this.logger.info({ err }, 'pulls.list failed');
-
-      if (err.status === 403) {
-        this.authorizedForPullRequests = false;
-      }
-    }
-  }
-
-  async getPullRequestReviews(
-    account: AccountEntity,
-    pullRequest: PullsListResponseItem,
-  ): Promise<PullsListReviewsResponseItem[]> {
-    const listOptions = {
-      owner: account.login,
-      repo: pullRequest.base.repo.name,
-      pull_number: pullRequest.number,
-    };
-
-    try {
-      const reviews = (await this.v3.pulls.listReviews(listOptions)).data;
-
-      this.v3RateLimitConsumed++;
-      return reviews;
-    } catch (err) {
-      this.logger.info({ err }, 'pulls.listReviews failed');
-      return [];
-    }
-  }
-
-  async getPullRequestCommits(
-    account: AccountEntity,
-    pullRequest: PullsListResponseItem,
-  ): Promise<PullsListCommitsResponseItem[]> {
-    const listOptions = {
-      owner: account.login,
-      repo: pullRequest.base.repo.name,
-      pull_number: pullRequest.number,
-    };
-
-    try {
-      const commits = (
-        await this.v3.pulls.listCommits({
-          ...listOptions,
-          /**
-           * This is the maximum number of commits we're allowed to fetch from
-           * this endpoint. If we for some reason need to fetch more than 250, we
-           * need to use the commits endpoint.
-           */
-          per_page: 250,
-        })
-      ).data;
-
-      this.v3RateLimitConsumed++;
-      return commits;
-    } catch (err) {
-      this.logger.info({ err, listOptions }, 'pulls.listCommits failed');
-
-      return [];
-    }
   }
 
   async getComparison(

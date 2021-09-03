@@ -4,17 +4,17 @@ import {
   toOrganizationCollaboratorEntity,
   toRepositoryEntity,
   toAccountEntity,
-  toPullRequestEntityOld,
   toPullRequestEntity,
 } from './converters';
-import { UserEntity, PRState } from '../types';
-import omit from 'lodash.omit';
+import { UserEntity, PullsListResponseItem } from '../types';
+import { omit } from 'lodash';
 import { PullRequest } from '../client/GraphQLClient/types';
 import {
   fixturePullRequest,
   fixtureUser,
   fixtureReviewerUser,
 } from './fixtures/pullRequest';
+import { toPullRequestEntityOld } from './utils/toPullRequestEntityOld';
 
 describe('toAccountEntity', () => {
   const apiResponse = {
@@ -163,18 +163,20 @@ describe('toOrganizationCollaboratorEntity', () => {
   });
 });
 
-describe('toPullRequestEntityOld', () => {
-  const user = {
+describe('toPullRequestEntity compared against toPullRequestEntityOld', () => {
+  const user = ({
+    name: 'Some Body',
     displayName: 'Some Body',
     login: 'somebody',
     username: 'somebody',
-  };
-  const reviewerUser = {
+  } as unknown) as UserEntity;
+  const reviewerUser = ({
+    name: 'Reviewer User',
     displayName: 'Reviewer User',
     login: 'reviewer-user',
     username: 'reviewer-user',
-  };
-  const apiResponse = {
+  } as unknown) as UserEntity;
+  const oldApiResponse: PullsListResponseItem = ({
     title: 'The Best PR Ever',
     number: '420',
     user: {
@@ -196,7 +198,7 @@ describe('toPullRequestEntityOld', () => {
       },
     },
     body: 'This is the description',
-    state: 'open',
+    state: 'MERGED', // Merged because it hase a merged_at property
     head: {
       ref: 'abcdef123456',
     },
@@ -206,6 +208,67 @@ describe('toPullRequestEntityOld', () => {
     merge_commit_sha: 'f8d8a228a6046ead812d9ea0c457e429342a89f7',
     url: 'https://api.github.com/repos/JupiterOne/jupiter-project-repo/pulls/1',
     html_url: 'https://github.com/JupiterOne/jupiter-project-repo/pulls/1',
+  } as unknown) as PullsListResponseItem;
+
+  const newApiResponse: PullRequest = {
+    id: 'id',
+    additions: 1,
+    author: user,
+    authorAssociation: 'authorAssociation',
+    baseRefName: 'qwerty098765',
+    baseRefOid: 'baseRefOid',
+    baseRepository: {
+      name: 'my-repo',
+      nameWithOwner: 'my-team/my-repo',
+      owner: {
+        login: 'me',
+      },
+    },
+    body: 'This is the description',
+    changedFiles: 1,
+    checksUrl: 'checksUrl',
+    closed: false,
+    closedAt: undefined,
+    createdAt: '2001-09-11T08:46:00Z',
+    deletions: 1,
+    editor: user,
+    headRefName: 'abcdef123456',
+    headRefOid: 'headRefOid',
+    headRepository: {
+      name: 'their-repo',
+      nameWithOwner: 'their-team/their-repo',
+      owner: {
+        login: 'them',
+      },
+    },
+    isDraft: false,
+    lastEditedAt: undefined,
+    locked: false,
+    mergeCommit: {
+      oid: 'f8d8a228a6046ead812d9ea0c457e429342a89f7',
+      id: 'id',
+      message: 'message',
+      authoredDate: '2001-09-11T20:30:00Z',
+      changedFiles: 1,
+      commitUrl: 'commitUrl',
+      author: { user },
+    },
+    mergeable: 'MERGEABLE',
+    merged: true,
+    mergedAt: '2021-07-21T14:06:13Z',
+    mergedBy: user,
+    number: 420,
+    permalink: 'permalink',
+    publishedAt: undefined,
+    reviewDecision: 'REVIEW_REQUIRED',
+    state: 'MERGED',
+    title: 'The Best PR Ever',
+    updatedAt: '2001-09-11T20:30:00Z',
+    url: 'https://github.com/JupiterOne/jupiter-project-repo/pulls/1',
+    // Optional extra traversals
+    commits: undefined,
+    labels: undefined,
+    reviews: undefined,
   };
 
   const expectedEntity = {
@@ -215,6 +278,8 @@ describe('toPullRequestEntityOld', () => {
     name: 'The Best PR Ever',
     displayName: `my-repo/420`,
     id: '420',
+    number: 420,
+    pullRequestId: 'id',
     accountLogin: 'me',
     authorLogin: 'somebody',
     author: 'Some Body',
@@ -223,13 +288,13 @@ describe('toPullRequestEntityOld', () => {
     approverLogins: ['reviewer-user'],
     approvers: ['Reviewer User'],
     title: 'The Best PR Ever',
-    description: `${apiResponse.body.substring(0, 80)}...`,
-    state: 'open',
+    description: `${newApiResponse.body?.substring(0, 80)}...`,
+    state: 'MERGED',
     source: 'abcdef123456',
     target: 'qwerty098765',
     repository: 'my-repo',
-    createdOn: parseTimePropertyValue(apiResponse.created_at),
-    updatedOn: parseTimePropertyValue(apiResponse.updated_at),
+    createdOn: parseTimePropertyValue(newApiResponse.createdAt),
+    updatedOn: parseTimePropertyValue(newApiResponse.updatedAt),
     webLink: 'https://github.com/JupiterOne/jupiter-project-repo/pulls/1',
     commits: ['commit_a', 'commit_b', 'commit_c'],
     commitMessages: ['Commit A', 'Commit B', 'Commit C'],
@@ -237,23 +302,18 @@ describe('toPullRequestEntityOld', () => {
     commitsNotApproved: ['commit_c'],
     commitsByUnknownAuthor: [],
     approved: false,
+    allCommitsApproved: false,
     validated: true,
-    _rawData: [
-      {
-        name: 'default',
-        rawData: omit(apiResponse, ['base', 'head']),
-      },
-    ],
-    open: true,
+    open: false,
     merged: true,
     declined: false,
     mergedOn: 1626876373000,
     mergeCommitHash: 'f8d8a228a6046ead812d9ea0c457e429342a89f7',
   };
 
-  test('with description', () => {
-    const entity = toPullRequestEntityOld(
-      apiResponse as any,
+  test('direct comparison', () => {
+    const oldEntity = toPullRequestEntityOld(
+      oldApiResponse,
       [
         { sha: 'commit_a', commit: { message: 'Commit A' } } as any,
         { sha: 'commit_b', commit: { message: 'Commit B' } } as any,
@@ -263,90 +323,106 @@ describe('toPullRequestEntityOld', () => {
       [],
       [{ approverUsernames: ['reviewer-user'] } as any],
       {
-        [user.login]: user as UserEntity,
-        [reviewerUser.login]: reviewerUser as UserEntity,
+        [user.login]: user,
+        [reviewerUser.login]: reviewerUser,
       },
     );
-    expect(entity).toEqual(expectedEntity);
-  });
-
-  test('without description', () => {
-    const apiResponseWithoutDescription = {
-      ...apiResponse,
-      body: null,
-    };
-    const entity = toPullRequestEntityOld(
-      apiResponseWithoutDescription as any,
-      [
-        { sha: 'commit_a', commit: { message: 'Commit A' } } as any,
-        { sha: 'commit_b', commit: { message: 'Commit B' } } as any,
-        { sha: 'commit_c', commit: { message: 'Commit C' } } as any,
-      ],
-      [{ sha: 'commit_a' } as any, { sha: 'commit_b' } as any],
-      [],
-      [{ approverUsernames: ['reviewer-user'] } as any],
+    const newEntity = toPullRequestEntity(
       {
-        [user.login]: user as UserEntity,
-        [reviewerUser.login]: reviewerUser as UserEntity,
+        ...newApiResponse,
+        commits: [
+          { oid: 'commit_a', message: 'Commit A', author: { user } } as any,
+          { oid: 'commit_b', message: 'Commit B', author: { user } } as any,
+          { oid: 'commit_c', message: 'Commit C', author: { user } } as any,
+        ],
+        reviews: [
+          {
+            id: 'id',
+            state: 'APPROVED',
+            updatedAt: 'updatedAt',
+            url: 'url',
+            author: reviewerUser,
+            commit: {
+              oid: 'commit_b',
+            },
+          },
+        ],
+      },
+      {
+        [user.login]: user,
+        [reviewerUser.login]: reviewerUser,
       },
     );
-    expect(entity).toEqual({
-      ...expectedEntity,
-      description: undefined,
-      _rawData: [
-        {
-          name: 'default',
-          rawData: omit(apiResponseWithoutDescription, ['base', 'head']),
-        },
-      ],
-    });
+
+    // Compare against the previous converter
+    const newPullRequestProperties = [
+      'allCommitsApproved',
+      'pullRequestId',
+      'number',
+    ];
+    expect(omit(newEntity, [...newPullRequestProperties, '_rawData'])).toEqual(
+      omit(oldEntity, ['_rawData']),
+    );
+
+    // Compare with expected
+    expect(omit(newEntity, ['_rawData'])).toEqual(expectedEntity);
   });
 
-  test('declined', () => {
-    const apiResponseDeclined = {
-      ...apiResponse,
-      state: PRState.Closed,
+  test('declined comparison', () => {
+    const apiResponseDeclined: PullRequest = {
+      ...newApiResponse,
+      state: 'CLOSED',
       merged: false,
-      merged_at: null,
-      merge_commit_sha: undefined,
+      mergedAt: undefined,
+      mergeCommit: undefined,
     };
-    const entity = toPullRequestEntityOld(
-      apiResponseDeclined as any,
-      [
-        { sha: 'commit_a', commit: { message: 'Commit A' } } as any,
-        { sha: 'commit_b', commit: { message: 'Commit B' } } as any,
-        { sha: 'commit_c', commit: { message: 'Commit C' } } as any,
-      ],
-      [{ sha: 'commit_a' } as any, { sha: 'commit_b' } as any],
-      [],
-      [{ approverUsernames: ['reviewer-user'] } as any],
+    const newEntity = toPullRequestEntity(
       {
-        [user.login]: user as UserEntity,
-        [reviewerUser.login]: reviewerUser as UserEntity,
+        ...apiResponseDeclined,
+        commits: [
+          { oid: 'commit_a', message: 'Commit A', author: { user } } as any,
+          { oid: 'commit_b', message: 'Commit B', author: { user } } as any,
+          { oid: 'commit_c', message: 'Commit C', author: { user } } as any,
+        ],
+        reviews: [
+          {
+            id: 'id',
+            state: 'APPROVED',
+            updatedAt: 'updatedAt',
+            url: 'url',
+            author: reviewerUser,
+            commit: {
+              oid: 'commit_b',
+            },
+          },
+        ],
+      },
+      {
+        [user.login]: user,
+        [reviewerUser.login]: reviewerUser,
       },
     );
-    expect(entity).toEqual({
+
+    expect(omit(newEntity, ['_rawData'])).toEqual({
       ...expectedEntity,
-      state: PRState.Closed,
+      state: 'CLOSED',
       open: false,
       declined: true,
       merged: false,
       mergedOn: undefined,
       mergeCommitHash: undefined,
-      _rawData: [
-        {
-          name: 'default',
-          rawData: omit(apiResponseDeclined, ['base', 'head']),
-        },
-      ],
     });
   });
 
-  test('without commit analysis', () => {
-    const entity = toPullRequestEntityOld(apiResponse as any);
-    expect(entity).toEqual({
+  test('without commits or reviews', () => {
+    //TODO: fix this
+    const entity = toPullRequestEntity(newApiResponse, {
+      [user.login]: user,
+      [reviewerUser.login]: reviewerUser,
+    });
+    expect(omit(entity, ['_rawData'])).toEqual({
       ...expectedEntity,
-      approved: undefined,
+      allCommitsApproved: undefined,
       validated: undefined,
       commits: undefined,
       commitMessages: undefined,
@@ -355,8 +431,8 @@ describe('toPullRequestEntityOld', () => {
       commitsByUnknownAuthor: undefined,
       approvers: undefined,
       approverLogins: undefined,
-      author: 'somebody',
-      reviewers: ['reviewer-user'],
+      reviewers: undefined,
+      reviewerLogins: undefined,
     });
   });
 });

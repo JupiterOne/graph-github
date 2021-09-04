@@ -91,14 +91,13 @@ export default {
     checksUrl
     closed
     closedAt
-    # comments(first: 100) {  # Might be nice to know who is commenting
-    # commits(first: 100) {  # Handling in the query builder
+    # comments  # Maybe someday
     createdAt
     deletions
     editor {
       ...userFields
     }
-    # files(first: 100) {  # Someday it would be great to connect PRs to files that create infrastructure
+    # files  # Maybe someday
     headRefName
     headRefOid
     headRepository {
@@ -110,7 +109,6 @@ export default {
     }
     id
     isDraft
-    # labels(first 100) {  # Handling in the query builder
     lastEditedAt
     locked
     mergeCommit {
@@ -126,10 +124,9 @@ export default {
     permalink
     publishedAt
     reviewDecision
-    # reviewRequests(first: 100) {  # Someday it would be nice to see how many users reviewed that were requested
-    # reviews(first: 100) {  # Handling in the query builder
+    # reviewRequests  # Maybe someday
     state
-    # suggestedReviewers  # Might be fun to know if the suggested reviewers were used or not
+    # suggestedReviewers  # Maybe someday
     title
     updatedAt
     url

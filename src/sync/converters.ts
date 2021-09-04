@@ -266,7 +266,8 @@ export function createRepoAllowsUserRelationship(
 
 export function toPullRequestEntity(
   pullRequest: PullRequest,
-  teamMembersByLogin: IdEntityMap<UserEntity>,
+  teamMembersByLoginMap: IdEntityMap<UserEntity>, //
+  allKnownUsersByLoginMap: IdEntityMap<UserEntity>, // Includes known colaborators
 ): PullRequestEntity {
   const commits = pullRequest.commits;
   const reviews = pullRequest.reviews;
@@ -276,8 +277,8 @@ export function toPullRequestEntity(
     .reduce(convertToApproval, [])
     .filter(
       (approval) =>
-        didNotSelfApprove(approval, commits ?? []) &&
-        hasTeamMemberApprovals(approval, teamMembersByLogin),
+        hasTeamMemberApprovals(approval, teamMembersByLoginMap) &&
+        noSelfApprovals(approval, commits ?? []),
     );
 
   const approvedCommits =
@@ -288,7 +289,7 @@ export function toPullRequestEntity(
     (c) => !approvedCommitHashes?.includes(c),
   );
   const commitsByUnknownAuthor = commits?.filter((commit) =>
-    fromUnknownAuthor(commit, teamMembersByLogin),
+    fromUnknownAuthor(commit, allKnownUsersByLoginMap),
   );
 
   return createIntegrationEntity({
@@ -375,10 +376,10 @@ export interface Approval {
 }
 
 function isApprovalReview(review: Review) {
-  return ['APPROVED', 'DISMISSED'].includes(review.state); // Not sure why dismissed is an approved state tbh
+  return ['APPROVED', 'DISMISSED'].includes(review.state); // Not sure why dismissed is an approved state to be honest
 }
 
-function didNotSelfApprove(approval: Approval, commits: Commit[]) {
+function noSelfApprovals(approval: Approval, commits: Commit[]) {
   const associatedCommits = getCommitsToDestination(commits, approval.commit);
   const commitAuthors =
     associatedCommits?.reduce(
@@ -394,29 +395,22 @@ function didNotSelfApprove(approval: Approval, commits: Commit[]) {
   return validApprovers.length > 0;
 }
 
-function userOutsideOfTeam(
-  login: string | undefined,
-  teamMembersByLogin: IdEntityMap<UserEntity>,
-) {
-  return !login || !teamMembersByLogin[login];
-}
-
 function hasTeamMemberApprovals(
   approval: Approval,
-  teamMembersByLogin: IdEntityMap<UserEntity>,
+  teamMembersByLoginMap: IdEntityMap<UserEntity>,
 ) {
   return approval.approverUsernames.some(
-    (approver) => teamMembersByLogin[approver],
+    (approver) => teamMembersByLoginMap[approver],
   );
 }
 
 function fromUnknownAuthor(
   commit: Commit,
-  teamMembersByLogin: IdEntityMap<UserEntity>,
+  allKnownUsersByLoginMap: IdEntityMap<UserEntity>,
 ) {
   return (
-    !commit.author ||
-    userOutsideOfTeam(commit.author.user?.login, teamMembersByLogin)
+    !commit.author?.user?.login ||
+    !allKnownUsersByLoginMap[commit.author.user?.login]
   );
 }
 

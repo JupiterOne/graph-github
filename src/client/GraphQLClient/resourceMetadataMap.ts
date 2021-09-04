@@ -100,7 +100,7 @@ export default function (
     },
     [GithubResource.Organization]: {
       graphRequestVariables: ['$login: String!'],
-      pathToDataInGraphQlResponse: 'organization', // TODO: figure out if this is necessary
+      pathToDataInGraphQlResponse: 'organization',
       factory: (
         children: string = '',
       ) => `${GithubResource.Organization}(login: $login) {
@@ -196,28 +196,6 @@ export default function (
         }
         ${pageInfo}
       }`,
-      // children: [GithubResource.RepositoryCollaborators],
     },
-    //this is not quite working right yet
-    // [GithubResource.RepositoryCollaborators]: {
-    //   graphRequestVariables: ['$repositoryCollaborators: String'],
-    //   factory: (
-    //     children: string = '',
-    //   ) => `collaborators(first: ${pageLimit}, after: $repositoryCollaborators) {
-    //     edges {
-    //       node {
-    //         id
-    //         ...userFields
-    //         ${children}
-    //       }
-
-    //     },
-    //     nodes {
-    //       ...userFields
-    //     }
-    //     ${pageInfo}
-    //   }`,
-    //   parent: GithubResource.Repositories,
-    // },
   };
 }

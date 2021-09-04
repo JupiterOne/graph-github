@@ -20,7 +20,6 @@ import {
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
   GITHUB_REPO_ARRAY,
   GITHUB_MEMBER_BY_LOGIN_MAP,
-  GITHUB_MEMBER_ARRAY,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
 
@@ -44,12 +43,6 @@ export async function fetchCollaborators({
   if (!memberByLoginMap) {
     throw new IntegrationMissingKeyError(
       `Expected members.ts to have set GITHUB_MEMBER_BY_LOGIN_MAP in jobState.`,
-    );
-  }
-  const memberArray = await jobState.getData<UserEntity[]>(GITHUB_MEMBER_ARRAY);
-  if (!memberArray) {
-    throw new IntegrationMissingKeyError(
-      `Expected members.ts to have set GITHUB_MEMBER_ARRAY in jobState.`,
     );
   }
 

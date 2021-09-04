@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`pull request resources pullRequest pagination only 1`] = `
+exports[`pull request resources no extra resources 1`] = `
 Array [
   Object {
     "additions": 44,
@@ -705,7 +705,7 @@ You can disable automated security fix PRs for this repo from the [Security Aler
 ]
 `;
 
-exports[`pull request resources pullRequest pagination only 2`] = `
+exports[`pull request resources pullRequest pagination only 1`] = `
 Array [
   Object {
     "additions": 44,

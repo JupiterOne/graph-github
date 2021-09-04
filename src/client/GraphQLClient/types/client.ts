@@ -1,6 +1,17 @@
 import { TokenPermissions } from '../../../types';
 
-// From whatever name given the JupiterOne use for the data to the specific Github GraphQl query to fetch that data (gotten via introspection)
+/**
+ * From the name given to the data for the JupiterOne use case to the specific Github
+ * GraphQl query to fetch that data (gotten via graphQL introspection)
+ *
+ * ex:
+ *   Commits: 'commits' implies that there is a Github graphQL command 'commits'
+ *   commits(first:100) {
+ *     id
+ *     message
+ *     ...
+ *   }
+ */
 export enum GithubResource {
   Organization = 'organization',
   OrganizationMembers = 'membersWithRole',
@@ -13,7 +24,6 @@ export enum GithubResource {
   Commits = 'commits',
   Labels = 'labels',
   Reviews = 'reviews',
-  // RepositoryCollaborators = 'repositoryCollaborators',
 }
 
 export enum OrgMemberRole {

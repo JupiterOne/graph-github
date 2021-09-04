@@ -10,7 +10,6 @@ import createGitHubAppClient from '../../util/createGitHubAppClient';
 import { IntegrationConfig, sanitizeConfig } from '../../config';
 import { integrationConfig } from '../../../test/config';
 import { Commit, Label, PullRequest, Review } from './types';
-jest.setTimeout(20000);
 
 async function getAccess() {
   const context = createMockStepExecutionContext<IntegrationConfig>({
@@ -20,7 +19,7 @@ async function getAccess() {
   const config = context.instance.config;
   sanitizeConfig(config);
   //the installid in the recordings
-  config.installationId = 7498286; // TODO: have the recording standardize the installationIds
+  config.installationId = 7498286;
 
   const appClient = createGitHubAppClient(
     config,
@@ -50,7 +49,7 @@ describe('pull request resources', () => {
     await p.stop();
   });
 
-  test('pullRequest pagination only', async () => {
+  test('no extra resources', async () => {
     p = setupGithubRecording({
       directory: __dirname,
       name: 'GitHubGraphQLClient.fetchPullRequests.noExtraResources',

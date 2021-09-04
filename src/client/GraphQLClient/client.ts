@@ -51,6 +51,14 @@ export class GitHubGraphQLClient {
     this.logger = logger;
   }
 
+  /**
+   * Iterates through a serach request for Pull Requests while handling
+   * pagination of both the pull requests and their inner resources.
+   *
+   * @param query The Github Issue search query with syntax - https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests
+   * @param selectedResources - The sub-objects to additionally query for. Ex: [commits]
+   * @param iteratee - a callback function for each PullRequestResponse
+   */
   public async iteratePullRequests(
     query: string,
     selectedResources: GithubResource[],
@@ -160,7 +168,7 @@ export class GitHubGraphQLClient {
    * @param selectedResources - The sub-objects to additionally query for. Ex: [commits]
    * @param extraQueryParams - Any additional params need to complete the GraphQL query. Ex: { login: 'coolGuy' }
    * @param queryCursors - Any cursors you have from previous GraphQL searches. Ex: { pullRequests: ==abcdefg }
-   * @returns A all resources that were queried for in a destructured object. Ex: { pullRequests: [{...}], commits: [{...}] }
+   * @returns A destructured object that contains all resources that were queried for. Ex: { pullRequests: [{...}], commits: [{...}] }
    */
   public async fetchFromSingle<T extends GithubResource>(
     baseResource: T,
@@ -217,7 +225,6 @@ export class GitHubGraphQLClient {
     } as QueryResponse<T>;
   }
 
-  // TODO: make sure commits are pulled correctly
   private extractPageResources<T extends Node>(
     pageResources: ResourceMap<T[]>,
     resources: ResourceMap<T[]>,

@@ -1,15 +1,16 @@
 import { PullRequest } from '../../client/GraphQLClient/types';
+import { UserEntity } from '../../types';
 
-export const fixtureUser: any = {
+export const fixtureUser: UserEntity = ({
   displayName: 'Some Body',
   name: 'Some Body',
   login: 'somebody',
-};
-export const fixtureReviewerUser: any = {
+} as unknown) as UserEntity;
+export const fixtureReviewerUser: UserEntity = ({
   displayName: 'Reviewer User',
   name: 'Reviewer User',
   login: 'reviewer-user',
-};
+} as unknown) as UserEntity;
 export const fixturePullRequest: PullRequest = {
   additions: 156,
   author: fixtureUser,

@@ -330,27 +330,6 @@ export default class OrganizationAccountClient {
     }
   }
 
-  /* currently not being used because GraphQL is not cooperating, but here's the code for future research
-  async getRepoCollaborators(): Promise<OrgCollaboratorQueryResponse[]> {
-    if (!this.collaborators) {
-      await this.queryGraphQL('collaborators', async () => {
-        const {
-          collaborators,
-          rateLimitConsumed,
-        } = await this.v4.fetchSingle(this.login, [
-          GithubResource.RepositoryCollaborators,
-        ]);
-
-        this.collaborators = collaborators;
-
-        return rateLimitConsumed;
-      });
-    }
-
-    return this.collaborators || [];
-  }
-  */
-
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
     if (!this.members) {
       await this.queryGraphQL('members', async () => {
@@ -416,9 +395,9 @@ export default class OrganizationAccountClient {
     iteratee: ResourceIteratee<PullRequest>,
   ): Promise<PullRequestQueryResponse> {
     if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting pull requests.');
       return { rateLimitConsumed: 0 };
     }
-    // TODO: add sort and update
     const query = `is:pr repo:${repo.fullName}`;
     return await this.v4.iteratePullRequests(
       query,

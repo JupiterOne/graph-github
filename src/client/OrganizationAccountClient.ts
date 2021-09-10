@@ -46,7 +46,6 @@ export default class OrganizationAccountClient {
   readonly v3: Octokit;
   readonly v4: GitHubGraphQLClient;
   readonly logger: IntegrationLogger;
-  readonly analyzeCommitApproval: boolean;
 
   constructor(options: {
     /**
@@ -69,32 +68,11 @@ export default class OrganizationAccountClient {
      * information about non-fatal errors.
      */
     logger: IntegrationLogger;
-    /**
-     * Whether or not pull request commits should be analyzed for approval.
-     *
-     * Specifically, if this boolean is true, two additional calls to the
-     * API are executed, and the results processed to give values for the
-     * following properties to the pullrequest entity:
-     *  approved
-     *  validated
-     *  commits
-     *  commitMessages
-     *  commitsApproved
-     *  commitsNotApproved
-     *  commitsByUnknownAuthor
-     *  approvers
-     *  approverLogins
-     *
-     * All these properties will be set to undefined if analyzeCommitApproval
-     * is false.
-     */
-    analyzeCommitApproval: boolean;
   }) {
     this.login = options.login;
     this.v3 = options.restClient;
     this.v4 = options.graphqlClient;
     this.logger = options.logger;
-    this.analyzeCommitApproval = options.analyzeCommitApproval;
 
     this.authorizedForPullRequests = true;
     this.v3RateLimitConsumed = 0;

@@ -37,9 +37,6 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   installationId: {
     type: 'string', //should be a number, but that's not an option in the SDK
   },
-  analyzeCommitApproval: {
-    type: 'boolean',
-  },
   useRestForTeamRepos: {
     type: 'boolean',
   },
@@ -71,15 +68,6 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    * The ID number assigned to the installation.
    */
   installationId: number;
-
-  /**
-   * Whether to analyze commit approvals as part of pull-requests
-   * This turns on a lot of processing of pull-request commit messages
-   * in order to populate extra fields in the pull-request entity.
-   *
-   * For more details, see client/OrganizationAccountClient.ts
-   */
-  analyzeCommitApproval: boolean;
 
   /**
    * This is a hack to allow this integration to complete for organizations with lots of Team Repo data.

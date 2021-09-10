@@ -267,7 +267,6 @@ export class APIClient {
         this.logger,
       ),
       logger: this.logger,
-      analyzeCommitApproval: this.config.analyzeCommitApproval,
     });
   }
 }

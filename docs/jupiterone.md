@@ -71,8 +71,6 @@ JupiterOne.
   the integration instance.
 - Select a **Polling Interval** that you feel is sufficient for your monitoring
   needs. You may leave this as `DISABLED` and manually execute the integration.
-- Select to **Analyze Commit Approval** which enables analysis of individual
-  commits' approval status.
 
 4. Click **Create Configuration** once all values are provided.
 

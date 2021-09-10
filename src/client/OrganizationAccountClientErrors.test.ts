@@ -18,7 +18,6 @@ describe('handles undefined resources from graphql', () => {
       }),
     } as any,
     logger: mockLogger,
-    analyzeCommitApproval: true,
   });
 
   test('getTeams', async () => {

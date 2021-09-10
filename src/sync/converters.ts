@@ -50,7 +50,6 @@ import {
 import { uniq, last, compact } from 'lodash';
 import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';
 import getCommitsToDestination from '../util/getCommitsToDestination';
-import { UrlLoader } from '@graphql-tools/url-loader';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {

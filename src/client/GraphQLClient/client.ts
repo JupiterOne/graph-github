@@ -113,10 +113,8 @@ export class GitHubGraphQLClient {
           );
 
           // Fetch the remaining inner resources on this PR (this should be rare)
-          const [
-            repoOwner,
-            repoName,
-          ] = pullRequestResponse.headRepository.nameWithOwner.split('/');
+          const repoOwner = pullRequestResponse.headRepository.owner.login;
+          const repoName = pullRequestResponse.headRepository.name;
           const innerResourceResponse = await this.fetchFromSingle(
             GithubResource.PullRequest,
             selectedResources,

@@ -1,5 +1,6 @@
 import graphql, { GraphQLClient } from 'graphql.js';
 import { get } from 'lodash';
+import { retry, AttemptContext } from '@lifeomic/attempt';
 
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 
@@ -63,9 +64,11 @@ export class GitHubGraphQLClient {
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<PullRequest>,
+    limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
   ): Promise<PullRequestQueryResponse> {
     let queryCursors: ResourceMap<string> = {};
     let rateLimitConsumed = 0;
+    let pullRequestsQueried = 0;
 
     const pullRequestQueryString = buildGraphQL(
       this.resourceMetadataMap,
@@ -75,12 +78,23 @@ export class GitHubGraphQLClient {
     const queryPullRequests = this.graph(pullRequestQueryString);
 
     do {
-      const pullRequestResponse = await queryPullRequests({
-        query,
-        ...queryCursors,
+      this.logger.info(
+        { pullRequestQueryString, query, queryCursors },
+        'Fetching batch of pull requests from GraphQL',
+      );
+      const pullRequestResponse = await this.retryGraphQL(async () => {
+        return await queryPullRequests({
+          query,
+          ...queryCursors,
+        });
       });
+      pullRequestsQueried += 50; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
 
       const rateLimit = pullRequestResponse.rateLimit;
+      this.logger.info(
+        { rateLimit },
+        'Rate limit response for Pull Request iteration',
+      );
       rateLimitConsumed += rateLimit.cost;
 
       for (const pullRequestQueryData of pullRequestResponse.search.edges) {
@@ -151,7 +165,10 @@ export class GitHubGraphQLClient {
                 pullRequestResponse.search.pageInfo.endCursor,
             }
           : {};
-    } while (Object.values(queryCursors).some((c) => !!c));
+    } while (
+      Object.values(queryCursors).some((c) => !!c) &&
+      pullRequestsQueried <= limit
+    );
 
     return {
       rateLimitConsumed,
@@ -184,14 +201,23 @@ export class GitHubGraphQLClient {
         baseResource,
         queryResources,
       );
-      this.logger.info({ queryString }, 'Querying with GraphQL');
+      this.logger.info(
+        { queryString, extraQueryParams, queryCursors },
+        'Querying with GraphQL',
+      );
       const query = this.graph(queryString);
-      const response = await query({
-        ...extraQueryParams,
-        ...queryCursors,
+      const response = await this.retryGraphQL(async () => {
+        return await query({
+          ...extraQueryParams,
+          ...queryCursors,
+        });
       });
 
       const rateLimit = response.rateLimit;
+      this.logger.info(
+        { rateLimit },
+        'Rate limit response for Pull Request iteration',
+      );
       rateLimitConsumed += rateLimit.cost;
 
       const pathToData = this.resourceMetadataMap[baseResource]
@@ -249,5 +275,30 @@ export class GitHubGraphQLClient {
       }
     }
     return resources;
+  }
+
+  private async retryGraphQL(query: () => Promise<any>) {
+    const { logger } = this;
+    return await retry(query, {
+      maxAttempts: 10,
+      delay: 60_000,
+      handleError(error: any, attemptContext: AttemptContext) {
+        // Github has "Secondary Rate Limits" to prevent us from making these costly to Github graphQL calls.
+        // From what I can tell, there is no way around it outside of waiting for "a few minutes" when we get
+        // one of these errors. I guess checking every minute for 10 minutes seems reasonable.
+        // https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
+        if (
+          error.message?.includes('You have exceeded a secondary rate limit')
+        ) {
+          logger.warn(
+            { attemptContext, error },
+            'Hit a "Secondary Rate Limit" when attempting to query GraphQL. Waiting a minute before trying again.',
+          );
+          // TODO: handle Primary Rate Limit errors as well
+        } else {
+          throw Error;
+        }
+      },
+    });
   }
 }

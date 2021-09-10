@@ -10,8 +10,12 @@ Array [
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [tar](https://github.com/npm/node-tar) from 4.4.8 to 4.4.19.
 <details>
@@ -77,8 +81,11 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "headRefOid": "b0cd5af4c9eac51b42f24d2f79d662d8f21135ef",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
     "id": "MDExOlB1bGxSZXF1ZXN0NzIzOTM0MDQy",
     "isDraft": false,
@@ -108,8 +115,12 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [path-parse](https://github.com/jbgutierrez/path-parse) from 1.0.6 to 1.0.7.
 <details>
@@ -165,8 +176,11 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "headRefOid": "ef7cf1ef1066657627a2882e1a4bb1260251fbae",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
     "id": "MDExOlB1bGxSZXF1ZXN0NzA3NzkyMTg2",
     "isDraft": false,
@@ -196,8 +210,12 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [ws](https://github.com/websockets/ws) from 5.2.2 to 5.2.3.
 <details>
@@ -266,8 +284,11 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "headRefOid": "550c372ca3cbe1b53ec2ef5a1fa0c564df409ac7",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
     "id": "MDExOlB1bGxSZXF1ZXN0Njk5NjYwNzc5",
     "isDraft": false,
@@ -297,8 +318,12 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [browserslist](https://github.com/browserslist/browserslist) from 4.4.1 to 4.16.6.
 <details>
@@ -438,8 +463,11 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "headRefOid": "010c9cefbbfc8af6f3ade2889d8a827e4231cc93",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
     "id": "MDExOlB1bGxSZXF1ZXN0NjUxNzQzNDky",
     "isDraft": false,
@@ -469,8 +497,12 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [hosted-git-info](https://github.com/npm/hosted-git-info) from 2.7.1 to 2.8.9.
 <details>
@@ -577,8 +609,11 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "headRefOid": "b5e4114a24b183e2e564208e180f91c4afc35eed",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
     "id": "MDExOlB1bGxSZXF1ZXN0NjM2NjUzMTY2",
     "isDraft": false,
@@ -608,8 +643,12 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [lodash](https://github.com/lodash/lodash) from 4.17.14 to 4.17.21.
 <details>
@@ -679,8 +718,11 @@ You can disable automated security fix PRs for this repo from the [Security Aler
     "headRefOid": "8edbe665b9972156c04e8d9c15d4807001ba5982",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "nameWithOwner": "JupiterOne/graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
     "id": "MDExOlB1bGxSZXF1ZXN0NjM0MTIwNDU4",
     "isDraft": false,
@@ -714,8 +756,13 @@ Array [
     "baseRefName": "main",
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
-      "id": "MDEwOlJlcG9zaXRvcnkxNzE5MTExMzk=",
       "name": "graph-whitehat",
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [tar](https://github.com/npm/node-tar) from 4.4.8 to 4.4.19.
 <details>
@@ -783,6 +830,7 @@ You can disable automated security fix PRs for this repo from the [Security Aler
             "name": null,
           },
         },
+        "authoredDate": "2021-09-01T01:47:41Z",
         "changedFiles": 1,
         "commitUrl": "https://github.com/JupiterOne/graph-whitehat/commit/b0cd5af4c9eac51b42f24d2f79d662d8f21135ef",
         "id": "MDY6Q29tbWl0MTcxOTExMTM5OmIwY2Q1YWY0YzllYWM1MWI0MmYyNGQyZjc5ZDY2MmQ4ZjIxMTM1ZWY=",
@@ -800,7 +848,7 @@ updated-dependencies:
 ...
 
 Signed-off-by: dependabot[bot] <support@github.com>",
-        "pushedDate": "2021-09-01T01:47:42Z",
+        "oid": "b0cd5af4c9eac51b42f24d2f79d662d8f21135ef",
       },
     ],
     "createdAt": "2021-09-01T01:47:42Z",
@@ -810,15 +858,20 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "headRefOid": "b0cd5af4c9eac51b42f24d2f79d662d8f21135ef",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
+    "id": "MDExOlB1bGxSZXF1ZXN0NzIzOTM0MDQy",
     "isDraft": false,
     "labels": Array [
       Object {
         "id": "MDU6TGFiZWwxMzkyNTgzMjM5",
         "name": "dependencies",
         "node": undefined,
-        "pullRequests": undefined,
+        "pullRequests": "MDExOlB1bGxSZXF1ZXN0NzIzOTM0MDQy",
       },
     ],
     "lastEditedAt": null,
@@ -845,8 +898,13 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "baseRefName": "main",
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
-      "id": "MDEwOlJlcG9zaXRvcnkxNzE5MTExMzk=",
       "name": "graph-whitehat",
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [path-parse](https://github.com/jbgutierrez/path-parse) from 1.0.6 to 1.0.7.
 <details>
@@ -904,6 +962,7 @@ You can disable automated security fix PRs for this repo from the [Security Aler
             "name": null,
           },
         },
+        "authoredDate": "2021-08-10T22:31:36Z",
         "changedFiles": 1,
         "commitUrl": "https://github.com/JupiterOne/graph-whitehat/commit/ef7cf1ef1066657627a2882e1a4bb1260251fbae",
         "id": "MDY6Q29tbWl0MTcxOTExMTM5OmVmN2NmMWVmMTA2NjY1NzYyN2EyODgyZTFhNGJiMTI2MDI1MWZiYWU=",
@@ -920,7 +979,7 @@ updated-dependencies:
 ...
 
 Signed-off-by: dependabot[bot] <support@github.com>",
-        "pushedDate": "2021-08-10T22:31:37Z",
+        "oid": "ef7cf1ef1066657627a2882e1a4bb1260251fbae",
       },
     ],
     "createdAt": "2021-08-10T22:31:36Z",
@@ -930,15 +989,20 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "headRefOid": "ef7cf1ef1066657627a2882e1a4bb1260251fbae",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
+    "id": "MDExOlB1bGxSZXF1ZXN0NzA3NzkyMTg2",
     "isDraft": false,
     "labels": Array [
       Object {
         "id": "MDU6TGFiZWwxMzkyNTgzMjM5",
         "name": "dependencies",
         "node": undefined,
-        "pullRequests": undefined,
+        "pullRequests": "MDExOlB1bGxSZXF1ZXN0NzA3NzkyMTg2",
       },
     ],
     "lastEditedAt": null,
@@ -965,8 +1029,13 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "baseRefName": "main",
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
-      "id": "MDEwOlJlcG9zaXRvcnkxNzE5MTExMzk=",
       "name": "graph-whitehat",
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [ws](https://github.com/websockets/ws) from 5.2.2 to 5.2.3.
 <details>
@@ -1037,6 +1106,7 @@ You can disable automated security fix PRs for this repo from the [Security Aler
             "name": null,
           },
         },
+        "authoredDate": "2021-07-29T16:06:20Z",
         "changedFiles": 1,
         "commitUrl": "https://github.com/JupiterOne/graph-whitehat/commit/550c372ca3cbe1b53ec2ef5a1fa0c564df409ac7",
         "id": "MDY6Q29tbWl0MTcxOTExMTM5OjU1MGMzNzJjYTNjYmUxYjUzZWMyZWY1YTFmYTBjNTY0ZGY0MDlhYzc=",
@@ -1053,7 +1123,7 @@ updated-dependencies:
 ...
 
 Signed-off-by: dependabot[bot] <support@github.com>",
-        "pushedDate": "2021-07-29T16:06:21Z",
+        "oid": "550c372ca3cbe1b53ec2ef5a1fa0c564df409ac7",
       },
     ],
     "createdAt": "2021-07-29T16:06:21Z",
@@ -1063,15 +1133,20 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "headRefOid": "550c372ca3cbe1b53ec2ef5a1fa0c564df409ac7",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
+    "id": "MDExOlB1bGxSZXF1ZXN0Njk5NjYwNzc5",
     "isDraft": false,
     "labels": Array [
       Object {
         "id": "MDU6TGFiZWwxMzkyNTgzMjM5",
         "name": "dependencies",
         "node": undefined,
-        "pullRequests": undefined,
+        "pullRequests": "MDExOlB1bGxSZXF1ZXN0Njk5NjYwNzc5",
       },
     ],
     "lastEditedAt": null,
@@ -1098,8 +1173,13 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "baseRefName": "main",
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
-      "id": "MDEwOlJlcG9zaXRvcnkxNzE5MTExMzk=",
       "name": "graph-whitehat",
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [browserslist](https://github.com/browserslist/browserslist) from 4.4.1 to 4.16.6.
 <details>
@@ -1241,6 +1321,7 @@ You can disable automated security fix PRs for this repo from the [Security Aler
             "name": null,
           },
         },
+        "authoredDate": "2021-05-25T00:51:13Z",
         "changedFiles": 1,
         "commitUrl": "https://github.com/JupiterOne/graph-whitehat/commit/010c9cefbbfc8af6f3ade2889d8a827e4231cc93",
         "id": "MDY6Q29tbWl0MTcxOTExMTM5OjAxMGM5Y2VmYmJmYzhhZjZmM2FkZTI4ODlkOGE4MjdlNDIzMWNjOTM=",
@@ -1252,7 +1333,7 @@ Bumps [browserslist](https://github.com/browserslist/browserslist) from 4.4.1 to
 - [Commits](https://github.com/browserslist/browserslist/compare/4.4.1...4.16.6)
 
 Signed-off-by: dependabot[bot] <support@github.com>",
-        "pushedDate": "2021-05-25T00:51:14Z",
+        "oid": "010c9cefbbfc8af6f3ade2889d8a827e4231cc93",
       },
     ],
     "createdAt": "2021-05-25T00:51:14Z",
@@ -1262,15 +1343,20 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "headRefOid": "010c9cefbbfc8af6f3ade2889d8a827e4231cc93",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
+    "id": "MDExOlB1bGxSZXF1ZXN0NjUxNzQzNDky",
     "isDraft": false,
     "labels": Array [
       Object {
         "id": "MDU6TGFiZWwxMzkyNTgzMjM5",
         "name": "dependencies",
         "node": undefined,
-        "pullRequests": undefined,
+        "pullRequests": "MDExOlB1bGxSZXF1ZXN0NjUxNzQzNDky",
       },
     ],
     "lastEditedAt": null,
@@ -1297,8 +1383,13 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "baseRefName": "main",
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
-      "id": "MDEwOlJlcG9zaXRvcnkxNzE5MTExMzk=",
       "name": "graph-whitehat",
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [hosted-git-info](https://github.com/npm/hosted-git-info) from 2.7.1 to 2.8.9.
 <details>
@@ -1407,6 +1498,7 @@ You can disable automated security fix PRs for this repo from the [Security Aler
             "name": null,
           },
         },
+        "authoredDate": "2021-05-10T01:54:33Z",
         "changedFiles": 1,
         "commitUrl": "https://github.com/JupiterOne/graph-whitehat/commit/b5e4114a24b183e2e564208e180f91c4afc35eed",
         "id": "MDY6Q29tbWl0MTcxOTExMTM5OmI1ZTQxMTRhMjRiMTgzZTJlNTY0MjA4ZTE4MGY5MWM0YWZjMzVlZWQ=",
@@ -1418,7 +1510,7 @@ Bumps [hosted-git-info](https://github.com/npm/hosted-git-info) from 2.7.1 to 2.
 - [Commits](https://github.com/npm/hosted-git-info/compare/v2.7.1...v2.8.9)
 
 Signed-off-by: dependabot[bot] <support@github.com>",
-        "pushedDate": "2021-05-10T01:54:33Z",
+        "oid": "b5e4114a24b183e2e564208e180f91c4afc35eed",
       },
     ],
     "createdAt": "2021-05-10T01:54:34Z",
@@ -1428,15 +1520,20 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "headRefOid": "b5e4114a24b183e2e564208e180f91c4afc35eed",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
+    "id": "MDExOlB1bGxSZXF1ZXN0NjM2NjUzMTY2",
     "isDraft": false,
     "labels": Array [
       Object {
         "id": "MDU6TGFiZWwxMzkyNTgzMjM5",
         "name": "dependencies",
         "node": undefined,
-        "pullRequests": undefined,
+        "pullRequests": "MDExOlB1bGxSZXF1ZXN0NjM2NjUzMTY2",
       },
     ],
     "lastEditedAt": null,
@@ -1463,8 +1560,13 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "baseRefName": "main",
     "baseRefOid": "4f2c15b0346be5f56755bc0291f2d387bec6bd21",
     "baseRepository": Object {
-      "id": "MDEwOlJlcG9zaXRvcnkxNzE5MTExMzk=",
       "name": "graph-whitehat",
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
+      "url": "https://github.com/JupiterOne/graph-whitehat",
     },
     "body": "Bumps [lodash](https://github.com/lodash/lodash) from 4.17.14 to 4.17.21.
 <details>
@@ -1536,6 +1638,7 @@ You can disable automated security fix PRs for this repo from the [Security Aler
             "name": null,
           },
         },
+        "authoredDate": "2021-05-08T07:53:29Z",
         "changedFiles": 1,
         "commitUrl": "https://github.com/JupiterOne/graph-whitehat/commit/8edbe665b9972156c04e8d9c15d4807001ba5982",
         "id": "MDY6Q29tbWl0MTcxOTExMTM5OjhlZGJlNjY1Yjk5NzIxNTZjMDRlOGQ5YzE1ZDQ4MDcwMDFiYTU5ODI=",
@@ -1546,7 +1649,7 @@ Bumps [lodash](https://github.com/lodash/lodash) from 4.17.14 to 4.17.21.
 - [Commits](https://github.com/lodash/lodash/compare/4.17.14...4.17.21)
 
 Signed-off-by: dependabot[bot] <support@github.com>",
-        "pushedDate": "2021-05-08T07:53:30Z",
+        "oid": "8edbe665b9972156c04e8d9c15d4807001ba5982",
       },
     ],
     "createdAt": "2021-05-08T07:53:30Z",
@@ -1556,15 +1659,20 @@ Signed-off-by: dependabot[bot] <support@github.com>",
     "headRefOid": "8edbe665b9972156c04e8d9c15d4807001ba5982",
     "headRepository": Object {
       "name": "graph-whitehat",
-      "owner": Object {},
+      "owner": Object {
+        "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+        "login": "JupiterOne",
+        "url": "https://github.com/JupiterOne",
+      },
     },
+    "id": "MDExOlB1bGxSZXF1ZXN0NjM0MTIwNDU4",
     "isDraft": false,
     "labels": Array [
       Object {
         "id": "MDU6TGFiZWwxMzkyNTgzMjM5",
         "name": "dependencies",
         "node": undefined,
-        "pullRequests": undefined,
+        "pullRequests": "MDExOlB1bGxSZXF1ZXN0NjM0MTIwNDU4",
       },
     ],
     "lastEditedAt": null,

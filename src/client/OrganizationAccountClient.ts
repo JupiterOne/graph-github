@@ -410,6 +410,7 @@ export default class OrganizationAccountClient {
     }
   }
 
+  // This is sometimes used by CM bot, but not in the actual integraiton.
   async isEmptyMergeCommit(
     account: string,
     repository: string,

@@ -8,7 +8,7 @@ describe('pullRequests', () => {
   }
 
   const pageLimit = 1;
-  const metadataMap = resourceMetadataMap(pageLimit);
+  const metadataMap = resourceMetadataMap(pageLimit, pageLimit);
   const gql = (queryResources: GithubResource[]) => {
     return buildGraphQL(
       metadataMap,
@@ -116,7 +116,7 @@ describe('resource-based query generation', () => {
     return gql.replace(/\s/g, '');
   }
 
-  const metadataMap = resourceMetadataMap(1);
+  const metadataMap = resourceMetadataMap(1, 1);
   const gql = (queryResources: GithubResource[]) => {
     return buildGraphQL(
       metadataMap,

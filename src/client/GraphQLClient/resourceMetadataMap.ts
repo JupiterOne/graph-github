@@ -7,6 +7,7 @@ const pageInfo = `pageInfo {
 
 export default function (
   pageLimit: number = 100,
+  pullRequestPageLimit: number = 50,
 ): ResourceMap<ResourceMetadata> {
   return {
     [GithubResource.PullRequest]: {
@@ -37,7 +38,7 @@ export default function (
       ],
       factory: (
         children: string = '',
-      ) => `search(first: ${pageLimit}, after: $${GithubResource.PullRequests}, type: ISSUE, query: $query) {
+      ) => `search(first: ${pullRequestPageLimit}, after: $${GithubResource.PullRequests}, type: ISSUE, query: $query) {
         issueCount
         edges {
           node {

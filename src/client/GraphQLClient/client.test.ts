@@ -37,7 +37,7 @@ async function getClient() {
   const access = await getAccess();
   return new GitHubGraphQLClient(
     access,
-    resourceMetadataMap(pageLimit),
+    resourceMetadataMap(pageLimit, pageLimit),
     createMockIntegrationLogger(),
   );
 }

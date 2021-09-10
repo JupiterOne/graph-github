@@ -13,6 +13,8 @@ import {
   fixturePullRequest,
   fixtureUser,
   fixtureReviewerUser,
+  pullRequestReviewer,
+  pullRequestUser,
 } from './fixtures/pullRequest';
 import { toPullRequestEntityOld } from './utils/toPullRequestEntityOld';
 
@@ -193,7 +195,7 @@ describe('toPullRequestEntity compared against toPullRequestEntityOld', () => {
         full_name: 'my-team/my-repo',
         name: 'my-repo',
         owner: {
-          login: 'me',
+          login: 'my-team',
         },
       },
     },
@@ -213,15 +215,16 @@ describe('toPullRequestEntity compared against toPullRequestEntityOld', () => {
   const newApiResponse: PullRequest = {
     id: 'id',
     additions: 1,
-    author: user,
+    author: pullRequestUser,
     authorAssociation: 'authorAssociation',
     baseRefName: 'qwerty098765',
     baseRefOid: 'baseRefOid',
     baseRepository: {
       name: 'my-repo',
-      nameWithOwner: 'my-team/my-repo',
       owner: {
-        login: 'me',
+        login: 'my-team',
+        id: '12345',
+        url: 'https://github.com/my-team',
       },
     },
     body: 'This is the description',
@@ -231,14 +234,15 @@ describe('toPullRequestEntity compared against toPullRequestEntityOld', () => {
     closedAt: undefined,
     createdAt: '2001-09-11T08:46:00Z',
     deletions: 1,
-    editor: user,
+    editor: pullRequestUser,
     headRefName: 'abcdef123456',
     headRefOid: 'headRefOid',
     headRepository: {
       name: 'their-repo',
-      nameWithOwner: 'their-team/their-repo',
       owner: {
-        login: 'them',
+        login: 'their-team',
+        id: '67890',
+        url: 'https://github.com/their-team',
       },
     },
     isDraft: false,
@@ -251,12 +255,12 @@ describe('toPullRequestEntity compared against toPullRequestEntityOld', () => {
       authoredDate: '2001-09-11T20:30:00Z',
       changedFiles: 1,
       commitUrl: 'commitUrl',
-      author: { user },
+      author: { user: pullRequestUser },
     },
     mergeable: 'MERGEABLE',
     merged: true,
     mergedAt: '2021-07-21T14:06:13Z',
-    mergedBy: user,
+    mergedBy: pullRequestUser,
     number: 420,
     permalink: 'permalink',
     publishedAt: undefined,
@@ -280,7 +284,7 @@ describe('toPullRequestEntity compared against toPullRequestEntityOld', () => {
     id: '420',
     number: 420,
     pullRequestId: 'id',
-    accountLogin: 'me',
+    accountLogin: 'my-team',
     authorLogin: 'somebody',
     author: 'Some Body',
     reviewerLogins: ['reviewer-user'],
@@ -341,7 +345,7 @@ describe('toPullRequestEntity compared against toPullRequestEntityOld', () => {
             state: 'APPROVED',
             updatedAt: 'updatedAt',
             url: 'url',
-            author: reviewerUser,
+            author: pullRequestReviewer,
             commit: {
               oid: 'commit_b',
             },
@@ -394,7 +398,7 @@ describe('toPullRequestEntity compared against toPullRequestEntityOld', () => {
             state: 'APPROVED',
             updatedAt: 'updatedAt',
             url: 'url',
-            author: reviewerUser,
+            author: pullRequestReviewer,
             commit: {
               oid: 'commit_b',
             },

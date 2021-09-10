@@ -1,4 +1,4 @@
-import { PullRequest } from '../../client/GraphQLClient/types';
+import { PullRequest, PullRequestUser } from '../../client/GraphQLClient/types';
 import { UserEntity } from '../../types';
 
 export const fixtureUser: UserEntity = ({
@@ -6,21 +6,38 @@ export const fixtureUser: UserEntity = ({
   name: 'Some Body',
   login: 'somebody',
 } as unknown) as UserEntity;
+export const pullRequestUser: PullRequestUser = {
+  login: fixtureUser.login,
+  name: fixtureUser.name as string,
+  isSiteAdmin: true,
+};
 export const fixtureReviewerUser: UserEntity = ({
   displayName: 'Reviewer User',
   name: 'Reviewer User',
   login: 'reviewer-user',
 } as unknown) as UserEntity;
+export const pullRequestReviewer: PullRequestUser = {
+  login: fixtureReviewerUser.login,
+  name: fixtureReviewerUser.name as string,
+  isSiteAdmin: false,
+};
 export const fixturePullRequest: PullRequest = {
   additions: 156,
-  author: fixtureUser,
+  author: {
+    login: fixtureUser.login,
+    name: fixtureUser.name as string,
+    isSiteAdmin: true,
+  },
   authorAssociation: 'CONTRIBUTOR',
   baseRefName: 'main',
   baseRefOid: '989c2e36df5b7d2e77ff1ab33aaee49bea705066',
   baseRepository: {
     name: 'jupiter-integration-aws',
-    nameWithOwner: 'JupiterOne/jupiter-integration-aws',
-    owner: {},
+    owner: {
+      login: 'JupiterOne',
+      id: 'MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy',
+      url: 'https://github.com/JupiterOne',
+    },
   },
   body: 'This is some discription or something',
   changedFiles: 7,
@@ -34,8 +51,11 @@ export const fixturePullRequest: PullRequest = {
   headRefOid: '1103a7a2e976439ca184f775196759084f16e42f',
   headRepository: {
     name: 'jupiter-integration-aws',
-    nameWithOwner: 'JupiterOne/jupiter-integration-aws',
-    owner: {},
+    owner: {
+      login: 'JupiterOne',
+      id: 'MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy',
+      url: 'https://github.com/JupiterOne',
+    },
   },
   id: 'MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1',
   isDraft: false,
@@ -52,13 +72,13 @@ export const fixturePullRequest: PullRequest = {
     oid: '39483af8a356b5684513bf56c044dab0ed4c0c7a',
     author: {
       date: '2021-08-31T21:53:34-04:00',
-      user: fixtureUser,
+      user: pullRequestUser,
     },
   },
   mergeable: 'UNKNOWN',
   merged: true,
   mergedAt: '2021-09-01T01:53:34Z',
-  mergedBy: fixtureUser,
+  mergedBy: pullRequestUser,
   number: 45,
   permalink: 'https://github.com/JupiterOne/jupiter-integration-aws/pull/45',
   publishedAt: '2021-08-31T22:15:07Z',
@@ -80,7 +100,7 @@ export const fixturePullRequest: PullRequest = {
       oid: '890af24d913107194e9ce9439b7e71ea2b1b17c4',
       author: {
         date: '2021-08-31T18:14:38-04:00',
-        user: fixtureUser,
+        user: pullRequestUser,
       },
     },
     {
@@ -95,7 +115,7 @@ export const fixturePullRequest: PullRequest = {
       oid: '69b3d5771a50752acf9310fd93b7a176d6cffaa2',
       author: {
         date: '2021-08-31T18:17:39-04:00',
-        user: fixtureUser,
+        user: pullRequestUser,
       },
     },
     {
@@ -109,7 +129,7 @@ export const fixturePullRequest: PullRequest = {
       oid: '1103a7a2e976439ca184f775196759084f16e42f',
       author: {
         date: '2021-08-31T18:19:34-04:00',
-        user: fixtureUser,
+        user: pullRequestUser,
       },
     },
   ],
@@ -119,7 +139,7 @@ export const fixturePullRequest: PullRequest = {
       commit: {
         oid: '1103a7a2e976439ca184f775196759084f16e42f',
       },
-      author: fixtureReviewerUser,
+      author: pullRequestReviewer,
       state: 'APPROVED',
       submittedAt: '2021-09-01T00:19:38Z',
       updatedAt: '2021-09-01T00:19:38Z',

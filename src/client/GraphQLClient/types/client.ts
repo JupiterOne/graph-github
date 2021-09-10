@@ -149,9 +149,15 @@ export type GithubResourcesQueryResponse = {
  * Pull Request GraphQL Fragment Types
  */
 export interface PullRequestUser {
-  login?: string;
+  login: string;
   name?: string;
-  isSiteAdmin?: string;
+  isSiteAdmin: boolean;
+}
+
+export interface repositoryOwner {
+  login: string;
+  id: string;
+  url: string;
 }
 
 export interface PullRequestCommitQueryResponse {
@@ -202,8 +208,7 @@ export interface PullRequest extends Node {
   baseRefOid: string;
   baseRepository: {
     name: string;
-    nameWithOwner: string;
-    owner: PullRequestUser;
+    owner: repositoryOwner;
   };
   body?: string;
   changedFiles: number;
@@ -217,8 +222,7 @@ export interface PullRequest extends Node {
   headRefOid: string;
   headRepository: {
     name: string;
-    nameWithOwner: string;
-    owner: PullRequestUser;
+    owner: repositoryOwner;
   };
   isDraft: boolean;
   lastEditedAt?: string;

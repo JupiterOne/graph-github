@@ -33,6 +33,11 @@ export default {
     createdAt
     updatedAt
   }`,
+  repositoryOwnerFields: `on RepositoryOwner {
+    login
+    id
+    url
+  }`,
   teamRepositoryEdgeFields: `on TeamRepositoryEdge {
     permission
   }`,
@@ -81,9 +86,9 @@ export default {
     baseRefOid
     baseRepository {
       name
-      nameWithOwner
+      url
       owner {
-        ...userFields
+        ...repositoryOwnerFields
       }
     }
     body
@@ -102,9 +107,8 @@ export default {
     headRefOid
     headRepository {
       name
-      nameWithOwner
       owner {
-        ...userFields
+        ...repositoryOwnerFields
       }
     }
     id

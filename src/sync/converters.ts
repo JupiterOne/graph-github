@@ -50,6 +50,7 @@ import {
 import { uniq, last, compact } from 'lodash';
 import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';
 import getCommitsToDestination from '../util/getCommitsToDestination';
+import { UrlLoader } from '@graphql-tools/url-loader';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -298,11 +299,9 @@ export function toPullRequestEntity(
       assign: {
         _type: GITHUB_PR_ENTITY_TYPE,
         _class: [GITHUB_PR_ENTITY_CLASS],
-        _key: `${pullRequest.baseRepository.nameWithOwner}/pull-requests/${pullRequest.number}`,
+        _key: `${pullRequest.baseRepository.owner.login}/${pullRequest.baseRepository.name}/pull-requests/${pullRequest.number}`,
         displayName: `${pullRequest.baseRepository.name}/${pullRequest.number}`,
-        accountLogin: pullRequest.baseRepository.owner?.login
-          ? pullRequest.baseRepository.owner.login
-          : '',
+        accountLogin: pullRequest.baseRepository.owner.login,
         repository: pullRequest.baseRepository.name,
         // The number is NOT the id of the Pull Request. Hopefully no one gets bit from that later
         id: pullRequest.number ? String(pullRequest.number) : '',

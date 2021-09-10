@@ -12,7 +12,7 @@ Object {
       "rawData": Object {
         "additions": 156,
         "author": Object {
-          "displayName": "Some Body",
+          "isSiteAdmin": true,
           "login": "somebody",
           "name": "Some Body",
         },
@@ -21,8 +21,11 @@ Object {
         "baseRefOid": "989c2e36df5b7d2e77ff1ab33aaee49bea705066",
         "baseRepository": Object {
           "name": "jupiter-integration-aws",
-          "nameWithOwner": "JupiterOne/jupiter-integration-aws",
-          "owner": Object {},
+          "owner": Object {
+            "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+            "login": "JupiterOne",
+            "url": "https://github.com/JupiterOne",
+          },
         },
         "body": "This is some discription or something",
         "changedFiles": 7,
@@ -34,7 +37,7 @@ Object {
             "author": Object {
               "date": "2021-08-31T18:14:38-04:00",
               "user": Object {
-                "displayName": "Some Body",
+                "isSiteAdmin": true,
                 "login": "somebody",
                 "name": "Some Body",
               },
@@ -50,7 +53,7 @@ Object {
             "author": Object {
               "date": "2021-08-31T18:17:39-04:00",
               "user": Object {
-                "displayName": "Some Body",
+                "isSiteAdmin": true,
                 "login": "somebody",
                 "name": "Some Body",
               },
@@ -66,7 +69,7 @@ Object {
             "author": Object {
               "date": "2021-08-31T18:19:34-04:00",
               "user": Object {
-                "displayName": "Some Body",
+                "isSiteAdmin": true,
                 "login": "somebody",
                 "name": "Some Body",
               },
@@ -85,8 +88,11 @@ Object {
         "headRefOid": "1103a7a2e976439ca184f775196759084f16e42f",
         "headRepository": Object {
           "name": "jupiter-integration-aws",
-          "nameWithOwner": "JupiterOne/jupiter-integration-aws",
-          "owner": Object {},
+          "owner": Object {
+            "id": "MDEyOk9yZ2FuaXphdGlvbjQ0NjQ2NTEy",
+            "login": "JupiterOne",
+            "url": "https://github.com/JupiterOne",
+          },
         },
         "id": "MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1",
         "isDraft": false,
@@ -97,7 +103,7 @@ Object {
           "author": Object {
             "date": "2021-08-31T21:53:34-04:00",
             "user": Object {
-              "displayName": "Some Body",
+              "isSiteAdmin": true,
               "login": "somebody",
               "name": "Some Body",
             },
@@ -113,7 +119,7 @@ Object {
         "merged": true,
         "mergedAt": "2021-09-01T01:53:34Z",
         "mergedBy": Object {
-          "displayName": "Some Body",
+          "isSiteAdmin": true,
           "login": "somebody",
           "name": "Some Body",
         },
@@ -124,7 +130,7 @@ Object {
         "reviews": Array [
           Object {
             "author": Object {
-              "displayName": "Reviewer User",
+              "isSiteAdmin": false,
               "login": "reviewer-user",
               "name": "Reviewer User",
             },
@@ -146,7 +152,7 @@ Object {
     },
   ],
   "_type": "github_pullrequest",
-  "accountLogin": "",
+  "accountLogin": "JupiterOne",
   "allCommitsApproved": true,
   "approved": true,
   "approverLogins": Array [

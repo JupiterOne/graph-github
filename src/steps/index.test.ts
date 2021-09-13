@@ -21,7 +21,7 @@ import { setupGithubRecording } from '../../test/recording';
 import { fetchOrgSecrets } from './orgsecrets';
 import { fetchRepoSecrets } from './reposecrets';
 
-jest.setTimeout(10000);
+jest.setTimeout(20000);
 
 let recording: Recording;
 afterEach(async () => {

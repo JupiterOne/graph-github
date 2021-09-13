@@ -40,11 +40,7 @@ import {
   AccountType,
   RepoAllowRelationship,
 } from '../types';
-import { Approval } from '../approval/collectCommitsForPR';
 import {
-  aggregateProperties,
-  flattenMatrix,
-  displayNamesFromLogins,
   decomposePermissions,
   getAppEntityKey,
   getSecretEntityKey,

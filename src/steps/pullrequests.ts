@@ -28,6 +28,7 @@ import {
   GITHUB_REPO_PR_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  GITHUB_REPO_ARRAY,
 } from '../constants';
 import { toPullRequestEntity } from '../sync/converters';
 import { cloneDeep } from 'lodash';
@@ -48,7 +49,6 @@ export async function fetchPrs({
     );
   }
 
-  let UsersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
   const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
   if (!repoEntities) {
     throw new IntegrationMissingKeyError(
@@ -56,13 +56,18 @@ export async function fetchPrs({
     );
   }
 
-  //to assign correct relationships to PRs, we need an array of users and a map of users by login
-  //there are two sources for each of these, one for members and another for outside collaborators
+  //to assign correct relationships to PRs, we need a map of users by login
+  //there are two sources for each of these, one for members
+  //and another for outside collaborators
   //we'll combine those so the PRs have the most complete info
 
   //we can actually run the step without some or all of this information
   //if a PR is opened/approved/reviewed by an unknown GitHub login, it gets marked
   //as a commit by an unknown author (which might trigger security alerts).
+
+  let UsersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+    GITHUB_MEMBER_BY_LOGIN_MAP,
+  );
 
   if (!UsersByLoginMap) {
     logger.warn(

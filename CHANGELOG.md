@@ -8,6 +8,22 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- `github_pull_request` ingestion to use octokit v4 graphQL instead of the v3
+  rest api.
+- Commit analysis to be done on every `github_pull_request` regardless of if the
+  `analyzeCommitApproval` config variable is set or not.
+
+### Removed
+
+- `analyzeCommitApproval` config variable.
+
+### Added
+
+- Retrying "Secondary Rate Limit" errors on graphQL queries.
+- Better logging of graphQL queries.
+
 ## 1.3.0 - 2021-08-27
 
 ### Added

@@ -1,4 +1,4 @@
-import { OrganizationResource } from '.';
+import { GithubResource } from './client';
 
 export interface ResourceMap<T> {
   [resource: string]: T;
@@ -14,17 +14,20 @@ export interface NestedQueryFactory {
  */
 export interface ResourceMetadata {
   /*
-   * The GraphQL variable that's used as the end cursor for pagination in the
-   * request to GitHub. Should be in the format of "$variable: String" for
-   * direct interpolation into the GraphQL.
+   * Any GraphQL variables needed for the query. This usually includes the
+   * end cursor for pagination in the request to GitHub. Should be in the
+   * format of "$variable: String" for direct interpolation into the GraphQL.
    */
-  graphRequestVariable: string;
+  graphRequestVariables: string[];
   /*
    * The GraphQL property of this resource in relation to the root resource.
    * Will be used in the request as a field and to extract the data for that
    * field from the response.
+   *
+   * If not provided, the key of the ResourceMetadataMap will be defaulted.
+   * Examples: GithubResource.Organization, GithubResource.OrganizationMembers, ...
    */
-  graphProperty: string;
+  alternateGraphProperty?: string;
   /*
    * A function that accepts child resources as a fully resolved GraphQL query
    * and returns the GraphQL for this resource combined with the GraphQL for its
@@ -35,11 +38,24 @@ export interface ResourceMetadata {
    * The resources that are nested within this resource. For example, Team
    * Members is a child of Teams.
    */
-  children?: OrganizationResource[];
+  children?: GithubResource[];
   /*
    * The resource that this resource is nested within.
    */
-  parent?: OrganizationResource;
+  parent?: GithubResource;
+  /*
+   * The path to the relevant data when parsing a the graphQL response from its root.
+   *
+   * Example:
+   *   When parsing the query:
+   *     repository(name: $repoName, owner: $repoOwner) {
+   *       pullRequest(number: $pullRequestNumber) {
+   *        ...pullRequestFields
+   *       }
+   *     }
+   *   The data we want to retrieve will be at the path "repository.pullRequest"
+   */
+  pathToDataInGraphQlResponse?: string;
 }
 
 /*

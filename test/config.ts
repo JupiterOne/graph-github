@@ -18,7 +18,6 @@ export const integrationConfig: IntegrationConfig = {
   githubAppPrivateKey: DEFAULT_APP_PRIVATE_KEY,
   installationId:
     Number(process.env.INSTALLATION_ID) || DEFAULT_INSTALLATION_ID,
-  analyzeCommitApproval: true,
   githubAppDefaultLogin: 'something', //can be set manually in tests
   // useRestForTeamRepos: false
 } as IntegrationConfig; // casting config instead of setting useRestForTeamRepos to imitate configs already in production

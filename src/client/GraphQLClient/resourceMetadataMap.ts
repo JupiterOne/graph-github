@@ -1,4 +1,4 @@
-import { ResourceMap, OrganizationResource, ResourceMetadata } from './types';
+import { ResourceMap, ResourceMetadata, GithubResource } from './types';
 
 const pageInfo = `pageInfo {
   endCursor
@@ -7,42 +7,136 @@ const pageInfo = `pageInfo {
 
 export default function (
   pageLimit: number = 100,
+  pullRequestPageLimit: number = 50,
 ): ResourceMap<ResourceMetadata> {
   return {
-    [OrganizationResource.Organization]: {
-      graphRequestVariable: '$login: String!',
-      graphProperty: 'organization',
-      factory: (children: string = '') => `organization(login: $login) {
+    [GithubResource.PullRequest]: {
+      graphRequestVariables: [
+        '$pullRequestNumber: Int!',
+        '$repoName: String!',
+        '$repoOwner: String!',
+      ],
+      pathToDataInGraphQlResponse: 'repository.pullRequest',
+      factory: (
+        children: string = '',
+      ) => `repository(name: $repoName, owner: $repoOwner) {
+          ${GithubResource.PullRequest}(number: $pullRequestNumber) {
+            ...pullRequestFields
+            ${children}
+          }
+      }`,
+      children: [
+        GithubResource.Commits,
+        GithubResource.Reviews,
+        GithubResource.Labels,
+      ],
+    },
+    [GithubResource.PullRequests]: {
+      graphRequestVariables: [
+        '$query: String!',
+        `$${GithubResource.PullRequests}: String`,
+      ],
+      factory: (
+        children: string = '',
+      ) => `search(first: ${pullRequestPageLimit}, after: $${GithubResource.PullRequests}, type: ISSUE, query: $query) {
+        issueCount
+        edges {
+          node {
+            ...pullRequestFields
+            ${children}
+          }
+        }
+        ${pageInfo}
+      }`,
+      children: [
+        GithubResource.Commits,
+        GithubResource.Reviews,
+        GithubResource.Labels,
+      ],
+    },
+    [GithubResource.Commits]: {
+      graphRequestVariables: [`$${GithubResource.Commits}: String`],
+      factory: () => `... on PullRequest {
+        ${GithubResource.Commits}(first: ${pageLimit}, after: $${GithubResource.Commits}) {
+          totalCount
+          edges {
+            node {
+              commit {
+                ...commitFields
+              }
+            }
+          }
+          ${pageInfo}
+        }
+      }`,
+    },
+    [GithubResource.Reviews]: {
+      graphRequestVariables: [`$${GithubResource.Reviews}: String`],
+      factory: () => `... on PullRequest {
+        ${GithubResource.Reviews}(first: ${pageLimit}, after: $${GithubResource.Reviews}) {
+          totalCount
+          edges {
+            node {
+              ...reviewFields
+            }
+          }
+          ${pageInfo}
+        }
+      }`,
+    },
+    [GithubResource.Labels]: {
+      graphRequestVariables: [`$${GithubResource.Labels}: String`],
+      factory: () => `... on PullRequest {
+          ${GithubResource.Labels}(first: ${pageLimit}, after: $${GithubResource.Labels}) {
+          totalCount
+          edges {
+            node {
+              id
+              name
+            }
+          }
+          ${pageInfo}
+        }
+      }`,
+    },
+    [GithubResource.Organization]: {
+      graphRequestVariables: ['$login: String!'],
+      pathToDataInGraphQlResponse: 'organization',
+      factory: (
+        children: string = '',
+      ) => `${GithubResource.Organization}(login: $login) {
         id
         ...organizationFields
         ${children}
       }`,
+      children: [
+        GithubResource.OrganizationMembers,
+        GithubResource.Teams,
+        GithubResource.TeamMembers,
+        GithubResource.Repositories,
+      ],
     },
-    [OrganizationResource.Members]: {
-      graphRequestVariable: '$members: String',
-      graphProperty: 'membersWithRole',
+    [GithubResource.OrganizationMembers]: {
+      graphRequestVariables: [`$${GithubResource.OrganizationMembers}: String`],
       factory: (
         children: string = '',
-      ) => `membersWithRole(first: ${pageLimit}, after: $members) {
+      ) => `${GithubResource.OrganizationMembers}(first: ${pageLimit}, after: $${GithubResource.OrganizationMembers}) {
         edges {
           node {
             id
             ...userFields
             ${children}
           }
-
           ...userEdgeFields
         }
-
         ${pageInfo}
       }`,
     },
-    [OrganizationResource.Teams]: {
-      graphRequestVariable: '$teams: String',
-      graphProperty: 'teams',
+    [GithubResource.Teams]: {
+      graphRequestVariables: ['$teams: String'],
       factory: (
         children: string = '',
-      ) => `teams(first: ${pageLimit}, after: $teams) {
+      ) => `${GithubResource.Teams}(first: ${pageLimit}, after: $teams) {
         edges {
           node {
             id
@@ -50,60 +144,50 @@ export default function (
             ${children}
           }
         }
-
         ${pageInfo}
       }`,
-      children: [
-        OrganizationResource.TeamMembers,
-        OrganizationResource.TeamRepositories,
-      ],
+      children: [GithubResource.TeamMembers, GithubResource.TeamRepositories],
     },
-    [OrganizationResource.TeamMembers]: {
-      graphRequestVariable: '$teamMembers: String',
-      graphProperty: 'members',
+    [GithubResource.TeamMembers]: {
+      graphRequestVariables: [`$${GithubResource.TeamMembers}: String`],
       factory: (
         children: string = '',
-      ) => `members(first: ${pageLimit}, after: $teamMembers) {
+      ) => `${GithubResource.TeamMembers}(first: ${pageLimit}, after: $${GithubResource.TeamMembers}) {
         edges {
           node {
             id
             ...teamMemberFields
             ${children}
           }
-
           ...teamMemberEdgeFields
         }
-
         ${pageInfo}
       }`,
-      parent: OrganizationResource.Teams,
+      parent: GithubResource.Teams,
     },
-    [OrganizationResource.TeamRepositories]: {
-      graphRequestVariable: '$teamRepositories: String',
-      graphProperty: 'repositories',
+    [GithubResource.TeamRepositories]: {
+      graphRequestVariables: [`$${GithubResource.TeamRepositories}: String`],
+      alternateGraphProperty: GithubResource.Repositories, // Need this alternative graphProperty in order to because still searching for repositories, just under teams
       factory: (
         children: string = '',
-      ) => `repositories(first: ${pageLimit}, after: $teamRepositories) {
+      ) => `${GithubResource.Repositories}(first: ${pageLimit}, after: $${GithubResource.TeamRepositories}) {
         edges {
           node {
             id
             ...repositoryFields
             ${children}
           }
-
           ...teamRepositoryEdgeFields
         }
-
         ${pageInfo}
       }`,
-      parent: OrganizationResource.Teams,
+      parent: GithubResource.Teams,
     },
-    [OrganizationResource.Repositories]: {
-      graphRequestVariable: '$repositories: String',
-      graphProperty: 'repositories',
+    [GithubResource.Repositories]: {
+      graphRequestVariables: [`$${GithubResource.Repositories}: String`],
       factory: (
         children: string = '',
-      ) => `repositories(first: ${pageLimit}, after: $repositories) {
+      ) => `${GithubResource.Repositories}(first: ${pageLimit}, after: $${GithubResource.Repositories}) {
         edges {
           node {
             id
@@ -111,32 +195,8 @@ export default function (
             ${children}
           }
         }
-
         ${pageInfo}
       }`,
-      children: [OrganizationResource.RepositoryCollaborators],
-    },
-    //this is not quite working right yet
-    [OrganizationResource.RepositoryCollaborators]: {
-      graphRequestVariable: '$repositoryCollaborators: String',
-      graphProperty: 'collaborators',
-      factory: (
-        children: string = '',
-      ) => `collaborators(first: ${pageLimit}, after: $repositoryCollaborators) {
-        edges {
-          node {
-            id
-            ...userFields
-            ${children}
-          }
-         
-        },
-        nodes {
-          ...userFields
-        }
-        ${pageInfo}
-      }`,
-      parent: OrganizationResource.Repositories,
     },
   };
 }

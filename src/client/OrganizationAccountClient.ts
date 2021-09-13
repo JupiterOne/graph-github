@@ -1,4 +1,3 @@
-import pMap from 'p-map';
 import { Octokit } from '@octokit/rest';
 import {
   IntegrationError,
@@ -7,7 +6,6 @@ import {
 
 import {
   GitHubGraphQLClient,
-  OrganizationResource,
   OrgMemberQueryResponse,
   OrgTeamQueryResponse,
   OrgRepoQueryResponse,
@@ -17,24 +15,18 @@ import {
   TeamRepositoryPermission,
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
+  GithubResource,
 } from './GraphQLClient';
 import {
-  UserEntity,
   RepoEntity,
-  AccountEntity,
-  IdEntityMap,
-  PullRequestEntity,
   ReposCompareCommitsResponseItem,
   DiffFiles,
-  PullsListResponseItem,
-  PullsListReviewsResponseItem,
-  PullsListCommitsResponseItem,
   ReposListCommitsResponseItem,
 } from '../types';
-import collectCommitsForPR from '../approval/collectCommitsForPR';
-import { toPullRequestEntity } from '../sync/converters';
 import sha from '../util/sha';
 import { request } from '@octokit/request';
+import { ResourceIteratee } from '../client';
+import { PullRequest, PullRequestQueryResponse } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -54,7 +46,6 @@ export default class OrganizationAccountClient {
   readonly v3: Octokit;
   readonly v4: GitHubGraphQLClient;
   readonly logger: IntegrationLogger;
-  readonly analyzeCommitApproval: boolean;
 
   constructor(options: {
     /**
@@ -77,32 +68,11 @@ export default class OrganizationAccountClient {
      * information about non-fatal errors.
      */
     logger: IntegrationLogger;
-    /**
-     * Whether or not pull request commits should be analyzed for approval.
-     *
-     * Specifically, if this boolean is true, two additional calls to the
-     * API are executed, and the results processed to give values for the
-     * following properties to the pullrequest entity:
-     *  approved
-     *  validated
-     *  commits
-     *  commitMessages
-     *  commitsApproved
-     *  commitsNotApproved
-     *  commitsByUnknownAuthor
-     *  approvers
-     *  approverLogins
-     *
-     * All these properties will be set to undefined if analyzeCommitApproval
-     * is false.
-     */
-    analyzeCommitApproval: boolean;
   }) {
     this.login = options.login;
     this.v3 = options.restClient;
     this.v4 = options.graphqlClient;
     this.logger = options.logger;
-    this.analyzeCommitApproval = options.analyzeCommitApproval;
 
     this.authorizedForPullRequests = true;
     this.v3RateLimitConsumed = 0;
@@ -113,26 +83,30 @@ export default class OrganizationAccountClient {
     if (!this.account) {
       const fetchResources = allData
         ? [
-            OrganizationResource.Members,
-            OrganizationResource.Teams,
-            OrganizationResource.TeamMembers,
-            OrganizationResource.Repositories,
+            GithubResource.OrganizationMembers,
+            GithubResource.Teams,
+            GithubResource.TeamMembers,
+            GithubResource.Repositories,
           ]
         : [];
 
       await this.queryGraphQL('account and related resources', async () => {
         const {
           organization,
-          members,
+          membersWithRole,
           teams,
-          teamMembers,
+          members,
           repositories,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, fetchResources);
+        } = await this.v4.fetchFromSingle(
+          GithubResource.Organization,
+          fetchResources,
+          { login: this.login },
+        );
 
-        this.members = members;
+        this.members = membersWithRole;
         this.teams = teams;
-        this.teamMembers = teamMembers;
+        this.teamMembers = members;
         this.repositories = repositories;
         this.account = organization![0];
 
@@ -149,9 +123,11 @@ export default class OrganizationAccountClient {
         const {
           teams,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.Teams,
-        ]);
+        } = await this.v4.fetchFromSingle(
+          GithubResource.Organization,
+          [GithubResource.Teams],
+          { login: this.login },
+        );
 
         this.teams = teams;
 
@@ -165,13 +141,15 @@ export default class OrganizationAccountClient {
     if (!this.teamMembers) {
       await this.queryGraphQL('team members', async () => {
         const {
-          teamMembers,
+          members,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.TeamMembers,
-        ]);
+        } = await this.v4.fetchFromSingle(
+          GithubResource.Organization,
+          [GithubResource.TeamMembers],
+          { login: this.login },
+        );
 
-        this.teamMembers = teamMembers;
+        this.teamMembers = members;
 
         return rateLimitConsumed;
       });
@@ -186,9 +164,11 @@ export default class OrganizationAccountClient {
         const {
           repositories,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.Repositories,
-        ]);
+        } = await this.v4.fetchFromSingle(
+          GithubResource.Organization,
+          [GithubResource.Repositories],
+          { login: this.login },
+        );
 
         this.repositories = repositories;
 
@@ -220,9 +200,11 @@ export default class OrganizationAccountClient {
           const {
             teamRepositories,
             rateLimitConsumed,
-          } = await this.v4.fetchOrganization(this.login, [
-            OrganizationResource.TeamRepositories,
-          ]);
+          } = await this.v4.fetchFromSingle(
+            GithubResource.Organization,
+            [GithubResource.TeamRepositories],
+            { login: this.login },
+          );
           this.teamRepositories = teamRepositories;
           return rateLimitConsumed;
         });
@@ -326,38 +308,19 @@ export default class OrganizationAccountClient {
     }
   }
 
-  /* currently not being used because GraphQL is not cooperating, but here's the code for future research
-  async getRepoCollaborators(): Promise<OrgCollaboratorQueryResponse[]> {
-    if (!this.collaborators) {
-      await this.queryGraphQL('collaborators', async () => {
-        const {
-          collaborators,
-          rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.RepositoryCollaborators,
-        ]);
-
-        this.collaborators = collaborators;
-
-        return rateLimitConsumed;
-      });
-    }
-
-    return this.collaborators || [];
-  }
-  */
-
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
     if (!this.members) {
       await this.queryGraphQL('members', async () => {
         const {
-          members,
+          membersWithRole,
           rateLimitConsumed,
-        } = await this.v4.fetchOrganization(this.login, [
-          OrganizationResource.Members,
-        ]);
+        } = await this.v4.fetchFromSingle(
+          GithubResource.Organization,
+          [GithubResource.OrganizationMembers],
+          { login: this.login },
+        );
 
-        this.members = members;
+        this.members = membersWithRole;
 
         return rateLimitConsumed;
       });
@@ -405,177 +368,20 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getPullRequestEntity(
-    account: AccountEntity,
+  async iteratePullRequestEntities(
     repo: RepoEntity,
-    id: number,
-    teamMembers: UserEntity[],
-    teamMemberMap: IdEntityMap<UserEntity>,
-  ): Promise<PullRequestEntity | undefined> {
-    // This function is meant to be used for ingesting a single
-    //specific PR on-demand. For that reason, it automatically
-    //does the commit and approval analysis regardless of the
-    //analyzeCommitApproval config boolean
+    iteratee: ResourceIteratee<PullRequest>,
+  ): Promise<PullRequestQueryResponse> {
     if (!this.authorizedForPullRequests) {
-      return undefined;
+      this.logger.info('Account not authorized for ingesting pull requests.');
+      return { rateLimitConsumed: 0 };
     }
-
-    try {
-      const pullRequests = (
-        await this.v3.pulls.list({
-          //changed from .get to .list for typing reasons
-          owner: account.login,
-          repo: repo.name,
-          pull_number: id,
-        })
-      ).data;
-      const pullRequest = pullRequests[0];
-
-      this.v3RateLimitConsumed++;
-
-      const {
-        allCommits,
-        approvedCommits,
-        commitsByUnknownAuthor,
-        approvals,
-      } = await collectCommitsForPR(this, account, pullRequest, teamMembers);
-      return toPullRequestEntity(
-        pullRequest,
-        allCommits,
-        approvedCommits,
-        commitsByUnknownAuthor,
-        approvals,
-        teamMemberMap,
-      );
-    } catch (err) {
-      this.logger.info({ err }, 'pulls.get failed');
-
-      if (err.status === 403) {
-        this.authorizedForPullRequests = false;
-      }
-    }
-  }
-
-  async getPullRequestEntities(
-    account: AccountEntity,
-    repo: RepoEntity,
-    teamMembers: UserEntity[],
-    teamMemberMap: IdEntityMap<UserEntity>,
-    logger: IntegrationLogger,
-  ): Promise<Array<PullRequestEntity> | undefined> {
-    if (!this.authorizedForPullRequests) {
-      return undefined;
-    }
-
-    let pullRequests: PullsListResponseItem[];
-
-    try {
-      logger.info(
-        { repoName: repo.name },
-        'fetching batch of pull requests from repo',
-      );
-      const prCount = 100;
-      pullRequests = (
-        await this.v3.pulls.list({
-          owner: account.login,
-          repo: repo.name,
-          per_page: prCount,
-          state: 'all',
-        })
-      ).data;
-
-      this.v3RateLimitConsumed++;
-
-      return pMap(
-        pullRequests,
-        async (pullRequest) => {
-          // This is incredibly slow thanks to Github's rate and abuse limiting. Be careful when turning this on!
-          if (this.analyzeCommitApproval) {
-            const {
-              allCommits,
-              approvedCommits,
-              commitsByUnknownAuthor,
-              approvals,
-            } = await collectCommitsForPR(
-              this,
-              account,
-              pullRequest,
-              teamMembers,
-            );
-            return toPullRequestEntity(
-              pullRequest,
-              allCommits,
-              approvedCommits,
-              commitsByUnknownAuthor,
-              approvals,
-              teamMemberMap,
-            );
-          } else {
-            return toPullRequestEntity(pullRequest);
-          }
-        },
-        { concurrency: 1 },
-      );
-    } catch (err) {
-      this.logger.info({ err }, 'pulls.list failed');
-
-      if (err.status === 403) {
-        this.authorizedForPullRequests = false;
-      }
-    }
-  }
-
-  async getPullRequestReviews(
-    account: AccountEntity,
-    pullRequest: PullsListResponseItem,
-  ): Promise<PullsListReviewsResponseItem[]> {
-    const listOptions = {
-      owner: account.login,
-      repo: pullRequest.base.repo.name,
-      pull_number: pullRequest.number,
-    };
-
-    try {
-      const reviews = (await this.v3.pulls.listReviews(listOptions)).data;
-
-      this.v3RateLimitConsumed++;
-      return reviews;
-    } catch (err) {
-      this.logger.info({ err }, 'pulls.listReviews failed');
-      return [];
-    }
-  }
-
-  async getPullRequestCommits(
-    account: AccountEntity,
-    pullRequest: PullsListResponseItem,
-  ): Promise<PullsListCommitsResponseItem[]> {
-    const listOptions = {
-      owner: account.login,
-      repo: pullRequest.base.repo.name,
-      pull_number: pullRequest.number,
-    };
-
-    try {
-      const commits = (
-        await this.v3.pulls.listCommits({
-          ...listOptions,
-          /**
-           * This is the maximum number of commits we're allowed to fetch from
-           * this endpoint. If we for some reason need to fetch more than 250, we
-           * need to use the commits endpoint.
-           */
-          per_page: 250,
-        })
-      ).data;
-
-      this.v3RateLimitConsumed++;
-      return commits;
-    } catch (err) {
-      this.logger.info({ err, listOptions }, 'pulls.listCommits failed');
-
-      return [];
-    }
+    const query = `is:pr repo:${repo.fullName}`;
+    return await this.v4.iteratePullRequests(
+      query,
+      [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
+      iteratee,
+    );
   }
 
   async getComparison(
@@ -604,6 +410,7 @@ export default class OrganizationAccountClient {
     }
   }
 
+  // This is sometimes used by CM bot, but not in the actual integraiton.
   async isEmptyMergeCommit(
     account: string,
     repository: string,

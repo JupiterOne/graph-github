@@ -18,11 +18,6 @@ export type ReposListCommitsResponseItem = RestEndpointMethodTypes['repos']['lis
 
 export type TeamsListReposResponseItem = RestEndpointMethodTypes['teams']['listReposInOrg']['response']['data'][0];
 
-export enum PRState {
-  Open = 'open',
-  Closed = 'closed',
-}
-
 export interface DiffFiles {
   sha: string;
   patch?: string;

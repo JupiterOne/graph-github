@@ -76,6 +76,12 @@ export async function fetchOrgSecrets({
         );
       }
     }
+    if (orgSecretsByNameMap[secret.name]) {
+      logger.warn(
+        { secret: secret },
+        'Name conflict in org secrets. This should be impossible.',
+      );
+    }
     orgSecretsByNameMap[secret.name] = secretEntity;
   });
 

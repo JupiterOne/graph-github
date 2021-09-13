@@ -115,9 +115,13 @@ export function toOrgSecretEntity(
   orgLogin: string,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
-    _class: [GITHUB_SECRET_ENTITY_CLASS],
+    _class: GITHUB_SECRET_ENTITY_CLASS,
     _type: GITHUB_ORG_SECRET_ENTITY_TYPE,
-    _key: getSecretEntityKey(data.name, 'Org', orgLogin),
+    _key: getSecretEntityKey({
+      name: data.name,
+      secretOwnerType: 'Org',
+      secretOwnerName: orgLogin,
+    }),
     name: data.name,
     displayName: data.name,
     webLink: `https://github.com/organizations/${orgLogin}/settings/secrets/actions/${data.name}`,
@@ -136,9 +140,13 @@ export function toRepoSecretEntity(
   repoName: string,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
-    _class: [GITHUB_SECRET_ENTITY_CLASS],
+    _class: GITHUB_SECRET_ENTITY_CLASS,
     _type: GITHUB_REPO_SECRET_ENTITY_TYPE,
-    _key: getSecretEntityKey(data.name, 'Repo', repoName),
+    _key: getSecretEntityKey({
+      name: data.name,
+      secretOwnerType: 'Repo',
+      secretOwnerName: repoName,
+    }),
     name: data.name,
     displayName: data.name,
     webLink: `https://github.com/${orgLogin}/${repoName}/settings/secrets/actions/${data.name}`,
@@ -158,9 +166,9 @@ export function toEnvSecretEntity(
   environment: EnvironmentEntity,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
-    _class: [GITHUB_SECRET_ENTITY_CLASS],
+    _class: GITHUB_SECRET_ENTITY_CLASS,
     _type: GITHUB_ENV_SECRET_ENTITY_TYPE,
-    _key: getSecretEntityKey(data.name, 'Env', environment.name),
+    _key: getSecretEntityKey({name: data.name, secretOwnerType:'Env', secretOwnerName: environment.name}),
     name: data.name,
     displayName: data.name,
     webLink: `https://github.com/${orgLogin}/${repoName}/settings/environments/${environment.id}/edit`,

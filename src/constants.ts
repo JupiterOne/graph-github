@@ -43,9 +43,9 @@ export const GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE =
 export const GITHUB_ORG_SECRET_ENTITY_TYPE = 'github_org_secret';
 export const GITHUB_REPO_SECRET_ENTITY_TYPE = 'github_repo_secret';
 export const GITHUB_ENV_SECRET_ENTITY_TYPE = 'github_env_secret';
-export const GITHUB_SECRET_ENTITY_CLASS = 'Secret';
+export const GITHUB_SECRET_ENTITY_CLASS = ['Secret'];
 export const GITHUB_ENVIRONMENT_ENTITY_TYPE = 'github_environment';
-export const GITHUB_ENVIRONMENT_ENTITY_CLASS = 'Configuration';
+export const GITHUB_ENVIRONMENT_ENTITY_CLASS = ['Configuration'];
 //org sercrets
 export const GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE =
   'github_account_has_org_secret';

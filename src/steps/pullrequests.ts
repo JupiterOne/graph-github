@@ -48,15 +48,6 @@ export async function fetchPrs({
     );
   }
 
-  //to assign correct relationships to PRs, we need a map of users by login
-  //there are two sources for each of these, one for members
-  //and another for outside collaborators
-  //we'll combine those so the PRs have the most complete info
-
-  //we can actually run the step without some or all of this information
-  //if a PR is opened/approved/reviewed by an unknown GitHub login, it gets marked
-  //as a commit by an unknown author (which might trigger security alerts).
-
   let UsersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
   );

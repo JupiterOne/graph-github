@@ -1,4 +1,4 @@
-import { RepoEntity, TokenPermissions } from '../../../types';
+import { RepoKeyAndName, TokenPermissions } from '../../../types';
 
 /**
  * From the name given to the data for the JupiterOne use case to the specific Github
@@ -156,7 +156,7 @@ export interface OrgSecretQueryResponse {
   orgLogin?: string; //for use in constructing weblinks
   secretOwnerType?: string; // 'org' | 'repo' | 'env'
   secretOwnerName?: string;
-  repos?: RepoEntity[];
+  repos?: RepoKeyAndName[]; //to help build relationships with minimal memory footprint, using RepoKeyAndName instead of RepoEntity
 }
 
 interface GithubResources {

@@ -59,6 +59,12 @@ export interface RepoEntity extends Entity {
   updatedOn: number | undefined;
 }
 
+//to cut down on memory usage, this type will be passed between steps for relationship building
+export interface RepoKeyAndName {
+  _key: string;
+  name: string;
+}
+
 export interface UserEntity extends Entity {
   username: string;
   login: string;

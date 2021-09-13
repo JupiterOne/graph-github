@@ -28,7 +28,6 @@ import {
   GITHUB_REPO_PR_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
-  GITHUB_REPO_ARRAY,
 } from '../constants';
 import { toPullRequestEntity } from '../sync/converters';
 import { cloneDeep } from 'lodash';
@@ -46,13 +45,6 @@ export async function fetchPrs({
   if (!accountEntity) {
     throw new IntegrationMissingKeyError(
       `Expected to find Account entity in jobState.`,
-    );
-  }
-
-  const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
-  if (!repoEntities) {
-    throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
     );
   }
 

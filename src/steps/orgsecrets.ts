@@ -9,7 +9,12 @@ import {
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import { AccountEntity, IdEntityMap, RepoEntity, SecretEntity } from '../types';
+import {
+  AccountEntity,
+  IdEntityMap,
+  RepoKeyAndName,
+  SecretEntity,
+} from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
   GITHUB_REPO_ENTITY_TYPE,
@@ -20,7 +25,10 @@ import {
   GITHUB_REPO_ARRAY,
   GITHUB_ORG_SECRET_BY_NAME_MAP,
 } from '../constants';
-import { toOrgSecretEntity } from '../sync/converters';
+import {
+  createRepoUsesOrgSecretRelationship,
+  toOrgSecretEntity,
+} from '../sync/converters';
 
 export async function fetchOrgSecrets({
   instance,
@@ -38,8 +46,8 @@ export async function fetchOrgSecrets({
       `Expected to find Account entity in jobState.`,
     );
   }
-  const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
-  if (!repoEntities) {
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(GITHUB_REPO_ARRAY);
+  if (!repoTags) {
     throw new IntegrationMissingKeyError(
       `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
     );
@@ -47,7 +55,7 @@ export async function fetchOrgSecrets({
 
   const orgSecretsByNameMap: IdEntityMap<SecretEntity> = {};
 
-  await apiClient.iterateOrgSecrets(repoEntities, async (secret) => {
+  await apiClient.iterateOrgSecrets(repoTags, async (secret) => {
     const secretEntity = (await jobState.addEntity(
       toOrgSecretEntity(secret, apiClient.accountClient.login || ''),
     )) as SecretEntity;
@@ -62,13 +70,9 @@ export async function fetchOrgSecrets({
 
     //for every org type, add a USES relationship for all repos with access to secret
     if (secret.repos) {
-      for (const repoEntity of secret.repos) {
+      for (const repoTag of secret.repos) {
         await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.USES,
-            from: repoEntity,
-            to: secretEntity,
-          }),
+          createRepoUsesOrgSecretRelationship(repoTag, secretEntity),
         );
       }
     }

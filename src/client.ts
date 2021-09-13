@@ -5,7 +5,12 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
-import { AccountType, RepoEntity, TokenPermissions } from './types';
+import {
+  AccountType,
+  RepoEntity,
+  RepoKeyAndName,
+  TokenPermissions,
+} from './types';
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
@@ -132,7 +137,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateOrgSecrets(
-    allRepos: RepoEntity[],
+    allRepos: RepoKeyAndName[],
     iteratee: ResourceIteratee<OrgSecretQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
@@ -153,11 +158,11 @@ export class APIClient {
           const reposForOrgSecret = await this.accountClient.getReposForOrgSecret(
             secret.name,
           );
-          const secretRepos: RepoEntity[] = [];
+          const secretRepos: RepoKeyAndName[] = [];
           for (const repo of reposForOrgSecret) {
-            const repoEntity = allRepos.find((r) => r._key === repo.node_id);
-            if (repoEntity) {
-              secretRepos.push(repoEntity);
+            const repoTag = allRepos.find((r) => r._key === repo.node_id);
+            if (repoTag) {
+              secretRepos.push(repoTag);
             }
           }
           secret.repos = secretRepos;
@@ -234,7 +239,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateCollaborators(
-    repo: RepoEntity,
+    repo: RepoKeyAndName,
     iteratee: ResourceIteratee<OrgCollaboratorQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {

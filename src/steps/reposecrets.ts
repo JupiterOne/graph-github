@@ -8,7 +8,7 @@ import {
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { RepoEntity, SecretEntity } from '../types';
+import { RepoKeyAndName, SecretEntity } from '../types';
 import {
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_SECRET_ENTITY_TYPE,
@@ -21,7 +21,11 @@ import {
   GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
 } from '../constants';
-import { toRepoSecretEntity } from '../sync/converters';
+import {
+  toRepoSecretEntity,
+  createRepoHasRepoSecretRelationship,
+  createRepoUsesRepoSecretRelationship,
+} from '../sync/converters';
 
 export async function fetchRepoSecrets({
   instance,
@@ -31,8 +35,8 @@ export async function fetchRepoSecrets({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
-  if (!repoEntities) {
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(GITHUB_REPO_ARRAY);
+  if (!repoTags) {
     throw new IntegrationMissingKeyError(
       `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
     );
@@ -50,31 +54,19 @@ export async function fetchRepoSecrets({
   //for use in detecting overrides by environmental secrets
   const repoSecretEntitiesByRepoNameMap = {};
 
-  for (const repoEntity of repoEntities) {
+  for (const repoTag of repoTags) {
     const repoSecretEntities: SecretEntity[] = [];
-    await apiClient.iterateRepoSecrets(repoEntity.name, async (secret) => {
+    await apiClient.iterateRepoSecrets(repoTag.name, async (secret) => {
       const secretEntity = (await jobState.addEntity(
-        toRepoSecretEntity(
-          secret,
-          apiClient.accountClient.login,
-          repoEntity.name,
-        ),
+        toRepoSecretEntity(secret, apiClient.accountClient.login, repoTag.name),
       )) as SecretEntity;
       repoSecretEntities.push(secretEntity);
 
       await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.HAS,
-          from: repoEntity,
-          to: secretEntity,
-        }),
+        createRepoHasRepoSecretRelationship(repoTag, secretEntity),
       );
       await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.USES,
-          from: repoEntity,
-          to: secretEntity,
-        }),
+        createRepoUsesRepoSecretRelationship(repoTag, secretEntity),
       );
       if (orgSecretEntities[secret.name]) {
         await jobState.addRelationship(
@@ -86,7 +78,7 @@ export async function fetchRepoSecrets({
         );
       }
     });
-    repoSecretEntitiesByRepoNameMap[repoEntity.name] = repoSecretEntities;
+    repoSecretEntitiesByRepoNameMap[repoTag.name] = repoSecretEntities;
   }
   await jobState.setData(
     GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,

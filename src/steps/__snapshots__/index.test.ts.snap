@@ -1595,7 +1595,7 @@ Object {
     "github_repo_uses_secret",
     "github_repo_secret_overrides_org_secret",
   ],
-  "numCollectedEntities": 18,
-  "numCollectedRelationships": 37,
+  "numCollectedEntities": 19,
+  "numCollectedRelationships": 42,
 }
 `;

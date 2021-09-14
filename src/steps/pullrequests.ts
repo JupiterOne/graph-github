@@ -4,6 +4,7 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   createDirectRelationship,
+  IntegrationError,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
@@ -75,69 +76,83 @@ export async function fetchPrs({
     );
   }
 
-  await jobState.iterateEntities<RepoEntity>(
-    { _type: GITHUB_REPO_ENTITY_TYPE },
-    async (repoEntity) => {
-      await apiClient.iteratePullRequests(
-        repoEntity,
-        logger,
-        async (pullRequest) => {
-          const pr = toPullRequestEntity(
-            pullRequest,
-            teamMembersByLoginMap,
-            UsersByLoginMap!,
-          );
-          const prEntity = (await jobState.addEntity(pr)) as PullRequestEntity;
+  try {
+    await jobState.iterateEntities<RepoEntity>(
+      { _type: GITHUB_REPO_ENTITY_TYPE },
+      async (repoEntity) => {
+        await apiClient.iteratePullRequests(
+          repoEntity,
+          logger,
+          async (pullRequest) => {
+            const pr = toPullRequestEntity(
+              pullRequest,
+              teamMembersByLoginMap,
+              UsersByLoginMap!,
+            );
+            const prEntity = (await jobState.addEntity(
+              pr,
+            )) as PullRequestEntity;
 
-          await jobState.addRelationship(
-            createDirectRelationship({
-              _class: RelationshipClass.HAS,
-              from: repoEntity,
-              to: prEntity,
-            }),
-          );
-
-          if (UsersByLoginMap![pr.authorLogin]) {
             await jobState.addRelationship(
               createDirectRelationship({
-                _class: RelationshipClass.OPENED,
-                from: UsersByLoginMap![pr.authorLogin],
+                _class: RelationshipClass.HAS,
+                from: repoEntity,
                 to: prEntity,
               }),
             );
-          }
 
-          if (pr.reviewerLogins) {
-            for (const reviewer of pr.reviewerLogins) {
-              if (UsersByLoginMap![reviewer]) {
-                await jobState.addRelationship(
-                  createDirectRelationship({
-                    _class: RelationshipClass.REVIEWED,
-                    from: UsersByLoginMap![reviewer],
-                    to: prEntity,
-                  }),
-                );
+            if (UsersByLoginMap![pr.authorLogin]) {
+              await jobState.addRelationship(
+                createDirectRelationship({
+                  _class: RelationshipClass.OPENED,
+                  from: UsersByLoginMap![pr.authorLogin],
+                  to: prEntity,
+                }),
+              );
+            }
+
+            if (pr.reviewerLogins) {
+              for (const reviewer of pr.reviewerLogins) {
+                if (UsersByLoginMap![reviewer]) {
+                  await jobState.addRelationship(
+                    createDirectRelationship({
+                      _class: RelationshipClass.REVIEWED,
+                      from: UsersByLoginMap![reviewer],
+                      to: prEntity,
+                    }),
+                  );
+                }
               }
             }
-          }
 
-          if (pr.approverLogins) {
-            for (const approver of pr.approverLogins) {
-              if (UsersByLoginMap![approver]) {
-                await jobState.addRelationship(
-                  createDirectRelationship({
-                    _class: RelationshipClass.APPROVED,
-                    from: UsersByLoginMap![approver],
-                    to: prEntity,
-                  }),
-                );
+            if (pr.approverLogins) {
+              for (const approver of pr.approverLogins) {
+                if (UsersByLoginMap![approver]) {
+                  await jobState.addRelationship(
+                    createDirectRelationship({
+                      _class: RelationshipClass.APPROVED,
+                      from: UsersByLoginMap![approver],
+                      to: prEntity,
+                    }),
+                  );
+                }
               }
             }
-          }
-        },
-      );
-    },
-  );
+          },
+        );
+      },
+    );
+  } catch (error) {
+    logger.error(
+      { error },
+      'Unable to process all Pull Request entities due to error.',
+    );
+    throw new IntegrationError({
+      message: error.message,
+      code: error.Code,
+      cause: error,
+    });
+  }
 }
 
 export const prSteps: IntegrationStep<IntegrationConfig>[] = [

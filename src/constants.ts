@@ -71,7 +71,6 @@ export const GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE =
 
 //these constants are names used to save and retrieve data between steps
 //they are constants instead of strings so that TypeScript will detect spelling errors
-export const GITHUB_MEMBER_ARRAY = 'GITHUB_MEMBER_ARRAY';
 export const GITHUB_MEMBER_BY_LOGIN_MAP = 'GITHUB_MEMBER_BY_LOGIN_MAP';
 export const GITHUB_OUTSIDE_COLLABORATOR_ARRAY =
   'GITHUB_OUTSIDE_COLLABORATOR_ARRAY';

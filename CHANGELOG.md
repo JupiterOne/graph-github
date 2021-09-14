@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.4.2 - 2021-09-14
+
 ### Added
 
 - Error logging to "Fetch Pull Requests" step.

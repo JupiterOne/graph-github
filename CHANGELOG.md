@@ -11,7 +11,9 @@ and this project adheres to
 ### Fixed
 
 - Issue where changing data during the integration run could cause duplicate key
-  errors and failure of some steps
+  errors and failure of some steps.
+- Issue where fallback to the REST API for certain accounts could cause Repo
+  ALLOWS Team relationships to only appear for one team.
 
 ## 1.4.0 - 2021-09-14
 

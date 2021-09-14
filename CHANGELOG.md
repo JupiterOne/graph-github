@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Issue where changing data during the integration run could cause duplicate key
+  errors and failure of some steps
+
 ## 1.4.0 - 2021-09-14
 
 ### Changed

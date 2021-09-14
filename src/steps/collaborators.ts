@@ -18,7 +18,7 @@ import {
   GITHUB_COLLABORATOR_ENTITY_CLASS,
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ARRAY,
+  GITHUB_REPO_TAGS_ARRAY,
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
@@ -31,10 +31,12 @@ export async function fetchCollaborators({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(GITHUB_REPO_ARRAY);
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+    GITHUB_REPO_TAGS_ARRAY,
+  );
   if (!repoTags) {
     throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
+      `Expected repos.ts to have set ${GITHUB_REPO_TAGS_ARRAY} in jobState.`,
     );
   }
   const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
@@ -61,7 +63,7 @@ export async function fetchCollaborators({
         userEntity = memberByLoginMap[collab.login];
       } else {
         //retrieve or create outside collaborator entity
-        if (outsideCollaboratorsByLoginMap[collab.login]) {
+        if (await jobState.hasKey(collab.node_id)) {
           userEntity = outsideCollaboratorsByLoginMap[collab.login];
         } else {
           userEntity = (await jobState.addEntity(
@@ -71,12 +73,19 @@ export async function fetchCollaborators({
           outsideCollaboratorsArray.push(userEntity);
         }
       }
-      const repoUserRelationship = createRepoAllowsUserRelationship(
-        repo,
-        userEntity,
-        collab.permissions,
-      );
-      await jobState.addRelationship(repoUserRelationship);
+      if (userEntity) {
+        const repoUserRelationship = createRepoAllowsUserRelationship(
+          repo,
+          userEntity,
+          collab.permissions,
+        );
+        await jobState.addRelationship(repoUserRelationship);
+      } else {
+        logger.warn(
+          { collab: collab },
+          `Could not find or create entity of collaborator ${collab.login}`,
+        );
+      }
     });
   } // end of repo iterator
 

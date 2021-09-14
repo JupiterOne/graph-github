@@ -14,13 +14,7 @@ import {
   toOrganizationMemberEntityFromTeamMember,
   createRepoAllowsTeamRelationship,
 } from '../sync/converters';
-import {
-  AccountEntity,
-  TeamEntity,
-  UserEntity,
-  RepoKeyAndName,
-} from '../types';
-import sha from '../util/sha';
+import { AccountEntity, TeamEntity, RepoKeyAndName } from '../types';
 import { TeamMemberRole } from '../client/GraphQLClient';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
@@ -32,8 +26,7 @@ import {
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ARRAY,
-  GITHUB_MEMBER_ARRAY,
+  GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
 
 export async function fetchTeams({
@@ -52,18 +45,12 @@ export async function fetchTeams({
       `Expected to find Account entity in jobState.`,
     );
   }
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(GITHUB_REPO_ARRAY);
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+    GITHUB_REPO_TAGS_ARRAY,
+  );
   if (!repoTags) {
     throw new IntegrationMissingKeyError(
       `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
-    );
-  }
-  const memberEntities = await jobState.getData<UserEntity[]>(
-    GITHUB_MEMBER_ARRAY,
-  );
-  if (!memberEntities) {
-    throw new IntegrationMissingKeyError(
-      `Expected members.ts to have set GITHUB_MEMBER_ARRAY in jobState.`,
     );
   }
 
@@ -81,22 +68,20 @@ export async function fetchTeams({
     );
 
     for (const member of team.members || []) {
-      let memberEntity = memberEntities.find((m) => m._key === member.id);
-      if (!memberEntity) {
-        memberEntity = (await jobState.addEntity(
+      const memberKey = member.id;
+      if (!(await jobState.hasKey(memberKey))) {
+        await jobState.addEntity(
           toOrganizationMemberEntityFromTeamMember(member),
-        )) as UserEntity;
-        logger.warn(
-          { memberLoginSha: sha(member.login) },
-          'Could not find user entity for member login',
         );
       }
 
       await jobState.addRelationship(
         createDirectRelationship({
           _class: RelationshipClass.HAS,
-          from: teamEntity,
-          to: memberEntity,
+          fromType: GITHUB_TEAM_ENTITY_TYPE,
+          toType: GITHUB_MEMBER_ENTITY_TYPE,
+          fromKey: teamEntity._key,
+          toKey: memberKey,
         }),
       );
 
@@ -104,8 +89,10 @@ export async function fetchTeams({
         await jobState.addRelationship(
           createDirectRelationship({
             _class: RelationshipClass.MANAGES,
-            from: memberEntity,
-            to: teamEntity,
+            fromType: GITHUB_MEMBER_ENTITY_TYPE,
+            toType: GITHUB_TEAM_ENTITY_TYPE,
+            fromKey: memberKey,
+            toKey: teamEntity._key,
           }),
         );
       }

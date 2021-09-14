@@ -98,8 +98,8 @@ export class APIClient {
     // accounts to bypass a Github error. Please delete this code once that error is fixed.
     const allTeamRepos: OrgTeamRepoQueryResponse[] = this.config
       .useRestForTeamRepos
-      ? await this.accountClient.getTeamReposWithRest()
-      : await this.accountClient.getTeamRepositories();
+      ? await this.accountClient.getTeamReposWithRest(teams)
+      : await this.accountClient.getTeamRepositories(teams);
 
     for (const team of teams) {
       team.members = allTeamMembers.filter(

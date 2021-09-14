@@ -18,7 +18,6 @@ import {
   GITHUB_MEMBER_ENTITY_CLASS,
   GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
   GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_ARRAY,
   GITHUB_MEMBER_BY_LOGIN_MAP,
 } from '../constants';
 
@@ -39,8 +38,7 @@ export async function fetchMembers({
     );
   }
 
-  //for use later in PRs
-  const memberEntities: UserEntity[] = [];
+  //for use later in other steps
   const memberByLoginMap: IdEntityMap<UserEntity> = {};
 
   await apiClient.iterateMembers(async (member) => {
@@ -48,7 +46,6 @@ export async function fetchMembers({
       toOrganizationMemberEntity(member),
     )) as UserEntity;
 
-    memberEntities.push(memberEntity);
     memberByLoginMap[member.login] = memberEntity;
 
     await jobState.addRelationship(
@@ -70,7 +67,6 @@ export async function fetchMembers({
     }
   });
 
-  await jobState.setData(GITHUB_MEMBER_ARRAY, memberEntities);
   await jobState.setData(GITHUB_MEMBER_BY_LOGIN_MAP, memberByLoginMap);
 }
 

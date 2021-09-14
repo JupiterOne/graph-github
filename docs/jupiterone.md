@@ -113,7 +113,7 @@ The following entities are created:
 
 ### Relationships
 
-The following relationships are created:
+The following relationships are created/mapped:
 
 | Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
 | --------------------- | --------------------- | --------------------- |
@@ -126,7 +126,7 @@ The following relationships are created:
 | `github_repo`         | **ALLOWS**            | `github_user`         |
 | `github_repo`         | **HAS**               | `github_pullrequest`  |
 | `github_repo`         | **HAS**               | `github_repo_secret`  |
-| `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`   |
+| `github_repo_secret`  | **undefined**         | `github_org_secret`   |
 | `github_repo`         | **USES**              | `github_org_secret`   |
 | `github_repo`         | **USES**              | `github_repo_secret`  |
 | `github_team`         | **HAS**               | `github_user`         |

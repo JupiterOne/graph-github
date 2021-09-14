@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.4.0 - 2021-09-14
+
 ### Changed
 
 - `github_pull_request` ingestion to use octokit v4 graphQL instead of the v3

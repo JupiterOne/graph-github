@@ -18,7 +18,7 @@ import {
   GITHUB_COLLABORATOR_ENTITY_CLASS,
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ARRAY,
+  GITHUB_REPO_TAGS_ARRAY,
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
@@ -31,10 +31,12 @@ export async function fetchCollaborators({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(GITHUB_REPO_ARRAY);
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+    GITHUB_REPO_TAGS_ARRAY,
+  );
   if (!repoTags) {
     throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
+      `Expected repos.ts to have set ${GITHUB_REPO_TAGS_ARRAY} in jobState.`,
     );
   }
   const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(

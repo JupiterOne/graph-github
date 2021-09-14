@@ -26,7 +26,7 @@ import {
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ARRAY,
+  GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
 
 export async function fetchTeams({
@@ -45,7 +45,9 @@ export async function fetchTeams({
       `Expected to find Account entity in jobState.`,
     );
   }
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(GITHUB_REPO_ARRAY);
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+    GITHUB_REPO_TAGS_ARRAY,
+  );
   if (!repoTags) {
     throw new IntegrationMissingKeyError(
       `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,

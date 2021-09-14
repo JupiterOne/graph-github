@@ -3,7 +3,6 @@ import {
   parseTimePropertyValue,
   RelationshipClass,
   createIntegrationEntity,
-  Relationship,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -26,9 +25,6 @@ import {
   GITHUB_SECRET_ENTITY_CLASS,
   GITHUB_ORG_SECRET_ENTITY_TYPE,
   GITHUB_REPO_SECRET_ENTITY_TYPE,
-  GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
   //GITHUB_ENV_SECRET_ENTITY_TYPE,
 } from '../constants';
 
@@ -347,51 +343,6 @@ export function createRepoAllowsUserRelationship(
     pushPermission: permissions?.push || false,
     triagePermission: permissions?.triage || false,
     pullPermission: true, //always true if there is a relationship
-  };
-}
-
-//creating the following Secret relationships manually because .createDirectRelationship wants the whole entity
-//and for reducing memory footprint, it's better to work with a smaller object
-
-export function createRepoUsesOrgSecretRelationship(
-  repo: RepoKeyAndName,
-  secret: SecretEntity,
-): Relationship {
-  return {
-    _key: `${repo._key}|uses|${secret._key}`,
-    _class: RelationshipClass.USES,
-    _type: GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
-    _fromEntityKey: repo._key,
-    _toEntityKey: secret._key,
-    displayName: RelationshipClass.USES,
-  };
-}
-
-export function createRepoHasRepoSecretRelationship(
-  repo: RepoKeyAndName,
-  secret: SecretEntity,
-): Relationship {
-  return {
-    _key: `${repo._key}|has|${secret._key}`,
-    _class: RelationshipClass.HAS,
-    _type: GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
-    _fromEntityKey: repo._key,
-    _toEntityKey: secret._key,
-    displayName: RelationshipClass.HAS,
-  };
-}
-
-export function createRepoUsesRepoSecretRelationship(
-  repo: RepoKeyAndName,
-  secret: SecretEntity,
-): Relationship {
-  return {
-    _key: `${repo._key}|uses|${secret._key}`,
-    _class: RelationshipClass.USES,
-    _type: GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE, //'github_repo_uses_repo_secret' gets reduced in SDK to 'github_repo_uses_secret'
-    _fromEntityKey: repo._key,
-    _toEntityKey: secret._key,
-    displayName: RelationshipClass.USES,
   };
 }
 

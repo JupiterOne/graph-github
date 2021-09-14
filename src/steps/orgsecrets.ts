@@ -22,13 +22,10 @@ import {
   GITHUB_SECRET_ENTITY_CLASS,
   GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ARRAY,
+  GITHUB_REPO_TAGS_ARRAY,
   GITHUB_ORG_SECRET_BY_NAME_MAP,
 } from '../constants';
-import {
-  createRepoUsesOrgSecretRelationship,
-  toOrgSecretEntity,
-} from '../sync/converters';
+import { toOrgSecretEntity } from '../sync/converters';
 
 export async function fetchOrgSecrets({
   instance,
@@ -46,10 +43,12 @@ export async function fetchOrgSecrets({
       `Expected to find Account entity in jobState.`,
     );
   }
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(GITHUB_REPO_ARRAY);
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+    GITHUB_REPO_TAGS_ARRAY,
+  );
   if (!repoTags) {
     throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
+      `Expected repos.ts to have set ${GITHUB_REPO_TAGS_ARRAY} in jobState.`,
     );
   }
 
@@ -72,7 +71,13 @@ export async function fetchOrgSecrets({
     if (secret.repos) {
       for (const repoTag of secret.repos) {
         await jobState.addRelationship(
-          createRepoUsesOrgSecretRelationship(repoTag, secretEntity),
+          createDirectRelationship({
+            _class: RelationshipClass.USES,
+            fromType: GITHUB_REPO_ENTITY_TYPE,
+            toType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+            fromKey: repoTag._key,
+            toKey: secretEntity._key,
+          }),
         );
       }
     }

@@ -16,16 +16,12 @@ import {
   GITHUB_SECRET_ENTITY_CLASS,
   GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ARRAY,
+  GITHUB_REPO_TAGS_ARRAY,
   GITHUB_ORG_SECRET_BY_NAME_MAP,
   GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
 } from '../constants';
-import {
-  toRepoSecretEntity,
-  createRepoHasRepoSecretRelationship,
-  createRepoUsesRepoSecretRelationship,
-} from '../sync/converters';
+import { toRepoSecretEntity } from '../sync/converters';
 
 export async function fetchRepoSecrets({
   instance,
@@ -35,10 +31,12 @@ export async function fetchRepoSecrets({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(GITHUB_REPO_ARRAY);
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+    GITHUB_REPO_TAGS_ARRAY,
+  );
   if (!repoTags) {
     throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
+      `Expected repos.ts to have set ${GITHUB_REPO_TAGS_ARRAY} in jobState.`,
     );
   }
 
@@ -63,11 +61,25 @@ export async function fetchRepoSecrets({
       repoSecretEntities.push(secretEntity);
 
       await jobState.addRelationship(
-        createRepoHasRepoSecretRelationship(repoTag, secretEntity),
+        createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          fromType: GITHUB_REPO_ENTITY_TYPE,
+          toType: GITHUB_REPO_SECRET_ENTITY_TYPE,
+          fromKey: repoTag._key,
+          toKey: secretEntity._key,
+        }),
       );
+
       await jobState.addRelationship(
-        createRepoUsesRepoSecretRelationship(repoTag, secretEntity),
+        createDirectRelationship({
+          _class: RelationshipClass.USES,
+          fromType: GITHUB_REPO_ENTITY_TYPE,
+          toType: GITHUB_REPO_SECRET_ENTITY_TYPE,
+          fromKey: repoTag._key,
+          toKey: secretEntity._key,
+        }),
       );
+
       if (orgSecretEntities[secret.name]) {
         await jobState.addRelationship(
           createDirectRelationship({

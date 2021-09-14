@@ -16,6 +16,8 @@ import {
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
   GithubResource,
+  OrgSecretQueryResponse,
+  OrgSecretRepoQueryResponse,
 } from './GraphQLClient';
 import {
   RepoEntity,
@@ -38,6 +40,7 @@ export default class OrganizationAccountClient {
   private teamRepositories: OrgTeamRepoQueryResponse[] | undefined;
   private repositories: OrgRepoQueryResponse[] | undefined;
   private collaborators: OrgCollaboratorQueryResponse[] | undefined;
+  private orgSecrets: OrgSecretQueryResponse[] | undefined;
 
   v3RateLimitConsumed: number;
   v4RateLimitConsumed: number;
@@ -351,7 +354,6 @@ export default class OrganizationAccountClient {
         headers: {
           authorization: `Bearer ${ghsToken}`,
         },
-        org: 'octokit',
         type: 'private',
       });
       if (reply.data.installations) {
@@ -364,6 +366,81 @@ export default class OrganizationAccountClient {
         {},
         'Error while attempting to ingest to installed GitHub apps',
       );
+      throw new IntegrationError(err);
+    }
+  }
+
+  async getOrganizationSecrets(): Promise<OrgSecretQueryResponse[]> {
+    try {
+      const orgSecrets = await this.v3.paginate(
+        'GET /orgs/{org}/actions/secrets', //https://docs.github.com/en/rest/reference/actions#list-organization-secrets
+        {
+          org: this.login,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of org secrets');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+
+      this.orgSecrets = orgSecrets;
+      return this.orgSecrets || [];
+    } catch (err) {
+      this.logger.warn(
+        {},
+        'Error while attempting to ingest organization secrets',
+      );
+      throw new IntegrationError(err);
+    }
+  }
+
+  async getReposForOrgSecret(
+    secretName,
+  ): Promise<OrgSecretRepoQueryResponse[]> {
+    try {
+      const reposForSecret = await this.v3.paginate(
+        'GET /orgs/{org}/actions/secrets/{secret_name}/repositories', //https://docs.github.com/en/rest/reference/actions#list-selected-repositories-for-an-organization-secret
+        {
+          org: this.login,
+          secret_name: secretName,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of repos for a secret');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+      return reposForSecret || [];
+    } catch (err) {
+      this.logger.warn(
+        {},
+        'Error while attempting to ingest repos for an organization secret',
+      );
+      throw new IntegrationError(err);
+    }
+  }
+
+  async getRepoSecrets(repoName: string): Promise<OrgSecretQueryResponse[]> {
+    try {
+      const repoSecrets = await this.v3.paginate(
+        'GET /repos/{owner}/{repo}/actions/secrets', //https://docs.github.com/en/rest/reference/actions#list-repository-secrets
+        {
+          owner: this.login,
+          repo: repoName,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of secrets for a repo');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+      return repoSecrets || [];
+    } catch (err) {
+      this.logger.warn({}, 'Error while attempting to ingest repo secrets');
       throw new IntegrationError(err);
     }
   }

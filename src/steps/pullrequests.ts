@@ -51,10 +51,11 @@ export async function fetchPrs({
   let UsersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
   );
+
   if (!UsersByLoginMap) {
     logger.warn(
       {},
-      `Expected members.ts to have set GITHUB_MEMBER_BY_LOGIN_MAP in jobState. Proceeding anyway.`,
+      `Expected members.ts to have set ${GITHUB_MEMBER_BY_LOGIN_MAP} in jobState. Proceeding anyway.`,
     );
     UsersByLoginMap = {};
   }
@@ -70,7 +71,7 @@ export async function fetchPrs({
   } else {
     logger.warn(
       {},
-      `Expected collaborators.ts to have set GITHUB_OUTSIDE_COLLABORATOR_ARRAY in jobState. Proceeding anyway.`,
+      `Expected collaborators.ts to have set ${GITHUB_OUTSIDE_COLLABORATOR_ARRAY} in jobState. Proceeding anyway.`,
     );
   }
 

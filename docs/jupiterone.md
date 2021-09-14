@@ -2,8 +2,9 @@
 
 ## GitHub + JupiterOne Integration Benefits
 
-- Visualize GitHub users, teams, code repositories, pull requests, and installed
-  GitHub applications in the JupiterOne graph.
+- Visualize GitHub users, teams, code repositories, pull requests, installed
+  GitHub applications, organizational secrets, and repo secrets in the
+  JupiterOne graph.
 - Map GitHub users to employees in your JupiterOne account.
 - Map GitHub users to development/security trainings.
 - Monitor Github software development activities within repositories including
@@ -102,7 +103,9 @@ The following entities are created:
 | Resources           | Entity `_type`       | Entity `_class` |
 | ------------------- | -------------------- | --------------- |
 | Account             | `github_account`     | `Account`       |
+| GitHub Org Secret   | `github_org_secret`  | `Secret`        |
 | GitHub Pull Request | `github_pullrequest` | `PR`            |
+| GitHub Repo Secret  | `github_repo_secret` | `Secret`        |
 | GitHub Team         | `github_team`        | `UserGroup`     |
 | Github App          | `github_app`         | `Application`   |
 | Github Repo         | `github_repo`        | `CodeRepo`      |
@@ -110,10 +113,11 @@ The following entities are created:
 
 ### Relationships
 
-The following relationships are created/mapped:
+The following relationships are created:
 
 | Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
 | --------------------- | --------------------- | --------------------- |
+| `github_account`      | **HAS**               | `github_org_secret`   |
 | `github_account`      | **HAS**               | `github_team`         |
 | `github_account`      | **HAS**               | `github_user`         |
 | `github_account`      | **INSTALLED**         | `github_app`          |
@@ -121,6 +125,10 @@ The following relationships are created/mapped:
 | `github_repo`         | **ALLOWS**            | `github_team`         |
 | `github_repo`         | **ALLOWS**            | `github_user`         |
 | `github_repo`         | **HAS**               | `github_pullrequest`  |
+| `github_repo`         | **HAS**               | `github_repo_secret`  |
+| `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`   |
+| `github_repo`         | **USES**              | `github_org_secret`   |
+| `github_repo`         | **USES**              | `github_repo_secret`  |
 | `github_team`         | **HAS**               | `github_user`         |
 | `github_user`         | **APPROVED**          | `github_pullrequest`  |
 | `github_user`         | **MANAGES**           | `github_account`      |

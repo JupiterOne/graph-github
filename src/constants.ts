@@ -1,3 +1,4 @@
+//core entities
 export const GITHUB_ACCOUNT_ENTITY_TYPE = 'github_account';
 export const GITHUB_ACCOUNT_ENTITY_CLASS = 'Account';
 export const GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE =
@@ -32,10 +33,41 @@ export const GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE = 'github_team_has_user';
 export const GITHUB_REPO_TEAM_RELATIONSHIP_TYPE = 'github_repo_allows_team';
 export const GITHUB_REPO_USER_RELATIONSHIP_TYPE = 'github_repo_allows_user';
 
+//apps
 export const GITHUB_APP_ENTITY_TYPE = 'github_app';
 export const GITHUB_APP_ENTITY_CLASS = 'Application';
 export const GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE =
   'github_account_installed_app';
+
+//secrets
+export const GITHUB_ORG_SECRET_ENTITY_TYPE = 'github_org_secret';
+export const GITHUB_REPO_SECRET_ENTITY_TYPE = 'github_repo_secret';
+export const GITHUB_ENV_SECRET_ENTITY_TYPE = 'github_env_secret';
+export const GITHUB_SECRET_ENTITY_CLASS = ['Secret'];
+export const GITHUB_ENVIRONMENT_ENTITY_TYPE = 'github_environment';
+export const GITHUB_ENVIRONMENT_ENTITY_CLASS = ['Configuration'];
+//org sercrets
+export const GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE =
+  'github_account_has_org_secret';
+export const GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE =
+  'github_repo_uses_org_secret';
+//repo secrets
+export const GITHUB_REPO_SECRET_RELATIONSHIP_TYPE = 'github_repo_has_secret'; //apparently `github_repo HAS github_repo_secret` reduces to 'github_repo_has_secret' and not 'github_repo_has_repo_secret'
+export const GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE =
+  'github_repo_uses_secret'; //see 'github_repo_has_secret'
+export const GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE =
+  'github_repo_secret_overrides_org_secret';
+//env secrets
+export const GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE =
+  'github_repo_has_environment';
+export const GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE =
+  'github_environment_has_env_secret';
+export const GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE =
+  'github_repo_uses_env_secret';
+export const GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE =
+  'github_env_secret_overrides_org_secret';
+export const GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE =
+  'github_env_secret_overrides_repo_secret';
 
 //these constants are names used to save and retrieve data between steps
 //they are constants instead of strings so that TypeScript will detect spelling errors
@@ -44,3 +76,6 @@ export const GITHUB_MEMBER_BY_LOGIN_MAP = 'GITHUB_MEMBER_BY_LOGIN_MAP';
 export const GITHUB_OUTSIDE_COLLABORATOR_ARRAY =
   'GITHUB_OUTSIDE_COLLABORATOR_ARRAY';
 export const GITHUB_REPO_ARRAY = 'GITHUB_REPO_ARRAY';
+export const GITHUB_ORG_SECRET_BY_NAME_MAP = 'GITHUB_ORG_SECRET_BY_NAME_MAP';
+export const GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP =
+  'GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP';

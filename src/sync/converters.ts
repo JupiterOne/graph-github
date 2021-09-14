@@ -3,6 +3,7 @@ import {
   parseTimePropertyValue,
   RelationshipClass,
   createIntegrationEntity,
+  Relationship,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -22,11 +23,19 @@ import {
   GITHUB_COLLABORATOR_ENTITY_TYPE,
   GITHUB_APP_ENTITY_CLASS,
   GITHUB_APP_ENTITY_TYPE,
+  GITHUB_SECRET_ENTITY_CLASS,
+  GITHUB_ORG_SECRET_ENTITY_TYPE,
+  GITHUB_REPO_SECRET_ENTITY_TYPE,
+  GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
+  GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
+  GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
+  //GITHUB_ENV_SECRET_ENTITY_TYPE,
 } from '../constants';
 
 import {
   AccountEntity,
   AppEntity,
+  SecretEntity,
   RepoEntity,
   UserEntity,
   PullRequestEntity,
@@ -34,8 +43,13 @@ import {
   TeamEntity,
   AccountType,
   RepoAllowRelationship,
+  RepoKeyAndName,
 } from '../types';
-import { decomposePermissions, getAppEntityKey } from '../util/propertyHelpers';
+import {
+  decomposePermissions,
+  getAppEntityKey,
+  getSecretEntityKey,
+} from '../util/propertyHelpers';
 import {
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
@@ -45,6 +59,7 @@ import {
   OrgCollaboratorQueryResponse,
   CollaboratorPermissions,
   OrgAppQueryResponse,
+  OrgSecretQueryResponse,
 } from '../client/GraphQLClient';
 
 import { uniq, last, compact } from 'lodash';
@@ -94,6 +109,77 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   setRawData(appEntity, { name: 'default', rawData: data });
   return appEntity;
 }
+
+export function toOrgSecretEntity(
+  data: OrgSecretQueryResponse,
+  orgLogin: string,
+): SecretEntity {
+  const secretEntity: SecretEntity = {
+    _class: GITHUB_SECRET_ENTITY_CLASS,
+    _type: GITHUB_ORG_SECRET_ENTITY_TYPE,
+    _key: getSecretEntityKey({
+      name: data.name,
+      secretOwnerType: 'Org',
+      secretOwnerName: orgLogin,
+    }),
+    name: data.name,
+    displayName: data.name,
+    webLink: `https://github.com/organizations/${orgLogin}/settings/secrets/actions/${data.name}`,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    visibility: data.visibility,
+    selectedRepositoriesLink: data.selected_repositories_url,
+  };
+  setRawData(secretEntity, { name: 'default', rawData: data });
+  return secretEntity;
+}
+
+export function toRepoSecretEntity(
+  data: OrgSecretQueryResponse,
+  orgLogin: string,
+  repoName: string,
+): SecretEntity {
+  const secretEntity: SecretEntity = {
+    _class: GITHUB_SECRET_ENTITY_CLASS,
+    _type: GITHUB_REPO_SECRET_ENTITY_TYPE,
+    _key: getSecretEntityKey({
+      name: data.name,
+      secretOwnerType: 'Repo',
+      secretOwnerName: repoName,
+    }),
+    name: data.name,
+    displayName: data.name,
+    webLink: `https://github.com/${orgLogin}/${repoName}/settings/secrets/actions/${data.name}`,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    visibility: 'selected',
+  };
+  setRawData(secretEntity, { name: 'default', rawData: data });
+  return secretEntity;
+}
+
+/* for use later
+export function toEnvSecretEntity(
+  data: OrgSecretQueryResponse,
+  orgLogin: string,
+  repoName: string,
+  environment: EnvironmentEntity,
+): SecretEntity {
+  const secretEntity: SecretEntity = {
+    _class: GITHUB_SECRET_ENTITY_CLASS,
+    _type: GITHUB_ENV_SECRET_ENTITY_TYPE,
+    _key: getSecretEntityKey({name: data.name, secretOwnerType:'Env', secretOwnerName: environment.name}),
+    name: data.name,
+    displayName: data.name,
+    webLink: `https://github.com/${orgLogin}/${repoName}/settings/environments/${environment.id}/edit`,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+    visibility: 'selected',
+  };
+  setRawData(secretEntity, { name: 'default', rawData: data });
+  return secretEntity;
+}
+*/
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {
@@ -188,7 +274,7 @@ export function toOrganizationCollaboratorEntity(
 }
 
 export function createRepoAllowsTeamRelationship(
-  repo: RepoEntity,
+  repo: RepoKeyAndName,
   team: TeamEntity,
   permission: string,
 ): RepoAllowRelationship {
@@ -231,7 +317,7 @@ export function createRepoAllowsTeamRelationship(
 }
 
 export function createRepoAllowsUserRelationship(
-  repo: RepoEntity,
+  repo: RepoKeyAndName,
   user: UserEntity,
   permissions?: CollaboratorPermissions,
 ): RepoAllowRelationship {
@@ -261,6 +347,51 @@ export function createRepoAllowsUserRelationship(
     pushPermission: permissions?.push || false,
     triagePermission: permissions?.triage || false,
     pullPermission: true, //always true if there is a relationship
+  };
+}
+
+//creating the following Secret relationships manually because .createDirectRelationship wants the whole entity
+//and for reducing memory footprint, it's better to work with a smaller object
+
+export function createRepoUsesOrgSecretRelationship(
+  repo: RepoKeyAndName,
+  secret: SecretEntity,
+): Relationship {
+  return {
+    _key: `${repo._key}|uses|${secret._key}`,
+    _class: RelationshipClass.USES,
+    _type: GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
+    _fromEntityKey: repo._key,
+    _toEntityKey: secret._key,
+    displayName: RelationshipClass.USES,
+  };
+}
+
+export function createRepoHasRepoSecretRelationship(
+  repo: RepoKeyAndName,
+  secret: SecretEntity,
+): Relationship {
+  return {
+    _key: `${repo._key}|has|${secret._key}`,
+    _class: RelationshipClass.HAS,
+    _type: GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
+    _fromEntityKey: repo._key,
+    _toEntityKey: secret._key,
+    displayName: RelationshipClass.HAS,
+  };
+}
+
+export function createRepoUsesRepoSecretRelationship(
+  repo: RepoKeyAndName,
+  secret: SecretEntity,
+): Relationship {
+  return {
+    _key: `${repo._key}|uses|${secret._key}`,
+    _class: RelationshipClass.USES,
+    _type: GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE, //'github_repo_uses_repo_secret' gets reduced in SDK to 'github_repo_uses_secret'
+    _fromEntityKey: repo._key,
+    _toEntityKey: secret._key,
+    displayName: RelationshipClass.USES,
   };
 }
 

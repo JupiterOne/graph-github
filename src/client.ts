@@ -5,7 +5,12 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
-import { AccountType, RepoEntity, TokenPermissions } from './types';
+import {
+  AccountType,
+  RepoEntity,
+  RepoKeyAndName,
+  TokenPermissions,
+} from './types';
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
@@ -20,6 +25,7 @@ import {
   OrgTeamRepoQueryResponse,
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
+  OrgSecretQueryResponse,
 } from './client/GraphQLClient';
 import { PullRequest } from './client/GraphQLClient/types';
 
@@ -36,7 +42,8 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 export class APIClient {
   accountClient: OrganizationAccountClient;
   ghsToken: string;
-  scopedForApps: boolean;
+  orgAdminScope: boolean;
+  secretsScope: boolean;
   constructor(
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
@@ -114,12 +121,75 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.scopedForApps) {
+    if (this.orgAdminScope) {
       const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps(
         this.ghsToken,
       );
       for (const app of apps) {
         await iteratee(app);
+      }
+    }
+  }
+
+  /**
+   * Iterates each Github organization secret.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateOrgSecrets(
+    allRepos: RepoKeyAndName[],
+    iteratee: ResourceIteratee<OrgSecretQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.secretsScope) {
+      const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
+      for (const secret of secrets) {
+        //set repos that use this secret, so we can make relationships in iteratree
+        secret.visibility === 'all'
+          ? (secret.repos = allRepos)
+          : (secret.repos = []);
+        if (
+          secret.visibility === 'selected' ||
+          secret.visibility === 'private'
+        ) {
+          //go get the list of repos and add them
+          const reposForOrgSecret = await this.accountClient.getReposForOrgSecret(
+            secret.name,
+          );
+          const secretRepos: RepoKeyAndName[] = [];
+          for (const repo of reposForOrgSecret) {
+            const repoTag = allRepos.find((r) => r._key === repo.node_id);
+            if (repoTag) {
+              secretRepos.push(repoTag);
+            }
+          }
+          secret.repos = secretRepos;
+        }
+        await iteratee(secret);
+      }
+    }
+  }
+
+  /**
+   * Iterates each Github repo secret.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateRepoSecrets(
+    repoName: string,
+    iteratee: ResourceIteratee<OrgSecretQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.secretsScope) {
+      const repoSecrets: OrgSecretQueryResponse[] = await this.accountClient.getRepoSecrets(
+        repoName,
+      );
+      for (const secret of repoSecrets) {
+        await iteratee(secret);
       }
     }
   }
@@ -169,7 +239,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateCollaborators(
-    repo: RepoEntity,
+    repo: RepoKeyAndName,
     iteratee: ResourceIteratee<OrgCollaboratorQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
@@ -237,13 +307,26 @@ export class APIClient {
         myPermissions.organization_administration === 'write'
       )
     ) {
-      this.scopedForApps = false;
-      this.logger.warn(
+      this.orgAdminScope = false;
+      this.logger.info(
         {},
-        'Token does not have organization_administration scope, so installed GitHub Apps cannot be ingested',
+        'Token does not have organization_administration scope. Installed GitHub Apps cannot be ingested',
       );
     } else {
-      this.scopedForApps = true;
+      this.orgAdminScope = true;
+    }
+
+    //ingesting org secrets requires scope secrets:read
+    if (
+      !(myPermissions.secrets === 'read' || myPermissions.secrets === 'write')
+    ) {
+      this.secretsScope = false;
+      this.logger.info(
+        {},
+        "Token does not have 'secrets' scope. Organization secrets cannot be ingested",
+      );
+    } else {
+      this.secretsScope = true;
     }
     //scopes check done
 

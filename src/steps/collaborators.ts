@@ -11,7 +11,7 @@ import {
   createRepoAllowsUserRelationship,
   toOrganizationCollaboratorEntity,
 } from '../sync/converters';
-import { UserEntity, RepoEntity, IdEntityMap } from '../types';
+import { UserEntity, IdEntityMap, RepoKeyAndName } from '../types';
 import {
   GITHUB_MEMBER_ENTITY_TYPE,
   GITHUB_COLLABORATOR_ENTITY_TYPE,
@@ -31,10 +31,10 @@ export async function fetchCollaborators({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const repoEntities = await jobState.getData<RepoEntity[]>(GITHUB_REPO_ARRAY);
-  if (!repoEntities) {
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(GITHUB_REPO_ARRAY);
+  if (!repoTags) {
     throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
+      `Expected repos.ts to have set ${GITHUB_REPO_ARRAY} in jobState.`,
     );
   }
   const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
@@ -42,14 +42,14 @@ export async function fetchCollaborators({
   );
   if (!memberByLoginMap) {
     throw new IntegrationMissingKeyError(
-      `Expected members.ts to have set GITHUB_MEMBER_BY_LOGIN_MAP in jobState.`,
+      `Expected members.ts to have set ${GITHUB_MEMBER_BY_LOGIN_MAP} in jobState.`,
     );
   }
 
   const outsideCollaboratorsByLoginMap: IdEntityMap<UserEntity> = {};
   const outsideCollaboratorsArray: UserEntity[] = [];
 
-  for (const repo of repoEntities) {
+  for (const repo of repoTags) {
     await apiClient.iterateCollaborators(repo, async (collab) => {
       //a collaborator is either an organization member or an outside collaborator
       //we can tell the difference based on whether the login was discovered in members.ts

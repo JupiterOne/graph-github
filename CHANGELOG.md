@@ -23,6 +23,22 @@ and this project adheres to
 
 - Retrying "Secondary Rate Limit" errors on graphQL queries.
 - Better logging of graphQL queries.
+- Added support for ingesting the following **new** entities:
+
+| Resources          | Entity `_type`       | Entity `_class` |
+| ------------------ | -------------------- | --------------- |
+| GitHub Org Secret  | `github_org_secret`  | `Secret`        |
+| GitHub Repo Secret | `github_repo_secret` | `Secret`        |
+
+- Added support for ingesting the following **new** relationships:
+
+| Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
+| --------------------- | --------------------- | --------------------- |
+| `github_account`      | **HAS**               | `github_org_secret`   |
+| `github_repo`         | **HAS**               | `github_repo_secret`  |
+| `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`   |
+| `github_repo`         | **USES**              | `github_org_secret`   |
+| `github_repo`         | **USES**              | `github_repo_secret`  |
 
 ## 1.3.0 - 2021-08-27
 

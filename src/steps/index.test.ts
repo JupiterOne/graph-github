@@ -10,14 +10,18 @@ import { fetchTeams } from './teams';
 import { fetchCollaborators } from './collaborators';
 import { fetchPrs } from './pullrequests';
 import { fetchAccountDetails } from './account';
+import { fetchApps } from './apps';
 import {
   GITHUB_COLLABORATOR_ENTITY_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+  GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
 } from '../constants';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import { fetchApps } from './apps';
-jest.setTimeout(10000);
+import { fetchOrgSecrets } from './orgsecrets';
+import { fetchRepoSecrets } from './reposecrets';
+
+jest.setTimeout(20000);
 
 let recording: Recording;
 afterEach(async () => {
@@ -31,7 +35,7 @@ test('should collect data', async () => {
   });
 
   sanitizeConfig(integrationConfig);
-  integrationConfig.installationId = 19232829; //this is the id the recordings are under
+  integrationConfig.installationId = 17214088; //this is the id the recordings are under
 
   const context = createMockStepExecutionContext<IntegrationConfig>({
     instanceConfig: integrationConfig,
@@ -46,6 +50,8 @@ test('should collect data', async () => {
   await fetchTeams(context);
   await fetchCollaborators(context);
   await fetchPrs(context);
+  await fetchOrgSecrets(context);
+  await fetchRepoSecrets(context);
 
   // Review snapshot, failure is a regression
   expect({
@@ -193,4 +199,56 @@ test('should collect data', async () => {
     (e) => e._type === GITHUB_COLLABORATOR_ENTITY_TYPE && e.role === 'OUTSIDE',
   );
   expect(outsideCollaboratorEntities.length).toBeGreaterThan(0);
+
+  const orgSecrets = context.jobState.collectedEntities.filter(
+    (e) => e._class.includes('Secret') && e._type.includes('github_org_secret'),
+  );
+  expect(orgSecrets.length).toBeGreaterThan(0);
+  expect(orgSecrets).toMatchGraphObjectSchema({
+    _class: ['Secret'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_org_secret' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        name: { type: 'string' },
+        createdAt: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName', 'name', 'createdAt'],
+    },
+  });
+
+  const repoSecrets = context.jobState.collectedEntities.filter(
+    (e) =>
+      e._class.includes('Secret') && e._type.includes('github_repo_secret'),
+  );
+  expect(repoSecrets.length).toBeGreaterThan(0);
+  expect(repoSecrets).toMatchGraphObjectSchema({
+    _class: ['Secret'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_repo_secret' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        name: { type: 'string' },
+        createdAt: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName', 'name', 'createdAt'],
+    },
+  });
+
+  const secretOverrideRelationships = context.jobState.collectedRelationships.filter(
+    (r) => r._type === GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
+  );
+  expect(secretOverrideRelationships.length).toBeGreaterThan(0);
 });

@@ -49,3 +49,13 @@ export function decomposePermissions(permissions: TokenPermissions) {
 export function getAppEntityKey(installId): string {
   return 'GitHubAppInstallation_' + installId;
 }
+
+export function getSecretEntityKey({
+  name,
+  secretOwnerType,
+  secretOwnerName,
+}): string {
+  return (
+    'GitHub_' + secretOwnerType + '_' + secretOwnerName + '_Secret_' + name
+  );
+}

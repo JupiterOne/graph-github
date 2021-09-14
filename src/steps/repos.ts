@@ -10,7 +10,7 @@ import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toRepositoryEntity } from '../sync/converters';
-import { AccountEntity, RepoEntity } from '../types';
+import { AccountEntity, RepoEntity, RepoKeyAndName } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
   GITHUB_REPO_ENTITY_TYPE,
@@ -37,14 +37,14 @@ export async function fetchRepos({
     );
   }
 
-  const repoEntities: RepoEntity[] = []; //for use later in PRs
+  const repoTags: RepoKeyAndName[] = []; //for use later in PRs
 
   await apiClient.iterateRepos(async (repo) => {
     const repoEntity = (await jobState.addEntity(
       toRepositoryEntity(repo),
     )) as RepoEntity;
 
-    repoEntities.push(repoEntity);
+    repoTags.push({ _key: repoEntity._key, name: repoEntity.name });
 
     await jobState.addRelationship(
       createDirectRelationship({
@@ -55,7 +55,7 @@ export async function fetchRepos({
     );
   });
 
-  await jobState.setData(GITHUB_REPO_ARRAY, repoEntities);
+  await jobState.setData(GITHUB_REPO_ARRAY, repoTags);
 }
 
 export const repoSteps: IntegrationStep<IntegrationConfig>[] = [

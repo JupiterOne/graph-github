@@ -25,7 +25,10 @@ export interface AppEntity extends Entity {
   singleFileName: string;
   hasMultipleSingleFiles: boolean;
   singleFilePaths: string[];
-  suspendedBy: string;
+  // NOTE: This is an object (a User), and we cannot upload objects. We should
+  // actually build a relationship between the GitHub user and the application.
+  // See: https://github.com/google/go-github/blob/master/github/apps.go#L118
+  // suspendedBy: string;
   suspendedAt: string;
   //plus permissions.{fieldname} fields drawn from the permissions API object
   //for example, 'permissions.members', 'permissions.metadata', or 'permissions.organization-administration'

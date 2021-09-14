@@ -102,7 +102,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
     singleFileName: data.single_file_name || '',
     hasMultipleSingleFiles: data.has_multiple_single_files,
     singleFilePaths: data.single_file_paths,
-    suspendedBy: data.suspended_by || '',
+    // suspendedBy: data.suspended_by || '',
     suspendedAt: data.suspended_at || '',
     ...decomposePermissions(data.permissions),
   };

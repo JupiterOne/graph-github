@@ -40,6 +40,12 @@ and this project adheres to
 | `github_repo`         | **USES**              | `github_org_secret`   |
 | `github_repo`         | **USES**              | `github_repo_secret`  |
 
+### Fixed
+
+- Remove `suspendedBy` property from `github_app` entity. The `suspendedBy`
+  property is type `object`, which is not a supported entity property value
+  type.
+
 ## 1.3.0 - 2021-08-27
 
 ### Added

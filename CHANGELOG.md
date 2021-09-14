@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.4.1 - 2021-09-14
+
 ### Fixed
 
 - Issue where changing data during the integration run could cause duplicate key

@@ -50,7 +50,7 @@ export interface Node {
 }
 
 interface Actor {
-  name?: string;
+  name?: string | null;
   login: string;
 }
 
@@ -111,10 +111,10 @@ export interface OrgSecretRepoQueryResponse {
   node_id: string;
   name: string;
   full_name: string;
-  owner?: object;
+  owner?: object | null;
   private: boolean;
   html_url: string;
-  description: string;
+  description: string | null;
   fork: boolean;
   url: string;
 }

@@ -70,7 +70,7 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
     accountType: AccountType.Org,
     accountId: data.login,
     login: data.login,
-    name: data.name,
+    name: data.name ? data.name : undefined,
     displayName: data.name || data.login,
   };
   setRawData(accountEntity, { name: 'default', rawData: data });

@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Issue where collaborators step could fail when one repo has special
+  permissions settings that prevent access to collaborators
+
 ## 1.4.3 - 2021-09-14
 
 ### Fixed

@@ -76,10 +76,10 @@ export async function fetchPrs({
     );
   }
 
-  try {
-    await jobState.iterateEntities<RepoEntity>(
-      { _type: GITHUB_REPO_ENTITY_TYPE },
-      async (repoEntity) => {
+  await jobState.iterateEntities<RepoEntity>(
+    { _type: GITHUB_REPO_ENTITY_TYPE },
+    async (repoEntity) => {
+      try {
         await apiClient.iteratePullRequests(
           repoEntity,
           logger,
@@ -140,19 +140,40 @@ export async function fetchPrs({
             }
           },
         );
-      },
-    );
-  } catch (error) {
-    logger.error(
-      { error },
-      'Unable to process all Pull Request entities due to error.',
-    );
-    throw new IntegrationError({
-      message: error.message,
-      code: error.Code,
-      cause: error,
-    });
-  }
+      } catch (error) {
+        // Error can be internal errors or graphQL error responses
+        const errors = error[0] ? error : [error];
+        if (!errors.some((e) => !isNotFoundError(e))) {
+          logger.warn(
+            {
+              errorMessage: error.message,
+              repoName: repoEntity.name,
+              repoKey: repoEntity._key,
+            },
+            'Receved Not Found error(s) for pull requests for this repository. Skipping pull request ingestion for this repository.',
+          );
+        } else {
+          logger.error(
+            {
+              errorMessage: error.message,
+              repoName: repoEntity.name,
+              repoKey: repoEntity._key,
+            },
+            'Unable to process pull request entities due to error.',
+          );
+          throw new IntegrationError({
+            message: errors.map((e) => e.message).join(' | '),
+            code: errors[0].Code,
+            cause: errors[0],
+          });
+        }
+      }
+    },
+  );
+}
+
+function isNotFoundError(error: any) {
+  return error.type == 'NOT_FOUND' || error.Code == 404 || error.code == 404;
 }
 
 export const prSteps: IntegrationStep<IntegrationConfig>[] = [

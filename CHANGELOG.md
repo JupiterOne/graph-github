@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.4.3 - 2021-09-14
+
 ### Fixed
 
 - Properly log graphQL errors.

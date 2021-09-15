@@ -58,7 +58,7 @@ import {
   OrgSecretQueryResponse,
 } from '../client/GraphQLClient';
 
-import { uniq, last, compact } from 'lodash';
+import { uniq, last, compact, omit } from 'lodash';
 import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';
 import getCommitsToDestination from '../util/getCommitsToDestination';
 
@@ -187,7 +187,10 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     displayName: data.name,
     fullName: data.name,
   };
-  setRawData(teamEntity, { name: 'default', rawData: data });
+  setRawData(teamEntity, {
+    name: 'default',
+    rawData: omit(data, ['members', 'repos']),
+  });
   return teamEntity;
 }
 

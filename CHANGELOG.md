@@ -10,9 +10,8 @@ and this project adheres to
 
 ### Fixed
 
-- Issue where collaborators or pull request steps could fail when one repo has
-  special permissions settings that prevent access to collaborators or pull
-  requests.
+- Issue where collaborators step could fail when one repo has special
+  permissions settings that prevent access to collaborators
 
 ## 1.4.3 - 2021-09-14
 

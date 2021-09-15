@@ -76,12 +76,13 @@ export default class OrganizationAccountClient {
   async getAccount(): Promise<OrgQueryResponse> {
     let response;
     await this.queryGraphQL('account and related resources', async () => {
-      const {
-        organization,
-        rateLimitConsumed,
-      } = await this.v4.fetchFromSingle(GithubResource.Organization, [], {
-        login: this.login,
-      });
+      const { organization, rateLimitConsumed } = await this.v4.fetchFromSingle(
+        GithubResource.Organization,
+        [],
+        {
+          login: this.login,
+        },
+      );
       response = organization![0] as OrgQueryResponse;
       return rateLimitConsumed;
     });
@@ -256,7 +257,17 @@ export default class OrganizationAccountClient {
       );
       return repoCollaborators || [];
     } catch (err) {
-      throw new IntegrationError(err);
+      //this method is called for every repo in the integration, but some might have special permissions restrictions
+      //if we fail for one repo, we don't want to fail the whole collaborators step
+      this.logger.warn(
+        {
+          err: err,
+          repo: repoName,
+          endpoint: `/repos/${this.login}/${repoName}/collaborators`,
+        },
+        `Failed to retrieve collaborators for repo ${repoName}, proceeding to other repos`,
+      );
+      return [];
     }
   }
 

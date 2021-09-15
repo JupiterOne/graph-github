@@ -11,7 +11,10 @@ and this project adheres to
 ### Fixed
 
 - Issue where collaborators step could fail when one repo has special
-  permissions settings that prevent access to collaborators
+  permissions settings that prevent access to collaborators.
+- Do not throw on 404 errors when fetching pull requests.
+- Omit `members` and `repos` properties from the raw data of `github_team`
+  entities.
 
 ## 1.4.3 - 2021-09-14
 

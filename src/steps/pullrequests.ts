@@ -141,12 +141,12 @@ export async function fetchPrs({
           },
         );
       } catch (error) {
-        // Error can be internal errors or graphQL error responses
+        // Handle both graphQl errors and rest errors
         const errors = error[0] ? error : [error];
-        if (!errors.some((e) => !isNotFoundError(e))) {
+        if (allErrorsAreNotFoundErrors(errors)) {
           logger.warn(
             {
-              errorMessage: error.message,
+              error: JSON.stringify(error),
               repoName: repoEntity.name,
               repoKey: repoEntity._key,
             },
@@ -155,7 +155,7 @@ export async function fetchPrs({
         } else {
           logger.error(
             {
-              errorMessage: error.message,
+              error: JSON.stringify(error),
               repoName: repoEntity.name,
               repoKey: repoEntity._key,
             },
@@ -170,6 +170,10 @@ export async function fetchPrs({
       }
     },
   );
+}
+
+function allErrorsAreNotFoundErrors(errors: any[]) {
+  return !errors.some((e) => !isNotFoundError(e));
 }
 
 function isNotFoundError(error: any) {

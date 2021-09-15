@@ -224,13 +224,22 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const {
-      rateLimitConsumed,
-    } = await this.accountClient.iteratePullRequestEntities(repo, iteratee);
-    logger.info(
-      { rateLimitConsumed },
-      'Rate limit consumed while fetching Pull Requests.',
-    );
+    try {
+      const {
+        rateLimitConsumed,
+      } = await this.accountClient.iteratePullRequestEntities(repo, iteratee);
+      logger.info(
+        { rateLimitConsumed },
+        'Rate limit consumed while fetching Pull Requests.',
+      );
+    } catch (err) {
+      //iteratePullRequests is called for every repo, but some might have special permissions restrictions
+      //if the call to .iteratePullRequestEntities fails for one repo, we don't want to fail the whole pull request step
+      this.logger.warn(
+        { err: err, repo: repo },
+        `Failed to retrieve pull requests for repo ${repo.name}, proceeding to other repos`,
+      );
+    }
   }
 
   /**
@@ -245,11 +254,24 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const collaborators: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
-      repo.name,
-    );
-    for (const collab of collaborators) {
-      await iteratee(collab);
+    try {
+      const collaborators: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
+        repo.name,
+      );
+      for (const collab of collaborators) {
+        await iteratee(collab);
+      }
+    } catch (err) {
+      //iterateCollaborators is called for every repo, but some might have special permissions restrictions
+      //if the call to .getRepoCollaboratorsWithRest fails for one repo, we don't want to fail the whole collaborators step
+      this.logger.warn(
+        {
+          err: err,
+          repo: repo,
+          endpoint: `/repos/${this.accountClient.login}/${repo.name}/collaborators`,
+        },
+        `Failed to retrieve collaborators for repo ${repo.name}, proceeding to other repos`,
+      );
     }
   }
 

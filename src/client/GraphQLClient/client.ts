@@ -296,7 +296,7 @@ export class GitHubGraphQLClient {
           );
           // TODO: handle Primary Rate Limit errors as well
         } else {
-          throw Error;
+          throw error;
         }
       },
     });

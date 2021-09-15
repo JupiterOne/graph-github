@@ -1,6 +1,7 @@
 import { Octokit } from '@octokit/rest';
 import { createAppAuth } from '@octokit/auth-app';
 import { throttling } from '@octokit/plugin-throttling';
+import { retry } from '@octokit/plugin-retry';
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import { IntegrationConfig } from '../config';
 
@@ -19,7 +20,9 @@ export default function createGitHubAppClient(
     throw new Error('GITHUB_APP_ID must be defined!');
   }
 
-  const OctokitThrottling = Octokit.plugin(throttling);
+  //https://github.com/octokit/plugin-throttling.js/
+  //https://github.com/octokit/plugin-retry.js/
+  const OctokitThrottling = Octokit.plugin(throttling, retry);
 
   /*
    * API preview header "machine-man" (required for all endpoints requiring JWT

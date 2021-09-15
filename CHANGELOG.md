@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Added retry plugin to Octokit, which automatically retries upto 3 times for
+  server 4xx/5xx responses except 400, 401, 403 and 404.
+
 ## 1.4.4 - 2021-09-14
 
 ### Fixed

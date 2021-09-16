@@ -7,7 +7,7 @@ const pageInfo = `pageInfo {
 
 export default function (
   pageLimit: number = 100,
-  pullRequestPageLimit: number = 50,
+  pullRequestPageLimit: number = 25,
 ): ResourceMap<ResourceMetadata> {
   return {
     [GithubResource.PullRequest]: {

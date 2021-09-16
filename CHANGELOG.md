@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.4.5 - 2021-09-16
+
 ### Fixed
 
 - Prevent error for when the head repository could not be determined for a pull

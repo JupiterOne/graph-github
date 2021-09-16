@@ -8,10 +8,19 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Prevent error for when the head repository could not be determined for a pull
+  request.
+
 ### Changed
 
-- Added retry plugin to Octokit, which automatically retries upto 3 times for
-  server 4xx/5xx responses except 400, 401, 403 and 404.
+- To query 25 pull requests at a time insteaad of 50 to prevent Github errors.
+
+### Added
+
+- Retry plugin to Octokit, which automatically retries upto 3 times for server
+  4xx/5xx responses except 400, 401, 403 and 404.
 
 ## 1.4.4 - 2021-09-14
 

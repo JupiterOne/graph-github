@@ -1,6 +1,7 @@
 import graphql, { GraphQLClient } from 'graphql.js';
 import { get } from 'lodash';
 import { retry, AttemptContext } from '@lifeomic/attempt';
+import { URL } from 'url';
 
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 
@@ -88,7 +89,7 @@ export class GitHubGraphQLClient {
           ...queryCursors,
         });
       });
-      pullRequestsQueried += 50; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
+      pullRequestsQueried += 25; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
 
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
@@ -126,32 +127,49 @@ export class GitHubGraphQLClient {
             'Unable to fetch all inner resources. Attempting to fetch more.',
           );
 
-          // Fetch the remaining inner resources on this PR (this should be rare)
-          const repoOwner = pullRequestResponse.headRepository.owner.login;
-          const repoName = pullRequestResponse.headRepository.name;
-          const innerResourceResponse = await this.fetchFromSingle(
-            GithubResource.PullRequest,
-            selectedResources,
-            {
-              pullRequestNumber: pullRequestResponse.number,
-              repoName,
-              repoOwner,
-            },
-            mapResponseCursorsForQuery(innerResourceCursors, {}),
-          );
+          const urlPath = pullRequestResponse.url // ex: https://github.com/JupiterOne/graph-github/pull/1
+            ? new URL(pullRequestResponse.url)?.pathname // ex: /JupiterOne/graph-github/pull/4"
+            : '';
 
-          rateLimitConsumed += innerResourceResponse.rateLimitConsumed;
+          // Attempt to pull repo name and owner from graphQL response. If not there, parse the pull request url.
+          const repoOwner =
+            pullRequestResponse.headRepository?.owner?.login ??
+            urlPath.split('/')[1]; // ex: JupiterOne
+          const repoName =
+            pullRequestResponse.headRepository?.name ?? urlPath.split('/')[2]; // ex: graph-github
 
-          // Add the additional inner resources to the initial call
-          pullRequestResponse.commits = pullRequestResponse.commits!.concat(
-            (innerResourceResponse.commits ?? []).map((c) => c.commit),
-          );
-          pullRequestResponse.reviews = pullRequestResponse.reviews!.concat(
-            innerResourceResponse.reviews ?? [],
-          );
-          pullRequestResponse.labels = pullRequestResponse.labels!.concat(
-            innerResourceResponse.labels ?? [],
-          );
+          if (!(repoOwner && repoName)) {
+            this.logger.warn(
+              { pullRequest: pullRequestResponse.title },
+              'Unable to fetch all inner resources for this pull request. The owner ' +
+                'and repo name could not be determined from the GraphQL response.',
+            );
+          } else {
+            // Fetch the remaining inner resources on this PR (this should be rare)
+            const innerResourceResponse = await this.fetchFromSingle(
+              GithubResource.PullRequest,
+              selectedResources,
+              {
+                pullRequestNumber: pullRequestResponse.number,
+                repoName,
+                repoOwner,
+              },
+              mapResponseCursorsForQuery(innerResourceCursors, {}),
+            );
+
+            rateLimitConsumed += innerResourceResponse.rateLimitConsumed;
+
+            // Add the additional inner resources to the initial call
+            pullRequestResponse.commits = pullRequestResponse.commits!.concat(
+              (innerResourceResponse.commits ?? []).map((c) => c.commit),
+            );
+            pullRequestResponse.reviews = pullRequestResponse.reviews!.concat(
+              innerResourceResponse.reviews ?? [],
+            );
+            pullRequestResponse.labels = pullRequestResponse.labels!.concat(
+              innerResourceResponse.labels ?? [],
+            );
+          }
         }
         await iteratee(pullRequestResponse);
       }

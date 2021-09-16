@@ -94,6 +94,11 @@ export interface OrgTeamQueryResponse extends Node {
   url: string;
   slug: string;
   name: string;
+  createdAt: string;
+  updatedAt: string;
+  databaseId: string;
+  description: string;
+  privacy: string;
   members?: OrgTeamMemberQueryResponse[];
   repos?: OrgTeamRepoQueryResponse[];
 }

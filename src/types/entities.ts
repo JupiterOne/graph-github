@@ -50,8 +50,8 @@ export interface AppEntity extends Entity {
 export interface SecretEntity extends Entity {
   name: string;
   displayName: string;
-  createdAt: string;
-  updatedAt: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
   visibility?: string; // 'private' | 'all' | 'selected'. This means which repos can use this secret. 'private' means only private repos.
   selected_repositories_url?: string;
 }
@@ -60,6 +60,13 @@ export interface TeamEntity extends Entity {
   name: string;
   displayName: string;
   fullName: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
+  databaseId: string;
+  description: string;
+  node: string;
+  privacy: string;
+  webLink: string;
 }
 
 export interface RepoEntity extends Entity {

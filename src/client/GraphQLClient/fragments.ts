@@ -24,7 +24,12 @@ export default {
   teamFields: `on Team {
     name
     url
-    slug
+    slug    
+    createdAt
+    updatedAt
+    databaseId
+    description
+    privacy
   }`,
   teamMemberEdgeFields: `on TeamMemberEdge {
     role

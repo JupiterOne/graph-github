@@ -4,6 +4,9 @@ import {
   toOrganizationCollaboratorEntity,
   toRepositoryEntity,
   toAccountEntity,
+  toTeamEntity,
+  toOrgSecretEntity,
+  toRepoSecretEntity,
   toPullRequestEntity,
 } from './converters';
 import { UserEntity, PullsListResponseItem } from '../types';
@@ -69,6 +72,47 @@ describe('toAccountEntity', () => {
       toAccountEntity({ ...apiResponse, name: undefined } as any),
     ).toMatchObject({
       displayName: 'account-login',
+    });
+  });
+});
+
+describe('toTeamEntity', () => {
+  const apiResponse = {
+    id: 'MDQ6VGVhbTQ4NTc0OTU=',
+    name: 'Test team',
+    url: 'https://github.com/orgs/Kei-Institute/teams/test-team',
+    slug: 'test-team',
+    createdAt: '2021-06-01T15:45:57Z',
+    updatedAt: '2021-06-01T15:45:57Z',
+    databaseId: 4857495,
+    description: 'Just a test team testing test teams',
+    privacy: 'VISIBLE',
+    organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz',
+  };
+
+  test('properties transferred', () => {
+    const entity = toTeamEntity(apiResponse as any);
+    //update this
+    expect(entity).toEqual({
+      _class: ['UserGroup'],
+      _type: 'github_team',
+      _key: 'MDQ6VGVhbTQ4NTc0OTU=',
+      _rawData: [
+        {
+          name: 'default',
+          rawData: apiResponse,
+        },
+      ],
+      webLink: 'https://github.com/orgs/Kei-Institute/teams/test-team',
+      name: 'test-team',
+      displayName: 'Test team',
+      fullName: 'Test team',
+      createdOn: 1622562357000,
+      updatedOn: 1622562357000,
+      databaseId: 4857495,
+      description: 'Just a test team testing test teams',
+      node: 'MDQ6VGVhbTQ4NTc0OTU=',
+      privacy: 'VISIBLE',
     });
   });
 });
@@ -180,6 +224,75 @@ describe('toOrganizationCollaboratorEntity', () => {
       toOrganizationMemberEntity({ ...apiResponse, name: undefined } as any),
     ).toMatchObject({
       displayName: 'user-login',
+    });
+  });
+});
+
+describe('toOrgSecretEntity', () => {
+  const apiResponse = {
+    name: 'KINDA_SECRET',
+    created_at: '2021-08-23T23:42:55Z',
+    updated_at: '2021-08-23T23:42:55Z',
+    visibility: 'selected',
+    selected_repositories_url:
+      'https://api.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
+  };
+
+  test('properties transferred', () => {
+    const entity = toOrgSecretEntity(apiResponse as any, 'SomeOrg');
+    expect(entity).toEqual({
+      _class: ['Secret'],
+      _type: 'github_org_secret',
+      _key: 'GitHub_Org_SomeOrg_Secret_KINDA_SECRET',
+      _rawData: [
+        {
+          name: 'default',
+          rawData: apiResponse,
+        },
+      ],
+      name: 'KINDA_SECRET',
+      displayName: 'KINDA_SECRET',
+      webLink:
+        'https://github.com/organizations/SomeOrg/settings/secrets/actions/KINDA_SECRET',
+      createdOn: 1629762175000,
+      updatedOn: 1629762175000,
+      visibility: 'selected',
+      selectedRepositoriesLink:
+        'https://api.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
+    });
+  });
+});
+
+describe('toRepoSecretEntity', () => {
+  const apiResponse = {
+    name: 'PRETTY_SECRET',
+    created_at: '2021-08-23T23:53:00Z',
+    updated_at: '2021-08-23T23:53:00Z',
+  };
+
+  test('properties transferred', () => {
+    const entity = toRepoSecretEntity(
+      apiResponse as any,
+      'SomeOrg',
+      'Test-repo',
+    );
+    expect(entity).toEqual({
+      _class: ['Secret'],
+      _type: 'github_repo_secret',
+      _key: 'GitHub_Repo_Test-repo_Secret_PRETTY_SECRET',
+      _rawData: [
+        {
+          name: 'default',
+          rawData: apiResponse,
+        },
+      ],
+      name: 'PRETTY_SECRET',
+      displayName: 'PRETTY_SECRET',
+      webLink:
+        'https://github.com/SomeOrg/Test-repo/settings/secrets/actions/PRETTY_SECRET',
+      createdOn: 1629762780000,
+      updatedOn: 1629762780000,
+      visibility: 'selected',
     });
   });
 });

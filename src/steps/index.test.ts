@@ -213,13 +213,13 @@ test('should collect data', async () => {
         webLink: { type: 'string' },
         displayName: { type: 'string' },
         name: { type: 'string' },
-        createdAt: { type: 'string' },
+        createdOn: { type: 'number' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
         },
       },
-      required: ['webLink', 'displayName', 'name', 'createdAt'],
+      required: ['webLink', 'displayName', 'name', 'createdOn'],
     },
   });
 
@@ -237,13 +237,13 @@ test('should collect data', async () => {
         webLink: { type: 'string' },
         displayName: { type: 'string' },
         name: { type: 'string' },
-        createdAt: { type: 'string' },
+        createdOn: { type: 'number' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
         },
       },
-      required: ['webLink', 'displayName', 'name', 'createdAt'],
+      required: ['webLink', 'displayName', 'name', 'createdOn'],
     },
   });
 

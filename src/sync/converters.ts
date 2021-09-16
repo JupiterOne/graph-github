@@ -131,8 +131,8 @@ export function toOrgSecretEntity(
     name: data.name,
     displayName: data.name,
     webLink: `https://github.com/organizations/${orgLogin}/settings/secrets/actions/${data.name}`,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: data.visibility,
     selectedRepositoriesLink: data.selected_repositories_url,
   };
@@ -156,8 +156,8 @@ export function toRepoSecretEntity(
     name: data.name,
     displayName: data.name,
     webLink: `https://github.com/${orgLogin}/${repoName}/settings/secrets/actions/${data.name}`,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: 'selected',
   };
   setRawData(secretEntity, { name: 'default', rawData: data });
@@ -196,6 +196,12 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     name: data.slug,
     displayName: data.name,
     fullName: data.name,
+    createdOn: parseTimePropertyValue(data.createdAt),
+    updatedOn: parseTimePropertyValue(data.updatedAt),
+    databaseId: data.databaseId,
+    description: data.description,
+    node: data.id,
+    privacy: data.privacy,
   };
   setRawData(teamEntity, {
     name: 'default',

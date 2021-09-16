@@ -2,6 +2,15 @@ export default {
   organizationFields: `on Organization {
     login
     name
+    createdAt
+    updatedAt
+    description
+    email
+    databaseId
+    isVerified
+    location
+    websiteUrl
+    url
   }`,
   userEdgeFields: `on OrganizationMemberEdge {
     hasTwoFactorEnabled

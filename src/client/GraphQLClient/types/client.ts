@@ -54,7 +54,17 @@ interface Actor {
   login: string;
 }
 
-export type OrgQueryResponse = Node & Actor;
+export interface OrgQueryResponse extends Node, Actor {
+  createdAt: string;
+  updatedAt: string;
+  description: string;
+  email: string;
+  databaseId: string;
+  isVerified: boolean;
+  location: string;
+  websiteUrl: string;
+  url: string;
+}
 
 /**
  * Organization GraphQL Fragment Types

@@ -6,6 +6,16 @@ export interface AccountEntity extends Entity {
   accountId: string;
   login: string;
   name?: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
+  description?: string;
+  email?: string;
+  node?: string;
+  databaseId?: string;
+  isVerified?: boolean;
+  location?: string;
+  websiteUrl?: string;
+  webLink?: string;
 }
 
 export interface AppEntity extends Entity {

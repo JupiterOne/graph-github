@@ -72,6 +72,16 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
     login: data.login,
     name: data.name ? data.name : undefined,
     displayName: data.name || data.login,
+    createdOn: parseTimePropertyValue(data.createdAt),
+    updatedOn: parseTimePropertyValue(data.updatedAt),
+    description: data.description,
+    email: data.email,
+    node: data.id,
+    databaseId: data.databaseId,
+    isVerified: data.isVerified,
+    location: data.location,
+    websiteUrl: data.websiteUrl,
+    webLink: data.url,
   };
   setRawData(accountEntity, { name: 'default', rawData: data });
   return accountEntity;

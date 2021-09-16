@@ -23,6 +23,15 @@ describe('toAccountEntity', () => {
     id: 'account-node-id',
     login: 'account-login',
     name: 'account-name',
+    createdAt: '2021-05-27T15:21:12Z',
+    updatedAt: '2021-09-16T15:04:20Z',
+    description: "Here's my test description",
+    email: 'email@email.com',
+    databaseId: 12345678,
+    isVerified: false,
+    location: 'Transylvania',
+    websiteUrl: 'www.goclickatesturl.com',
+    url: 'https://github.com/SomeOrg',
   };
 
   test('properties transferred', () => {
@@ -42,6 +51,16 @@ describe('toAccountEntity', () => {
       login: 'account-login',
       name: 'account-name',
       displayName: 'account-name',
+      createdOn: 1622128872000,
+      updatedOn: 1631804660000,
+      description: "Here's my test description",
+      email: 'email@email.com',
+      node: 'account-node-id',
+      databaseId: 12345678,
+      isVerified: false,
+      location: 'Transylvania',
+      websiteUrl: 'www.goclickatesturl.com',
+      webLink: 'https://github.com/SomeOrg',
     });
   });
 

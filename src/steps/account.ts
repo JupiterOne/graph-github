@@ -23,7 +23,6 @@ export async function fetchAccountDetails({
   const accountEntity = await jobState.addEntity(
     toAccountEntity(await apiClient.getAccountDetails()),
   );
-
   await jobState.setData(DATA_ACCOUNT_ENTITY, accountEntity);
 }
 

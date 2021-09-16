@@ -88,6 +88,15 @@ export interface OrgMemberQueryResponse extends Node, Actor {
   hasTwoFactorEnabled: boolean;
   role: OrgMemberRole;
   isSiteAdmin: boolean;
+  company: string;
+  createdAt: string;
+  databaseId: string;
+  email: string;
+  isEmployee: boolean;
+  location: string;
+  updatedAt: string;
+  url: string;
+  websiteUrl: string;
 }
 
 export interface OrgTeamQueryResponse extends Node {

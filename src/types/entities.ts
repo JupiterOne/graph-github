@@ -89,8 +89,17 @@ export interface UserEntity extends Entity {
   username: string;
   login: string;
   role: string;
+  node: string;
   mfaEnabled?: boolean;
   siteAdmin?: boolean;
+  company?: string;
+  createdOn?: number | undefined;
+  updatedOn?: number | undefined;
+  databaseId?: string;
+  email?: string;
+  isEmployee?: boolean;
+  location?: string;
+  websiteUrl?: string;
 }
 
 export interface PullRequestEntity extends Entity {

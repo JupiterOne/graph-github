@@ -155,6 +155,15 @@ describe('toOrganizationMemberEntity', () => {
     hasTwoFactorEnabled: true,
     role: 'Maintainer',
     isSiteAdmin: false,
+    company: 'Test Company',
+    createdAt: '2020-03-22T02:59:22Z',
+    databaseId: 62492097,
+    email: 'flynn@test.com',
+    isEmployee: false,
+    location: 'Best place ever',
+    updatedAt: '2021-08-12T18:55:22Z',
+    url: 'https://github.com/user-login',
+    websiteUrl: 'https://about.me/user-login',
   };
 
   test('properties transferred', () => {
@@ -177,6 +186,15 @@ describe('toOrganizationMemberEntity', () => {
       role: 'Maintainer',
       siteAdmin: false,
       webLink: 'https://github.com/user-login',
+      company: 'Test Company',
+      createdOn: 1584845962000,
+      updatedOn: 1628794522000,
+      databaseId: 62492097,
+      email: 'flynn@test.com',
+      node: 'member-node-id',
+      isEmployee: false,
+      location: 'Best place ever',
+      websiteUrl: 'https://about.me/user-login',
     });
   });
 
@@ -216,6 +234,7 @@ describe('toOrganizationCollaboratorEntity', () => {
       role: 'OUTSIDE',
       siteAdmin: false,
       webLink: 'https://github.com/user-login',
+      node: 'member-node-id',
     });
   });
 

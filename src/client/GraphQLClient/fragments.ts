@@ -20,6 +20,15 @@ export default {
     login
     name
     isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
   }`,
   teamFields: `on Team {
     name

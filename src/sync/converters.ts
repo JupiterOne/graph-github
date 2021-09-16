@@ -243,8 +243,19 @@ export function toOrganizationMemberEntity(
     mfaEnabled: data.hasTwoFactorEnabled || false,
     role: data.role,
     siteAdmin: data.isSiteAdmin,
-    webLink: 'https://github.com/' + data.login,
+    webLink: data.url || '',
+    company: data.company || '',
+    createdOn: parseTimePropertyValue(data.createdAt),
+    updatedOn: parseTimePropertyValue(data.updatedAt),
+    databaseId: data.databaseId,
+    node: data.id,
+    isEmployee: data.isEmployee,
+    location: data.location || '',
+    websiteUrl: data.websiteUrl || '',
   };
+  if (data.email) {
+    userEntity.email = data.email;
+  } //don't set the property if it's not provided, because SDK input validation will fail
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
 }
@@ -263,6 +274,7 @@ export function toOrganizationMemberEntityFromTeamMember(
     mfaEnabled: false,
     role: data.role,
     webLink: 'https://github.com/' + data.login,
+    node: data.id,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -283,6 +295,7 @@ export function toOrganizationCollaboratorEntity(
     role: 'OUTSIDE',
     siteAdmin: false,
     webLink: 'https://github.com/' + data.login,
+    node: data.node_id,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;

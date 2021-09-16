@@ -198,10 +198,10 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     fullName: data.name,
     createdOn: parseTimePropertyValue(data.createdAt),
     updatedOn: parseTimePropertyValue(data.updatedAt),
-    databaseId: data.databaseId,
-    description: data.description,
+    databaseId: data.databaseId || '',
+    description: data.description || '',
     node: data.id,
-    privacy: data.privacy,
+    privacy: data.privacy || '',
   };
   setRawData(teamEntity, {
     name: 'default',

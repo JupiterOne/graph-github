@@ -82,7 +82,7 @@ export default {
     author {
       date
       user {
-        login
+        login # this used to be ...userFields
       }
     }
   }`,
@@ -92,7 +92,7 @@ export default {
       oid
     }
     author {
-      ...teamMemberFields
+      ...teamMemberFields # this used to be ...userFields
     }
     state
     submittedAt
@@ -102,7 +102,7 @@ export default {
   pullRequestFields: `on PullRequest {
     additions
     author {
-      ...teamMemberFields
+      ...teamMemberFields # this used to be ...userFields
     }
     authorAssociation
     baseRefName
@@ -125,7 +125,7 @@ export default {
     editor {
       ...userFields
     }
-    # files  # Maybe someday
+    # files # Maybe someday
     headRefName
     headRefOid
     headRepository {
@@ -145,7 +145,7 @@ export default {
     merged
     mergedAt
     mergedBy {
-      ...teamMemberFields
+      ...teamMemberFields # this used to be ...userFields
     }
     number
     permalink

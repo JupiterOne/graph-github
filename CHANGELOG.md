@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Many properties to Account, User, and Team entities
+
 ## 1.4.5 - 2021-09-16
 
 ### Fixed

@@ -77,6 +77,26 @@ export interface RepoEntity extends Entity {
   archived: boolean | undefined;
   createdOn: number | undefined;
   updatedOn: number | undefined;
+  pushedOn: number | undefined;
+  autoMergeAllowed: boolean | undefined;
+  databaseId: string;
+  deleteBranchOnMerge: boolean | undefined;
+  description: string;
+  homepageUrl: string;
+  node: string;
+  isDisabled: boolean | undefined;
+  isEmpty: boolean | undefined;
+  isFork: boolean | undefined;
+  isInOrganization: boolean | undefined;
+  isLocked: boolean | undefined;
+  isMirror: boolean | undefined;
+  isSecurityPolicyEnabled: boolean | undefined;
+  isTemplate: boolean | undefined;
+  isUserConfigurationRepository: boolean | undefined;
+  lockReason: string;
+  mergeCommitAllowed: boolean | undefined;
+  rebaseMergeAllowed: boolean | undefined;
+  webLink: string;
 }
 
 //to cut down on memory usage, this type will be passed between steps for relationship building

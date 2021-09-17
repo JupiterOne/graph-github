@@ -55,6 +55,25 @@ export default {
     isArchived
     createdAt
     updatedAt
+    autoMergeAllowed
+    databaseId
+    deleteBranchOnMerge
+    description
+    homepageUrl
+    isDisabled
+    isEmpty
+    isFork
+    isInOrganization
+    isLocked
+    isMirror
+    isSecurityPolicyEnabled
+    isTemplate
+    isUserConfigurationRepository
+    lockReason
+    mergeCommitAllowed
+    pushedAt
+    rebaseMergeAllowed
+    url
   }`,
   repositoryOwnerFields: `on RepositoryOwner {
     login

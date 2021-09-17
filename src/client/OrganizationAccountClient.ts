@@ -218,6 +218,7 @@ export default class OrganizationAccountClient {
           }
 
           return {
+            //more properties are possible, but we're only going to use id to make relationships
             id: tr.node_id,
             teams: team.id,
             url: tr.url,

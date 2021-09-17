@@ -128,6 +128,24 @@ export interface OrgRepoQueryResponse extends Node {
   createdAt: string;
   updatedAt: string;
   node_id?: string;
+  autoMergeAllowed?: boolean;
+  databaseId?: string;
+  deleteBranchOnMerge?: boolean;
+  description?: string;
+  homepageUrl?: string;
+  isDisabled?: boolean;
+  isEmpty?: boolean;
+  isFork?: boolean;
+  isInOrganization?: boolean;
+  isLocked?: boolean;
+  isMirror?: boolean;
+  isSecurityPolicyEnabled?: boolean;
+  isTemplate?: boolean;
+  isUserConfigurationRepository?: boolean;
+  lockReason?: string;
+  mergeCommitAllowed?: boolean;
+  pushedAt?: string;
+  rebaseMergeAllowed?: boolean;
 }
 
 export interface OrgSecretRepoQueryResponse {

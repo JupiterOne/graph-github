@@ -21,7 +21,7 @@ and this project adheres to
 
 ### Changed
 
-- To query 25 pull requests at a time insteaad of 50 to prevent Github errors.
+- To query 25 pull requests at a time instead of 50 to prevent Github errors.
 
 ### Added
 

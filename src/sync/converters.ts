@@ -424,6 +424,19 @@ export function toPullRequestEntity(
   const commitsByUnknownAuthor = commits?.filter((commit) =>
     fromUnknownAuthor(commit, allKnownUsersByLoginMap),
   );
+  const commitsCount = commits ? commits.length : 0;
+  const approvalsCount = reviews ? reviews.filter(isApprovalReview).length : 0;
+
+  let approvalLastAt: number | undefined = undefined;
+  if (approvedCommits) {
+    const commitTimes = approvedCommits?.map(
+      (c) => parseTimePropertyValue(c.authoredDate) || 0,
+    );
+    const maxTime = Math.max(...commitTimes);
+    if (maxTime > 0) {
+      approvalLastAt = maxTime;
+    }
+  }
 
   return createIntegrationEntity({
     entityData: {
@@ -446,12 +459,14 @@ export function toPullRequestEntity(
           pullRequest.body && pullRequest.body.length > 0
             ? `${pullRequest.body.substring(0, 80)}...`
             : undefined,
+        databaseId: pullRequest.databaseId,
         webLink: pullRequest.url,
 
         state: pullRequest.state,
         open: pullRequest.state === 'OPEN',
         mergeCommitHash: pullRequest.mergeCommit?.oid,
         merged: pullRequest.merged,
+        node: pullRequest.id,
         declined: pullRequest.state === 'CLOSED' && !pullRequest.merged,
         approved: pullRequest.reviewDecision === 'APPROVED',
         allCommitsApproved: commitsNotApproved
@@ -459,6 +474,7 @@ export function toPullRequestEntity(
           : undefined,
 
         commits: commitHashes,
+        commitsCount: commitsCount,
         commitMessages: commits?.map((c) => c.message),
         commitsApproved: approvedCommitHashes,
         commitsNotApproved,
@@ -483,6 +499,8 @@ export function toPullRequestEntity(
         reviewers:
           reviews &&
           compact(uniq(reviews.map((review) => review.author?.name))),
+        approvalsCount: approvalsCount,
+        approvalLastAt: approvalLastAt,
         approverLogins:
           reviews &&
           compact(

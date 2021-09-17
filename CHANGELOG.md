@@ -10,7 +10,26 @@ and this project adheres to
 
 ### Added
 
-- Many properties to Account, User, and Team entities
+- Extra 9 properties to `github_account` (`createdOn`, `updatedOn`,
+  `description`, `email`, `node`, `databaseId`, `isVerified`, `location`,
+  `websiteUrl`, `webLink`)
+- Extra 6 properites to `github_team` (`createdOn`, `updatedOn`, `databaseId`,
+  `description`, `node`, `privacy`)
+- Extra 8 properties to `github_user` (`company`, `createdOn`, `updatedOn`,
+  `databaseId`, `node`, `isEmployee`, `location`, `websiteUrl`, `email`)
+- Extra 19 properties to `github_repo` (`autoMergeAllowed`, `databaseId`,
+  `deleteBranchOnMerge`, `description`, `homepageUrl`, `node`, `isDisabled`,
+  `isEmpty`, `isFork`, `isInOrganization`, `isLocked`, `isMirror`,
+  `isSecurityPolicyEnabled`, `isTemplate`, `isUserConfigurationRepository`,
+  `lockReason`, `mergeCommitAllowed`, `pushedOn`, `rebaseMergeAllowed`)
+- Extra 5 properties to `github_pullrequest` (`databaseId`, `node`,
+  `commitsCount`, `approvalsCount`, `approvalLastAt`)
+
+### Changed
+
+- `createdOn` and `updatedOn` properties for `github_org_secret` and
+  `github_repo_secret` are now time-since-epoch integers instead of strings,
+  matching other entities.
 
 ## 1.4.5 - 2021-09-16
 

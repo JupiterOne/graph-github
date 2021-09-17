@@ -286,6 +286,7 @@ export interface PullRequest extends Node {
   closed: boolean;
   closedAt?: string;
   createdAt: string;
+  databaseId?: string;
   deletions: number;
   editor?: PullRequestUser;
   headRefName: string;

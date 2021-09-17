@@ -140,6 +140,7 @@ export default {
     closedAt
     # comments  # Maybe someday
     createdAt
+    databaseId
     deletions
     editor {
       ...userFields

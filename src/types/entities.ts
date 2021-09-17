@@ -130,12 +130,14 @@ export interface PullRequestEntity extends Entity {
   name: string;
   title: string;
   summary?: string;
+  databaseId?: string;
   description?: string;
   webLink?: string;
 
   state: string;
   open: boolean;
   merged: boolean;
+  node?: string;
   declined: boolean;
   approved?: boolean;
   validated?: boolean;

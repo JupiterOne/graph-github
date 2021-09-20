@@ -24,6 +24,9 @@ and this project adheres to
   `lockReason`, `mergeCommitAllowed`, `pushedOn`, `rebaseMergeAllowed`)
 - Extra 5 properties to `github_pullrequest` (`databaseId`, `node`,
   `commitsCount`, `approvalsCount`, `approvalLastAt`)
+- Pull requests Opened, Reviewed, or Approved by a user who is not part of the
+  current organization or collaborator list now have a mapped relationship to a
+  GitHub user with the login recorded in the PR properties.
 
 ### Changed
 

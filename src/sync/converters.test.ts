@@ -7,6 +7,7 @@ import {
   toOrgSecretEntity,
   toRepoSecretEntity,
   toPullRequestEntity,
+  createUnknownUserPrRelationship,
 } from './converters';
 import { UserEntity } from '../types';
 import { PullRequest } from '../client/GraphQLClient/types';
@@ -447,6 +448,34 @@ describe('toPullRequestEntity', () => {
           rawData: fixturePullRequest,
         },
       ],
+    });
+  });
+});
+
+describe('createUnknownUserPrRelationship', () => {
+  test('properties transferred', () => {
+    const relationship = createUnknownUserPrRelationship(
+      'unknownlogin',
+      'github_user_approved_pullrequest',
+      'APPROVED',
+      'somePrEntityKey',
+    );
+    expect(relationship).toEqual({
+      _key: `unknownlogin|approved|somePrEntityKey`,
+      _type: 'github_user_approved_pullrequest',
+      _class: 'APPROVED',
+      _mapping: {
+        sourceEntityKey: 'somePrEntityKey',
+        relationshipDirection: 'REVERSE',
+        targetFilterKeys: [['_type', 'login']],
+        targetEntity: {
+          _class: 'User',
+          _type: 'github_user',
+          login: 'unknownlogin',
+        },
+        skipTargetCreation: true,
+      },
+      displayName: 'APPROVED',
     });
   });
 });

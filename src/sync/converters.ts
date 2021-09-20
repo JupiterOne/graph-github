@@ -3,6 +3,8 @@ import {
   parseTimePropertyValue,
   RelationshipClass,
   createIntegrationEntity,
+  MappedRelationship,
+  RelationshipDirection,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -394,6 +396,35 @@ export function createRepoAllowsUserRelationship(
     pushPermission: permissions?.push || false,
     triagePermission: permissions?.triage || false,
     pullPermission: true, //always true if there is a relationship
+  };
+}
+
+export function createUnknownUserPrRelationship(
+  unknownLogin: string,
+  relationshipType: string,
+  relationshipClass: string,
+  prKey: string,
+): MappedRelationship {
+  //used to create a mapped relationship to an unknown GitHub user who worked on a PR in the past
+  //they may no longer be a collaborator or org member, so make a mapped relationship - this will create a placeholder entity,
+  //or map to a `github_user` that might be found some other way
+  //it will also map to known users if for some reason a current member or collaborator is passed to this function
+  return {
+    _key: `${unknownLogin}|${relationshipClass.toLowerCase()}|${prKey}`,
+    _type: relationshipType,
+    _class: relationshipClass,
+    _mapping: {
+      sourceEntityKey: prKey,
+      relationshipDirection: RelationshipDirection.REVERSE,
+      targetFilterKeys: [['_type', 'login']],
+      targetEntity: {
+        _class: 'User',
+        _type: GITHUB_MEMBER_ENTITY_TYPE,
+        login: unknownLogin,
+      },
+      skipTargetCreation: true,
+    },
+    displayName: relationshipClass,
   };
 }
 

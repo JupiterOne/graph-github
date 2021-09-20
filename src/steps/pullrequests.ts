@@ -30,7 +30,10 @@ import {
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
-import { toPullRequestEntity } from '../sync/converters';
+import {
+  createUnknownUserPrRelationship,
+  toPullRequestEntity,
+} from '../sync/converters';
 import { cloneDeep } from 'lodash';
 
 export async function fetchPrs({
@@ -109,6 +112,16 @@ export async function fetchPrs({
                   to: prEntity,
                 }),
               );
+            } else {
+              //we don't recognize this author - make a mapped relationship
+              await jobState.addRelationship(
+                createUnknownUserPrRelationship(
+                  pr.authorLogin,
+                  GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
+                  RelationshipClass.OPENED,
+                  prEntity._key,
+                ),
+              );
             }
 
             if (pr.reviewerLogins) {
@@ -120,6 +133,16 @@ export async function fetchPrs({
                       from: UsersByLoginMap![reviewer],
                       to: prEntity,
                     }),
+                  );
+                } else {
+                  //we don't recognize this reviewer - make a mapped relationship
+                  await jobState.addRelationship(
+                    createUnknownUserPrRelationship(
+                      reviewer,
+                      GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
+                      RelationshipClass.REVIEWED,
+                      prEntity._key,
+                    ),
                   );
                 }
               }
@@ -134,6 +157,16 @@ export async function fetchPrs({
                       from: UsersByLoginMap![approver],
                       to: prEntity,
                     }),
+                  );
+                } else {
+                  //we don't recognize this approver - make a mapped relationship
+                  await jobState.addRelationship(
+                    createUnknownUserPrRelationship(
+                      approver,
+                      GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
+                      RelationshipClass.APPROVED,
+                      prEntity._key,
+                    ),
                   );
                 }
               }

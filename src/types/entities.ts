@@ -28,8 +28,8 @@ export interface AppEntity extends Entity {
   appSlug: string; //a name for the app
   targetId: number;
   targetType: string; // typically "Organization"
-  createdAt: string;
-  updatedAt: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
   events: string[];
   repositorySelection: string;
   singleFileName: string;
@@ -39,7 +39,7 @@ export interface AppEntity extends Entity {
   // actually build a relationship between the GitHub user and the application.
   // See: https://github.com/google/go-github/blob/master/github/apps.go#L118
   // suspendedBy: string;
-  suspendedAt: string;
+  suspendedOn: number | undefined;
   //plus permissions.{fieldname} fields drawn from the permissions API object
   //for example, 'permissions.members', 'permissions.metadata', or 'permissions.organization-administration'
   //for a more complete list of possibilities, see src/types/integration.ts/TokenPermissions

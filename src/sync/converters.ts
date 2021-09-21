@@ -107,15 +107,15 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
     appSlug: data.app_slug,
     targetId: data.target_id,
     targetType: data.target_type,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
     events: data.events,
     repositorySelection: data.respository_selection,
     singleFileName: data.single_file_name || '',
     hasMultipleSingleFiles: data.has_multiple_single_files,
     singleFilePaths: data.single_file_paths,
     // suspendedBy: data.suspended_by || '',
-    suspendedAt: data.suspended_at || '',
+    suspendedOn: parseTimePropertyValue(data.suspended_at),
     ...decomposePermissions(data.permissions),
   };
   setRawData(appEntity, { name: 'default', rawData: data });

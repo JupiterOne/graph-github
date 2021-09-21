@@ -39,7 +39,7 @@ export const GITHUB_APP_ENTITY_CLASS = 'Application';
 export const GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE =
   'github_account_installed_app';
 
-//secrets
+//secrets and environments
 export const GITHUB_ORG_SECRET_ENTITY_TYPE = 'github_org_secret';
 export const GITHUB_REPO_SECRET_ENTITY_TYPE = 'github_repo_secret';
 export const GITHUB_ENV_SECRET_ENTITY_TYPE = 'github_env_secret';
@@ -57,7 +57,7 @@ export const GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE =
   'github_repo_uses_secret'; //see 'github_repo_has_secret'
 export const GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE =
   'github_repo_secret_overrides_org_secret';
-//env secrets
+//environments and env secrets
 export const GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE =
   'github_repo_has_environment';
 export const GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE =

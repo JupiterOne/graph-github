@@ -194,11 +194,37 @@ export interface OrgSecretQueryResponse {
   updated_at: string;
   visibility?: string; // 'private' | 'all' | 'selected'. This means how many repos can use this secret
   selected_repositories_url?: string; //a webpage url, not a REST API url
-  //the following fields are set by the integration code, not received from the REST API
+  //the following properties are set by the integration code, not received from the REST API
   orgLogin?: string; //for use in constructing weblinks
   secretOwnerType?: string; // 'org' | 'repo' | 'env'
   secretOwnerName?: string;
   repos?: RepoKeyAndName[]; //to help build relationships with minimal memory footprint, using RepoKeyAndName instead of RepoEntity
+}
+
+export interface RepoEnvironmentQueryResponse {
+  //a REST response, not GraphQL
+  id: string;
+  node_id: string;
+  name: string;
+  url: string;
+  html_url: string;
+  created_at: string;
+  updated_at: string;
+  protection_rules: ProtectionRule[];
+  deployment_branch_policy: {
+    protected_branches: boolean;
+    custom_branch_policies: boolean;
+  };
+  //the following property is set by the integration code from another API call, not received from the Environments REST API
+  envSecrets?: OrgSecretQueryResponse[];
+}
+
+interface ProtectionRule {
+  id: string;
+  node_id: string;
+  type: string; // examples include 'branch_policy', 'required_reviewers', or 'wait_timer'. Existence of other props depends on this.
+  wait_timer?: number;
+  reviewers?: object[]; //could be users or teams, but not all props found in OrgMemberQueryResponse or OrgTeamQueryResponse
 }
 
 interface GithubResources {

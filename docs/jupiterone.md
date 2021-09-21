@@ -103,6 +103,8 @@ The following entities are created:
 | Resources           | Entity `_type`       | Entity `_class` |
 | ------------------- | -------------------- | --------------- |
 | Account             | `github_account`     | `Account`       |
+| GitHub Env Secret   | `github_env_secret`  | `Secret`        |
+| GitHub Environment  | `github_environment` | `Configuration` |
 | GitHub Org Secret   | `github_org_secret`  | `Secret`        |
 | GitHub Pull Request | `github_pullrequest` | `PR`            |
 | GitHub Repo Secret  | `github_repo_secret` | `Secret`        |
@@ -122,11 +124,16 @@ The following relationships are created:
 | `github_account`      | **HAS**               | `github_user`         |
 | `github_account`      | **INSTALLED**         | `github_app`          |
 | `github_account`      | **OWNS**              | `github_repo`         |
+| `github_env_secret`   | **OVERRIDES**         | `github_org_secret`   |
+| `github_env_secret`   | **OVERRIDES**         | `github_repo_secret`  |
+| `github_environment`  | **HAS**               | `github_env_secret`   |
 | `github_repo`         | **ALLOWS**            | `github_team`         |
 | `github_repo`         | **ALLOWS**            | `github_user`         |
+| `github_repo`         | **HAS**               | `github_environment`  |
 | `github_repo`         | **HAS**               | `github_pullrequest`  |
 | `github_repo`         | **HAS**               | `github_repo_secret`  |
 | `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`   |
+| `github_repo`         | **USES**              | `github_env_secret`   |
 | `github_repo`         | **USES**              | `github_org_secret`   |
 | `github_repo`         | **USES**              | `github_repo_secret`  |
 | `github_team`         | **HAS**               | `github_user`         |

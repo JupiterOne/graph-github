@@ -18,6 +18,7 @@ import {
   GithubResource,
   OrgSecretQueryResponse,
   OrgSecretRepoQueryResponse,
+  RepoEnvironmentQueryResponse,
 } from './GraphQLClient';
 import {
   RepoEntity,
@@ -396,6 +397,34 @@ export default class OrganizationAccountClient {
       return repoSecrets || [];
     } catch (err) {
       this.logger.warn({}, 'Error while attempting to ingest repo secrets');
+      throw new IntegrationError(err);
+    }
+  }
+
+  async getEnvironments(
+    repoName: string,
+  ): Promise<RepoEnvironmentQueryResponse[]> {
+    try {
+      const repoEnvironments = await this.v3.paginate(
+        'GET /repos/{owner}/{repo}/environments' as any, //https://docs.github.com/en/rest/reference/repos#get-all-environments
+        {
+          owner: this.login,
+          repo: repoName,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of environments for a repo');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+      console.log(repoEnvironments);
+      return repoEnvironments || [];
+    } catch (err) {
+      this.logger.warn(
+        {},
+        'Error while attempting to ingest repo environments',
+      );
       throw new IntegrationError(err);
     }
   }

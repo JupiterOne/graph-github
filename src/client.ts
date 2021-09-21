@@ -26,6 +26,7 @@ import {
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
   OrgSecretQueryResponse,
+  RepoEnvironmentQueryResponse,
 } from './client/GraphQLClient';
 import { PullRequest } from './client/GraphQLClient/types';
 
@@ -190,6 +191,29 @@ export class APIClient {
       );
       for (const secret of repoSecrets) {
         await iteratee(secret);
+      }
+    }
+  }
+
+  /**
+   * Iterates each Github environment and ingests any environmental secrets.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateEnvironments(
+    repoName: string,
+    iteratee: ResourceIteratee<RepoEnvironmentQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.secretsScope) {
+      const environments: RepoEnvironmentQueryResponse[] = await this.accountClient.getEnvironments(
+        repoName,
+      );
+      for (const env of environments) {
+        //go get env secrets and load the env object
+        await iteratee(env);
       }
     }
   }

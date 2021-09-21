@@ -201,6 +201,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateEnvironments(
+    repoDatabaseId: string,
     repoName: string,
     iteratee: ResourceIteratee<RepoEnvironmentQueryResponse>,
   ): Promise<void> {
@@ -212,7 +213,17 @@ export class APIClient {
         repoName,
       );
       for (const env of environments) {
-        //go get env secrets and load the env object
+        env.envSecrets = [];
+        if (this.secretsScope) {
+          //go get env secrets and load the env object
+          const envSecrets = await this.accountClient.getEnvSecrets(
+            repoDatabaseId,
+            env.name,
+          );
+          console.log(env);
+          console.log(envSecrets);
+          env.envSecrets = envSecrets;
+        }
         await iteratee(env);
       }
     }
@@ -230,6 +241,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const repos: OrgRepoQueryResponse[] = await this.accountClient.getRepositories();
+    console.log(repos);
     for (const repo of repos) {
       await iteratee(repo);
     }

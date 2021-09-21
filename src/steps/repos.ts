@@ -44,7 +44,11 @@ export async function fetchRepos({
       toRepositoryEntity(repo),
     )) as RepoEntity;
 
-    repoTags.push({ _key: repoEntity._key, name: repoEntity.name });
+    repoTags.push({
+      _key: repoEntity._key,
+      name: repoEntity.name,
+      databaseId: repoEntity.databaseId,
+    });
 
     await jobState.addRelationship(
       createDirectRelationship({

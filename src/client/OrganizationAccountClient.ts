@@ -418,12 +418,39 @@ export default class OrganizationAccountClient {
           return response.data;
         },
       );
-      console.log(repoEnvironments);
       return repoEnvironments || [];
     } catch (err) {
       this.logger.warn(
         {},
         'Error while attempting to ingest repo environments',
+      );
+      throw new IntegrationError(err);
+    }
+  }
+
+  async getEnvSecrets(
+    repoDatabaseId: string,
+    envName: string,
+  ): Promise<OrgSecretQueryResponse[]> {
+    try {
+      const repoSecrets = await this.v3.paginate(
+        'GET /repositories/{repository_id}/environments/{environment_name}/secrets' as any, //https://docs.github.com/en/rest/reference/actions#list-environment-secrets
+        {
+          repository_id: repoDatabaseId,
+          environment_name: envName,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of secrets for a repo environment');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+      return repoSecrets || [];
+    } catch (err) {
+      this.logger.warn(
+        {},
+        'Error while attempting to ingest repo environment secrets',
       );
       throw new IntegrationError(err);
     }

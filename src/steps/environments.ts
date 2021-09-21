@@ -64,8 +64,11 @@ export async function fetchEnvironments({
   }
 
   for (const repoTag of repoTags) {
-    await apiClient.iterateEnvironments(repoTag.name, async (secret) => {
-      /*
+    await apiClient.iterateEnvironments(
+      repoTag.databaseId,
+      repoTag.name,
+      async (secret) => {
+        /*
       const secretEntity = (await jobState.addEntity(
         toRepoSecretEntity(secret, apiClient.accountClient.login, repoTag.name),
       )) as SecretEntity;
@@ -100,7 +103,8 @@ export async function fetchEnvironments({
           }),
         );
       } */
-    });
+      },
+    );
   }
 }
 

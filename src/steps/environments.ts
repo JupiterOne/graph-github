@@ -8,7 +8,7 @@ import {
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { RepoKeyAndName, SecretEntity } from '../types';
+import { RepoKeyAndName, EnvironmentEntity, SecretEntity } from '../types';
 import {
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_SECRET_ENTITY_TYPE,
@@ -26,7 +26,7 @@ import {
   GITHUB_REPO_TAGS_ARRAY,
   GITHUB_ORG_SECRET_BY_NAME_MAP,
 } from '../constants';
-import { toRepoSecretEntity } from '../sync/converters';
+import { toEnvironmentEntity, toEnvSecretEntity } from '../sync/converters';
 
 export async function fetchEnvironments({
   instance,
@@ -67,43 +67,74 @@ export async function fetchEnvironments({
     await apiClient.iterateEnvironments(
       repoTag.databaseId,
       repoTag.name,
-      async (secret) => {
-        /*
-      const secretEntity = (await jobState.addEntity(
-        toRepoSecretEntity(secret, apiClient.accountClient.login, repoTag.name),
-      )) as SecretEntity;
-      repoSecretEntities.push(secretEntity);
+      async (env) => {
+        const envEntity = (await jobState.addEntity(
+          toEnvironmentEntity(env, apiClient.accountClient.login, repoTag.name),
+        )) as EnvironmentEntity;
 
-      await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.HAS,
-          fromType: GITHUB_REPO_ENTITY_TYPE,
-          toType: GITHUB_REPO_SECRET_ENTITY_TYPE,
-          fromKey: repoTag._key,
-          toKey: secretEntity._key,
-        }),
-      );
-
-      await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.USES,
-          fromType: GITHUB_REPO_ENTITY_TYPE,
-          toType: GITHUB_REPO_SECRET_ENTITY_TYPE,
-          fromKey: repoTag._key,
-          toKey: secretEntity._key,
-        }),
-      );
-
-      if (orgSecretEntities[secret.name]) {
         await jobState.addRelationship(
           createDirectRelationship({
-            _class: RelationshipClass.OVERRIDES,
-            from: secretEntity,
-            to: orgSecretEntities[secret.name],
+            _class: RelationshipClass.HAS,
+            fromType: GITHUB_REPO_ENTITY_TYPE,
+            toType: GITHUB_ENVIRONMENT_ENTITY_TYPE,
+            fromKey: repoTag._key,
+            toKey: envEntity._key,
           }),
         );
-      } */
-      },
+
+        if (env.envSecrets) {
+          for (const secret of env.envSecrets) {
+            const secretEntity = (await jobState.addEntity(
+              toEnvSecretEntity(
+                secret,
+                apiClient.accountClient.login,
+                repoTag.name,
+                envEntity,
+              ),
+            )) as SecretEntity;
+
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.HAS,
+                from: envEntity,
+                to: secretEntity,
+              }),
+            );
+
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.USES,
+                fromType: GITHUB_REPO_ENTITY_TYPE,
+                toType: GITHUB_ENV_SECRET_ENTITY_TYPE,
+                fromKey: repoTag._key,
+                toKey: secretEntity._key,
+              }),
+            );
+
+            if (orgSecretEntities[secret.name]) {
+              await jobState.addRelationship(
+                createDirectRelationship({
+                  _class: RelationshipClass.OVERRIDES,
+                  from: secretEntity,
+                  to: orgSecretEntities[secret.name],
+                }),
+              );
+            }
+
+            const repoSecretEntities =
+              repoSecretEntitiesByRepoNameMap[repoTag.name];
+            if (repoSecretEntities && repoSecretEntities[secret.name]) {
+              await jobState.addRelationship(
+                createDirectRelationship({
+                  _class: RelationshipClass.OVERRIDES,
+                  from: secretEntity,
+                  to: repoSecretEntities[secret.name],
+                }),
+              );
+            }
+          } //end of env secrets for loop
+        }
+      }, //end of environments iterator
     );
   }
 }

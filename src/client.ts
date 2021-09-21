@@ -220,8 +220,6 @@ export class APIClient {
             repoDatabaseId,
             env.name,
           );
-          console.log(env);
-          console.log(envSecrets);
           env.envSecrets = envSecrets;
         }
         await iteratee(env);

@@ -56,6 +56,17 @@ export interface SecretEntity extends Entity {
   selected_repositories_url?: string;
 }
 
+export interface EnvironmentEntity extends Entity {
+  nodeId: string;
+  name: string;
+  webLink: string;
+  url: string;
+  htmlUrl: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
+  protectionRulesExist: boolean;
+}
+
 export interface TeamEntity extends Entity {
   name: string;
   displayName: string;

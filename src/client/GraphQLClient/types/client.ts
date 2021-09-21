@@ -212,6 +212,7 @@ export interface RepoEnvironmentQueryResponse {
   updated_at: string;
   protection_rules: ProtectionRule[];
   deployment_branch_policy: {
+    //sometimes null object
     protected_branches: boolean;
     custom_branch_policies: boolean;
   };

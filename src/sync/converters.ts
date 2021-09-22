@@ -422,7 +422,7 @@ export function createUnknownUserPrRelationship(
         _type: GITHUB_MEMBER_ENTITY_TYPE,
         login: unknownLogin,
       },
-      skipTargetCreation: true,
+      skipTargetCreation: false,
     },
     displayName: relationshipClass,
   };
@@ -463,7 +463,10 @@ export function toPullRequestEntity(
     const commitTimes = approvedCommits?.map(
       (c) => parseTimePropertyValue(c.authoredDate) || 0,
     );
-    const maxTime = Math.max(...commitTimes);
+    let maxTime = 0;
+    if (commitTimes) {
+      maxTime = Math.max(...commitTimes);
+    }
     if (maxTime > 0) {
       approvalLastAt = maxTime;
     }

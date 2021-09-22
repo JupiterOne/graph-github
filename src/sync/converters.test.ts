@@ -473,7 +473,7 @@ describe('createUnknownUserPrRelationship', () => {
           _type: 'github_user',
           login: 'unknownlogin',
         },
-        skipTargetCreation: true,
+        skipTargetCreation: false,
       },
       displayName: 'APPROVED',
     });

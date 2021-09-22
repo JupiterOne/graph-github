@@ -1,6 +1,6 @@
 import { RepoKeyAndName, TokenPermissions } from '../../../types';
 
-export interface OrgCollaboratorQueryResponse {
+export interface RepoCollaboratorQueryResponse {
   id: number;
   name?: string | null;
   login: string;
@@ -50,7 +50,7 @@ export interface OrgAppQueryResponse {
   suspended_at: string;
 }
 
-export interface OrgSecretQueryResponse {
+export interface SecretQueryResponse {
   name: string;
   created_at: string;
   updated_at: string;
@@ -78,7 +78,7 @@ export interface RepoEnvironmentQueryResponse {
     custom_branch_policies: boolean;
   };
   //the following property is set by the integration code from another API call, not received from the Environments REST API
-  envSecrets?: OrgSecretQueryResponse[];
+  envSecrets?: SecretQueryResponse[];
 }
 
 interface ProtectionRule {

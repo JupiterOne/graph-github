@@ -16,9 +16,9 @@ import {
   GithubResource,
 } from './GraphQLClient';
 import {
-  OrgCollaboratorQueryResponse,
+  RepoCollaboratorQueryResponse,
   OrgAppQueryResponse,
-  OrgSecretQueryResponse,
+  SecretQueryResponse,
   OrgSecretRepoQueryResponse,
   RepoEnvironmentQueryResponse,
 } from './RESTClient/types';
@@ -239,7 +239,7 @@ export default class OrganizationAccountClient {
 
   async getRepoCollaboratorsWithRest(
     repoName: string,
-  ): Promise<OrgCollaboratorQueryResponse[]> {
+  ): Promise<RepoCollaboratorQueryResponse[]> {
     try {
       const repoCollaborators = await this.v3.paginate(
         'GET /repos/{owner}/{repo}/collaborators', // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
@@ -329,7 +329,7 @@ export default class OrganizationAccountClient {
     return totalTeamRepos || [];
   }
 
-  async getOrganizationSecrets(): Promise<OrgSecretQueryResponse[]> {
+  async getOrganizationSecrets(): Promise<SecretQueryResponse[]> {
     try {
       const orgSecrets = await this.v3.paginate(
         'GET /orgs/{org}/actions/secrets', //https://docs.github.com/en/rest/reference/actions#list-organization-secrets
@@ -380,7 +380,7 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getRepoSecrets(repoName: string): Promise<OrgSecretQueryResponse[]> {
+  async getRepoSecrets(repoName: string): Promise<SecretQueryResponse[]> {
     try {
       const repoSecrets = await this.v3.paginate(
         'GET /repos/{owner}/{repo}/actions/secrets', //https://docs.github.com/en/rest/reference/actions#list-repository-secrets
@@ -432,7 +432,7 @@ export default class OrganizationAccountClient {
   async getEnvSecrets(
     repoDatabaseId: string,
     envName: string,
-  ): Promise<OrgSecretQueryResponse[]> {
+  ): Promise<SecretQueryResponse[]> {
     try {
       const repoSecrets = await this.v3.paginate(
         'GET /repositories/{repository_id}/environments/{environment_name}/secrets' as any, //https://docs.github.com/en/rest/reference/actions#list-environment-secrets

@@ -25,9 +25,9 @@ import {
   OrgTeamRepoQueryResponse,
 } from './client/GraphQLClient';
 import {
-  OrgCollaboratorQueryResponse,
+  RepoCollaboratorQueryResponse,
   OrgAppQueryResponse,
-  OrgSecretQueryResponse,
+  SecretQueryResponse,
   RepoEnvironmentQueryResponse,
 } from './client/RESTClient/types';
 import { PullRequest } from './client/GraphQLClient/types';
@@ -141,13 +141,13 @@ export class APIClient {
    */
   public async iterateOrgSecrets(
     allRepos: RepoKeyAndName[],
-    iteratee: ResourceIteratee<OrgSecretQueryResponse>,
+    iteratee: ResourceIteratee<SecretQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     if (this.secretsScope) {
-      const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
+      const secrets: SecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
       for (const secret of secrets) {
         //set repos that use this secret, so we can make relationships in iteratree
         secret.visibility === 'all'
@@ -182,13 +182,13 @@ export class APIClient {
    */
   public async iterateRepoSecrets(
     repoName: string,
-    iteratee: ResourceIteratee<OrgSecretQueryResponse>,
+    iteratee: ResourceIteratee<SecretQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     if (this.secretsScope) {
-      const repoSecrets: OrgSecretQueryResponse[] = await this.accountClient.getRepoSecrets(
+      const repoSecrets: SecretQueryResponse[] = await this.accountClient.getRepoSecrets(
         repoName,
       );
       for (const secret of repoSecrets) {
@@ -275,12 +275,12 @@ export class APIClient {
    */
   public async iterateCollaborators(
     repo: RepoKeyAndName,
-    iteratee: ResourceIteratee<OrgCollaboratorQueryResponse>,
+    iteratee: ResourceIteratee<RepoCollaboratorQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const collaborators: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
+    const collaborators: RepoCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
       repo.name,
     );
     for (const collab of collaborators) {

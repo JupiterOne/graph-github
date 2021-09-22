@@ -59,9 +59,9 @@ import {
   OrgTeamMemberQueryResponse,
 } from '../client/GraphQLClient';
 import {
-  OrgCollaboratorQueryResponse,
+  RepoCollaboratorQueryResponse,
   OrgAppQueryResponse,
-  OrgSecretQueryResponse,
+  SecretQueryResponse,
   CollaboratorPermissions,
   RepoEnvironmentQueryResponse,
 } from '../client/RESTClient/types';
@@ -125,7 +125,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
 }
 
 export function toOrgSecretEntity(
-  data: OrgSecretQueryResponse,
+  data: SecretQueryResponse,
   orgLogin: string,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
@@ -149,7 +149,7 @@ export function toOrgSecretEntity(
 }
 
 export function toRepoSecretEntity(
-  data: OrgSecretQueryResponse,
+  data: SecretQueryResponse,
   orgLogin: string,
   repoName: string,
 ): SecretEntity {
@@ -201,7 +201,7 @@ export function toEnvironmentEntity(
 }
 
 export function toEnvSecretEntity(
-  data: OrgSecretQueryResponse,
+  data: SecretQueryResponse,
   orgLogin: string,
   repoName: string,
   environment: EnvironmentEntity,
@@ -338,7 +338,7 @@ export function toOrganizationMemberEntityFromTeamMember(
 }
 
 export function toOrganizationCollaboratorEntity(
-  data: OrgCollaboratorQueryResponse,
+  data: RepoCollaboratorQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
     _class: [GITHUB_COLLABORATOR_ENTITY_CLASS],

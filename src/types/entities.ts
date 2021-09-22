@@ -6,6 +6,16 @@ export interface AccountEntity extends Entity {
   accountId: string;
   login: string;
   name?: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
+  description?: string;
+  email?: string;
+  node?: string;
+  databaseId?: string;
+  isVerified?: boolean;
+  location?: string;
+  websiteUrl?: string;
+  webLink?: string;
 }
 
 export interface AppEntity extends Entity {
@@ -40,8 +50,8 @@ export interface AppEntity extends Entity {
 export interface SecretEntity extends Entity {
   name: string;
   displayName: string;
-  createdAt: string;
-  updatedAt: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
   visibility?: string; // 'private' | 'all' | 'selected'. This means which repos can use this secret. 'private' means only private repos.
   selected_repositories_url?: string;
 }
@@ -50,6 +60,13 @@ export interface TeamEntity extends Entity {
   name: string;
   displayName: string;
   fullName: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
+  databaseId: string;
+  description: string;
+  node: string;
+  privacy: string;
+  webLink: string;
 }
 
 export interface RepoEntity extends Entity {
@@ -60,6 +77,26 @@ export interface RepoEntity extends Entity {
   archived: boolean | undefined;
   createdOn: number | undefined;
   updatedOn: number | undefined;
+  pushedOn: number | undefined;
+  autoMergeAllowed: boolean | undefined;
+  databaseId: string;
+  deleteBranchOnMerge: boolean | undefined;
+  description: string;
+  homepageUrl: string;
+  node: string;
+  isDisabled: boolean | undefined;
+  isEmpty: boolean | undefined;
+  isFork: boolean | undefined;
+  isInOrganization: boolean | undefined;
+  isLocked: boolean | undefined;
+  isMirror: boolean | undefined;
+  isSecurityPolicyEnabled: boolean | undefined;
+  isTemplate: boolean | undefined;
+  isUserConfigurationRepository: boolean | undefined;
+  lockReason: string;
+  mergeCommitAllowed: boolean | undefined;
+  rebaseMergeAllowed: boolean | undefined;
+  webLink: string;
 }
 
 //to cut down on memory usage, this type will be passed between steps for relationship building
@@ -72,8 +109,17 @@ export interface UserEntity extends Entity {
   username: string;
   login: string;
   role: string;
+  node: string;
   mfaEnabled?: boolean;
   siteAdmin?: boolean;
+  company?: string;
+  createdOn?: number | undefined;
+  updatedOn?: number | undefined;
+  databaseId?: string;
+  email?: string;
+  isEmployee?: boolean;
+  location?: string;
+  websiteUrl?: string;
 }
 
 export interface PullRequestEntity extends Entity {
@@ -84,12 +130,14 @@ export interface PullRequestEntity extends Entity {
   name: string;
   title: string;
   summary?: string;
+  databaseId?: string;
   description?: string;
   webLink?: string;
 
   state: string;
   open: boolean;
   merged: boolean;
+  node?: string;
   declined: boolean;
   approved?: boolean;
   validated?: boolean;

@@ -54,7 +54,17 @@ interface Actor {
   login: string;
 }
 
-export type OrgQueryResponse = Node & Actor;
+export interface OrgQueryResponse extends Node, Actor {
+  createdAt: string;
+  updatedAt: string;
+  description: string;
+  email: string;
+  databaseId: string;
+  isVerified: boolean;
+  location: string;
+  websiteUrl: string;
+  url: string;
+}
 
 /**
  * Organization GraphQL Fragment Types
@@ -78,12 +88,26 @@ export interface OrgMemberQueryResponse extends Node, Actor {
   hasTwoFactorEnabled: boolean;
   role: OrgMemberRole;
   isSiteAdmin: boolean;
+  company: string;
+  createdAt: string;
+  databaseId: string;
+  email: string;
+  isEmployee: boolean;
+  location: string;
+  updatedAt: string;
+  url: string;
+  websiteUrl: string;
 }
 
 export interface OrgTeamQueryResponse extends Node {
   url: string;
   slug: string;
   name: string;
+  createdAt: string;
+  updatedAt: string;
+  databaseId: string;
+  description: string;
+  privacy: string;
   members?: OrgTeamMemberQueryResponse[];
   repos?: OrgTeamRepoQueryResponse[];
 }
@@ -104,6 +128,24 @@ export interface OrgRepoQueryResponse extends Node {
   createdAt: string;
   updatedAt: string;
   node_id?: string;
+  autoMergeAllowed?: boolean;
+  databaseId?: string;
+  deleteBranchOnMerge?: boolean;
+  description?: string;
+  homepageUrl?: string;
+  isDisabled?: boolean;
+  isEmpty?: boolean;
+  isFork?: boolean;
+  isInOrganization?: boolean;
+  isLocked?: boolean;
+  isMirror?: boolean;
+  isSecurityPolicyEnabled?: boolean;
+  isTemplate?: boolean;
+  isUserConfigurationRepository?: boolean;
+  lockReason?: string;
+  mergeCommitAllowed?: boolean;
+  pushedAt?: string;
+  rebaseMergeAllowed?: boolean;
 }
 
 export interface OrgSecretRepoQueryResponse {
@@ -244,6 +286,7 @@ export interface PullRequest extends Node {
   closed: boolean;
   closedAt?: string;
   createdAt: string;
+  databaseId?: string;
   deletions: number;
   editor?: PullRequestUser;
   headRefName: string;

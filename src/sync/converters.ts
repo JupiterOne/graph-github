@@ -3,6 +3,8 @@ import {
   parseTimePropertyValue,
   RelationshipClass,
   createIntegrationEntity,
+  MappedRelationship,
+  RelationshipDirection,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -72,6 +74,16 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
     login: data.login,
     name: data.name ? data.name : undefined,
     displayName: data.name || data.login,
+    createdOn: parseTimePropertyValue(data.createdAt),
+    updatedOn: parseTimePropertyValue(data.updatedAt),
+    description: data.description,
+    email: data.email,
+    node: data.id,
+    databaseId: data.databaseId,
+    isVerified: data.isVerified,
+    location: data.location,
+    websiteUrl: data.websiteUrl,
+    webLink: data.url,
   };
   setRawData(accountEntity, { name: 'default', rawData: data });
   return accountEntity;
@@ -121,8 +133,8 @@ export function toOrgSecretEntity(
     name: data.name,
     displayName: data.name,
     webLink: `https://github.com/organizations/${orgLogin}/settings/secrets/actions/${data.name}`,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: data.visibility,
     selectedRepositoriesLink: data.selected_repositories_url,
   };
@@ -146,8 +158,8 @@ export function toRepoSecretEntity(
     name: data.name,
     displayName: data.name,
     webLink: `https://github.com/${orgLogin}/${repoName}/settings/secrets/actions/${data.name}`,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: 'selected',
   };
   setRawData(secretEntity, { name: 'default', rawData: data });
@@ -186,6 +198,12 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     name: data.slug,
     displayName: data.name,
     fullName: data.name,
+    createdOn: parseTimePropertyValue(data.createdAt),
+    updatedOn: parseTimePropertyValue(data.updatedAt),
+    databaseId: data.databaseId || '',
+    description: data.description || '',
+    node: data.id,
+    privacy: data.privacy || '',
   };
   setRawData(teamEntity, {
     name: 'default',
@@ -208,6 +226,25 @@ export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
     archived: data.isArchived,
     createdOn: parseTimePropertyValue(data.createdAt),
     updatedOn: parseTimePropertyValue(data.updatedAt),
+    pushedOn: parseTimePropertyValue(data.pushedAt),
+    databaseId: data.databaseId || '',
+    autoMergeAllowed: data.autoMergeAllowed,
+    deleteBranchOnMerge: data.deleteBranchOnMerge,
+    description: data.description || '',
+    homepageUrl: data.homepageUrl || '',
+    node: data.id,
+    isDisabled: data.isDisabled,
+    isEmpty: data.isEmpty,
+    isFork: data.isFork,
+    isInOrganization: data.isInOrganization,
+    isLocked: data.isLocked,
+    isMirror: data.isMirror,
+    isSecurityPolicyEnabled: data.isSecurityPolicyEnabled,
+    isTemplate: data.isTemplate,
+    isUserConfigurationRepository: data.isUserConfigurationRepository,
+    lockReason: data.lockReason || '',
+    mergeCommitAllowed: data.mergeCommitAllowed,
+    rebaseMergeAllowed: data.rebaseMergeAllowed,
   };
   setRawData(repoEntity, { name: 'default', rawData: data });
   return repoEntity;
@@ -227,8 +264,19 @@ export function toOrganizationMemberEntity(
     mfaEnabled: data.hasTwoFactorEnabled || false,
     role: data.role,
     siteAdmin: data.isSiteAdmin,
-    webLink: 'https://github.com/' + data.login,
+    webLink: data.url || '',
+    company: data.company || '',
+    createdOn: parseTimePropertyValue(data.createdAt),
+    updatedOn: parseTimePropertyValue(data.updatedAt),
+    databaseId: data.databaseId,
+    node: data.id,
+    isEmployee: data.isEmployee,
+    location: data.location || '',
+    websiteUrl: data.websiteUrl || '',
   };
+  if (data.email) {
+    userEntity.email = data.email;
+  } //don't set the property if it's not provided, because SDK input validation will fail
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
 }
@@ -247,6 +295,7 @@ export function toOrganizationMemberEntityFromTeamMember(
     mfaEnabled: false,
     role: data.role,
     webLink: 'https://github.com/' + data.login,
+    node: data.id,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -267,6 +316,7 @@ export function toOrganizationCollaboratorEntity(
     role: 'OUTSIDE',
     siteAdmin: false,
     webLink: 'https://github.com/' + data.login,
+    node: data.node_id,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -349,6 +399,35 @@ export function createRepoAllowsUserRelationship(
   };
 }
 
+export function createUnknownUserPrRelationship(
+  unknownLogin: string,
+  relationshipType: string,
+  relationshipClass: string,
+  prKey: string,
+): MappedRelationship {
+  //used to create a mapped relationship to an unknown GitHub user who worked on a PR in the past
+  //they may no longer be a collaborator or org member, so make a mapped relationship - this will create a placeholder entity,
+  //or map to a `github_user` that might be found some other way
+  //it will also map to known users if for some reason a current member or collaborator is passed to this function
+  return {
+    _key: `${unknownLogin}|${relationshipClass.toLowerCase()}|${prKey}`,
+    _type: relationshipType,
+    _class: relationshipClass,
+    _mapping: {
+      sourceEntityKey: prKey,
+      relationshipDirection: RelationshipDirection.REVERSE,
+      targetFilterKeys: [['_type', 'login']],
+      targetEntity: {
+        _class: 'User',
+        _type: GITHUB_MEMBER_ENTITY_TYPE,
+        login: unknownLogin,
+      },
+      skipTargetCreation: false,
+    },
+    displayName: relationshipClass,
+  };
+}
+
 export function toPullRequestEntity(
   pullRequest: PullRequest,
   teamMembersByLoginMap: IdEntityMap<UserEntity>, //
@@ -376,6 +455,22 @@ export function toPullRequestEntity(
   const commitsByUnknownAuthor = commits?.filter((commit) =>
     fromUnknownAuthor(commit, allKnownUsersByLoginMap),
   );
+  const commitsCount = commits ? commits.length : 0;
+  const approvalsCount = reviews ? reviews.filter(isApprovalReview).length : 0;
+
+  let approvalLastAt: number | undefined = undefined;
+  if (approvedCommits) {
+    const commitTimes = approvedCommits?.map(
+      (c) => parseTimePropertyValue(c.authoredDate) || 0,
+    );
+    let maxTime = 0;
+    if (commitTimes) {
+      maxTime = Math.max(...commitTimes);
+    }
+    if (maxTime > 0) {
+      approvalLastAt = maxTime;
+    }
+  }
 
   return createIntegrationEntity({
     entityData: {
@@ -398,12 +493,14 @@ export function toPullRequestEntity(
           pullRequest.body && pullRequest.body.length > 0
             ? `${pullRequest.body.substring(0, 80)}...`
             : undefined,
+        databaseId: pullRequest.databaseId,
         webLink: pullRequest.url,
 
         state: pullRequest.state,
         open: pullRequest.state === 'OPEN',
         mergeCommitHash: pullRequest.mergeCommit?.oid,
         merged: pullRequest.merged,
+        node: pullRequest.id,
         declined: pullRequest.state === 'CLOSED' && !pullRequest.merged,
         approved: pullRequest.reviewDecision === 'APPROVED',
         allCommitsApproved: commitsNotApproved
@@ -411,6 +508,7 @@ export function toPullRequestEntity(
           : undefined,
 
         commits: commitHashes,
+        commitsCount: commitsCount,
         commitMessages: commits?.map((c) => c.message),
         commitsApproved: approvedCommitHashes,
         commitsNotApproved,
@@ -435,6 +533,8 @@ export function toPullRequestEntity(
         reviewers:
           reviews &&
           compact(uniq(reviews.map((review) => review.author?.name))),
+        approvalsCount: approvalsCount,
+        approvalLastAt: approvalLastAt,
         approverLogins:
           reviews &&
           compact(

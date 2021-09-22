@@ -2,6 +2,15 @@ export default {
   organizationFields: `on Organization {
     login
     name
+    createdAt
+    updatedAt
+    description
+    email
+    databaseId
+    isVerified
+    location
+    websiteUrl
+    url
   }`,
   userEdgeFields: `on OrganizationMemberEdge {
     hasTwoFactorEnabled
@@ -11,11 +20,25 @@ export default {
     login
     name
     isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
   }`,
   teamFields: `on Team {
     name
     url
-    slug
+    slug    
+    createdAt
+    updatedAt
+    databaseId
+    description
+    privacy
   }`,
   teamMemberEdgeFields: `on TeamMemberEdge {
     role
@@ -32,6 +55,25 @@ export default {
     isArchived
     createdAt
     updatedAt
+    autoMergeAllowed
+    databaseId
+    deleteBranchOnMerge
+    description
+    homepageUrl
+    isDisabled
+    isEmpty
+    isFork
+    isInOrganization
+    isLocked
+    isMirror
+    isSecurityPolicyEnabled
+    isTemplate
+    isUserConfigurationRepository
+    lockReason
+    mergeCommitAllowed
+    pushedAt
+    rebaseMergeAllowed
+    url
   }`,
   repositoryOwnerFields: `on RepositoryOwner {
     login
@@ -59,7 +101,7 @@ export default {
     author {
       date
       user {
-        ...userFields
+        login # this used to be ...userFields
       }
     }
   }`,
@@ -69,7 +111,7 @@ export default {
       oid
     }
     author {
-      ...userFields
+      ...teamMemberFields # this used to be ...userFields
     }
     state
     submittedAt
@@ -79,7 +121,7 @@ export default {
   pullRequestFields: `on PullRequest {
     additions
     author {
-      ...userFields
+      ...teamMemberFields # this used to be ...userFields
     }
     authorAssociation
     baseRefName
@@ -98,11 +140,12 @@ export default {
     closedAt
     # comments  # Maybe someday
     createdAt
+    databaseId
     deletions
     editor {
       ...userFields
     }
-    # files  # Maybe someday
+    # files # Maybe someday
     headRefName
     headRefOid
     headRepository {
@@ -122,7 +165,7 @@ export default {
     merged
     mergedAt
     mergedBy {
-      ...userFields
+      ...teamMemberFields # this used to be ...userFields
     }
     number
     permalink

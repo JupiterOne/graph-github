@@ -15,11 +15,14 @@ import {
   GITHUB_COLLABORATOR_ENTITY_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
+  GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
+  GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
 } from '../constants';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import { fetchOrgSecrets } from './orgsecrets';
 import { fetchRepoSecrets } from './reposecrets';
+import { fetchEnvironments } from './environments';
 
 jest.setTimeout(20000);
 
@@ -52,6 +55,7 @@ test('should collect data', async () => {
   await fetchPrs(context);
   await fetchOrgSecrets(context);
   await fetchRepoSecrets(context);
+  await fetchEnvironments(context);
 
   // Review snapshot, failure is a regression
   expect({
@@ -102,7 +106,7 @@ test('should collect data', async () => {
           items: { type: 'object' },
         },
       },
-      required: ['name', 'displayName', 'webLink'],
+      required: ['name', 'displayName', 'webLink', 'createdOn'],
     },
   });
 
@@ -247,8 +251,63 @@ test('should collect data', async () => {
     },
   });
 
-  const secretOverrideRelationships = context.jobState.collectedRelationships.filter(
+  const secretRepoOrgOverrideRelationships = context.jobState.collectedRelationships.filter(
     (r) => r._type === GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
   );
-  expect(secretOverrideRelationships.length).toBeGreaterThan(0);
+  expect(secretRepoOrgOverrideRelationships.length).toBeGreaterThan(0);
+
+  const envs = context.jobState.collectedEntities.filter((e) =>
+    e._class.includes('Configuration'),
+  );
+  expect(envs.length).toBeGreaterThan(0);
+  expect(envs).toMatchGraphObjectSchema({
+    _class: ['Configuration'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_environment' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        webLink: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['name', 'displayName', 'webLink', 'createdOn'],
+    },
+  });
+
+  const envSecrets = context.jobState.collectedEntities.filter(
+    (e) => e._class.includes('Secret') && e._type.includes('github_env_secret'),
+  );
+  expect(envSecrets.length).toBeGreaterThan(0);
+  expect(envSecrets).toMatchGraphObjectSchema({
+    _class: ['Secret'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_env_secret' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        name: { type: 'string' },
+        createdOn: { type: 'number' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName', 'name', 'createdOn'],
+    },
+  });
+
+  const secretEnvOrgOverrideRelationships = context.jobState.collectedRelationships.filter(
+    (r) => r._type === GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
+  );
+  expect(secretEnvOrgOverrideRelationships.length).toBeGreaterThan(0);
+
+  const secretEnvRepoOverrideRelationships = context.jobState.collectedRelationships.filter(
+    (r) => r._type === GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
+  );
+  expect(secretEnvRepoOverrideRelationships.length).toBeGreaterThan(0);
 });

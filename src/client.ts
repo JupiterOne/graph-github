@@ -239,7 +239,6 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const repos: OrgRepoQueryResponse[] = await this.accountClient.getRepositories();
-    console.log(repos);
     for (const repo of repos) {
       await iteratee(repo);
     }

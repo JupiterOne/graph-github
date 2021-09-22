@@ -176,7 +176,7 @@ export function toEnvironmentEntity(
   repoName: string,
 ): EnvironmentEntity {
   let protRulesExist = false;
-  if (data.protection_rules) {
+  if (data.protection_rules[0]) {
     protRulesExist = true;
   }
   const envEntity: EnvironmentEntity = {
@@ -186,7 +186,7 @@ export function toEnvironmentEntity(
     name: data.name,
     displayName: data.name,
     webLink: `https://github.com/${orgLogin}/${repoName}/settings/environments/${data.id}/edit`,
-    id: data.id,
+    id: String(data.id), //force to string to pass SDK validation
     nodeId: data.node_id,
     url: data.url,
     htmlUrl: data.html_url,

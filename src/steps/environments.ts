@@ -71,7 +71,6 @@ export async function fetchEnvironments({
         const envEntity = (await jobState.addEntity(
           toEnvironmentEntity(env, apiClient.accountClient.login, repoTag.name),
         )) as EnvironmentEntity;
-
         await jobState.addRelationship(
           createDirectRelationship({
             _class: RelationshipClass.HAS,

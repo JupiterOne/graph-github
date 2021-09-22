@@ -57,12 +57,14 @@ import {
   OrgTeamQueryResponse,
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
+} from '../client/GraphQLClient';
+import {
   OrgCollaboratorQueryResponse,
-  CollaboratorPermissions,
   OrgAppQueryResponse,
   OrgSecretQueryResponse,
+  CollaboratorPermissions,
   RepoEnvironmentQueryResponse,
-} from '../client/GraphQLClient';
+} from '../client/RESTClient/types';
 
 import { uniq, last, compact, omit } from 'lodash';
 import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';

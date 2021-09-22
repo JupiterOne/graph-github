@@ -23,11 +23,13 @@ import {
   OrgTeamMemberQueryResponse,
   GitHubGraphQLClient,
   OrgTeamRepoQueryResponse,
+} from './client/GraphQLClient';
+import {
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
   OrgSecretQueryResponse,
   RepoEnvironmentQueryResponse,
-} from './client/GraphQLClient';
+} from './client/RESTClient/types';
 import { PullRequest } from './client/GraphQLClient/types';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;

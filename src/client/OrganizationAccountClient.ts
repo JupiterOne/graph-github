@@ -13,13 +13,15 @@ import {
   OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
   TeamRepositoryPermission,
+  GithubResource,
+} from './GraphQLClient';
+import {
   OrgCollaboratorQueryResponse,
   OrgAppQueryResponse,
-  GithubResource,
   OrgSecretQueryResponse,
   OrgSecretRepoQueryResponse,
   RepoEnvironmentQueryResponse,
-} from './GraphQLClient';
+} from './RESTClient/types';
 import {
   RepoEntity,
   ReposCompareCommitsResponseItem,
@@ -470,8 +472,9 @@ export default class OrganizationAccountClient {
     //via @octokit/request, using the ghs token, the endpoint works. Attempts to override
     //the v3 REST client headers in the paginate function, in order to force it to use the
     //ghs token, have been unsuccessful. After several hours of experimentation and research,
-    //the only thing that has worked in this direct call to @octokit/request.
-    //This is not ideal, since it is not a paginated call. We could build our own pagination and
+    //the only thing that has worked in this direct call to @octokit/request, which is the v3 REST API.
+    //It's not ideal to call that REST API without the client wrapper, because it is not a paginated call,
+    //and it does not have rate-limit and retry functions. We could build our own pagination and
     //rate-limit aware wrapper for it, but if this endpoint is the only time we need @octokit/request,
     //we will probably be okay without pagination and rate-limit aware features, because there are
     //typically only going to be a few GitHub apps installed in a given organization.

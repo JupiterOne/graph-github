@@ -8,6 +8,7 @@ import { teamSteps } from './teams';
 import { orgSecretSteps } from './orgsecrets';
 import { repoSecretSteps } from './reposecrets';
 import { environmentSteps } from './environments';
+import { issueSteps } from './issues';
 
 const integrationSteps = [
   ...accountSteps,
@@ -20,6 +21,7 @@ const integrationSteps = [
   ...orgSecretSteps,
   ...repoSecretSteps,
   ...environmentSteps,
+  ...issueSteps,
 ];
 
 export { integrationSteps };

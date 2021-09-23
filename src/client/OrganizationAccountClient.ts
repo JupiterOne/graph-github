@@ -21,6 +21,7 @@ import {
   SecretQueryResponse,
   OrgSecretRepoQueryResponse,
   RepoEnvironmentQueryResponse,
+  RepoIssueQueryResponse,
 } from './RESTClient/types';
 import {
   RepoEntity,
@@ -265,6 +266,39 @@ export default class OrganizationAccountClient {
           endpoint: `/repos/${this.login}/${repoName}/collaborators`,
         },
         `Failed to retrieve collaborators for repo ${repoName}, proceeding to other repos`,
+      );
+      return [];
+    }
+  }
+
+  async getRepoIssuesWithRest(
+    repoName: string,
+  ): Promise<RepoIssueQueryResponse[]> {
+    try {
+      const repoIssues = await this.v3.paginate(
+        'GET /repos/{owner}/{repo}/issues' as any, // https://docs.github.com/en/rest/reference/issues#list-repository-issues
+        {
+          owner: this.login,
+          repo: repoName,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of repo issues');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+      return repoIssues || [];
+    } catch (err) {
+      //this method is called for every repo in the integration, but some might have special permissions restrictions
+      //if we fail for one repo, we don't want to fail the whole issues step
+      this.logger.warn(
+        {
+          err: err,
+          repo: repoName,
+          endpoint: `/repos/${this.login}/${repoName}/issues`,
+        },
+        `Failed to retrieve issues for repo ${repoName}, proceeding to other repos`,
       );
       return [];
     }

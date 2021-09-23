@@ -29,6 +29,7 @@ import {
   OrgAppQueryResponse,
   SecretQueryResponse,
   RepoEnvironmentQueryResponse,
+  RepoIssueQueryResponse,
 } from './client/RESTClient/types';
 import { PullRequest } from './client/GraphQLClient/types';
 
@@ -289,6 +290,27 @@ export class APIClient {
     );
     for (const collab of collaborators) {
       await iteratee(collab);
+    }
+  }
+
+  /**
+   * Iterates the issues for a repo in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateIssues(
+    repo: RepoKeyAndName,
+    iteratee: ResourceIteratee<RepoIssueQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    const issues: RepoIssueQueryResponse[] = await this.accountClient.getRepoIssuesWithRest(
+      repo.name,
+    );
+    console.log(issues);
+    for (const issue of issues) {
+      await iteratee(issue);
     }
   }
 

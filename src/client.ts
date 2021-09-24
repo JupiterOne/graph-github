@@ -308,7 +308,6 @@ export class APIClient {
     const issues: RepoIssueQueryResponse[] = await this.accountClient.getRepoIssuesWithRest(
       repo.name,
     );
-    console.log(issues);
     for (const issue of issues) {
       await iteratee(issue);
     }

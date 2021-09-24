@@ -42,6 +42,8 @@ export interface RepoIssueQueryResponse {
   created_at: string;
   updated_at: string;
   author_association: string;
+  timeline_url?: string;
+  performed_via_github_app?: boolean;
 }
 
 interface IssueActor {

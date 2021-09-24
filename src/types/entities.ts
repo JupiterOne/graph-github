@@ -80,6 +80,33 @@ export interface TeamEntity extends Entity {
   webLink: string;
 }
 
+export interface IssueEntity extends Entity {
+  name: string;
+  displayName: string;
+  url: string;
+  repositoryUrl: string;
+  labelsUrl: string;
+  commentsUrl: string;
+  eventsUrl: string;
+  htmlUrl: string;
+  nodeId: string;
+  number: number;
+  title: string;
+  labels: string;
+  state: string; //"open" | "closed"
+  locked: boolean;
+  milestone: string;
+  numberOfComments: number;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
+  closedOn: number | undefined;
+  authorAssociation: string;
+  activeLockReason: string;
+  body: string | undefined;
+  timeline_url?: string;
+  performedViaGithubApp?: boolean;
+}
+
 export interface RepoEntity extends Entity {
   public: boolean;
   name: string;

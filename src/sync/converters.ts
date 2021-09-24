@@ -30,6 +30,8 @@ import {
   GITHUB_ENVIRONMENT_ENTITY_CLASS,
   GITHUB_ENVIRONMENT_ENTITY_TYPE,
   GITHUB_ENV_SECRET_ENTITY_TYPE,
+  GITHUB_ISSUE_ENTITY_TYPE,
+  GITHUB_ISSUE_ENTITY_CLASS,
 } from '../constants';
 
 import {
@@ -41,6 +43,7 @@ import {
   PullRequestEntity,
   IdEntityMap,
   TeamEntity,
+  IssueEntity,
   AccountType,
   EnvironmentEntity,
   RepoAllowRelationship,
@@ -64,6 +67,7 @@ import {
   SecretQueryResponse,
   CollaboratorPermissions,
   RepoEnvironmentQueryResponse,
+  RepoIssueQueryResponse,
 } from '../client/RESTClient/types';
 
 import { uniq, last, compact, omit } from 'lodash';
@@ -72,7 +76,7 @@ import getCommitsToDestination from '../util/getCommitsToDestination';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
-    _class: [GITHUB_ACCOUNT_ENTITY_CLASS],
+    _class: GITHUB_ACCOUNT_ENTITY_CLASS,
     _type: GITHUB_ACCOUNT_ENTITY_TYPE,
     _key: data.id,
     accountType: AccountType.Org,
@@ -97,7 +101,7 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
 
 export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   const appEntity: AppEntity = {
-    _class: [GITHUB_APP_ENTITY_CLASS],
+    _class: GITHUB_APP_ENTITY_CLASS,
     _type: GITHUB_APP_ENTITY_TYPE,
     _key: getAppEntityKey(data.id),
     name: data.app_slug,
@@ -227,7 +231,7 @@ export function toEnvSecretEntity(
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {
-    _class: [GITHUB_TEAM_ENTITY_CLASS],
+    _class: GITHUB_TEAM_ENTITY_CLASS,
     _type: GITHUB_TEAM_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
@@ -250,7 +254,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
   const repoEntity: RepoEntity = {
-    _class: [GITHUB_REPO_ENTITY_CLASS],
+    _class: GITHUB_REPO_ENTITY_CLASS,
     _type: GITHUB_REPO_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
@@ -290,7 +294,7 @@ export function toOrganizationMemberEntity(
   data: OrgMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: [GITHUB_MEMBER_ENTITY_CLASS],
+    _class: GITHUB_MEMBER_ENTITY_CLASS,
     _type: GITHUB_MEMBER_ENTITY_TYPE,
     _key: data.id,
     login: data.login,
@@ -321,7 +325,7 @@ export function toOrganizationMemberEntityFromTeamMember(
   data: OrgTeamMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: [GITHUB_MEMBER_ENTITY_CLASS],
+    _class: GITHUB_MEMBER_ENTITY_CLASS,
     _type: GITHUB_MEMBER_ENTITY_TYPE,
     _key: data.id,
     login: data.login,
@@ -341,7 +345,7 @@ export function toOrganizationCollaboratorEntity(
   data: RepoCollaboratorQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: [GITHUB_COLLABORATOR_ENTITY_CLASS],
+    _class: GITHUB_COLLABORATOR_ENTITY_CLASS,
     _type: GITHUB_COLLABORATOR_ENTITY_TYPE,
     _key: data.node_id,
     login: data.login,
@@ -356,6 +360,49 @@ export function toOrganizationCollaboratorEntity(
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
+}
+
+export function toIssueEntity(
+  data: RepoIssueQueryResponse,
+  repoName: string,
+): IssueEntity {
+  const issueName = repoName + '/' + String(data.number); //format matches name of PRs
+  const issueEntity: IssueEntity = {
+    _class: GITHUB_ISSUE_ENTITY_CLASS,
+    _type: GITHUB_ISSUE_ENTITY_TYPE,
+    _key: data.node_id,
+    webLink: data.url,
+    url: data.url,
+    name: issueName,
+    displayName: issueName,
+    description: data.body,
+    repositoryUrl: data.repository_url,
+    labelsUrl: data.labels_url,
+    commentsUrl: data.comments_url,
+    eventsUrl: data.events_url,
+    htmlUrl: data.html_url,
+    nodeId: data.node_id,
+    number: data.number,
+    title: data.title,
+    labels: JSON.stringify(data.labels),
+    state: data.state,
+    locked: data.locked,
+    milestone: JSON.stringify(data.milestone),
+    numberOfComments: data.comments,
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
+    closedOn: parseTimePropertyValue(data.closed_at),
+    authorAssociation: data.author_association,
+    activeLockReason: data.active_lock_reason,
+    body: data.body,
+    timeline_url: data.timeline_url,
+    performedViaGithubApp: data.performed_via_github_app,
+  };
+  setRawData(issueEntity, {
+    name: 'default',
+    rawData: omit(data, ['user', 'assignee', 'assignees']),
+  });
+  return issueEntity;
 }
 
 export function createRepoAllowsTeamRelationship(
@@ -513,7 +560,7 @@ export function toPullRequestEntity(
       source: pullRequest,
       assign: {
         _type: GITHUB_PR_ENTITY_TYPE,
-        _class: [GITHUB_PR_ENTITY_CLASS],
+        _class: GITHUB_PR_ENTITY_CLASS,
         _key: `${pullRequest.baseRepository.owner.login}/${pullRequest.baseRepository.name}/pull-requests/${pullRequest.number}`,
         displayName: `${pullRequest.baseRepository.name}/${pullRequest.number}`,
         accountLogin: pullRequest.baseRepository.owner.login,

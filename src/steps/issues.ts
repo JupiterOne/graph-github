@@ -3,21 +3,21 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   IntegrationMissingKeyError,
+  createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import {
-  createRepoAllowsUserRelationship,
-  toOrganizationCollaboratorEntity,
-} from '../sync/converters';
-import { UserEntity, IdEntityMap, RepoKeyAndName } from '../types';
+import { toIssueEntity } from '../sync/converters';
+import { UserEntity, IdEntityMap, RepoKeyAndName, IssueEntity } from '../types';
 import {
   GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_COLLABORATOR_ENTITY_TYPE,
-  GITHUB_COLLABORATOR_ENTITY_CLASS,
+  GITHUB_ISSUE_ENTITY_TYPE,
+  GITHUB_ISSUE_ENTITY_CLASS,
   GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+  GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
   GITHUB_MEMBER_BY_LOGIN_MAP,
 } from '../constants';
@@ -47,9 +47,55 @@ export async function fetchIssues({
     );
   }
 
-  for (const repo of repoTags) {
-    await apiClient.iterateIssues(repo, async (issue) => {
-      //do some stuff - if it's not a PR, make an Issue entity
+  for (const repoTag of repoTags) {
+    await apiClient.iterateIssues(repoTag, async (issue) => {
+      if (!issue.pull_request) {
+        //issues include entries for PRs, but we don't want those ones
+        const issueEntity = (await jobState.addEntity(
+          toIssueEntity(issue, repoTag.name),
+        )) as IssueEntity;
+
+        await jobState.addRelationship(
+          createDirectRelationship({
+            _class: RelationshipClass.HAS,
+            fromType: GITHUB_REPO_ENTITY_TYPE,
+            toType: GITHUB_ISSUE_ENTITY_TYPE,
+            fromKey: repoTag._key,
+            toKey: issueEntity._key,
+          }),
+        );
+
+        if (issue.user && memberByLoginMap[issue.user.login]) {
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.CREATED,
+              from: memberByLoginMap[issue.user.login],
+              to: issueEntity,
+            }),
+          );
+        }
+        if (issue.assignees) {
+          for (const assignee of issue.assignees) {
+            if (memberByLoginMap[assignee.login]) {
+              await jobState.addRelationship(
+                createDirectRelationship({
+                  _class: RelationshipClass.ASSIGNED,
+                  from: memberByLoginMap[assignee.login],
+                  to: issueEntity,
+                }),
+              );
+            }
+          }
+        } else {
+          if (issue.assignee && memberByLoginMap[issue.assignee.login]) {
+            createDirectRelationship({
+              _class: RelationshipClass.ASSIGNED,
+              from: memberByLoginMap[issue.assignee.login],
+              to: issueEntity,
+            });
+          }
+        }
+      }
     });
   } // end of repo iterator
 }
@@ -60,23 +106,29 @@ export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Fetch Issues',
     entities: [
       {
-        resourceName: 'GitHub Issue', //change all below here later
-        _type: GITHUB_COLLABORATOR_ENTITY_TYPE,
-        _class: GITHUB_COLLABORATOR_ENTITY_CLASS,
+        resourceName: 'GitHub Issue',
+        _type: GITHUB_ISSUE_ENTITY_TYPE,
+        _class: GITHUB_ISSUE_ENTITY_CLASS,
       },
     ],
     relationships: [
       {
-        _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.ALLOWS,
+        _type: GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE,
+        _class: RelationshipClass.HAS,
         sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_MEMBER_ENTITY_TYPE,
+        targetType: GITHUB_ISSUE_ENTITY_TYPE,
       },
       {
-        _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.ALLOWS,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_COLLABORATOR_ENTITY_TYPE,
+        _type: GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
+        _class: RelationshipClass.CREATED,
+        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
+        targetType: GITHUB_ISSUE_ENTITY_TYPE,
+      },
+      {
+        _type: GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
+        _class: RelationshipClass.ASSIGNED,
+        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
+        targetType: GITHUB_ISSUE_ENTITY_TYPE,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-users', 'fetch-teams'],

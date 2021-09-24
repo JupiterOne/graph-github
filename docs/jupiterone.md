@@ -112,6 +112,7 @@ The following entities are created:
 | Account             | `github_account`     | `Account`       |
 | GitHub Env Secret   | `github_env_secret`  | `Secret`        |
 | GitHub Environment  | `github_environment` | `Configuration` |
+| GitHub Issue        | `github_issue`       | `Record`        |
 | GitHub Org Secret   | `github_org_secret`  | `Secret`        |
 | GitHub Pull Request | `github_pullrequest` | `PR`            |
 | GitHub Repo Secret  | `github_repo_secret` | `Secret`        |
@@ -137,6 +138,7 @@ The following relationships are created:
 | `github_repo`         | **ALLOWS**            | `github_team`         |
 | `github_repo`         | **ALLOWS**            | `github_user`         |
 | `github_repo`         | **HAS**               | `github_environment`  |
+| `github_repo`         | **HAS**               | `github_issue`        |
 | `github_repo`         | **HAS**               | `github_pullrequest`  |
 | `github_repo`         | **HAS**               | `github_repo_secret`  |
 | `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`   |
@@ -145,6 +147,8 @@ The following relationships are created:
 | `github_repo`         | **USES**              | `github_repo_secret`  |
 | `github_team`         | **HAS**               | `github_user`         |
 | `github_user`         | **APPROVED**          | `github_pullrequest`  |
+| `github_user`         | **ASSIGNED**          | `github_issue`        |
+| `github_user`         | **CREATED**           | `github_issue`        |
 | `github_user`         | **MANAGES**           | `github_account`      |
 | `github_user`         | **MANAGES**           | `github_team`         |
 | `github_user`         | **OPENED**            | `github_pullrequest`  |

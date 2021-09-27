@@ -395,7 +395,7 @@ export function toIssueEntity(
     authorAssociation: data.author_association,
     activeLockReason: data.active_lock_reason,
     body: data.body,
-    timeline_url: data.timeline_url,
+    timelineUrl: data.timeline_url,
     performedViaGithubApp: data.performed_via_github_app,
   };
   setRawData(issueEntity, {

@@ -23,6 +23,7 @@ import { setupGithubRecording } from '../../test/recording';
 import { fetchOrgSecrets } from './orgsecrets';
 import { fetchRepoSecrets } from './reposecrets';
 import { fetchEnvironments } from './environments';
+import { fetchIssues } from './issues';
 
 jest.setTimeout(20000);
 
@@ -56,6 +57,7 @@ test('should collect data', async () => {
   await fetchOrgSecrets(context);
   await fetchRepoSecrets(context);
   await fetchEnvironments(context);
+  await fetchIssues(context);
 
   // Review snapshot, failure is a regression
   expect({
@@ -310,4 +312,27 @@ test('should collect data', async () => {
     (r) => r._type === GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
   );
   expect(secretEnvRepoOverrideRelationships.length).toBeGreaterThan(0);
+
+  const issues = context.jobState.collectedEntities.filter(
+    (e) => e._class.includes('Record') && e._type.includes('github_issue'),
+  );
+  expect(issues.length).toBeGreaterThan(0);
+  expect(issues).toMatchGraphObjectSchema({
+    _class: ['Record'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_issue' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        name: { type: 'string' },
+        createdOn: { type: 'number' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName', 'name', 'createdOn'],
+    },
+  });
 });

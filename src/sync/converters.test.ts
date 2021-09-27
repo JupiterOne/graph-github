@@ -11,6 +11,7 @@ import {
   toAppEntity,
   toEnvironmentEntity,
   toEnvSecretEntity,
+  toIssueEntity,
 } from './converters';
 import { EnvironmentEntity, UserEntity } from '../types';
 import { PullRequest } from '../client/GraphQLClient/types';
@@ -648,6 +649,211 @@ describe('toEnvSecretEntity', () => {
       createdOn: 1629762832000,
       updatedOn: 1629762832000,
       visibility: 'selected',
+    });
+  });
+});
+
+describe('toIssue', () => {
+  const apiResponse = {
+    url: 'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3',
+    repository_url: 'https://api.github.com/repos/Kei-Institute/Test-repo',
+    labels_url:
+      'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/labels{/name}',
+    comments_url:
+      'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/comments',
+    events_url:
+      'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/events',
+    html_url: 'https://github.com/Kei-Institute/Test-repo/issues/3',
+    id: 1005885417,
+    node_id: 'I_kwDOFiNpzs479Jfp',
+    number: 3,
+    title: "I've got issues with Issues",
+    user: {
+      login: 'kevincasey1222',
+      id: 62492097,
+      node_id: 'MDQ6VXNlcjYyNDkyMDk3',
+      avatar_url: 'https://avatars.githubusercontent.com/u/62492097?v=4',
+      gravatar_id: '',
+      url: 'https://api.github.com/users/kevincasey1222',
+      html_url: 'https://github.com/kevincasey1222',
+      followers_url: 'https://api.github.com/users/kevincasey1222/followers',
+      following_url:
+        'https://api.github.com/users/kevincasey1222/following{/other_user}',
+      gists_url: 'https://api.github.com/users/kevincasey1222/gists{/gist_id}',
+      starred_url:
+        'https://api.github.com/users/kevincasey1222/starred{/owner}{/repo}',
+      subscriptions_url:
+        'https://api.github.com/users/kevincasey1222/subscriptions',
+      organizations_url: 'https://api.github.com/users/kevincasey1222/orgs',
+      repos_url: 'https://api.github.com/users/kevincasey1222/repos',
+      events_url:
+        'https://api.github.com/users/kevincasey1222/events{/privacy}',
+      received_events_url:
+        'https://api.github.com/users/kevincasey1222/received_events',
+      type: 'User',
+      site_admin: false,
+    },
+    labels: [],
+    state: 'open',
+    locked: false,
+    assignee: {
+      login: 'erichs',
+      id: 513523,
+      node_id: 'MDQ6VXNlcjUxMzUyMw==',
+      avatar_url: 'https://avatars.githubusercontent.com/u/513523?v=4',
+      gravatar_id: '',
+      url: 'https://api.github.com/users/erichs',
+      html_url: 'https://github.com/erichs',
+      followers_url: 'https://api.github.com/users/erichs/followers',
+      following_url:
+        'https://api.github.com/users/erichs/following{/other_user}',
+      gists_url: 'https://api.github.com/users/erichs/gists{/gist_id}',
+      starred_url: 'https://api.github.com/users/erichs/starred{/owner}{/repo}',
+      subscriptions_url: 'https://api.github.com/users/erichs/subscriptions',
+      organizations_url: 'https://api.github.com/users/erichs/orgs',
+      repos_url: 'https://api.github.com/users/erichs/repos',
+      events_url: 'https://api.github.com/users/erichs/events{/privacy}',
+      received_events_url:
+        'https://api.github.com/users/erichs/received_events',
+      type: 'User',
+      site_admin: false,
+    },
+    assignees: [
+      {
+        login: 'erichs',
+        id: 513523,
+        node_id: 'MDQ6VXNlcjUxMzUyMw==',
+        avatar_url: 'https://avatars.githubusercontent.com/u/513523?v=4',
+        gravatar_id: '',
+        url: 'https://api.github.com/users/erichs',
+        html_url: 'https://github.com/erichs',
+        followers_url: 'https://api.github.com/users/erichs/followers',
+        following_url:
+          'https://api.github.com/users/erichs/following{/other_user}',
+        gists_url: 'https://api.github.com/users/erichs/gists{/gist_id}',
+        starred_url:
+          'https://api.github.com/users/erichs/starred{/owner}{/repo}',
+        subscriptions_url: 'https://api.github.com/users/erichs/subscriptions',
+        organizations_url: 'https://api.github.com/users/erichs/orgs',
+        repos_url: 'https://api.github.com/users/erichs/repos',
+        events_url: 'https://api.github.com/users/erichs/events{/privacy}',
+        received_events_url:
+          'https://api.github.com/users/erichs/received_events',
+        type: 'User',
+        site_admin: false,
+      },
+      {
+        login: 'kevincasey1222',
+        id: 62492097,
+        node_id: 'MDQ6VXNlcjYyNDkyMDk3',
+        avatar_url: 'https://avatars.githubusercontent.com/u/62492097?v=4',
+        gravatar_id: '',
+        url: 'https://api.github.com/users/kevincasey1222',
+        html_url: 'https://github.com/kevincasey1222',
+        followers_url: 'https://api.github.com/users/kevincasey1222/followers',
+        following_url:
+          'https://api.github.com/users/kevincasey1222/following{/other_user}',
+        gists_url:
+          'https://api.github.com/users/kevincasey1222/gists{/gist_id}',
+        starred_url:
+          'https://api.github.com/users/kevincasey1222/starred{/owner}{/repo}',
+        subscriptions_url:
+          'https://api.github.com/users/kevincasey1222/subscriptions',
+        organizations_url: 'https://api.github.com/users/kevincasey1222/orgs',
+        repos_url: 'https://api.github.com/users/kevincasey1222/repos',
+        events_url:
+          'https://api.github.com/users/kevincasey1222/events{/privacy}',
+        received_events_url:
+          'https://api.github.com/users/kevincasey1222/received_events',
+        type: 'User',
+        site_admin: false,
+      },
+    ],
+    milestone: null,
+    comments: 0,
+    created_at: '2021-09-23T22:05:39Z',
+    updated_at: '2021-09-24T17:28:10Z',
+    closed_at: null,
+    author_association: 'MEMBER',
+    active_lock_reason: null,
+    body: 'How can I know what my issue really is?',
+    timeline_url:
+      'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/timeline',
+    performed_via_github_app: null,
+  };
+
+  const simplifiedRawData = {
+    url: 'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3',
+    repository_url: 'https://api.github.com/repos/Kei-Institute/Test-repo',
+    labels_url:
+      'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/labels{/name}',
+    comments_url:
+      'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/comments',
+    events_url:
+      'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/events',
+    html_url: 'https://github.com/Kei-Institute/Test-repo/issues/3',
+    id: 1005885417,
+    node_id: 'I_kwDOFiNpzs479Jfp',
+    number: 3,
+    title: "I've got issues with Issues",
+    labels: [],
+    state: 'open',
+    locked: false,
+    milestone: null,
+    comments: 0,
+    created_at: '2021-09-23T22:05:39Z',
+    updated_at: '2021-09-24T17:28:10Z',
+    closed_at: null,
+    author_association: 'MEMBER',
+    active_lock_reason: null,
+    body: 'How can I know what my issue really is?',
+    timeline_url:
+      'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/timeline',
+    performed_via_github_app: null,
+  }; //removing data intensive fields that will be represented in relationships
+
+  test('properties transferred', () => {
+    const issue = toIssueEntity(apiResponse as any, 'Test-repo');
+    expect(issue).toEqual({
+      _class: ['Record'],
+      _type: 'github_issue',
+      _key: 'I_kwDOFiNpzs479Jfp',
+      webLink: 'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3',
+      url: 'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3',
+      name: 'Test-repo/3',
+      displayName: 'Test-repo/3',
+      description: 'How can I know what my issue really is?',
+      repositoryUrl: 'https://api.github.com/repos/Kei-Institute/Test-repo',
+      labelsUrl:
+        'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/labels{/name}',
+      commentsUrl:
+        'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/comments',
+      eventsUrl:
+        'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/events',
+      htmlUrl: 'https://github.com/Kei-Institute/Test-repo/issues/3',
+      nodeId: 'I_kwDOFiNpzs479Jfp',
+      number: 3,
+      title: "I've got issues with Issues",
+      labels: '[]',
+      state: 'open',
+      locked: false,
+      milestone: 'null',
+      numberOfComments: 0,
+      createdOn: 1632434739000,
+      updatedOn: 1632504490000,
+      closedOn: undefined,
+      authorAssociation: 'MEMBER',
+      activeLockReason: null,
+      body: 'How can I know what my issue really is?',
+      timelineUrl:
+        'https://api.github.com/repos/Kei-Institute/Test-repo/issues/3/timeline',
+      performedViaGithubApp: null,
+      _rawData: [
+        {
+          name: 'default',
+          rawData: simplifiedRawData,
+        },
+      ],
     });
   });
 });

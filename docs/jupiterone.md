@@ -3,8 +3,8 @@
 ## GitHub + JupiterOne Integration Benefits
 
 - Visualize GitHub users, teams, code repositories, pull requests, installed
-  GitHub applications, organizational secrets, and repo secrets in the
-  JupiterOne graph.
+  GitHub applications, organizational secrets, repo secrets, repo environments,
+  and environmental secrets in the JupiterOne graph.
 - Map GitHub users to employees in your JupiterOne account.
 - Map GitHub users to development/security trainings.
 - Monitor Github software development activities within repositories including
@@ -43,10 +43,17 @@ Upon creating a new GitHub integration configuration in JupiterOne, the user is
 re-directed to GitHub to install the JupiterOne GitHub app.
 
 The integration is using GitHub Apps authentication, which requests permissions
-from the Organization installing the app.
+from the Organization installing the app. The app requires Read Only permission
+for Metadata, Repository Metadata, and Organization Members.
 
-Beside the Metadata Permissions always granted, our app is only requesting Read
-Only for Repository Metadata and Organization Members at this time.
+Optionally, you can grant the following Read Only permissions to turn on
+additional functionality:
+
+- Organization Administration to ingest data on other installed GitHub Apps
+- Secrets (at the Organization and/or Repo levels) to ingest names and creation
+  dates of Secrets (the actual values of the Secrets are not ingested)
+- Actions (at the Repo level) to ingest Environments and Environmental Secrets
+  (if Repo Secrets are enabled)
 
 Github References:
 

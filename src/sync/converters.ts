@@ -178,7 +178,7 @@ export function toEnvironmentEntity(
   repoName: string,
 ): EnvironmentEntity {
   let protRulesExist = false;
-  if (data.protection_rules[0]) {
+  if (data.protection_rules && data.protection_rules[0]) {
     protRulesExist = true;
   }
   const envEntity: EnvironmentEntity = {

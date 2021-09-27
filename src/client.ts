@@ -47,6 +47,7 @@ export class APIClient {
   ghsToken: string;
   orgAdminScope: boolean;
   secretsScope: boolean;
+  actionsScope: boolean;
   constructor(
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
@@ -210,7 +211,7 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.secretsScope) {
+    if (this.actionsScope) {
       const environments: RepoEnvironmentQueryResponse[] = await this.accountClient.getEnvironments(
         repoName,
       );
@@ -317,53 +318,7 @@ export class APIClient {
       });
     }
 
-    //checking for proper scopes
-    if (
-      !(myPermissions.members === 'read' || myPermissions.members === 'write')
-    ) {
-      throw new IntegrationValidationError(
-        'Integration requires read access to organization members. See GitHub App permissions.',
-      );
-    }
-
-    if (
-      !(myPermissions.metadata === 'read' || myPermissions.metadata === 'write')
-    ) {
-      //as of now, this property has no 'write' value, but just in case
-      throw new IntegrationValidationError(
-        'Integration requires read access to repository metadata. See GitHub App permissions.',
-      );
-    }
-
-    //note that ingesting installed applications requires scope organization_administration:read
-    if (
-      !(
-        myPermissions.organization_administration === 'read' ||
-        myPermissions.organization_administration === 'write'
-      )
-    ) {
-      this.orgAdminScope = false;
-      this.logger.info(
-        {},
-        'Token does not have organization_administration scope. Installed GitHub Apps cannot be ingested',
-      );
-    } else {
-      this.orgAdminScope = true;
-    }
-
-    //ingesting org secrets requires scope secrets:read
-    if (
-      !(myPermissions.secrets === 'read' || myPermissions.secrets === 'write')
-    ) {
-      this.secretsScope = false;
-      this.logger.info(
-        {},
-        "Token does not have 'secrets' scope. Organization secrets cannot be ingested",
-      );
-    } else {
-      this.secretsScope = true;
-    }
-    //scopes check done
+    this.processScopes(myPermissions);
 
     let login: string = this.config.githubAppDefaultLogin;
     const installation = await getInstallation(appClient, installationId);
@@ -386,6 +341,61 @@ export class APIClient {
       ),
       logger: this.logger,
     });
+  }
+
+  private processScopes(perms: TokenPermissions) {
+    //checking for proper scopes
+    if (!(perms.members === 'read' || perms.members === 'write')) {
+      throw new IntegrationValidationError(
+        'Integration requires read access to organization members. See GitHub App permissions.',
+      );
+    }
+
+    if (!(perms.metadata === 'read' || perms.metadata === 'write')) {
+      //as of now, this property has no 'write' value, but just in case
+      throw new IntegrationValidationError(
+        'Integration requires read access to repository metadata. See GitHub App permissions.',
+      );
+    }
+
+    //note that ingesting installed applications requires scope organization_administration:read
+    if (
+      !(
+        perms.organization_administration === 'read' ||
+        perms.organization_administration === 'write'
+      )
+    ) {
+      this.orgAdminScope = false;
+      this.logger.info(
+        {},
+        'Token does not have organization_administration scope. Installed GitHub Apps cannot be ingested',
+      );
+    } else {
+      this.orgAdminScope = true;
+    }
+
+    //ingesting org and repo secrets requires scope secrets:read
+    if (!(perms.secrets === 'read' || perms.secrets === 'write')) {
+      this.secretsScope = false;
+      this.logger.info(
+        {},
+        "Token does not have 'secrets' scope. Secrets cannot be ingested",
+      );
+    } else {
+      this.secretsScope = true;
+    }
+
+    //ingesting environments or environmental secrets requires scope actions:read
+    if (!(perms.actions === 'read' || perms.actions === 'write')) {
+      this.actionsScope = false;
+      this.logger.info(
+        {},
+        "Token does not have 'actions' scope. Environments and environmental secrets cannot be ingested",
+      );
+    } else {
+      this.actionsScope = true;
+    }
+    //scopes check done
   }
 }
 

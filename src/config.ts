@@ -87,12 +87,21 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
 
 export async function validateInvocation(
   context: IntegrationExecutionContext<IntegrationConfig>,
-) {
+): Promise<{
+  orgAdminScope: boolean;
+  secretsScope: boolean;
+  actionsScope: boolean;
+}> {
   const { config } = context.instance;
 
   sanitizeConfig(config); //mutate the config as needed
   const apiClient = createAPIClient(config, context.logger);
   await apiClient.verifyAuthentication();
+  return {
+    orgAdminScope: apiClient.orgAdminScope,
+    secretsScope: apiClient.secretsScope,
+    actionsScope: apiClient.actionsScope,
+  };
 }
 
 export function sanitizeConfig(config: IntegrationConfig) {

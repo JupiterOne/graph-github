@@ -50,6 +50,8 @@ and this project adheres to
 - `createdOn` and `updatedOn` properties for `github_org_secret`,
   `github_repo_secret`, and `github_app` are now time-since-epoch integers
   instead of strings, matching other entities.
+- Steps that do not have enough token scope permission are now disabled instead
+  of throwing errors.
 
 ## 1.4.5 - 2021-09-16
 

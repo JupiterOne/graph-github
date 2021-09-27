@@ -305,6 +305,15 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
+    const {
+      rateLimitConsumed,
+    } = await this.accountClient.iterateIssueEntities(repo.name, (e) =>
+      console.log(e),
+    );
+    this.logger.info(
+      { rateLimitConsumed },
+      'Rate limit consumed while fetching Pull Requests.',
+    );
     const issues: RepoIssueQueryResponse[] = await this.accountClient.getRepoIssuesWithRest(
       repo.name,
     );

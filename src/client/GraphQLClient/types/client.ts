@@ -254,6 +254,8 @@ export interface PullRequest extends Node {
   reviews?: Review[];
 }
 
+export type Issue = PullRequest; //Issues and PullRequests are the same in the API
+
 interface GithubResources {
   [GithubResource.PullRequests]: PullRequest[];
   [GithubResource.Commits]: PullRequestCommitQueryResponse[];
@@ -262,5 +264,9 @@ interface GithubResources {
 }
 
 export type PullRequestQueryResponse = {
+  rateLimitConsumed: number;
+} & Partial<GithubResources>;
+
+export type IssueQueryResponse = {
   rateLimitConsumed: number;
 } & Partial<GithubResources>;

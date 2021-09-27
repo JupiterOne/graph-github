@@ -88,9 +88,10 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
 export async function validateInvocation(
   context: IntegrationExecutionContext<IntegrationConfig>,
 ): Promise<{
-  orgAdminScope: boolean;
-  secretsScope: boolean;
-  actionsScope: boolean;
+  orgAdmin: boolean;
+  orgSecrets: boolean;
+  repoSecrets: boolean;
+  repoActions: boolean;
 }> {
   const { config } = context.instance;
 
@@ -98,9 +99,10 @@ export async function validateInvocation(
   const apiClient = createAPIClient(config, context.logger);
   await apiClient.verifyAuthentication();
   return {
-    orgAdminScope: apiClient.orgAdminScope,
-    secretsScope: apiClient.secretsScope,
-    actionsScope: apiClient.actionsScope,
+    orgAdmin: apiClient.scopes.orgAdmin,
+    orgSecrets: apiClient.scopes.orgSecrets,
+    repoSecrets: apiClient.scopes.repoSecrets,
+    repoActions: apiClient.scopes.repoActions,
   };
 }
 

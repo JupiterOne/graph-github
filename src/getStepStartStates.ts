@@ -18,10 +18,10 @@ export default async function getStepStartStates(
     ['fetch-teams']: { disabled: false },
     ['fetch-collaborators']: { disabled: false },
     ['fetch-prs']: { disabled: false },
-    ['fetch-apps']: { disabled: !scopes.orgAdminScope },
-    ['fetch-org-secrets']: { disabled: !scopes.secretsScope },
-    ['fetch-repo-secrets']: { disabled: !scopes.secretsScope },
-    ['fetch-environments']: { disabled: !scopes.actionsScope },
+    ['fetch-apps']: { disabled: !scopes.orgAdmin },
+    ['fetch-org-secrets']: { disabled: !scopes.orgSecrets },
+    ['fetch-repo-secrets']: { disabled: !scopes.repoSecrets },
+    ['fetch-environments']: { disabled: !scopes.repoActions },
     //['fetch-issues']: { disabled: false }, //for later
   };
 }

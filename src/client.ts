@@ -45,9 +45,12 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 export class APIClient {
   accountClient: OrganizationAccountClient;
   ghsToken: string;
-  orgAdminScope: boolean;
-  secretsScope: boolean;
-  actionsScope: boolean;
+  scopes: {
+    orgAdmin: boolean;
+    orgSecrets: boolean;
+    repoSecrets: boolean;
+    repoActions: boolean;
+  };
   constructor(
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
@@ -125,7 +128,7 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.orgAdminScope) {
+    if (this.scopes.orgAdmin) {
       const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps(
         this.ghsToken,
       );
@@ -147,7 +150,7 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.secretsScope) {
+    if (this.scopes.orgSecrets) {
       const secrets: SecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
       for (const secret of secrets) {
         //set repos that use this secret, so we can make relationships in iteratree
@@ -188,7 +191,7 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.secretsScope) {
+    if (this.scopes.repoSecrets) {
       const repoSecrets: SecretQueryResponse[] = await this.accountClient.getRepoSecrets(
         repoName,
       );
@@ -211,13 +214,13 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.actionsScope) {
+    if (this.scopes.repoActions) {
       const environments: RepoEnvironmentQueryResponse[] = await this.accountClient.getEnvironments(
         repoName,
       );
       for (const env of environments) {
         env.envSecrets = [];
-        if (this.secretsScope) {
+        if (this.scopes.repoSecrets) {
           //go get env secrets and load the env object
           const envSecrets = await this.accountClient.getEnvSecrets(
             repoDatabaseId,
@@ -344,6 +347,14 @@ export class APIClient {
   }
 
   private processScopes(perms: TokenPermissions) {
+    if (!this.scopes) {
+      this.scopes = {
+        orgAdmin: false,
+        orgSecrets: false,
+        repoSecrets: false,
+        repoActions: false,
+      };
+    }
     //checking for proper scopes
     if (!(perms.members === 'read' || perms.members === 'write')) {
       throw new IntegrationValidationError(
@@ -365,35 +376,51 @@ export class APIClient {
         perms.organization_administration === 'write'
       )
     ) {
-      this.orgAdminScope = false;
+      this.scopes.orgAdmin = false;
       this.logger.info(
         {},
         'Token does not have organization_administration scope. Installed GitHub Apps cannot be ingested',
       );
     } else {
-      this.orgAdminScope = true;
+      this.scopes.orgAdmin = true;
     }
 
-    //ingesting org and repo secrets requires scope secrets:read
-    if (!(perms.secrets === 'read' || perms.secrets === 'write')) {
-      this.secretsScope = false;
+    //ingesting org secrets requires scope organization_secrets:read
+    if (
+      !(
+        perms.organization_secrets === 'read' ||
+        perms.organization_secrets === 'write'
+      )
+    ) {
+      this.scopes.orgSecrets = false;
       this.logger.info(
         {},
-        "Token does not have 'secrets' scope. Secrets cannot be ingested",
+        "Token does not have 'organization_secrets' scope. Org secrets cannot be ingested",
       );
     } else {
-      this.secretsScope = true;
+      this.scopes.orgSecrets = true;
+    }
+
+    //ingesting repo and env secrets requires scope secrets:read
+    if (!(perms.secrets === 'read' || perms.secrets === 'write')) {
+      this.scopes.repoSecrets = false;
+      this.logger.info(
+        {},
+        "Token does not have 'secrets' scope. Repo and environmental secrets cannot be ingested",
+      );
+    } else {
+      this.scopes.repoSecrets = true;
     }
 
     //ingesting environments or environmental secrets requires scope actions:read
     if (!(perms.actions === 'read' || perms.actions === 'write')) {
-      this.actionsScope = false;
+      this.scopes.repoActions = false;
       this.logger.info(
         {},
         "Token does not have 'actions' scope. Environments and environmental secrets cannot be ingested",
       );
     } else {
-      this.actionsScope = true;
+      this.scopes.repoActions = true;
     }
     //scopes check done
   }

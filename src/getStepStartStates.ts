@@ -22,6 +22,6 @@ export default async function getStepStartStates(
     ['fetch-org-secrets']: { disabled: !scopes.orgSecrets },
     ['fetch-repo-secrets']: { disabled: !scopes.repoSecrets },
     ['fetch-environments']: { disabled: !scopes.repoActions },
-    //['fetch-issues']: { disabled: false }, //for later
+    ['fetch-issues']: { disabled: false },
   };
 }

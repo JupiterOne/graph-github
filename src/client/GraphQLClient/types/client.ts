@@ -22,6 +22,7 @@ export enum GithubResource {
   Commits = 'commits',
   Labels = 'labels',
   Reviews = 'reviews',
+  Issues = 'issues',
 }
 
 export enum OrgMemberRole {

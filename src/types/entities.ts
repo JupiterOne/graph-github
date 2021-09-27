@@ -28,8 +28,8 @@ export interface AppEntity extends Entity {
   appSlug: string; //a name for the app
   targetId: number;
   targetType: string; // typically "Organization"
-  createdAt: string;
-  updatedAt: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
   events: string[];
   repositorySelection: string;
   singleFileName: string;
@@ -39,7 +39,7 @@ export interface AppEntity extends Entity {
   // actually build a relationship between the GitHub user and the application.
   // See: https://github.com/google/go-github/blob/master/github/apps.go#L118
   // suspendedBy: string;
-  suspendedAt: string;
+  suspendedOn: number | undefined;
   //plus permissions.{fieldname} fields drawn from the permissions API object
   //for example, 'permissions.members', 'permissions.metadata', or 'permissions.organization-administration'
   //for a more complete list of possibilities, see src/types/integration.ts/TokenPermissions
@@ -54,6 +54,17 @@ export interface SecretEntity extends Entity {
   updatedOn: number | undefined;
   visibility?: string; // 'private' | 'all' | 'selected'. This means which repos can use this secret. 'private' means only private repos.
   selected_repositories_url?: string;
+}
+
+export interface EnvironmentEntity extends Entity {
+  nodeId: string;
+  name: string;
+  webLink: string;
+  url: string;
+  htmlUrl: string;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
+  protectionRulesExist: boolean;
 }
 
 export interface TeamEntity extends Entity {
@@ -101,8 +112,9 @@ export interface RepoEntity extends Entity {
 
 //to cut down on memory usage, this type will be passed between steps for relationship building
 export interface RepoKeyAndName {
-  _key: string;
-  name: string;
+  _key: string; // an alphanumeric, used for most repo indexing
+  name: string; // a string, used for some REST API calls
+  databaseId: string; // typically an integer, used to retrieve env secrets REST API call
 }
 
 export interface UserEntity extends Entity {

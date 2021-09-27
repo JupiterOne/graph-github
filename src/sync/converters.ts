@@ -27,7 +27,9 @@ import {
   GITHUB_SECRET_ENTITY_CLASS,
   GITHUB_ORG_SECRET_ENTITY_TYPE,
   GITHUB_REPO_SECRET_ENTITY_TYPE,
-  //GITHUB_ENV_SECRET_ENTITY_TYPE,
+  GITHUB_ENVIRONMENT_ENTITY_CLASS,
+  GITHUB_ENVIRONMENT_ENTITY_TYPE,
+  GITHUB_ENV_SECRET_ENTITY_TYPE,
 } from '../constants';
 
 import {
@@ -40,6 +42,7 @@ import {
   IdEntityMap,
   TeamEntity,
   AccountType,
+  EnvironmentEntity,
   RepoAllowRelationship,
   RepoKeyAndName,
 } from '../types';
@@ -54,11 +57,14 @@ import {
   OrgTeamQueryResponse,
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
-  OrgCollaboratorQueryResponse,
-  CollaboratorPermissions,
-  OrgAppQueryResponse,
-  OrgSecretQueryResponse,
 } from '../client/GraphQLClient';
+import {
+  RepoCollaboratorQueryResponse,
+  OrgAppQueryResponse,
+  SecretQueryResponse,
+  CollaboratorPermissions,
+  RepoEnvironmentQueryResponse,
+} from '../client/RESTClient/types';
 
 import { uniq, last, compact, omit } from 'lodash';
 import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';
@@ -103,15 +109,15 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
     appSlug: data.app_slug,
     targetId: data.target_id,
     targetType: data.target_type,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
     events: data.events,
     repositorySelection: data.respository_selection,
     singleFileName: data.single_file_name || '',
     hasMultipleSingleFiles: data.has_multiple_single_files,
     singleFilePaths: data.single_file_paths,
     // suspendedBy: data.suspended_by || '',
-    suspendedAt: data.suspended_at || '',
+    suspendedOn: parseTimePropertyValue(data.suspended_at),
     ...decomposePermissions(data.permissions),
   };
   setRawData(appEntity, { name: 'default', rawData: data });
@@ -119,7 +125,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
 }
 
 export function toOrgSecretEntity(
-  data: OrgSecretQueryResponse,
+  data: SecretQueryResponse,
   orgLogin: string,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
@@ -143,7 +149,7 @@ export function toOrgSecretEntity(
 }
 
 export function toRepoSecretEntity(
-  data: OrgSecretQueryResponse,
+  data: SecretQueryResponse,
   orgLogin: string,
   repoName: string,
 ): SecretEntity {
@@ -166,9 +172,36 @@ export function toRepoSecretEntity(
   return secretEntity;
 }
 
-/* for use later
+export function toEnvironmentEntity(
+  data: RepoEnvironmentQueryResponse,
+  orgLogin: string,
+  repoName: string,
+): EnvironmentEntity {
+  let protRulesExist = false;
+  if (data.protection_rules[0]) {
+    protRulesExist = true;
+  }
+  const envEntity: EnvironmentEntity = {
+    _class: GITHUB_ENVIRONMENT_ENTITY_CLASS,
+    _type: GITHUB_ENVIRONMENT_ENTITY_TYPE,
+    _key: data.node_id,
+    name: data.name,
+    displayName: data.name,
+    webLink: `https://github.com/${orgLogin}/${repoName}/settings/environments/${data.id}/edit`,
+    id: String(data.id), //force to string to pass SDK validation
+    nodeId: data.node_id,
+    url: data.url,
+    htmlUrl: data.html_url,
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
+    protectionRulesExist: protRulesExist,
+  };
+  setRawData(envEntity, { name: 'default', rawData: data });
+  return envEntity;
+}
+
 export function toEnvSecretEntity(
-  data: OrgSecretQueryResponse,
+  data: SecretQueryResponse,
   orgLogin: string,
   repoName: string,
   environment: EnvironmentEntity,
@@ -176,18 +209,21 @@ export function toEnvSecretEntity(
   const secretEntity: SecretEntity = {
     _class: GITHUB_SECRET_ENTITY_CLASS,
     _type: GITHUB_ENV_SECRET_ENTITY_TYPE,
-    _key: getSecretEntityKey({name: data.name, secretOwnerType:'Env', secretOwnerName: environment.name}),
+    _key: getSecretEntityKey({
+      name: data.name,
+      secretOwnerType: 'Env',
+      secretOwnerName: environment.name,
+    }),
     name: data.name,
     displayName: data.name,
     webLink: `https://github.com/${orgLogin}/${repoName}/settings/environments/${environment.id}/edit`,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
+    createdOn: parseTimePropertyValue(data.created_at),
+    updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: 'selected',
   };
   setRawData(secretEntity, { name: 'default', rawData: data });
   return secretEntity;
 }
-*/
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {
@@ -302,7 +338,7 @@ export function toOrganizationMemberEntityFromTeamMember(
 }
 
 export function toOrganizationCollaboratorEntity(
-  data: OrgCollaboratorQueryResponse,
+  data: RepoCollaboratorQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
     _class: [GITHUB_COLLABORATOR_ENTITY_CLASS],

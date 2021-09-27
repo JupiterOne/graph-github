@@ -1,5 +1,3 @@
-import { RepoKeyAndName, TokenPermissions } from '../../../types';
-
 /**
  * From the name given to the data for the JupiterOne use case to the specific Github
  * GraphQl query to fetch that data (gotten via graphQL introspection)
@@ -69,20 +67,6 @@ export interface OrgQueryResponse extends Node, Actor {
 /**
  * Organization GraphQL Fragment Types
  */
-export interface OrgCollaboratorQueryResponse extends Actor {
-  //choosing not to extend Node here because the REST call that retrieves Collaborators insists that `id` is a number
-  id: number;
-  permissions?: CollaboratorPermissions | undefined;
-  node_id: string; //Collaborator `node_id` matches a User `id`, whereas Collaborator `id` is just a unique index for the Collaborator object
-}
-
-export interface CollaboratorPermissions {
-  admin: boolean;
-  maintain?: boolean;
-  push: boolean;
-  triage?: boolean;
-  pull: boolean;
-}
 
 export interface OrgMemberQueryResponse extends Node, Actor {
   hasTwoFactorEnabled: boolean;
@@ -148,57 +132,9 @@ export interface OrgRepoQueryResponse extends Node {
   rebaseMergeAllowed?: boolean;
 }
 
-export interface OrgSecretRepoQueryResponse {
-  id: number;
-  node_id: string;
-  name: string;
-  full_name: string;
-  owner?: object | null;
-  private: boolean;
-  html_url: string;
-  description: string | null;
-  fork: boolean;
-  url: string;
-}
-
 export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
   teams: string;
   permission: TeamRepositoryPermission;
-}
-
-export interface OrgAppQueryResponse {
-  //a REST response, not GraphQL
-  id: string; //the installation id
-  respository_selection: string;
-  html_url: string;
-  app_id: number;
-  app_slug: string; //a name for the app
-  target_id: number;
-  target_type: string; // typically "Organization"
-  permissions: TokenPermissions;
-  created_at: string;
-  updated_at: string;
-  events: string[];
-  repository_selection: string; // 'all' || 'selected'  It doesn't actually list which are selected.
-  single_file_name: string;
-  has_multiple_single_files: boolean;
-  single_file_paths: string[];
-  suspended_by: string;
-  suspended_at: string;
-}
-
-export interface OrgSecretQueryResponse {
-  //a REST response, not GraphQL
-  name: string;
-  created_at: string;
-  updated_at: string;
-  visibility?: string; // 'private' | 'all' | 'selected'. This means how many repos can use this secret
-  selected_repositories_url?: string; //a webpage url, not a REST API url
-  //the following fields are set by the integration code, not received from the REST API
-  orgLogin?: string; //for use in constructing weblinks
-  secretOwnerType?: string; // 'org' | 'repo' | 'env'
-  secretOwnerName?: string;
-  repos?: RepoKeyAndName[]; //to help build relationships with minimal memory footprint, using RepoKeyAndName instead of RepoEntity
 }
 
 interface GithubResources {

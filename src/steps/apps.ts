@@ -38,7 +38,6 @@ export async function fetchApps({
 
   await apiClient.iterateApps(async (app) => {
     const appEntity = (await jobState.addEntity(toAppEntity(app))) as AppEntity;
-
     await jobState.addRelationship(
       createDirectRelationship({
         _class: RelationshipClass.INSTALLED,

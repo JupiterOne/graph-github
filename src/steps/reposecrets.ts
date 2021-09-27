@@ -53,12 +53,12 @@ export async function fetchRepoSecrets({
   const repoSecretEntitiesByRepoNameMap = {};
 
   for (const repoTag of repoTags) {
-    const repoSecretEntities: SecretEntity[] = [];
+    const repoSecretEntities = {};
     await apiClient.iterateRepoSecrets(repoTag.name, async (secret) => {
       const secretEntity = (await jobState.addEntity(
         toRepoSecretEntity(secret, apiClient.accountClient.login, repoTag.name),
       )) as SecretEntity;
-      repoSecretEntities.push(secretEntity);
+      repoSecretEntities[secret.name] = secretEntity;
 
       await jobState.addRelationship(
         createDirectRelationship({

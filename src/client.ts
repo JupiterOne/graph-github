@@ -23,10 +23,13 @@ import {
   OrgTeamMemberQueryResponse,
   GitHubGraphQLClient,
   OrgTeamRepoQueryResponse,
-  OrgCollaboratorQueryResponse,
-  OrgAppQueryResponse,
-  OrgSecretQueryResponse,
 } from './client/GraphQLClient';
+import {
+  RepoCollaboratorQueryResponse,
+  OrgAppQueryResponse,
+  SecretQueryResponse,
+  RepoEnvironmentQueryResponse,
+} from './client/RESTClient/types';
 import { PullRequest } from './client/GraphQLClient/types';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
@@ -138,13 +141,13 @@ export class APIClient {
    */
   public async iterateOrgSecrets(
     allRepos: RepoKeyAndName[],
-    iteratee: ResourceIteratee<OrgSecretQueryResponse>,
+    iteratee: ResourceIteratee<SecretQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     if (this.secretsScope) {
-      const secrets: OrgSecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
+      const secrets: SecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
       for (const secret of secrets) {
         //set repos that use this secret, so we can make relationships in iteratree
         secret.visibility === 'all'
@@ -179,17 +182,49 @@ export class APIClient {
    */
   public async iterateRepoSecrets(
     repoName: string,
-    iteratee: ResourceIteratee<OrgSecretQueryResponse>,
+    iteratee: ResourceIteratee<SecretQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     if (this.secretsScope) {
-      const repoSecrets: OrgSecretQueryResponse[] = await this.accountClient.getRepoSecrets(
+      const repoSecrets: SecretQueryResponse[] = await this.accountClient.getRepoSecrets(
         repoName,
       );
       for (const secret of repoSecrets) {
         await iteratee(secret);
+      }
+    }
+  }
+
+  /**
+   * Iterates each Github environment and ingests any environmental secrets.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateEnvironments(
+    repoDatabaseId: string,
+    repoName: string,
+    iteratee: ResourceIteratee<RepoEnvironmentQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.secretsScope) {
+      const environments: RepoEnvironmentQueryResponse[] = await this.accountClient.getEnvironments(
+        repoName,
+      );
+      for (const env of environments) {
+        env.envSecrets = [];
+        if (this.secretsScope) {
+          //go get env secrets and load the env object
+          const envSecrets = await this.accountClient.getEnvSecrets(
+            repoDatabaseId,
+            env.name,
+          );
+          env.envSecrets = envSecrets;
+        }
+        await iteratee(env);
       }
     }
   }
@@ -240,12 +275,12 @@ export class APIClient {
    */
   public async iterateCollaborators(
     repo: RepoKeyAndName,
-    iteratee: ResourceIteratee<OrgCollaboratorQueryResponse>,
+    iteratee: ResourceIteratee<RepoCollaboratorQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const collaborators: OrgCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
+    const collaborators: RepoCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
       repo.name,
     );
     for (const collab of collaborators) {

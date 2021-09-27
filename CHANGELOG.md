@@ -10,6 +10,23 @@ and this project adheres to
 
 ### Added
 
+- Added support for ingesting the following **new** entities:
+
+| Resources          | Entity `_type`       | Entity `_class` |
+| ------------------ | -------------------- | --------------- |
+| GitHub Environment | `github_environment` | `Configuration` |
+| GitHub Env Secret  | `github_env_secret`  | `Secret`        |
+
+- Added support for ingesting the following **new** relationships:
+
+| Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
+| --------------------- | --------------------- | --------------------- |
+| `github_repo`         | **HAS**               | `github_environment`  |
+| `github_environment`  | **HAS**               | `github_env_secret`   |
+| `github_env_secret`   | **OVERRIDES**         | `github_org_secret`   |
+| `github_env_secret`   | **OVERRIDES**         | `github_repo_secret`  |
+| `github_repo`         | **USES**              | `github_env_secret`   |
+
 - Extra 9 properties to `github_account` (`createdOn`, `updatedOn`,
   `description`, `email`, `node`, `databaseId`, `isVerified`, `location`,
   `websiteUrl`, `webLink`)
@@ -30,9 +47,9 @@ and this project adheres to
 
 ### Changed
 
-- `createdOn` and `updatedOn` properties for `github_org_secret` and
-  `github_repo_secret` are now time-since-epoch integers instead of strings,
-  matching other entities.
+- `createdOn` and `updatedOn` properties for `github_org_secret`,
+  `github_repo_secret`, and `github_app` are now time-since-epoch integers
+  instead of strings, matching other entities.
 
 ## 1.4.5 - 2021-09-16
 

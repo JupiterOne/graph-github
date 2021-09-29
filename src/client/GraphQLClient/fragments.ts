@@ -178,4 +178,7 @@ export default {
     updatedAt
     url
   }`,
+  issueFields: `on Issue {
+    id
+  }`,
 };

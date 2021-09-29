@@ -34,9 +34,8 @@ import { request } from '@octokit/request';
 import { ResourceIteratee } from '../client';
 import {
   PullRequest,
-  PullRequestQueryResponse,
   Issue,
-  IssueQueryResponse,
+  GithubQueryResponse as QueryResponse,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -220,7 +219,7 @@ export default class OrganizationAccountClient {
   async iteratePullRequestEntities(
     repo: RepoEntity,
     iteratee: ResourceIteratee<PullRequest>,
-  ): Promise<PullRequestQueryResponse> {
+  ): Promise<QueryResponse> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
       return { rateLimitConsumed: 0 };
@@ -234,16 +233,17 @@ export default class OrganizationAccountClient {
   }
 
   async iterateIssueEntities(
-    repoName: string,
+    repo: RepoEntity,
     iteratee: ResourceIteratee<Issue>,
-  ): Promise<IssueQueryResponse> {
+  ): Promise<QueryResponse> {
+    //issues and PRs are actually the same in the API
+    //we just filter for is:issue instead of is:pr
+    //and remove pr-specific children from the request
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting issues.');
       return { rateLimitConsumed: 0 };
     }
-    const query = `is:issue repo:${repoName}`;
-    //issues and PRs are actually the same in the API - we just filter for is:issue instead of is:pr
-    //and remove pr-specific children from the request
+    const query = `is:issue repo:${repo.fullName}`;
     return await this.v4.iteratePullRequests(query, [], iteratee);
   }
 

@@ -31,7 +31,7 @@ import {
   RepoEnvironmentQueryResponse,
   RepoIssueQueryResponse,
 } from './client/RESTClient/types';
-import { PullRequest } from './client/GraphQLClient/types';
+import { PullRequest, Issue } from './client/GraphQLClient/types';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -299,27 +299,27 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateIssues(
-    repo: RepoKeyAndName,
-    iteratee: ResourceIteratee<RepoIssueQueryResponse>,
+    repo: RepoEntity,
+    iteratee: ResourceIteratee<Issue>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const {
-      rateLimitConsumed,
-    } = await this.accountClient.iterateIssueEntities(repo.name, (e) =>
-      console.log(e),
+    const { rateLimitConsumed } = await this.accountClient.iterateIssueEntities(
+      repo,
+      iteratee,
     );
     this.logger.info(
       { rateLimitConsumed },
-      'Rate limit consumed while fetching Pull Requests.',
+      'Rate limit consumed while fetching Issues.',
     );
+    /*
     const issues: RepoIssueQueryResponse[] = await this.accountClient.getRepoIssuesWithRest(
       repo.name,
     );
     for (const issue of issues) {
       await iteratee(issue);
-    }
+    } */
   }
 
   public async setupAccountClient(): Promise<void> {

@@ -138,7 +138,7 @@ export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
   permission: TeamRepositoryPermission;
 }
 
-interface GithubResources {
+export interface GithubOrganizationResources {
   [GithubResource.Organization]: OrgQueryResponse[];
   [GithubResource.OrganizationMembers]: OrgMemberQueryResponse[];
   [GithubResource.Teams]: OrgTeamQueryResponse[];
@@ -147,10 +147,6 @@ interface GithubResources {
   [GithubResource.Repositories]: OrgRepoQueryResponse[];
   // [GithubResource. RepositoryCollaborators]: OrgCollaboratorQueryResponse[];
 }
-
-export type GithubResourcesQueryResponse = {
-  rateLimitConsumed: number;
-} & Partial<GithubResources>;
 
 /**
  * Pull Request GraphQL Fragment Types
@@ -256,17 +252,16 @@ export interface PullRequest extends Node {
 
 export type Issue = PullRequest; //Issues and PullRequests are the same in the API
 
-interface GithubResources {
+export interface GithubSearchResources {
+  [GithubResource.Issues]: Issue[];
   [GithubResource.PullRequests]: PullRequest[];
+  [GithubResource.PullRequest]: PullRequest;
   [GithubResource.Commits]: PullRequestCommitQueryResponse[];
   [GithubResource.Labels]: Label[];
   [GithubResource.Reviews]: Review[];
 }
 
-export type PullRequestQueryResponse = {
+export type GithubQueryResponse = {
   rateLimitConsumed: number;
-} & Partial<GithubResources>;
-
-export type IssueQueryResponse = {
-  rateLimitConsumed: number;
-} & Partial<GithubResources>;
+} & Partial<GithubOrganizationResources> &
+  Partial<GithubSearchResources>;

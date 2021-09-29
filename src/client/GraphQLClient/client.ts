@@ -10,8 +10,8 @@ import {
   ResourceMap,
   ResourceMetadata,
   PullRequest,
-  PullRequestQueryResponse,
-  GithubResourcesQueryResponse,
+  Issue,
+  GithubQueryResponse as QueryResponse,
   GithubResource,
   Node,
 } from './types';
@@ -22,13 +22,6 @@ import {
   mapResponseResourcesForQuery,
 } from './response';
 import { ResourceIteratee } from '../../client';
-
-// Conditional type to map the GraphQL response based on the base resource
-type QueryResponse<T> = T extends GithubResource
-  ? GithubResourcesQueryResponse
-  : T extends GithubResource
-  ? PullRequestQueryResponse
-  : never;
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -54,7 +47,7 @@ export class GitHubGraphQLClient {
   }
 
   /**
-   * Iterates through a serach request for Pull Requests while handling
+   * Iterates through a search request for Pull Requests while handling
    * pagination of both the pull requests and their inner resources.
    *
    * @param query The Github Issue search query with syntax - https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests
@@ -66,7 +59,7 @@ export class GitHubGraphQLClient {
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<PullRequest>,
     limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
-  ): Promise<PullRequestQueryResponse> {
+  ): Promise<QueryResponse> {
     let queryCursors: ResourceMap<string> = {};
     let rateLimitConsumed = 0;
     let pullRequestsQueried = 0;
@@ -90,7 +83,6 @@ export class GitHubGraphQLClient {
         });
       });
       pullRequestsQueried += 25; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
-
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
         { rateLimit },
@@ -194,6 +186,145 @@ export class GitHubGraphQLClient {
   }
 
   /**
+   * Iterates through a search request for Pull Requests while handling
+   * pagination of both the pull requests and their inner resources.
+   *
+   * @param query The Github Issue search query with syntax - https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests
+   * @param selectedResources - The sub-objects to additionally query for. Ex: [commits]
+   * @param iteratee - a callback function for each PullRequestResponse
+   */
+  public async iterateIssues(
+    query: string,
+    selectedResources: GithubResource[],
+    iteratee: ResourceIteratee<Issue>,
+    limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
+  ): Promise<QueryResponse> {
+    let queryCursors: ResourceMap<string> = {};
+    let rateLimitConsumed = 0;
+    let issuesQueried = 0;
+
+    const issueQueryString = buildGraphQL(
+      this.resourceMetadataMap,
+      GithubResource.Issues,
+      selectedResources,
+    );
+    const queryIssues = this.graph(issueQueryString);
+
+    do {
+      this.logger.info(
+        { issueQueryString, query, queryCursors },
+        'Fetching batch of issues from GraphQL',
+      );
+      const issueResponse = await this.retryGraphQL(async () => {
+        return await queryIssues({
+          query,
+          ...queryCursors,
+        });
+      });
+      issuesQueried += 25; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
+      const rateLimit = issueResponse.rateLimit;
+      this.logger.info(
+        { rateLimit },
+        'Rate limit response for Issue iteration',
+      );
+      this.logger.info(issueResponse, 'here is the issue response');
+      rateLimitConsumed += rateLimit.cost;
+
+      for (const issueQueryData of issueResponse.search.edges) {
+        const {
+          resources: pageResources,
+          cursors: innerResourceCursors,
+        } = extractSelectedResources(
+          selectedResources,
+          this.resourceMetadataMap,
+          issueQueryData.node,
+          GithubResource.Issues,
+        );
+
+        // Construct the pull request
+        const issueResponse: Issue = {
+          ...pageResources.issues[0], // There will only be one PR because of the for loop
+          commits: (pageResources.commits ?? []).map((c) => c.commit),
+          reviews: pageResources.reviews ?? [],
+          labels: pageResources.labels ?? [],
+        };
+
+        // This indicates that we were not able to fetch all commits, reviews, etc for this PR
+        if (Object.keys(innerResourceCursors).length) {
+          this.logger.info(
+            {
+              pageCursors: innerResourceCursors,
+              pullRequest: issueResponse.title,
+            },
+            'Unable to fetch all inner resources. Attempting to fetch more.',
+          );
+
+          const urlPath = issueResponse.url // ex: https://github.com/JupiterOne/graph-github/pull/1
+            ? new URL(issueResponse.url)?.pathname // ex: /JupiterOne/graph-github/pull/4"
+            : '';
+
+          // Attempt to pull repo name and owner from graphQL response. If not there, parse the pull request url.
+          const repoOwner =
+            issueResponse.headRepository?.owner?.login ?? urlPath.split('/')[1]; // ex: JupiterOne
+          const repoName =
+            issueResponse.headRepository?.name ?? urlPath.split('/')[2]; // ex: graph-github
+
+          if (!(repoOwner && repoName)) {
+            this.logger.warn(
+              { pullRequest: issueResponse.title },
+              'Unable to fetch all inner resources for this pull request. The owner ' +
+                'and repo name could not be determined from the GraphQL response.',
+            );
+          } else {
+            // Fetch the remaining inner resources on this PR (this should be rare)
+            const innerResourceResponse = await this.fetchFromSingle(
+              GithubResource.PullRequest,
+              selectedResources,
+              {
+                pullRequestNumber: issueResponse.number,
+                repoName,
+                repoOwner,
+              },
+              mapResponseCursorsForQuery(innerResourceCursors, {}),
+            );
+
+            rateLimitConsumed += innerResourceResponse.rateLimitConsumed;
+
+            // Add the additional inner resources to the initial call
+            issueResponse.commits = issueResponse.commits!.concat(
+              (innerResourceResponse.commits ?? []).map((c) => c.commit),
+            );
+            issueResponse.reviews = issueResponse.reviews!.concat(
+              innerResourceResponse.reviews ?? [],
+            );
+            issueResponse.labels = issueResponse.labels!.concat(
+              innerResourceResponse.labels ?? [],
+            );
+          }
+        }
+        await iteratee(issueResponse);
+      }
+
+      // Check to see if we have iterated through every PR yet. We do not need to care about inner resources at this point.
+      queryCursors =
+        issueResponse.search.pageInfo &&
+        issueResponse.search.pageInfo.hasNextPage
+          ? {
+              [GithubResource.PullRequests]:
+                issueResponse.search.pageInfo.endCursor,
+            }
+          : {};
+    } while (
+      Object.values(queryCursors).some((c) => !!c) &&
+      issuesQueried <= limit
+    );
+
+    return {
+      rateLimitConsumed,
+    };
+  }
+
+  /**
    * Handles GraphQL requests on single resources that may contain
    * many nested resorces that each may need to be cursed through.
    *
@@ -208,7 +339,7 @@ export class GitHubGraphQLClient {
     selectedResources: GithubResource[],
     extraQueryParams?: { [k: string]: string | number },
     queryCursors: ResourceMap<string> = {},
-  ): Promise<QueryResponse<T>> {
+  ): Promise<QueryResponse> {
     let resources: ResourceMap<any> = {};
     let queryResources = selectedResources;
     let rateLimitConsumed = 0;
@@ -264,7 +395,7 @@ export class GitHubGraphQLClient {
     return {
       ...resources,
       rateLimitConsumed,
-    } as QueryResponse<T>;
+    } as QueryResponse;
   }
 
   private extractPageResources<T extends Node>(

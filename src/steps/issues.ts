@@ -9,7 +9,7 @@ import {
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { toIssueEntity } from '../sync/converters';
-import { UserEntity, IdEntityMap, RepoKeyAndName, IssueEntity } from '../types';
+import { UserEntity, IdEntityMap, RepoEntity, IssueEntity } from '../types';
 import {
   GITHUB_MEMBER_ENTITY_TYPE,
   GITHUB_ISSUE_ENTITY_TYPE,
@@ -18,7 +18,6 @@ import {
   GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
-  GITHUB_REPO_TAGS_ARRAY,
   GITHUB_MEMBER_BY_LOGIN_MAP,
 } from '../constants';
 
@@ -30,14 +29,6 @@ export async function fetchIssues({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(
-    GITHUB_REPO_TAGS_ARRAY,
-  );
-  if (!repoTags) {
-    throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set ${GITHUB_REPO_TAGS_ARRAY} in jobState.`,
-    );
-  }
   const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
   );
@@ -47,10 +38,23 @@ export async function fetchIssues({
     );
   }
 
-  for (const repoTag of repoTags) {
-    await apiClient.iterateIssues(repoTag, async (issue) => {
-      if (!issue.pull_request) {
-        //issues include entries for PRs, but we don't want those ones
+  await jobState.iterateEntities<RepoEntity>(
+    { _type: GITHUB_REPO_ENTITY_TYPE },
+    async (repoEntity) => {
+      try {
+        await apiClient.iterateIssues(repoEntity, async (issue) => {
+          apiClient.logger.info(issue, 'Here is an issue');
+        });
+      } catch (err) {
+        apiClient.logger.warn(
+          err,
+          'Had an error ingesting an Issue. Skipping and continuing.',
+        );
+      }
+    },
+  );
+
+  /*
         const issueEntity = (await jobState.addEntity(
           toIssueEntity(issue, repoTag.name),
         )) as IssueEntity;
@@ -94,10 +98,7 @@ export async function fetchIssues({
               to: issueEntity,
             });
           }
-        }
-      }
-    });
-  } // end of repo iterator
+        } */
 }
 
 export const issueSteps: IntegrationStep<IntegrationConfig>[] = [

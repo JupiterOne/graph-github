@@ -125,6 +125,25 @@ export default function (
         }
       }`,
     },
+    [GithubResource.Issues]: {
+      graphRequestVariables: [
+        '$query: String!',
+        `$${GithubResource.Issues}: String`,
+      ],
+      factory: (
+        children: string = '',
+      ) => `search(first: ${pullRequestPageLimit}, after: $${GithubResource.Issues}, type: ISSUE, query: $query) {
+        issueCount
+        edges {
+          node {
+            ...issueFields
+            ${children}
+          }
+        }
+        ${pageInfo}
+      }`,
+      children: [],
+    },
     [GithubResource.Organization]: {
       graphRequestVariables: ['$login: String!'],
       pathToDataInGraphQlResponse: 'organization',

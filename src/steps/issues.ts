@@ -8,7 +8,10 @@ import {
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { toIssueEntity } from '../sync/converters';
+import {
+  toIssueEntity,
+  createUnknownUserIssueRelationship,
+} from '../sync/converters';
 import { UserEntity, IdEntityMap, RepoEntity, IssueEntity } from '../types';
 import {
   GITHUB_MEMBER_ENTITY_TYPE,
@@ -55,14 +58,26 @@ export async function fetchIssues({
             }),
           );
 
-          if (issue.author && memberByLoginMap[issue.author.login]) {
-            await jobState.addRelationship(
-              createDirectRelationship({
-                _class: RelationshipClass.CREATED,
-                from: memberByLoginMap[issue.author.login],
-                to: issueEntity,
-              }),
-            );
+          if (issue.author) {
+            if (memberByLoginMap[issue.author.login]) {
+              await jobState.addRelationship(
+                createDirectRelationship({
+                  _class: RelationshipClass.CREATED,
+                  from: memberByLoginMap[issue.author.login],
+                  to: issueEntity,
+                }),
+              );
+            } else {
+              //we don't recognize this author - make a mapped relationship
+              await jobState.addRelationship(
+                createUnknownUserIssueRelationship(
+                  issue.author.login,
+                  GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
+                  RelationshipClass.CREATED,
+                  issueEntity._key,
+                ),
+              );
+            }
           }
 
           if (issue.assignees) {
@@ -74,6 +89,16 @@ export async function fetchIssues({
                     from: memberByLoginMap[assignee.login],
                     to: issueEntity,
                   }),
+                );
+              } else {
+                //we don't recognize this assignee - make a mapped relationship
+                await jobState.addRelationship(
+                  createUnknownUserIssueRelationship(
+                    assignee.login,
+                    GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
+                    RelationshipClass.ASSIGNED,
+                    issueEntity._key,
+                  ),
                 );
               }
             }

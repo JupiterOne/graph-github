@@ -52,7 +52,7 @@ export class GitHubGraphQLClient {
    *
    * @param query The Github Issue search query with syntax - https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests
    * @param selectedResources - The sub-objects to additionally query for. Ex: [commits]
-   * @param iteratee - a callback function for each PullRequestResponse
+   * @param iteratee - a callback function for each PullRequest
    */
   public async iteratePullRequests(
     query: string,
@@ -186,12 +186,12 @@ export class GitHubGraphQLClient {
   }
 
   /**
-   * Iterates through a search request for Pull Requests while handling
-   * pagination of both the pull requests and their inner resources.
+   * Iterates through a search request for Issues while handling
+   * pagination of both the issues and their inner resources.
    *
    * @param query The Github Issue search query with syntax - https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests
-   * @param selectedResources - The sub-objects to additionally query for. Ex: [commits]
-   * @param iteratee - a callback function for each PullRequestResponse
+   * @param selectedResources - The sub-objects to additionally query for. Ex: [assignees]
+   * @param iteratee - a callback function for each Issue
    */
   public async iterateIssues(
     query: string,
@@ -237,7 +237,7 @@ export class GitHubGraphQLClient {
           GithubResource.Issues,
         );
 
-        // Construct the issue... this echoes the pullRequest code, which does more complicated things
+        // Construct the issue
         const issueResponse: Issue = {
           ...pageResources.issues[0], // There will only be one issue because of the for loop
           assignees: pageResources.assignees ?? [],

@@ -83,28 +83,25 @@ export interface TeamEntity extends Entity {
 export interface IssueEntity extends Entity {
   name: string;
   displayName: string;
+  webLink: string;
   url: string;
-  repositoryUrl: string;
-  labelsUrl: string;
-  commentsUrl: string;
-  eventsUrl: string;
-  htmlUrl: string;
-  nodeId: string;
+  databaseId: string;
   number: number;
   title: string;
-  labels: string;
   state: string; //"open" | "closed"
   locked: boolean;
-  milestone: string;
-  numberOfComments: number;
+  closed: boolean;
   createdOn: number | undefined;
   updatedOn: number | undefined;
   closedOn: number | undefined;
   authorAssociation: string;
   activeLockReason: string;
   body: string | undefined;
-  timeline_url?: string;
-  performedViaGithubApp?: boolean;
+  createdViaEmail: boolean;
+  isPinned: boolean;
+  lastEditedOn: number | undefined;
+  publishedOn: number | undefined;
+  resourcePath: string;
 }
 
 export interface RepoEntity extends Entity {

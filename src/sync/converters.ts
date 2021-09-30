@@ -477,22 +477,23 @@ export function createRepoAllowsUserRelationship(
   };
 }
 
-export function createUnknownUserPrRelationship(
+//PRs and Issues in GitHub are both types of Issues
+export function createUnknownUserIssueRelationship(
   unknownLogin: string,
   relationshipType: string,
   relationshipClass: string,
-  prKey: string,
+  issueKey: string,
 ): MappedRelationship {
-  //used to create a mapped relationship to an unknown GitHub user who worked on a PR in the past
+  //used to create a mapped relationship to an unknown GitHub user who worked on a PR or an Issue in the past
   //they may no longer be a collaborator or org member, so make a mapped relationship - this will create a placeholder entity,
   //or map to a `github_user` that might be found some other way
   //it will also map to known users if for some reason a current member or collaborator is passed to this function
   return {
-    _key: `${unknownLogin}|${relationshipClass.toLowerCase()}|${prKey}`,
+    _key: `${unknownLogin}|${relationshipClass.toLowerCase()}|${issueKey}`,
     _type: relationshipType,
     _class: relationshipClass,
     _mapping: {
-      sourceEntityKey: prKey,
+      sourceEntityKey: issueKey,
       relationshipDirection: RelationshipDirection.REVERSE,
       targetFilterKeys: [['_type', 'login']],
       targetEntity: {

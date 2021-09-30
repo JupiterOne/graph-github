@@ -7,7 +7,7 @@ import {
   toOrgSecretEntity,
   toRepoSecretEntity,
   toPullRequestEntity,
-  createUnknownUserPrRelationship,
+  createUnknownUserIssueRelationship,
   toAppEntity,
   toEnvironmentEntity,
   toEnvSecretEntity,
@@ -835,7 +835,7 @@ describe('toPullRequestEntity', () => {
 
 describe('createUnknownUserPrRelationship', () => {
   test('properties transferred', () => {
-    const relationship = createUnknownUserPrRelationship(
+    const relationship = createUnknownUserIssueRelationship(
       'unknownlogin',
       'github_user_approved_pullrequest',
       'APPROVED',

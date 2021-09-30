@@ -47,8 +47,6 @@ export async function fetchIssues({
             toIssueEntity(issue, repoEntity.name),
           )) as IssueEntity;
 
-          logger.info(issueEntity, 'Here is the entity');
-
           await jobState.addRelationship(
             createDirectRelationship({
               _class: RelationshipClass.HAS,
@@ -66,6 +64,20 @@ export async function fetchIssues({
               }),
             );
           }
+
+          if (issue.assignees) {
+            for (const assignee of issue.assignees) {
+              if (memberByLoginMap[assignee.login]) {
+                await jobState.addRelationship(
+                  createDirectRelationship({
+                    _class: RelationshipClass.ASSIGNED,
+                    from: memberByLoginMap[assignee.login],
+                    to: issueEntity,
+                  }),
+                );
+              }
+            }
+          }
         });
       } catch (err) {
         apiClient.logger.warn(
@@ -75,30 +87,6 @@ export async function fetchIssues({
       }
     },
   );
-
-  /*
-
-        if (issue.assignees) {
-          for (const assignee of issue.assignees) {
-            if (memberByLoginMap[assignee.login]) {
-              await jobState.addRelationship(
-                createDirectRelationship({
-                  _class: RelationshipClass.ASSIGNED,
-                  from: memberByLoginMap[assignee.login],
-                  to: issueEntity,
-                }),
-              );
-            }
-          }
-        } else {
-          if (issue.assignee && memberByLoginMap[issue.assignee.login]) {
-            createDirectRelationship({
-              _class: RelationshipClass.ASSIGNED,
-              from: memberByLoginMap[issue.assignee.login],
-              to: issueEntity,
-            });
-          }
-        } */
 }
 
 export const issueSteps: IntegrationStep<IntegrationConfig>[] = [

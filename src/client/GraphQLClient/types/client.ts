@@ -23,6 +23,7 @@ export enum GithubResource {
   Labels = 'labels',
   Reviews = 'reviews',
   Issues = 'issues',
+  Assignees = 'assignees',
 }
 
 export enum OrgMemberRole {
@@ -276,6 +277,7 @@ export interface Issue extends Node {
   titleHTML: string;
   updatedAt: string;
   url: string;
+  assignees?: Actor[];
 }
 
 export interface GithubSearchResources {
@@ -285,6 +287,7 @@ export interface GithubSearchResources {
   [GithubResource.Commits]: PullRequestCommitQueryResponse[];
   [GithubResource.Labels]: Label[];
   [GithubResource.Reviews]: Review[];
+  [GithubResource.Assignees]: Actor[];
 }
 
 export type GithubQueryResponse = {

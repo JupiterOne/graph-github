@@ -2,9 +2,9 @@
 
 ## GitHub + JupiterOne Integration Benefits
 
-- Visualize GitHub users, teams, code repositories, pull requests, installed
-  GitHub applications, organizational secrets, repo secrets, repo environments,
-  and environmental secrets in the JupiterOne graph.
+- Visualize GitHub users, teams, code repositories, pull requests, issues,
+  installed GitHub applications, organizational secrets, repo secrets, repo
+  environments, and environmental secrets in the JupiterOne graph.
 - Map GitHub users to employees in your JupiterOne account.
 - Map GitHub users to development/security trainings.
 - Monitor Github software development activities within repositories including
@@ -17,7 +17,7 @@
 ## How it Works
 
 - JupiterOne periodically fetches installed GitHub apps, GitHub users, teams,
-  code repositories, and recently created/changed pull requests in those
+  code repositories, issues, and recently created/changed pull requests in those
   repositories to update the graph.
 - Write JupiterOne queries to review and monitor updates to the graph.
 - Configure alerts to take action when the JupiterOne graph changes.
@@ -43,23 +43,24 @@ Upon creating a new GitHub integration configuration in JupiterOne, the user is
 re-directed to GitHub to install the JupiterOne GitHub app.
 
 The integration is using GitHub Apps authentication, which requests permissions
-from the Organization installing the app. The app requires Read Only permission
-for Metadata, Repository Metadata, and Organization Members.
+from the Organization installing the app. The app requests the following Read
+Only permissions:
 
-Optionally, you can grant the following Read Only permissions to turn on
-additional functionality:
+- Organization Metadata, Administration, Members, and Secrets
+- Repository Metadata, Secrets, Actions, and Issues
 
-- Organization Administration to ingest data on other installed GitHub Apps
-- Secrets (at the Organization and/or Repo levels) to ingest names and creation
-  dates of Secrets (the actual values of the Secrets are not ingested)
-- Actions (at the Repo level) to ingest Environments and Environmental Secrets
-  (if Repo Secrets are enabled)
+All of these permissions are Read Only.
+
+Note that the Secrets API does not reveal the values of Secrets - only their
+names and creation dates.
 
 Github References:
 
 - <https://developer.github.com/apps/building-github-apps/setting-permissions-for-github-apps/>
 - <https://developer.github.com/v3/apps/permissions/#metadata-permissions>
 - <https://developer.github.com/v3/apps/permissions/#permission-on-contents>
+- <https://docs.github.com/en/rest/reference/actions#secrets>
+- <https://docs.github.com/en/rest/reference/permissions-required-for-github-apps#permission-on-secrets>
 
 ### In GitHub
 
@@ -112,7 +113,7 @@ The following entities are created:
 | Account             | `github_account`     | `Account`       |
 | GitHub Env Secret   | `github_env_secret`  | `Secret`        |
 | GitHub Environment  | `github_environment` | `Configuration` |
-| GitHub Issue        | `github_issue`       | `Record`        |
+| GitHub Issue        | `github_issue`       | `Issue`         |
 | GitHub Org Secret   | `github_org_secret`  | `Secret`        |
 | GitHub Pull Request | `github_pullrequest` | `PR`            |
 | GitHub Repo Secret  | `github_repo_secret` | `Secret`        |

@@ -240,6 +240,7 @@ export class GitHubGraphQLClient {
         // Construct the issue... this echoes the pullRequest code, which does more complicated things
         const issueResponse: Issue = {
           ...pageResources.issues[0], // There will only be one issue because of the for loop
+          assignees: pageResources.assignees ?? [],
         };
         await iteratee(issueResponse);
       }

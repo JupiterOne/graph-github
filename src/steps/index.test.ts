@@ -314,11 +314,11 @@ test('should collect data', async () => {
   expect(secretEnvRepoOverrideRelationships.length).toBeGreaterThan(0);
 
   const issues = context.jobState.collectedEntities.filter(
-    (e) => e._class.includes('Record') && e._type.includes('github_issue'),
+    (e) => e._class.includes('Issue') && e._type.includes('github_issue'),
   );
   expect(issues.length).toBeGreaterThan(0);
   expect(issues).toMatchGraphObjectSchema({
-    _class: ['Record'],
+    _class: ['Issue'],
     schema: {
       additionalProperties: true,
       properties: {

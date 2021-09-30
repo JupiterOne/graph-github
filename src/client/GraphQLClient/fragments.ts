@@ -181,7 +181,6 @@ export default {
   issueFields: `on Issue {
     id
     activeLockReason
-    # assignees # an object we might need to arrange as a child
     author {
       ...teamMemberFields
     }

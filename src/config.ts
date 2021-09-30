@@ -92,18 +92,14 @@ export async function validateInvocation(
   orgSecrets: boolean;
   repoSecrets: boolean;
   repoActions: boolean;
+  repoIssues: boolean;
 }> {
   const { config } = context.instance;
 
   sanitizeConfig(config); //mutate the config as needed
   const apiClient = createAPIClient(config, context.logger);
   await apiClient.verifyAuthentication();
-  return {
-    orgAdmin: apiClient.scopes.orgAdmin,
-    orgSecrets: apiClient.scopes.orgSecrets,
-    repoSecrets: apiClient.scopes.repoSecrets,
-    repoActions: apiClient.scopes.repoActions,
-  };
+  return apiClient.scopes;
 }
 
 export function sanitizeConfig(config: IntegrationConfig) {

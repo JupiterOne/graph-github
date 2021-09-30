@@ -29,7 +29,6 @@ import {
   OrgAppQueryResponse,
   SecretQueryResponse,
   RepoEnvironmentQueryResponse,
-  RepoIssueQueryResponse,
 } from './client/RESTClient/types';
 import { PullRequest, Issue } from './client/GraphQLClient/types';
 
@@ -51,6 +50,7 @@ export class APIClient {
     orgSecrets: boolean;
     repoSecrets: boolean;
     repoActions: boolean;
+    repoIssues: boolean;
   };
   constructor(
     readonly config: IntegrationConfig,
@@ -305,21 +305,15 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const { rateLimitConsumed } = await this.accountClient.iterateIssueEntities(
-      repo,
-      iteratee,
-    );
-    this.logger.info(
-      { rateLimitConsumed },
-      'Rate limit consumed while fetching Issues.',
-    );
-    /*
-    const issues: RepoIssueQueryResponse[] = await this.accountClient.getRepoIssuesWithRest(
-      repo.name,
-    );
-    for (const issue of issues) {
-      await iteratee(issue);
-    } */
+    if (this.scopes.repoIssues) {
+      const {
+        rateLimitConsumed,
+      } = await this.accountClient.iterateIssueEntities(repo, iteratee);
+      this.logger.info(
+        { rateLimitConsumed },
+        'Rate limit consumed while fetching Issues.',
+      );
+    }
   }
 
   public async setupAccountClient(): Promise<void> {
@@ -383,6 +377,7 @@ export class APIClient {
         orgSecrets: false,
         repoSecrets: false,
         repoActions: false,
+        repoIssues: false,
       };
     }
     //checking for proper scopes
@@ -451,6 +446,17 @@ export class APIClient {
       );
     } else {
       this.scopes.repoActions = true;
+    }
+
+    //ingesting repo issues requires scope issues:read
+    if (!(perms.issues === 'read' || perms.issues === 'write')) {
+      this.scopes.repoIssues = false;
+      this.logger.info(
+        {},
+        "Token does not have 'issues' scope. Repo issues cannot be ingested",
+      );
+    } else {
+      this.scopes.repoIssues = true;
     }
     //scopes check done
   }

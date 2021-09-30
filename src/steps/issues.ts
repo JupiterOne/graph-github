@@ -43,41 +43,41 @@ export async function fetchIssues({
     async (repoEntity) => {
       try {
         await apiClient.iterateIssues(repoEntity, async (issue) => {
-          apiClient.logger.info(issue, 'Here is an issue');
+          const issueEntity = (await jobState.addEntity(
+            toIssueEntity(issue, repoEntity.name),
+          )) as IssueEntity;
+
+          logger.info(issueEntity, 'Here is the entity');
+
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.HAS,
+              from: repoEntity,
+              to: issueEntity,
+            }),
+          );
+
+          if (issue.author && memberByLoginMap[issue.author.login]) {
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.CREATED,
+                from: memberByLoginMap[issue.author.login],
+                to: issueEntity,
+              }),
+            );
+          }
         });
       } catch (err) {
         apiClient.logger.warn(
           err,
-          'Had an error ingesting an Issue. Skipping and continuing.',
+          `Had an error ingesting Issues for repo ${repoEntity._key}. Skipping and continuing.`,
         );
       }
     },
   );
 
   /*
-        const issueEntity = (await jobState.addEntity(
-          toIssueEntity(issue, repoTag.name),
-        )) as IssueEntity;
 
-        await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.HAS,
-            fromType: GITHUB_REPO_ENTITY_TYPE,
-            toType: GITHUB_ISSUE_ENTITY_TYPE,
-            fromKey: repoTag._key,
-            toKey: issueEntity._key,
-          }),
-        );
-
-        if (issue.user && memberByLoginMap[issue.user.login]) {
-          await jobState.addRelationship(
-            createDirectRelationship({
-              _class: RelationshipClass.CREATED,
-              from: memberByLoginMap[issue.user.login],
-              to: issueEntity,
-            }),
-          );
-        }
         if (issue.assignees) {
           for (const assignee of issue.assignees) {
             if (memberByLoginMap[assignee.login]) {

@@ -250,7 +250,33 @@ export interface PullRequest extends Node {
   reviews?: Review[];
 }
 
-export type Issue = PullRequest; //Issues and PullRequests are the same in the API
+export interface Issue extends Node {
+  id: string;
+  activeLockReason: string;
+  author: {
+    name: string;
+    login: string;
+  };
+  authorAssociation: string;
+  body: string;
+  bodyText: string;
+  closed: boolean;
+  closedAt: string;
+  createdAt: string;
+  createdViaEmail: boolean;
+  databaseId: string;
+  isPinned: boolean;
+  lastEditedAt: string;
+  locked: boolean;
+  number: number;
+  publishedAt: string;
+  resourcePath: string;
+  state: string;
+  title: string;
+  titleHTML: string;
+  updatedAt: string;
+  url: string;
+}
 
 export interface GithubSearchResources {
   [GithubResource.Issues]: Issue[];

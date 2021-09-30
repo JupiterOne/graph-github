@@ -60,6 +60,10 @@ import {
   OrgTeamQueryResponse,
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
+  Commit,
+  PullRequest,
+  Review,
+  Issue,
 } from '../client/GraphQLClient';
 import {
   RepoCollaboratorQueryResponse,
@@ -67,11 +71,9 @@ import {
   SecretQueryResponse,
   CollaboratorPermissions,
   RepoEnvironmentQueryResponse,
-  RepoIssueQueryResponse,
 } from '../client/RESTClient/types';
 
 import { uniq, last, compact, omit } from 'lodash';
-import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';
 import getCommitsToDestination from '../util/getCommitsToDestination';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
@@ -362,41 +364,34 @@ export function toOrganizationCollaboratorEntity(
   return userEntity;
 }
 
-export function toIssueEntity(
-  data: RepoIssueQueryResponse,
-  repoName: string,
-): IssueEntity {
+export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
   const issueName = repoName + '/' + String(data.number); //format matches name of PRs
   const issueEntity: IssueEntity = {
     _class: GITHUB_ISSUE_ENTITY_CLASS,
     _type: GITHUB_ISSUE_ENTITY_TYPE,
-    _key: data.node_id,
+    _key: data.id,
     webLink: data.url,
     url: data.url,
     name: issueName,
     displayName: issueName,
     description: data.body,
-    repositoryUrl: data.repository_url,
-    labelsUrl: data.labels_url,
-    commentsUrl: data.comments_url,
-    eventsUrl: data.events_url,
-    htmlUrl: data.html_url,
-    nodeId: data.node_id,
     number: data.number,
+    databaseId: data.databaseId,
     title: data.title,
-    labels: JSON.stringify(data.labels),
     state: data.state,
     locked: data.locked,
-    milestone: JSON.stringify(data.milestone),
-    numberOfComments: data.comments,
-    createdOn: parseTimePropertyValue(data.created_at),
-    updatedOn: parseTimePropertyValue(data.updated_at),
-    closedOn: parseTimePropertyValue(data.closed_at),
-    authorAssociation: data.author_association,
-    activeLockReason: data.active_lock_reason,
+    closed: data.closed,
+    createdOn: parseTimePropertyValue(data.createdAt),
+    updatedOn: parseTimePropertyValue(data.updatedAt),
+    closedOn: parseTimePropertyValue(data.closedAt),
+    authorAssociation: data.authorAssociation,
+    activeLockReason: data.activeLockReason,
     body: data.body,
-    timelineUrl: data.timeline_url,
-    performedViaGithubApp: data.performed_via_github_app,
+    createdViaEmail: data.createdViaEmail,
+    isPinned: data.isPinned,
+    lastEditedOn: parseTimePropertyValue(data.lastEditedAt),
+    publishedOn: parseTimePropertyValue(data.publishedAt),
+    resourcePath: data.resourcePath,
   };
   setRawData(issueEntity, {
     name: 'default',

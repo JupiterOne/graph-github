@@ -8,7 +8,6 @@ import { validateInvocation, IntegrationConfig } from './config';
 export default async function getStepStartStates(
   context: IntegrationExecutionContext<IntegrationConfig>,
 ): Promise<StepStartStates> {
-  //const config = context.instance.config; //might use this later
   const scopes = await validateInvocation(context);
 
   return {
@@ -22,6 +21,6 @@ export default async function getStepStartStates(
     ['fetch-org-secrets']: { disabled: !scopes.orgSecrets },
     ['fetch-repo-secrets']: { disabled: !scopes.repoSecrets },
     ['fetch-environments']: { disabled: !scopes.repoActions },
-    ['fetch-issues']: { disabled: false },
+    ['fetch-issues']: { disabled: !scopes.repoIssues },
   };
 }

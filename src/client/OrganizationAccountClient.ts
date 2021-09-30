@@ -243,7 +243,11 @@ export default class OrganizationAccountClient {
       return { rateLimitConsumed: 0 };
     }
     const query = `is:issue repo:${repo.fullName}`;
-    return await this.v4.iterateIssues(query, [], iteratee);
+    return await this.v4.iterateIssues(
+      query,
+      [GithubResource.Assignees],
+      iteratee,
+    );
   }
 
   /**

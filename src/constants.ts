@@ -71,7 +71,7 @@ export const GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE =
 
 //issues
 export const GITHUB_ISSUE_ENTITY_TYPE = 'github_issue';
-export const GITHUB_ISSUE_ENTITY_CLASS = ['Record'];
+export const GITHUB_ISSUE_ENTITY_CLASS = ['Issue'];
 export const GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE = 'github_repo_has_issue';
 export const GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE =
   'github_user_created_issue';

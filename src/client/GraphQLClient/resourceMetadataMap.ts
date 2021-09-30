@@ -142,7 +142,22 @@ export default function (
         }
         ${pageInfo}
       }`,
-      children: [],
+      children: [GithubResource.Assignees, GithubResource.Labels],
+    },
+    [GithubResource.Assignees]: {
+      graphRequestVariables: [`$${GithubResource.Assignees}: String`],
+      factory: () => `... on Issue {
+          ${GithubResource.Assignees}(first: ${pageLimit}, after: $${GithubResource.Assignees}) {
+          totalCount
+          edges {
+            node {
+              name
+              login
+            }
+          }
+          ${pageInfo}
+        }
+      }`,
     },
     [GithubResource.Organization]: {
       graphRequestVariables: ['$login: String!'],

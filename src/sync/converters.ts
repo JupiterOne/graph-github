@@ -395,7 +395,7 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
   };
   setRawData(issueEntity, {
     name: 'default',
-    rawData: omit(data, ['user', 'assignee', 'assignees']),
+    rawData: data,
   });
   return issueEntity;
 }

@@ -24,6 +24,8 @@ and this project adheres to
 | `github_user`         | **CREATED**           | `github_issue`        |
 | `github_user`         | **ASSIGNED**          | `github_issue`        |
 
+- Added support for labels to PullRequests
+
 ## 1.5.1 - 2021-10-06
 
 ### Changed

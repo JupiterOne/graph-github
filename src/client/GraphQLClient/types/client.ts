@@ -24,6 +24,7 @@ export enum GithubResource {
   Reviews = 'reviews',
   Issues = 'issues',
   Assignees = 'assignees',
+  LabelsOnIssues = 'labelsOnIssues',
 }
 
 export enum OrgMemberRole {
@@ -278,6 +279,7 @@ export interface Issue extends Node {
   updatedAt: string;
   url: string;
   assignees?: Actor[];
+  labels?: Label[];
 }
 
 export interface GithubSearchResources {

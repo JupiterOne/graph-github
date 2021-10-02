@@ -229,6 +229,10 @@ export class GitHubGraphQLClient {
       );
       rateLimitConsumed += rateLimit.cost;
 
+      if (selectedResources[1] == GithubResource.LabelsOnIssues) {
+        selectedResources[1] = GithubResource.Labels; //hack to account for resourceMetadataMap on LabelsForIssues
+      }
+
       for (const issueQueryData of issueResponse.search.edges) {
         const { resources: pageResources } = extractSelectedResources(
           selectedResources,
@@ -241,6 +245,7 @@ export class GitHubGraphQLClient {
         const issueResponse: Issue = {
           ...pageResources.issues[0], // There will only be one issue because of the for loop
           assignees: pageResources.assignees ?? [],
+          labels: pageResources.labels ?? [],
         };
         await iteratee(issueResponse);
       }

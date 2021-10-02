@@ -366,6 +366,7 @@ export function toOrganizationCollaboratorEntity(
 
 export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
   const issueName = repoName + '/' + String(data.number); //format matches name of PRs
+  const labels = data.labels?.map((l) => l.name);
   const issueEntity: IssueEntity = {
     _class: GITHUB_ISSUE_ENTITY_CLASS,
     _type: GITHUB_ISSUE_ENTITY_TYPE,
@@ -392,6 +393,7 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
     lastEditedOn: parseTimePropertyValue(data.lastEditedAt),
     publishedOn: parseTimePropertyValue(data.publishedAt),
     resourcePath: data.resourcePath,
+    labels: labels,
   };
   setRawData(issueEntity, {
     name: 'default',
@@ -514,6 +516,7 @@ export function toPullRequestEntity(
 ): PullRequestEntity {
   const commits = pullRequest.commits;
   const reviews = pullRequest.reviews;
+  const labels = pullRequest.labels?.map((l) => l.name);
 
   const approvals = reviews
     ?.filter(isApprovalReview)
@@ -574,6 +577,7 @@ export function toPullRequestEntity(
             : undefined,
         databaseId: pullRequest.databaseId,
         webLink: pullRequest.url,
+        labels: labels,
 
         state: pullRequest.state,
         open: pullRequest.state === 'OPEN',

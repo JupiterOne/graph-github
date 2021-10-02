@@ -142,7 +142,7 @@ export default function (
         }
         ${pageInfo}
       }`,
-      children: [GithubResource.Assignees, GithubResource.Labels],
+      children: [GithubResource.Assignees, GithubResource.LabelsOnIssues],
     },
     [GithubResource.Assignees]: {
       graphRequestVariables: [`$${GithubResource.Assignees}: String`],
@@ -153,6 +153,21 @@ export default function (
             node {
               name
               login
+            }
+          }
+          ${pageInfo}
+        }
+      }`,
+    },
+    [GithubResource.LabelsOnIssues]: {
+      graphRequestVariables: [`$${GithubResource.Labels}: String`],
+      factory: () => `... on Issue {
+          ${GithubResource.Labels}(first: ${pageLimit}, after: $${GithubResource.Labels}) {
+          totalCount
+          edges {
+            node {
+              id
+              name
             }
           }
           ${pageInfo}

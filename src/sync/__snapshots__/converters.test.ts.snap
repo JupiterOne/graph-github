@@ -189,6 +189,7 @@ Object {
   "description": "This is some discription or something...",
   "displayName": "jupiter-integration-aws/45",
   "id": "45",
+  "labels": Array [],
   "mergeCommitHash": "39483af8a356b5684513bf56c044dab0ed4c0c7a",
   "merged": true,
   "mergedOn": 1630461214000,

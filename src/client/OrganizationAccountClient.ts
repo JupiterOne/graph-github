@@ -245,7 +245,7 @@ export default class OrganizationAccountClient {
     const query = `is:issue repo:${repo.fullName}`;
     return await this.v4.iterateIssues(
       query,
-      [GithubResource.Assignees],
+      [GithubResource.Assignees, GithubResource.LabelsOnIssues],
       iteratee,
     );
   }

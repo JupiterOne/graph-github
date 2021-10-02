@@ -50,8 +50,6 @@ export async function fetchIssues({
             toIssueEntity(issue, repoEntity.name),
           )) as IssueEntity;
 
-          logger.info(issueEntity);
-
           await jobState.addRelationship(
             createDirectRelationship({
               _class: RelationshipClass.HAS,

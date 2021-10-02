@@ -96,8 +96,6 @@ export async function fetchPrs({
               pr,
             )) as PullRequestEntity;
 
-            logger.info(prEntity);
-
             await jobState.addRelationship(
               createDirectRelationship({
                 _class: RelationshipClass.HAS,

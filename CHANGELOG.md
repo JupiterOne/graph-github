@@ -30,16 +30,16 @@ and this project adheres to
 | `github_repo`         | **USES**              | `github_env_secret`   |
 
 - Extra 9 properties to `github_account` (`createdOn`, `updatedOn`,
-  `description`, `email`, `node`, `databaseId`, `isVerified`, `location`,
+  `description`, `email`, `node`, `databaseId`, `verified`, `location`,
   `websiteUrl`, `webLink`)
 - Extra 6 properites to `github_team` (`createdOn`, `updatedOn`, `databaseId`,
   `description`, `node`, `privacy`)
 - Extra 8 properties to `github_user` (`company`, `createdOn`, `updatedOn`,
-  `databaseId`, `node`, `isEmployee`, `location`, `websiteUrl`, `email`)
+  `databaseId`, `node`, `employee`, `location`, `websiteUrl`, `email`)
 - Extra 19 properties to `github_repo` (`autoMergeAllowed`, `databaseId`,
-  `deleteBranchOnMerge`, `description`, `homepageUrl`, `node`, `isDisabled`,
-  `isEmpty`, `isFork`, `isInOrganization`, `isLocked`, `isMirror`,
-  `isSecurityPolicyEnabled`, `isTemplate`, `isUserConfigurationRepository`,
+  `deleteBranchOnMerge`, `description`, `homepageUrl`, `node`, `disabled`,
+  `empty`, `fork`, `inOrganization`, `locked`, `mirror`,
+  `securityPolicyEnabled`, `template`, `userConfigurationRepository`,
   `lockReason`, `mergeCommitAllowed`, `pushedOn`, `rebaseMergeAllowed`)
 - Extra 5 properties to `github_pullrequest` (`databaseId`, `node`,
   `commitsCount`, `approvalsCount`, `approvalLastAt`)

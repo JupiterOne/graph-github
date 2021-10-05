@@ -12,7 +12,7 @@ export interface AccountEntity extends Entity {
   email?: string;
   node?: string;
   databaseId?: string;
-  isVerified?: boolean;
+  verified?: boolean;
   location?: string;
   websiteUrl?: string;
   webLink?: string;
@@ -95,15 +95,15 @@ export interface RepoEntity extends Entity {
   description: string;
   homepageUrl: string;
   node: string;
-  isDisabled: boolean | undefined;
-  isEmpty: boolean | undefined;
-  isFork: boolean | undefined;
-  isInOrganization: boolean | undefined;
-  isLocked: boolean | undefined;
-  isMirror: boolean | undefined;
-  isSecurityPolicyEnabled: boolean | undefined;
-  isTemplate: boolean | undefined;
-  isUserConfigurationRepository: boolean | undefined;
+  disabled: boolean | undefined;
+  empty: boolean | undefined;
+  fork: boolean | undefined;
+  inOrganization: boolean | undefined;
+  locked: boolean | undefined;
+  mirror: boolean | undefined;
+  securityPolicyEnabled: boolean | undefined;
+  template: boolean | undefined;
+  userConfigurationRepository: boolean | undefined;
   lockReason: string;
   mergeCommitAllowed: boolean | undefined;
   rebaseMergeAllowed: boolean | undefined;
@@ -129,7 +129,7 @@ export interface UserEntity extends Entity {
   updatedOn?: number | undefined;
   databaseId?: string;
   email?: string;
-  isEmployee?: boolean;
+  employee?: boolean;
   location?: string;
   websiteUrl?: string;
 }

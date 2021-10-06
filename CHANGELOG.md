@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.5.1 - 2021-10-06
+
+### Changed
+
+- All new boolean properties added in v1.5.0 that included `is` to no longer
+  include `is`. Ex: `isLocked` became `locked`.
+
 ## 1.5.0 - 2021-09-28
 
 ### Added

@@ -98,7 +98,7 @@ export interface IssueEntity extends Entity {
   activeLockReason: string;
   body: string | undefined;
   createdViaEmail: boolean;
-  isPinned: boolean;
+  pinned: boolean;
   lastEditedOn: number | undefined;
   publishedOn: number | undefined;
   resourcePath: string;

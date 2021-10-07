@@ -550,8 +550,7 @@ describe('toEnvironmentEntity', () => {
         'https://github.com/SomeOrg/SomeRepo/settings/environments/288429400/edit',
       id: '288429400',
       nodeId: 'MDExOkVudmlyb25tZW50Mjg4NDI5NDAw',
-      url:
-        'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
+      url: 'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
       htmlUrl:
         'https://github.com/SomeOrg/SomeRepo/deployments/activity_log?environments_filter=Ambiente',
       createdOn: 1629762800000,
@@ -583,8 +582,7 @@ describe('toEnvironmentEntity', () => {
         'https://github.com/SomeOrg/SomeRepo/settings/environments/288429400/edit',
       id: '288429400',
       nodeId: 'MDExOkVudmlyb25tZW50Mjg4NDI5NDAw',
-      url:
-        'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
+      url: 'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
       htmlUrl:
         'https://github.com/SomeOrg/SomeRepo/deployments/activity_log?environments_filter=Ambiente',
       createdOn: 1629762800000,
@@ -618,8 +616,7 @@ describe('toEnvSecretEntity', () => {
         'https://github.com/SomeOrg/SomeRepo/settings/environments/288429400/edit',
       id: '288429400',
       nodeId: 'MDExOkVudmlyb25tZW50Mjg4NDI5NDAw',
-      url:
-        'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
+      url: 'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
       htmlUrl:
         'https://github.com/SomeOrg/SomeRepo/deployments/activity_log?environments_filter=Ambiente',
       createdOn: 1629762800000,
@@ -694,6 +691,16 @@ describe('toIssue', () => {
         issues: 'I_kwDOFiNpzs479Jfp',
       },
     ],
+    labels: [
+      {
+        name: 'bug',
+        someotherproperty: 'stuff',
+      },
+      {
+        name: 'enhancement',
+        someotherproperty: 'stuff',
+      },
+    ],
   };
 
   test('properties transferred', () => {
@@ -719,11 +726,12 @@ describe('toIssue', () => {
       activeLockReason: null,
       body: 'How can I know what my issue really is?',
       createdViaEmail: false,
-      isPinned: false,
+      pinned: false,
       publishedOn: 1632434739000,
       resourcePath: '/Kei-Institute/Test-repo/issues/3',
       webLink: 'https://github.com/Kei-Institute/Test-repo/issues/3',
       url: 'https://github.com/Kei-Institute/Test-repo/issues/3',
+      labels: ['bug', 'enhancement'],
       _rawData: [
         {
           name: 'default',

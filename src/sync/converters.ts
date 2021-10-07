@@ -389,7 +389,7 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
     activeLockReason: data.activeLockReason,
     body: data.body,
     createdViaEmail: data.createdViaEmail,
-    isPinned: data.isPinned,
+    pinned: data.isPinned,
     lastEditedOn: parseTimePropertyValue(data.lastEditedAt),
     publishedOn: parseTimePropertyValue(data.publishedAt),
     resourcePath: data.resourcePath,

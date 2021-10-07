@@ -91,15 +91,13 @@ export class GitHubGraphQLClient {
       rateLimitConsumed += rateLimit.cost;
 
       for (const pullRequestQueryData of pullRequestResponse.search.edges) {
-        const {
-          resources: pageResources,
-          cursors: innerResourceCursors,
-        } = extractSelectedResources(
-          selectedResources,
-          this.resourceMetadataMap,
-          pullRequestQueryData.node,
-          GithubResource.PullRequests,
-        );
+        const { resources: pageResources, cursors: innerResourceCursors } =
+          extractSelectedResources(
+            selectedResources,
+            this.resourceMetadataMap,
+            pullRequestQueryData.node,
+            GithubResource.PullRequests,
+          );
 
         // Construct the pull request
         const pullRequestResponse: PullRequest = {
@@ -229,9 +227,14 @@ export class GitHubGraphQLClient {
       );
       rateLimitConsumed += rateLimit.cost;
 
-      if (selectedResources[1] == GithubResource.LabelsOnIssues) {
-        selectedResources[1] = GithubResource.Labels; //hack to account for resourceMetadataMap on LabelsForIssues
-      }
+      //hack to account for resourceMetadataMap on LabelsForIssues
+      selectedResources = selectedResources.map((e) => {
+        if (e === GithubResource.LabelsOnIssues) {
+          return GithubResource.Labels;
+        } else {
+          return e;
+        }
+      });
 
       for (const issueQueryData of issueResponse.search.edges) {
         const { resources: pageResources } = extractSelectedResources(
@@ -313,19 +316,17 @@ export class GitHubGraphQLClient {
       );
       rateLimitConsumed += rateLimit.cost;
 
-      const pathToData = this.resourceMetadataMap[baseResource]
-        .pathToDataInGraphQlResponse;
+      const pathToData =
+        this.resourceMetadataMap[baseResource].pathToDataInGraphQlResponse;
       const data = pathToData ? get(response, pathToData) : response;
 
-      const {
-        resources: pageResources,
-        cursors: pageCursors,
-      } = extractSelectedResources(
-        selectedResources,
-        this.resourceMetadataMap,
-        data,
-        baseResource,
-      );
+      const { resources: pageResources, cursors: pageCursors } =
+        extractSelectedResources(
+          selectedResources,
+          this.resourceMetadataMap,
+          data,
+          baseResource,
+        );
 
       resources = this.extractPageResources(pageResources, resources);
       queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);

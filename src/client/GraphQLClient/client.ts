@@ -10,8 +10,8 @@ import {
   ResourceMap,
   ResourceMetadata,
   PullRequest,
-  PullRequestQueryResponse,
-  GithubResourcesQueryResponse,
+  Issue,
+  GithubQueryResponse as QueryResponse,
   GithubResource,
   Node,
 } from './types';
@@ -22,13 +22,6 @@ import {
   mapResponseResourcesForQuery,
 } from './response';
 import { ResourceIteratee } from '../../client';
-
-// Conditional type to map the GraphQL response based on the base resource
-type QueryResponse<T> = T extends GithubResource
-  ? GithubResourcesQueryResponse
-  : T extends GithubResource
-  ? PullRequestQueryResponse
-  : never;
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -54,19 +47,19 @@ export class GitHubGraphQLClient {
   }
 
   /**
-   * Iterates through a serach request for Pull Requests while handling
+   * Iterates through a search request for Pull Requests while handling
    * pagination of both the pull requests and their inner resources.
    *
    * @param query The Github Issue search query with syntax - https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests
    * @param selectedResources - The sub-objects to additionally query for. Ex: [commits]
-   * @param iteratee - a callback function for each PullRequestResponse
+   * @param iteratee - a callback function for each PullRequest
    */
   public async iteratePullRequests(
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<PullRequest>,
     limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
-  ): Promise<PullRequestQueryResponse> {
+  ): Promise<QueryResponse> {
     let queryCursors: ResourceMap<string> = {};
     let rateLimitConsumed = 0;
     let pullRequestsQueried = 0;
@@ -90,7 +83,6 @@ export class GitHubGraphQLClient {
         });
       });
       pullRequestsQueried += 25; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
-
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
         { rateLimit },
@@ -99,15 +91,13 @@ export class GitHubGraphQLClient {
       rateLimitConsumed += rateLimit.cost;
 
       for (const pullRequestQueryData of pullRequestResponse.search.edges) {
-        const {
-          resources: pageResources,
-          cursors: innerResourceCursors,
-        } = extractSelectedResources(
-          selectedResources,
-          this.resourceMetadataMap,
-          pullRequestQueryData.node,
-          GithubResource.PullRequests,
-        );
+        const { resources: pageResources, cursors: innerResourceCursors } =
+          extractSelectedResources(
+            selectedResources,
+            this.resourceMetadataMap,
+            pullRequestQueryData.node,
+            GithubResource.PullRequests,
+          );
 
         // Construct the pull request
         const pullRequestResponse: PullRequest = {
@@ -194,6 +184,94 @@ export class GitHubGraphQLClient {
   }
 
   /**
+   * Iterates through a search request for Issues while handling
+   * pagination of both the issues and their inner resources.
+   *
+   * @param query The Github Issue search query with syntax - https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests
+   * @param selectedResources - The sub-objects to additionally query for. Ex: [assignees]
+   * @param iteratee - a callback function for each Issue
+   */
+  public async iterateIssues(
+    query: string,
+    selectedResources: GithubResource[],
+    iteratee: ResourceIteratee<Issue>,
+    limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
+  ): Promise<QueryResponse> {
+    let queryCursors: ResourceMap<string> = {};
+    let rateLimitConsumed = 0;
+    let issuesQueried = 0;
+
+    const issueQueryString = buildGraphQL(
+      this.resourceMetadataMap,
+      GithubResource.Issues,
+      selectedResources,
+    );
+    const queryIssues = this.graph(issueQueryString);
+
+    do {
+      this.logger.info(
+        { issueQueryString, query, queryCursors },
+        'Fetching batch of issues from GraphQL',
+      );
+      const issueResponse = await this.retryGraphQL(async () => {
+        return await queryIssues({
+          query,
+          ...queryCursors,
+        });
+      });
+      issuesQueried += 25; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
+      const rateLimit = issueResponse.rateLimit;
+      this.logger.info(
+        { rateLimit },
+        'Rate limit response for Issue iteration',
+      );
+      rateLimitConsumed += rateLimit.cost;
+
+      //hack to account for resourceMetadataMap on LabelsForIssues
+      selectedResources = selectedResources.map((e) => {
+        if (e === GithubResource.LabelsOnIssues) {
+          return GithubResource.Labels;
+        } else {
+          return e;
+        }
+      });
+
+      for (const issueQueryData of issueResponse.search.edges) {
+        const { resources: pageResources } = extractSelectedResources(
+          selectedResources,
+          this.resourceMetadataMap,
+          issueQueryData.node,
+          GithubResource.Issues,
+        );
+
+        // Construct the issue
+        const issueResponse: Issue = {
+          ...pageResources.issues[0], // There will only be one issue because of the for loop
+          assignees: pageResources.assignees ?? [],
+          labels: pageResources.labels ?? [],
+        };
+        await iteratee(issueResponse);
+      }
+
+      // Check to see if we have iterated through every issue yet. We do not need to care about inner resources at this point.
+      queryCursors =
+        issueResponse.search.pageInfo &&
+        issueResponse.search.pageInfo.hasNextPage
+          ? {
+              [GithubResource.Issues]: issueResponse.search.pageInfo.endCursor,
+            }
+          : {};
+    } while (
+      Object.values(queryCursors).some((c) => !!c) &&
+      issuesQueried <= limit
+    );
+
+    return {
+      rateLimitConsumed,
+    };
+  }
+
+  /**
    * Handles GraphQL requests on single resources that may contain
    * many nested resorces that each may need to be cursed through.
    *
@@ -208,7 +286,7 @@ export class GitHubGraphQLClient {
     selectedResources: GithubResource[],
     extraQueryParams?: { [k: string]: string | number },
     queryCursors: ResourceMap<string> = {},
-  ): Promise<QueryResponse<T>> {
+  ): Promise<QueryResponse> {
     let resources: ResourceMap<any> = {};
     let queryResources = selectedResources;
     let rateLimitConsumed = 0;
@@ -238,19 +316,17 @@ export class GitHubGraphQLClient {
       );
       rateLimitConsumed += rateLimit.cost;
 
-      const pathToData = this.resourceMetadataMap[baseResource]
-        .pathToDataInGraphQlResponse;
+      const pathToData =
+        this.resourceMetadataMap[baseResource].pathToDataInGraphQlResponse;
       const data = pathToData ? get(response, pathToData) : response;
 
-      const {
-        resources: pageResources,
-        cursors: pageCursors,
-      } = extractSelectedResources(
-        selectedResources,
-        this.resourceMetadataMap,
-        data,
-        baseResource,
-      );
+      const { resources: pageResources, cursors: pageCursors } =
+        extractSelectedResources(
+          selectedResources,
+          this.resourceMetadataMap,
+          data,
+          baseResource,
+        );
 
       resources = this.extractPageResources(pageResources, resources);
       queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
@@ -264,7 +340,7 @@ export class GitHubGraphQLClient {
     return {
       ...resources,
       rateLimitConsumed,
-    } as QueryResponse<T>;
+    } as QueryResponse;
   }
 
   private extractPageResources<T extends Node>(

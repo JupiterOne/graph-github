@@ -31,7 +31,7 @@ import {
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
 import {
-  createUnknownUserPrRelationship,
+  createUnknownUserIssueRelationship,
   toPullRequestEntity,
 } from '../sync/converters';
 import { cloneDeep } from 'lodash';
@@ -115,7 +115,7 @@ export async function fetchPrs({
             } else {
               //we don't recognize this author - make a mapped relationship
               await jobState.addRelationship(
-                createUnknownUserPrRelationship(
+                createUnknownUserIssueRelationship(
                   pr.authorLogin,
                   GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
                   RelationshipClass.OPENED,
@@ -137,7 +137,7 @@ export async function fetchPrs({
                 } else {
                   //we don't recognize this reviewer - make a mapped relationship
                   await jobState.addRelationship(
-                    createUnknownUserPrRelationship(
+                    createUnknownUserIssueRelationship(
                       reviewer,
                       GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
                       RelationshipClass.REVIEWED,
@@ -161,7 +161,7 @@ export async function fetchPrs({
                 } else {
                   //we don't recognize this approver - make a mapped relationship
                   await jobState.addRelationship(
-                    createUnknownUserPrRelationship(
+                    createUnknownUserIssueRelationship(
                       approver,
                       GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
                       RelationshipClass.APPROVED,

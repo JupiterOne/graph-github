@@ -8,6 +8,24 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Added support for ingesting the following **new** entity:
+
+| Resources    | Entity `_type` | Entity `_class` |
+| ------------ | -------------- | --------------- |
+| GitHub Issue | `github_issue` | `Issue`         |
+
+- Added support for ingesting the following **new** relationships:
+
+| Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
+| --------------------- | --------------------- | --------------------- |
+| `github_repo`         | **HAS**               | `github_issue`        |
+| `github_user`         | **CREATED**           | `github_issue`        |
+| `github_user`         | **ASSIGNED**          | `github_issue`        |
+
+- Added support for labels to PullRequests
+
 ## 1.5.1 - 2021-10-06
 
 ### Changed

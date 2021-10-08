@@ -80,6 +80,30 @@ export interface TeamEntity extends Entity {
   webLink: string;
 }
 
+export interface IssueEntity extends Entity {
+  name: string;
+  displayName: string;
+  webLink: string;
+  url: string;
+  databaseId: string;
+  number: number;
+  title: string;
+  state: string; //"open" | "closed"
+  locked: boolean;
+  closed: boolean;
+  createdOn: number | undefined;
+  updatedOn: number | undefined;
+  closedOn: number | undefined;
+  authorAssociation: string;
+  activeLockReason: string;
+  body: string | undefined;
+  createdViaEmail: boolean;
+  pinned: boolean;
+  lastEditedOn: number | undefined;
+  publishedOn: number | undefined;
+  resourcePath: string;
+}
+
 export interface RepoEntity extends Entity {
   public: boolean;
   name: string;

@@ -7,10 +7,11 @@ import {
   toOrgSecretEntity,
   toRepoSecretEntity,
   toPullRequestEntity,
-  createUnknownUserPrRelationship,
+  createUnknownUserIssueRelationship,
   toAppEntity,
   toEnvironmentEntity,
   toEnvSecretEntity,
+  toIssueEntity,
 } from './converters';
 import { EnvironmentEntity, UserEntity } from '../types';
 import { PullRequest } from '../client/GraphQLClient/types';
@@ -549,8 +550,7 @@ describe('toEnvironmentEntity', () => {
         'https://github.com/SomeOrg/SomeRepo/settings/environments/288429400/edit',
       id: '288429400',
       nodeId: 'MDExOkVudmlyb25tZW50Mjg4NDI5NDAw',
-      url:
-        'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
+      url: 'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
       htmlUrl:
         'https://github.com/SomeOrg/SomeRepo/deployments/activity_log?environments_filter=Ambiente',
       createdOn: 1629762800000,
@@ -582,8 +582,7 @@ describe('toEnvironmentEntity', () => {
         'https://github.com/SomeOrg/SomeRepo/settings/environments/288429400/edit',
       id: '288429400',
       nodeId: 'MDExOkVudmlyb25tZW50Mjg4NDI5NDAw',
-      url:
-        'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
+      url: 'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
       htmlUrl:
         'https://github.com/SomeOrg/SomeRepo/deployments/activity_log?environments_filter=Ambiente',
       createdOn: 1629762800000,
@@ -617,8 +616,7 @@ describe('toEnvSecretEntity', () => {
         'https://github.com/SomeOrg/SomeRepo/settings/environments/288429400/edit',
       id: '288429400',
       nodeId: 'MDExOkVudmlyb25tZW50Mjg4NDI5NDAw',
-      url:
-        'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
+      url: 'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
       htmlUrl:
         'https://github.com/SomeOrg/SomeRepo/deployments/activity_log?environments_filter=Ambiente',
       createdOn: 1629762800000,
@@ -648,6 +646,98 @@ describe('toEnvSecretEntity', () => {
       createdOn: 1629762832000,
       updatedOn: 1629762832000,
       visibility: 'selected',
+    });
+  });
+});
+
+describe('toIssue', () => {
+  const apiResponse = {
+    id: 'I_kwDOFiNpzs479Jfp',
+    activeLockReason: null,
+    authorAssociation: 'MEMBER',
+    body: 'How can I know what my issue really is?',
+    bodyText: 'How can I know what my issue really is?',
+    closed: false,
+    closedAt: null,
+    createdAt: '2021-09-23T22:05:39Z',
+    createdViaEmail: false,
+    databaseId: 1005885417,
+    isPinned: false,
+    lastEditedAt: null,
+    locked: false,
+    number: 3,
+    publishedAt: '2021-09-23T22:05:39Z',
+    resourcePath: '/Kei-Institute/Test-repo/issues/3',
+    state: 'OPEN',
+    title: "I've got issues with Issues",
+    titleHTML: "I've got issues with Issues",
+    updatedAt: '2021-09-24T17:28:10Z',
+    author: {
+      name: 'Kevin Casey',
+      login: 'kevincasey1222',
+    },
+    bodyUrl:
+      'https://github.com/Kei-Institute/Test-repo/issues/3#issue-1005885417',
+    url: 'https://github.com/Kei-Institute/Test-repo/issues/3',
+    assignees: [
+      {
+        name: 'Erich Smith',
+        login: 'erichs',
+        issues: 'I_kwDOFiNpzs479Jfp',
+      },
+      {
+        name: 'Kevin Casey',
+        login: 'kevincasey1222',
+        issues: 'I_kwDOFiNpzs479Jfp',
+      },
+    ],
+    labels: [
+      {
+        name: 'bug',
+        someotherproperty: 'stuff',
+      },
+      {
+        name: 'enhancement',
+        someotherproperty: 'stuff',
+      },
+    ],
+  };
+
+  test('properties transferred', () => {
+    const issue = toIssueEntity(apiResponse as any, 'Test-repo');
+    expect(issue).toEqual({
+      _type: 'github_issue',
+      _key: 'I_kwDOFiNpzs479Jfp',
+      _class: ['Issue'],
+      name: 'Test-repo/3',
+      displayName: 'Test-repo/3',
+      description: 'How can I know what my issue really is?',
+      number: 3,
+      databaseId: 1005885417,
+      title: "I've got issues with Issues",
+      state: 'OPEN',
+      locked: false,
+      closed: false,
+      closedOn: undefined,
+      createdOn: 1632434739000,
+      updatedOn: 1632504490000,
+      lastEditedOn: undefined,
+      authorAssociation: 'MEMBER',
+      activeLockReason: null,
+      body: 'How can I know what my issue really is?',
+      createdViaEmail: false,
+      pinned: false,
+      publishedOn: 1632434739000,
+      resourcePath: '/Kei-Institute/Test-repo/issues/3',
+      webLink: 'https://github.com/Kei-Institute/Test-repo/issues/3',
+      url: 'https://github.com/Kei-Institute/Test-repo/issues/3',
+      labels: ['bug', 'enhancement'],
+      _rawData: [
+        {
+          name: 'default',
+          rawData: apiResponse,
+        },
+      ],
     });
   });
 });
@@ -753,7 +843,7 @@ describe('toPullRequestEntity', () => {
 
 describe('createUnknownUserPrRelationship', () => {
   test('properties transferred', () => {
-    const relationship = createUnknownUserPrRelationship(
+    const relationship = createUnknownUserIssueRelationship(
       'unknownlogin',
       'github_user_approved_pullrequest',
       'APPROVED',

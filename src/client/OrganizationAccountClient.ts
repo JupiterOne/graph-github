@@ -31,7 +31,11 @@ import {
 import sha from '../util/sha';
 import { request } from '@octokit/request';
 import { ResourceIteratee } from '../client';
-import { PullRequest, PullRequestQueryResponse } from './GraphQLClient/types';
+import {
+  PullRequest,
+  Issue,
+  GithubQueryResponse as QueryResponse,
+} from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -214,7 +218,7 @@ export default class OrganizationAccountClient {
   async iteratePullRequestEntities(
     repo: RepoEntity,
     iteratee: ResourceIteratee<PullRequest>,
-  ): Promise<PullRequestQueryResponse> {
+  ): Promise<QueryResponse> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
       return { rateLimitConsumed: 0 };
@@ -223,6 +227,25 @@ export default class OrganizationAccountClient {
     return await this.v4.iteratePullRequests(
       query,
       [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
+      iteratee,
+    );
+  }
+
+  async iterateIssueEntities(
+    repo: RepoEntity,
+    iteratee: ResourceIteratee<Issue>,
+  ): Promise<QueryResponse> {
+    //issues and PRs are actually the same in the API
+    //we just filter for is:issue instead of is:pr
+    //and remove pr-specific children from the request
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting issues.');
+      return { rateLimitConsumed: 0 };
+    }
+    const query = `is:issue repo:${repo.fullName}`;
+    return await this.v4.iterateIssues(
+      query,
+      [GithubResource.Assignees, GithubResource.LabelsOnIssues],
       iteratee,
     );
   }

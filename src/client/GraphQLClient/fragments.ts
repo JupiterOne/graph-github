@@ -178,4 +178,39 @@ export default {
     updatedAt
     url
   }`,
+  issueFields: `on Issue {
+    id
+    activeLockReason
+    author {
+      ...teamMemberFields
+    }
+    authorAssociation
+    body
+    # bodyHTML
+    # bodyResourcePath
+    bodyText
+    bodyUrl
+    closed # boolean 
+    closedAt
+    # comments # probably a child object if we want these
+    createdAt
+    createdViaEmail # boolean
+    databaseId
+    isPinned # boolean
+    # labels # these will be child objects 
+    lastEditedAt
+    locked # boolean
+    # milestone # a Milestone object, could put the fields in-line like author
+    number
+    # participants # Participants objects
+    # projectCards # ProjectCardConnection!
+    publishedAt
+    # reactionGroups # : [ReactionGroup!]
+    resourcePath
+    state
+    title
+    titleHTML
+    updatedAt
+    url
+  }`,
 };

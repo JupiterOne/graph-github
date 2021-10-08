@@ -22,6 +22,9 @@ export enum GithubResource {
   Commits = 'commits',
   Labels = 'labels',
   Reviews = 'reviews',
+  Issues = 'issues',
+  Assignees = 'assignees',
+  LabelsOnIssues = 'labelsOnIssues',
 }
 
 export enum OrgMemberRole {
@@ -137,7 +140,7 @@ export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
   permission: TeamRepositoryPermission;
 }
 
-interface GithubResources {
+export interface GithubOrganizationResources {
   [GithubResource.Organization]: OrgQueryResponse[];
   [GithubResource.OrganizationMembers]: OrgMemberQueryResponse[];
   [GithubResource.Teams]: OrgTeamQueryResponse[];
@@ -146,10 +149,6 @@ interface GithubResources {
   [GithubResource.Repositories]: OrgRepoQueryResponse[];
   // [GithubResource. RepositoryCollaborators]: OrgCollaboratorQueryResponse[];
 }
-
-export type GithubResourcesQueryResponse = {
-  rateLimitConsumed: number;
-} & Partial<GithubResources>;
 
 /**
  * Pull Request GraphQL Fragment Types
@@ -253,13 +252,47 @@ export interface PullRequest extends Node {
   reviews?: Review[];
 }
 
-interface GithubResources {
+export interface Issue extends Node {
+  id: string;
+  activeLockReason: string;
+  author: {
+    name: string;
+    login: string;
+  };
+  authorAssociation: string;
+  body: string;
+  bodyText: string;
+  closed: boolean;
+  closedAt: string;
+  createdAt: string;
+  createdViaEmail: boolean;
+  databaseId: string;
+  isPinned: boolean;
+  lastEditedAt: string;
+  locked: boolean;
+  number: number;
+  publishedAt: string;
+  resourcePath: string;
+  state: string;
+  title: string;
+  titleHTML: string;
+  updatedAt: string;
+  url: string;
+  assignees?: Actor[];
+  labels?: Label[];
+}
+
+export interface GithubSearchResources {
+  [GithubResource.Issues]: Issue[];
   [GithubResource.PullRequests]: PullRequest[];
+  [GithubResource.PullRequest]: PullRequest;
   [GithubResource.Commits]: PullRequestCommitQueryResponse[];
   [GithubResource.Labels]: Label[];
   [GithubResource.Reviews]: Review[];
+  [GithubResource.Assignees]: Actor[];
 }
 
-export type PullRequestQueryResponse = {
+export type GithubQueryResponse = {
   rateLimitConsumed: number;
-} & Partial<GithubResources>;
+} & Partial<GithubOrganizationResources> &
+  Partial<GithubSearchResources>;

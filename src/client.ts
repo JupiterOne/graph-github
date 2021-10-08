@@ -30,7 +30,7 @@ import {
   SecretQueryResponse,
   RepoEnvironmentQueryResponse,
 } from './client/RESTClient/types';
-import { PullRequest } from './client/GraphQLClient/types';
+import { PullRequest, Issue } from './client/GraphQLClient/types';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -50,6 +50,7 @@ export class APIClient {
     orgSecrets: boolean;
     repoSecrets: boolean;
     repoActions: boolean;
+    repoIssues: boolean;
   };
   constructor(
     readonly config: IntegrationConfig,
@@ -292,6 +293,29 @@ export class APIClient {
     }
   }
 
+  /**
+   * Iterates the issues for a repo in the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateIssues(
+    repo: RepoEntity,
+    iteratee: ResourceIteratee<Issue>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.repoIssues) {
+      const {
+        rateLimitConsumed,
+      } = await this.accountClient.iterateIssueEntities(repo, iteratee);
+      this.logger.info(
+        { rateLimitConsumed },
+        'Rate limit consumed while fetching Issues.',
+      );
+    }
+  }
+
   public async setupAccountClient(): Promise<void> {
     if (isNaN(this.config.installationId)) {
       throw new IntegrationValidationError(
@@ -353,6 +377,7 @@ export class APIClient {
         orgSecrets: false,
         repoSecrets: false,
         repoActions: false,
+        repoIssues: false,
       };
     }
     //checking for proper scopes
@@ -421,6 +446,17 @@ export class APIClient {
       );
     } else {
       this.scopes.repoActions = true;
+    }
+
+    //ingesting repo issues requires scope issues:read
+    if (!(perms.issues === 'read' || perms.issues === 'write')) {
+      this.scopes.repoIssues = false;
+      this.logger.info(
+        {},
+        "Token does not have 'issues' scope. Repo issues cannot be ingested",
+      );
+    } else {
+      this.scopes.repoIssues = true;
     }
     //scopes check done
   }

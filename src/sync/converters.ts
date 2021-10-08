@@ -30,6 +30,8 @@ import {
   GITHUB_ENVIRONMENT_ENTITY_CLASS,
   GITHUB_ENVIRONMENT_ENTITY_TYPE,
   GITHUB_ENV_SECRET_ENTITY_TYPE,
+  GITHUB_ISSUE_ENTITY_TYPE,
+  GITHUB_ISSUE_ENTITY_CLASS,
 } from '../constants';
 
 import {
@@ -41,6 +43,7 @@ import {
   PullRequestEntity,
   IdEntityMap,
   TeamEntity,
+  IssueEntity,
   AccountType,
   EnvironmentEntity,
   RepoAllowRelationship,
@@ -57,6 +60,10 @@ import {
   OrgTeamQueryResponse,
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
+  Commit,
+  PullRequest,
+  Review,
+  Issue,
 } from '../client/GraphQLClient';
 import {
   RepoCollaboratorQueryResponse,
@@ -67,12 +74,11 @@ import {
 } from '../client/RESTClient/types';
 
 import { uniq, last, compact, omit } from 'lodash';
-import { Commit, PullRequest, Review } from '../client/GraphQLClient/types';
 import getCommitsToDestination from '../util/getCommitsToDestination';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
-    _class: [GITHUB_ACCOUNT_ENTITY_CLASS],
+    _class: GITHUB_ACCOUNT_ENTITY_CLASS,
     _type: GITHUB_ACCOUNT_ENTITY_TYPE,
     _key: data.id,
     accountType: AccountType.Org,
@@ -97,7 +103,7 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
 
 export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   const appEntity: AppEntity = {
-    _class: [GITHUB_APP_ENTITY_CLASS],
+    _class: GITHUB_APP_ENTITY_CLASS,
     _type: GITHUB_APP_ENTITY_TYPE,
     _key: getAppEntityKey(data.id),
     name: data.app_slug,
@@ -227,7 +233,7 @@ export function toEnvSecretEntity(
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {
-    _class: [GITHUB_TEAM_ENTITY_CLASS],
+    _class: GITHUB_TEAM_ENTITY_CLASS,
     _type: GITHUB_TEAM_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
@@ -250,7 +256,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
   const repoEntity: RepoEntity = {
-    _class: [GITHUB_REPO_ENTITY_CLASS],
+    _class: GITHUB_REPO_ENTITY_CLASS,
     _type: GITHUB_REPO_ENTITY_TYPE,
     _key: data.id,
     webLink: data.url,
@@ -290,7 +296,7 @@ export function toOrganizationMemberEntity(
   data: OrgMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: [GITHUB_MEMBER_ENTITY_CLASS],
+    _class: GITHUB_MEMBER_ENTITY_CLASS,
     _type: GITHUB_MEMBER_ENTITY_TYPE,
     _key: data.id,
     login: data.login,
@@ -321,7 +327,7 @@ export function toOrganizationMemberEntityFromTeamMember(
   data: OrgTeamMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: [GITHUB_MEMBER_ENTITY_CLASS],
+    _class: GITHUB_MEMBER_ENTITY_CLASS,
     _type: GITHUB_MEMBER_ENTITY_TYPE,
     _key: data.id,
     login: data.login,
@@ -341,7 +347,7 @@ export function toOrganizationCollaboratorEntity(
   data: RepoCollaboratorQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: [GITHUB_COLLABORATOR_ENTITY_CLASS],
+    _class: GITHUB_COLLABORATOR_ENTITY_CLASS,
     _type: GITHUB_COLLABORATOR_ENTITY_TYPE,
     _key: data.node_id,
     login: data.login,
@@ -356,6 +362,44 @@ export function toOrganizationCollaboratorEntity(
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
+}
+
+export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
+  const issueName = repoName + '/' + String(data.number); //format matches name of PRs
+  const labels = data.labels?.map((l) => l.name);
+  const issueEntity: IssueEntity = {
+    _class: GITHUB_ISSUE_ENTITY_CLASS,
+    _type: GITHUB_ISSUE_ENTITY_TYPE,
+    _key: data.id,
+    webLink: data.url,
+    url: data.url,
+    name: issueName,
+    displayName: issueName,
+    description: data.body,
+    number: data.number,
+    databaseId: data.databaseId,
+    title: data.title,
+    state: data.state,
+    locked: data.locked,
+    closed: data.closed,
+    createdOn: parseTimePropertyValue(data.createdAt),
+    updatedOn: parseTimePropertyValue(data.updatedAt),
+    closedOn: parseTimePropertyValue(data.closedAt),
+    authorAssociation: data.authorAssociation,
+    activeLockReason: data.activeLockReason,
+    body: data.body,
+    createdViaEmail: data.createdViaEmail,
+    pinned: data.isPinned,
+    lastEditedOn: parseTimePropertyValue(data.lastEditedAt),
+    publishedOn: parseTimePropertyValue(data.publishedAt),
+    resourcePath: data.resourcePath,
+    labels: labels,
+  };
+  setRawData(issueEntity, {
+    name: 'default',
+    rawData: data,
+  });
+  return issueEntity;
 }
 
 export function createRepoAllowsTeamRelationship(
@@ -435,22 +479,23 @@ export function createRepoAllowsUserRelationship(
   };
 }
 
-export function createUnknownUserPrRelationship(
+//PRs and Issues in GitHub are both types of Issues
+export function createUnknownUserIssueRelationship(
   unknownLogin: string,
   relationshipType: string,
   relationshipClass: string,
-  prKey: string,
+  issueKey: string,
 ): MappedRelationship {
-  //used to create a mapped relationship to an unknown GitHub user who worked on a PR in the past
+  //used to create a mapped relationship to an unknown GitHub user who worked on a PR or an Issue in the past
   //they may no longer be a collaborator or org member, so make a mapped relationship - this will create a placeholder entity,
   //or map to a `github_user` that might be found some other way
   //it will also map to known users if for some reason a current member or collaborator is passed to this function
   return {
-    _key: `${unknownLogin}|${relationshipClass.toLowerCase()}|${prKey}`,
+    _key: `${unknownLogin}|${relationshipClass.toLowerCase()}|${issueKey}`,
     _type: relationshipType,
     _class: relationshipClass,
     _mapping: {
-      sourceEntityKey: prKey,
+      sourceEntityKey: issueKey,
       relationshipDirection: RelationshipDirection.REVERSE,
       targetFilterKeys: [['_type', 'login']],
       targetEntity: {
@@ -471,6 +516,7 @@ export function toPullRequestEntity(
 ): PullRequestEntity {
   const commits = pullRequest.commits;
   const reviews = pullRequest.reviews;
+  const labels = pullRequest.labels?.map((l) => l.name);
 
   const approvals = reviews
     ?.filter(isApprovalReview)
@@ -513,7 +559,7 @@ export function toPullRequestEntity(
       source: pullRequest,
       assign: {
         _type: GITHUB_PR_ENTITY_TYPE,
-        _class: [GITHUB_PR_ENTITY_CLASS],
+        _class: GITHUB_PR_ENTITY_CLASS,
         _key: `${pullRequest.baseRepository.owner.login}/${pullRequest.baseRepository.name}/pull-requests/${pullRequest.number}`,
         displayName: `${pullRequest.baseRepository.name}/${pullRequest.number}`,
         accountLogin: pullRequest.baseRepository.owner.login,
@@ -531,6 +577,7 @@ export function toPullRequestEntity(
             : undefined,
         databaseId: pullRequest.databaseId,
         webLink: pullRequest.url,
+        labels: labels,
 
         state: pullRequest.state,
         open: pullRequest.state === 'OPEN',

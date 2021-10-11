@@ -73,4 +73,5 @@ export interface CursorHierarchy {
   children: {
     [childResource: string]: CursorHierarchy[];
   };
+  hasNextPage?: boolean;
 }

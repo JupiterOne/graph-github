@@ -220,7 +220,7 @@ export const PULL_REQUESTS_QUERY_STRING = `query ($query: String!, $pullRequests
         }
       }
 ... on PullRequest {
-        reviews(first: 100, after: $reviews) {
+        reviews(first: 1, after: $reviews) {
           totalCount
           edges {
             node {
@@ -234,7 +234,7 @@ export const PULL_REQUESTS_QUERY_STRING = `query ($query: String!, $pullRequests
         }
       }
 ... on PullRequest {
-          labels(first: 100, after: $labels) {
+          labels(first: 1, after: $labels) {
           totalCount
           edges {
             node {
@@ -254,6 +254,60 @@ export const PULL_REQUESTS_QUERY_STRING = `query ($query: String!, $pullRequests
   endCursor
   hasNextPage
 }
+      }
+...rateLimit
+  }`;
+
+export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!, $repoName: String!, $repoOwner: String!, $commits: String, $reviews: String, $labels: String) {
+    repository(name: $repoName, owner: $repoOwner) {
+          pullRequest(number: $pullRequestNumber) {
+            ...pullRequestFields
+            ... on PullRequest {
+        commits(first: 100, after: $commits) {
+          totalCount
+          edges {
+            node {
+              commit {
+                ...commitFields
+              }
+            }
+          }
+          pageInfo {
+  endCursor
+  hasNextPage
+}
+        }
+      }
+... on PullRequest {
+        reviews(first: 1, after: $reviews) {
+          totalCount
+          edges {
+            node {
+              ...reviewFields
+            }
+          }
+          pageInfo {
+  endCursor
+  hasNextPage
+}
+        }
+      }
+... on PullRequest {
+          labels(first: 1, after: $labels) {
+          totalCount
+          edges {
+            node {
+              id
+              name
+            }
+          }
+          pageInfo {
+  endCursor
+  hasNextPage
+}
+        }
+      }
+          }
       }
 ...rateLimit
   }`;

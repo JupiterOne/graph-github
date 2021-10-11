@@ -14,6 +14,7 @@ import {
   GithubQueryResponse as QueryResponse,
   GithubResource,
   Node,
+  CursorHierarchy,
 } from './types';
 
 import {
@@ -21,7 +22,7 @@ import {
   mapResponseCursorsForQuery,
 } from './response';
 import { ResourceIteratee } from '../../client';
-import { PULL_REQUESTS_QUERY_STRING } from './queries';
+import { SINGLE_PULL_REQUEST_QUERY_STRING } from './queries';
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -61,9 +62,10 @@ export class GitHubGraphQLClient {
     iteratee: ResourceIteratee<PullRequest>,
     limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
   ): Promise<QueryResponse> {
-    let queryCursors: ResourceMap<string> = {};
+    let queryCursors: ResourceMap<CursorHierarchy> = {};
     let rateLimitConsumed = 0;
     let pullRequestsQueried = 0;
+    let hasMorePullRequests = false;
 
     const queryPullRequests = this.graph(pullRequestQueryString);
 
@@ -133,7 +135,7 @@ export class GitHubGraphQLClient {
           } else {
             // Fetch the remaining inner resources on this PR (this should be rare)
             const innerResourceResponse = await this.fetchFromSingle(
-              PULL_REQUESTS_QUERY_STRING,
+              SINGLE_PULL_REQUEST_QUERY_STRING,
               GithubResource.PullRequest,
               selectedResources,
               {
@@ -161,19 +163,18 @@ export class GitHubGraphQLClient {
         await iteratee(pullRequestResponse);
       }
 
-      // Check to see if we have iterated through every PR yet. We do not need to care about inner resources at this point.
-      queryCursors =
+      hasMorePullRequests =
         pullRequestResponse.search.pageInfo &&
-        pullRequestResponse.search.pageInfo.hasNextPage
-          ? {
-              [GithubResource.PullRequests]:
-                pullRequestResponse.search.pageInfo.endCursor,
-            }
-          : {};
-    } while (
-      Object.values(queryCursors).some((c) => !!c) &&
-      pullRequestsQueried <= limit
-    );
+        pullRequestResponse.search.pageInfo.hasNextPage;
+
+      // Check to see if we have iterated through every PR yet. We do not need to care about inner resources at this point.
+      queryCursors = hasMorePullRequests
+        ? {
+            [GithubResource.PullRequests]:
+              pullRequestResponse.search.pageInfo.endCursor,
+          }
+        : {};
+    } while (hasMorePullRequests && pullRequestsQueried <= limit);
 
     return {
       rateLimitConsumed,
@@ -283,9 +284,11 @@ export class GitHubGraphQLClient {
   ): Promise<QueryResponse> {
     let resources: ResourceMap<any> = {};
     let rateLimitConsumed = 0;
+    let hasMoreResources = false;
+
+    const query = this.graph(queryString);
 
     do {
-      const query = this.graph(queryString);
       const response = await this.retryGraphQL(async () => {
         return await query({
           ...extraQueryParams,
@@ -311,7 +314,8 @@ export class GitHubGraphQLClient {
 
       resources = this.extractPageResources(pageResources, resources);
       queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
-    } while (Object.values(queryCursors).some((c) => !!c));
+      hasMoreResources = Object.values(pageCursors).some((c) => c.hasNextPage);
+    } while (hasMoreResources);
 
     return {
       ...resources,

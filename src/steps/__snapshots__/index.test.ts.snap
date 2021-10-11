@@ -1044,7 +1044,7 @@ Object {
                 "id": "MDU6TGFiZWwzMDM2NTU5NTY0",
                 "name": "enhancement",
                 "node": undefined,
-                "pullRequest": "MDExOlB1bGxSZXF1ZXN0NjY1MTUwNjk5",
+                "pullRequests": "MDExOlB1bGxSZXF1ZXN0NjY1MTUwNjk5",
               },
             ],
             "lastEditedAt": null,

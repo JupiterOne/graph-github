@@ -130,8 +130,6 @@ export const TEAM_REPOS_QUERY_STRING = `query ($login: String!, $teams: String, 
         edges {
           node {
             id
-            ...repositoryFields
-
           }
           ...teamRepositoryEdgeFields
         }
@@ -220,7 +218,7 @@ export const PULL_REQUESTS_QUERY_STRING = `query ($query: String!, $pullRequests
         }
       }
 ... on PullRequest {
-        reviews(first: 1, after: $reviews) {
+        reviews(first: 100, after: $reviews) {
           totalCount
           edges {
             node {
@@ -234,7 +232,7 @@ export const PULL_REQUESTS_QUERY_STRING = `query ($query: String!, $pullRequests
         }
       }
 ... on PullRequest {
-          labels(first: 1, after: $labels) {
+          labels(first: 100, after: $labels) {
           totalCount
           edges {
             node {
@@ -279,7 +277,7 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
         }
       }
 ... on PullRequest {
-        reviews(first: 1, after: $reviews) {
+        reviews(first: 100, after: $reviews) {
           totalCount
           edges {
             node {
@@ -293,7 +291,7 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
         }
       }
 ... on PullRequest {
-          labels(first: 1, after: $labels) {
+          labels(first: 100, after: $labels) {
           totalCount
           edges {
             node {

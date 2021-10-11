@@ -36,6 +36,16 @@ import {
   Issue,
   GithubQueryResponse as QueryResponse,
 } from './GraphQLClient/types';
+import {
+  ACCOUNT_QUERY_STRING,
+  REPOS_QUERY_STRING,
+  TEAM_MEMBERS_QUERY_STRING,
+  TEAM_REPOS_QUERY_STRING,
+  ISSUES_QUERY_STRING,
+  PULL_REQUESTS_QUERY_STRING,
+  TEAMS_QUERY_STRING,
+  USERS_QUERY_STRING,
+} from './GraphQLClient/queries';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -95,6 +105,7 @@ export default class OrganizationAccountClient {
     let response;
     await this.queryGraphQL('account and related resources', async () => {
       const { organization, rateLimitConsumed } = await this.v4.fetchFromSingle(
+        ACCOUNT_QUERY_STRING,
         GithubResource.Organization,
         [],
         {
@@ -110,14 +121,13 @@ export default class OrganizationAccountClient {
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
     let response;
     await this.queryGraphQL('members', async () => {
-      const {
-        membersWithRole,
-        rateLimitConsumed,
-      } = await this.v4.fetchFromSingle(
-        GithubResource.Organization,
-        [GithubResource.OrganizationMembers],
-        { login: this.login },
-      );
+      const { membersWithRole, rateLimitConsumed } =
+        await this.v4.fetchFromSingle(
+          USERS_QUERY_STRING,
+          GithubResource.Organization,
+          [GithubResource.OrganizationMembers],
+          { login: this.login },
+        );
       response = membersWithRole;
       return rateLimitConsumed;
     });
@@ -127,10 +137,8 @@ export default class OrganizationAccountClient {
   async getTeams(): Promise<OrgTeamQueryResponse[]> {
     let response;
     await this.queryGraphQL('teams', async () => {
-      const {
-        teams,
-        rateLimitConsumed,
-      } = await this.v4.fetchFromSingle(
+      const { teams, rateLimitConsumed } = await this.v4.fetchFromSingle(
+        TEAMS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.Teams],
         { login: this.login },
@@ -144,10 +152,8 @@ export default class OrganizationAccountClient {
   async getTeamMembers(): Promise<OrgTeamMemberQueryResponse[]> {
     let response;
     await this.queryGraphQL('team members', async () => {
-      const {
-        members,
-        rateLimitConsumed,
-      } = await this.v4.fetchFromSingle(
+      const { members, rateLimitConsumed } = await this.v4.fetchFromSingle(
+        TEAM_MEMBERS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.TeamMembers],
         { login: this.login },
@@ -161,10 +167,8 @@ export default class OrganizationAccountClient {
   async getRepositories(slugs?: string[]): Promise<OrgRepoQueryResponse[]> {
     let response;
     await this.queryGraphQL('repositories', async () => {
-      const {
-        repositories,
-        rateLimitConsumed,
-      } = await this.v4.fetchFromSingle(
+      const { repositories, rateLimitConsumed } = await this.v4.fetchFromSingle(
+        REPOS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.Repositories],
         { login: this.login },
@@ -194,14 +198,13 @@ export default class OrganizationAccountClient {
     let response;
     try {
       await this.queryGraphQL('team repositories', async () => {
-        const {
-          teamRepositories,
-          rateLimitConsumed,
-        } = await this.v4.fetchFromSingle(
-          GithubResource.Organization,
-          [GithubResource.TeamRepositories],
-          { login: this.login },
-        );
+        const { teamRepositories, rateLimitConsumed } =
+          await this.v4.fetchFromSingle(
+            TEAM_REPOS_QUERY_STRING,
+            GithubResource.Organization,
+            [GithubResource.TeamRepositories],
+            { login: this.login },
+          );
         response = teamRepositories as OrgTeamRepoQueryResponse[];
         return rateLimitConsumed;
       });
@@ -225,6 +228,7 @@ export default class OrganizationAccountClient {
     }
     const query = `is:pr repo:${repo.fullName}`;
     return await this.v4.iteratePullRequests(
+      PULL_REQUESTS_QUERY_STRING,
       query,
       [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       iteratee,
@@ -244,6 +248,7 @@ export default class OrganizationAccountClient {
     }
     const query = `is:issue repo:${repo.fullName}`;
     return await this.v4.iterateIssues(
+      ISSUES_QUERY_STRING,
       query,
       [GithubResource.Assignees, GithubResource.LabelsOnIssues],
       iteratee,

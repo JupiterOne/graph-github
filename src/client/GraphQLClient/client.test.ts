@@ -10,6 +10,12 @@ import createGitHubAppClient from '../../util/createGitHubAppClient';
 import { IntegrationConfig, sanitizeConfig } from '../../config';
 import { integrationConfig } from '../../../test/config';
 import { Commit, Label, PullRequest, Review } from './types';
+import {
+  PULL_REQUESTS_QUERY_STRING,
+  REPOS_QUERY_STRING,
+  TEAM_MEMBERS_QUERY_STRING,
+  USERS_QUERY_STRING,
+} from './queries';
 
 async function getAccess() {
   const context = createMockStepExecutionContext<IntegrationConfig>({
@@ -58,9 +64,14 @@ describe('pull request resources', () => {
 
     const query = 'is:pr repo:JupiterOne/graph-whitehat is:open';
     const pullRequests: PullRequest[] = [];
-    const response = await client.iteratePullRequests(query, [], (pr) => {
-      pullRequests.push(pr);
-    });
+    const response = await client.iteratePullRequests(
+      PULL_REQUESTS_QUERY_STRING,
+      query,
+      [],
+      (pr) => {
+        pullRequests.push(pr);
+      },
+    );
     expect(response.rateLimitConsumed).toEqual(3);
     expect(pullRequests.length).toEqual(6);
     expect(
@@ -94,6 +105,7 @@ describe('pull request resources', () => {
     const query = 'is:pr repo:JupiterOne/graph-whitehat is:open';
     const pullRequests: PullRequest[] = [];
     const response = await client.iteratePullRequests(
+      PULL_REQUESTS_QUERY_STRING,
       query,
       [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       (pr) => {
@@ -116,6 +128,7 @@ describe('pull request resources', () => {
       'is:pr repo:JupiterOne/graph-whitehat is:closed updated:<=2019-04-01 ';
     const pullRequests: PullRequest[] = [];
     const data = await client.iteratePullRequests(
+      PULL_REQUESTS_QUERY_STRING,
       query,
       [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       (pr) => {
@@ -163,6 +176,7 @@ describe('organization resources', () => {
     const client = await getClient();
 
     const data = await client.fetchFromSingle(
+      REPOS_QUERY_STRING,
       GithubResource.Organization,
       [GithubResource.Repositories],
       { login: 'Kei-Institute' },
@@ -189,6 +203,7 @@ describe('organization resources', () => {
     const client = await getClient();
 
     const data = await client.fetchFromSingle(
+      USERS_QUERY_STRING,
       GithubResource.Organization,
       [GithubResource.OrganizationMembers],
       { login: 'Kei-Institute' },
@@ -215,6 +230,7 @@ describe('organization resources', () => {
     const client = await getClient();
 
     const data = await client.fetchFromSingle(
+      TEAM_MEMBERS_QUERY_STRING,
       GithubResource.Organization,
       [GithubResource.TeamMembers],
       { login: 'Kei-Institute' },
@@ -269,41 +285,6 @@ describe('organization resources', () => {
         role: 'MAINTAINER',
       },
     ]);
-    expect(data.rateLimitConsumed).toBe(3);
-  });
-
-  test('all resources', async () => {
-    p = setupGithubRecording({
-      directory: __dirname,
-      name: 'GitHubGraphQLClient.fetchOrganization.all',
-      options: {
-        matchRequestsBy: {
-          headers: false, //must not set order:false
-        },
-      },
-    });
-    const client = await getClient();
-
-    const data = await client.fetchFromSingle(
-      GithubResource.Organization,
-      [
-        GithubResource.TeamMembers,
-        GithubResource.OrganizationMembers,
-        GithubResource.Teams,
-        GithubResource.Repositories,
-        GithubResource.TeamRepositories,
-      ],
-      { login: 'Kei-Institute' },
-    );
-
-    expect(data.organization).toBeDefined();
-    expect(data.membersWithRole).toHaveLength(3);
-    expect(data.repositories).toHaveLength(1);
-    expect(data.teams).toHaveLength(3);
-    expect(data.members).toHaveLength(6);
-    //there's just one repo, but it's in a team that is a child of another team
-    //that means repos (above) = 1 but teamRepos (below) = 2
-    expect(data.teamRepositories).toHaveLength(2);
     expect(data.rateLimitConsumed).toBe(3);
   });
 });

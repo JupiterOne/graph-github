@@ -15,13 +15,13 @@ import {
   GithubResource,
   Node,
 } from './types';
-import buildGraphQL from './buildGraphQL';
+
 import {
   extractSelectedResources,
   mapResponseCursorsForQuery,
-  mapResponseResourcesForQuery,
 } from './response';
 import { ResourceIteratee } from '../../client';
+import { PULL_REQUESTS_QUERY_STRING } from './queries';
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -55,6 +55,7 @@ export class GitHubGraphQLClient {
    * @param iteratee - a callback function for each PullRequest
    */
   public async iteratePullRequests(
+    pullRequestQueryString: string,
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<PullRequest>,
@@ -64,11 +65,6 @@ export class GitHubGraphQLClient {
     let rateLimitConsumed = 0;
     let pullRequestsQueried = 0;
 
-    const pullRequestQueryString = buildGraphQL(
-      this.resourceMetadataMap,
-      GithubResource.PullRequests,
-      selectedResources,
-    );
     const queryPullRequests = this.graph(pullRequestQueryString);
 
     do {
@@ -137,6 +133,7 @@ export class GitHubGraphQLClient {
           } else {
             // Fetch the remaining inner resources on this PR (this should be rare)
             const innerResourceResponse = await this.fetchFromSingle(
+              PULL_REQUESTS_QUERY_STRING,
               GithubResource.PullRequest,
               selectedResources,
               {
@@ -192,6 +189,7 @@ export class GitHubGraphQLClient {
    * @param iteratee - a callback function for each Issue
    */
   public async iterateIssues(
+    issueQueryString: string,
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<Issue>,
@@ -201,11 +199,6 @@ export class GitHubGraphQLClient {
     let rateLimitConsumed = 0;
     let issuesQueried = 0;
 
-    const issueQueryString = buildGraphQL(
-      this.resourceMetadataMap,
-      GithubResource.Issues,
-      selectedResources,
-    );
     const queryIssues = this.graph(issueQueryString);
 
     do {
@@ -282,25 +275,16 @@ export class GitHubGraphQLClient {
    * @returns A destructured object that contains all resources that were queried for. Ex: { pullRequests: [{...}], commits: [{...}] }
    */
   public async fetchFromSingle<T extends GithubResource>(
+    queryString: string,
     baseResource: T,
     selectedResources: GithubResource[],
     extraQueryParams?: { [k: string]: string | number },
     queryCursors: ResourceMap<string> = {},
   ): Promise<QueryResponse> {
     let resources: ResourceMap<any> = {};
-    let queryResources = selectedResources;
     let rateLimitConsumed = 0;
 
     do {
-      const queryString = buildGraphQL(
-        this.resourceMetadataMap,
-        baseResource,
-        queryResources,
-      );
-      this.logger.info(
-        { queryString, extraQueryParams, queryCursors },
-        'Querying with GraphQL',
-      );
       const query = this.graph(queryString);
       const response = await this.retryGraphQL(async () => {
         return await query({
@@ -310,10 +294,7 @@ export class GitHubGraphQLClient {
       });
 
       const rateLimit = response.rateLimit;
-      this.logger.info(
-        { rateLimit },
-        'Rate limit response for Pull Request iteration',
-      );
+      this.logger.info({ rateLimit }, `Rate limit response for iteration`);
       rateLimitConsumed += rateLimit.cost;
 
       const pathToData =
@@ -330,11 +311,6 @@ export class GitHubGraphQLClient {
 
       resources = this.extractPageResources(pageResources, resources);
       queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
-      queryResources = mapResponseResourcesForQuery(
-        pageCursors,
-        this.resourceMetadataMap,
-        selectedResources,
-      ) as GithubResource[];
     } while (Object.values(queryCursors).some((c) => !!c));
 
     return {

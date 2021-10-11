@@ -29,12 +29,6 @@ export interface ResourceMetadata {
    */
   alternateGraphProperty?: string;
   /*
-   * A function that accepts child resources as a fully resolved GraphQL query
-   * and returns the GraphQL for this resource combined with the GraphQL for its
-   * children.
-   */
-  factory: NestedQueryFactory;
-  /*
    * The resources that are nested within this resource. For example, Team
    * Members is a child of Teams.
    */

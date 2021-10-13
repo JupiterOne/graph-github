@@ -8,6 +8,12 @@
  * The actual GraphQL query that hits the API will have substituted in the parameters
  * and expanded the fragments.
  *
+ * Note that if a GraphQL query pulls too much data, it will throw an error. This is especially
+ * likely in cases where there are many nested objects, such as TEAM_REPOS_QUERY_STRING below,
+ * where the query requests every repo assigned to every team. In such cases, the pagination
+ * can be altered by changing the "first" parameter. We have often done this from 100 to 25 in
+ * cases where we are concerned about large data returns.
+ *
  */
 
 export const ACCOUNT_QUERY_STRING = `query ($login: String!) {
@@ -110,7 +116,7 @@ export const TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $teams: String
 export const TEAM_REPOS_QUERY_STRING = `query ($login: String!, $teams: String, $teamRepositories: String) {
     organization(login: $login) {
         id
-        teams(first: 100, after: $teams) {
+        teams(first: 25, after: $teams) {
         edges {
           node {
             id

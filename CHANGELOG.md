@@ -8,8 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Crash on fetch-environments for private repos in accounts that are not
+  Enterprise level
+
 ### Added
 
+- Added support for ingesting labels on PullRequests
 - Added support for ingesting the following **new** entity:
 
 | Resources    | Entity `_type` | Entity `_class` |
@@ -24,7 +30,11 @@ and this project adheres to
 | `github_user`         | **CREATED**           | `github_issue`        |
 | `github_user`         | **ASSIGNED**          | `github_issue`        |
 
-- Added support for labels to PullRequests
+### Changed
+
+- Migrated fetch-collaborators to GraphQL instead of REST for improved
+  performance
+- Removed redundant property API calls in several GraphQL queries
 
 ## 1.5.1 - 2021-10-06
 
@@ -173,15 +183,15 @@ and this project adheres to
 
 - Properties added to graph objects:
 
-  | Entity / Relationship     | Property                                                   | Notes               |
-  | ------------------------- | ---------------------------------------------------------- | ------------------- |
-  | `github_repo_allows_team` | `adminPermission: boolean`                                 |                     |
-  | `github_repo_allows_team` | `maintainPermission: boolean`                              |                     |
-  | `github_repo_allows_team` | `pushPermission: boolean`                                  |                     |
-  | `github_repo_allows_team` | `triagePermission: boolean`                                |                     |
-  | `github_repo_allows_team` | `pullPermission: boolean`                                  |                     |
-  | `github_repo_allows_user` | `role: 'READ' | 'TRIAGE' | 'WRITE' | 'MAINTAIN' | 'ADMIN'` |                     |
-  | `github_user`             | `webLink: string`                                          | GitHub user profile |
+  | Entity / Relationship     | Property                      | Notes               |
+  | ------------------------- | ----------------------------- | ------------------- | ------- | ---------- | -------- | --- |
+  | `github_repo_allows_team` | `adminPermission: boolean`    |                     |
+  | `github_repo_allows_team` | `maintainPermission: boolean` |                     |
+  | `github_repo_allows_team` | `pushPermission: boolean`     |                     |
+  | `github_repo_allows_team` | `triagePermission: boolean`   |                     |
+  | `github_repo_allows_team` | `pullPermission: boolean`     |                     |
+  | `github_repo_allows_user` | `role: 'READ'                 | 'TRIAGE'            | 'WRITE' | 'MAINTAIN' | 'ADMIN'` |     |
+  | `github_user`             | `webLink: string`             | GitHub user profile |
 
 - Properties changed on graph objects:
 

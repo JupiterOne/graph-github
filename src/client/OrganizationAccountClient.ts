@@ -12,7 +12,6 @@ import {
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
-  TeamRepositoryPermission,
   GithubResource,
 } from './GraphQLClient';
 import {
@@ -27,7 +26,6 @@ import {
   DiffFiles,
   ReposListCommitsResponseItem,
 } from '../types';
-import sha from '../util/sha';
 import { request } from '@octokit/request';
 import { ResourceIteratee } from '../client';
 import {
@@ -186,36 +184,19 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getTeamRepositories(
-    teams: OrgTeamQueryResponse[],
-  ): Promise<OrgTeamRepoQueryResponse[]> {
-    // For certain unusually long account ids, GraphQL has been known to throw errors on this call
-    // This is a known bug from the Github side, but the exact triggering details are currently unknown
-    // Therefore, the GraphQL call is wrapped here in a try-catch, with a fallback to the REST call
-    // Note, however, that there are subtle differences in the response
-    // For example, if a team has a child team, and both have access to a CodeRepo, the GraphQL will
-    // return two team-repo entries - one showing the parent team allows the repo, and another showing
-    // that the child team also does. The REST client will only return the parent team entry.
+  async getTeamRepositories(): Promise<OrgTeamRepoQueryResponse[]> {
     let response;
-    try {
-      await this.queryGraphQL('team repositories', async () => {
-        const { teamRepositories, rateLimitConsumed } =
-          await this.v4.fetchFromSingle(
-            TEAM_REPOS_QUERY_STRING,
-            GithubResource.Organization,
-            [GithubResource.TeamRepositories],
-            { login: this.login },
-          );
-        response = teamRepositories as OrgTeamRepoQueryResponse[];
-        return rateLimitConsumed;
-      });
-    } catch (err) {
-      if (
-        err.message.includes('Organization query for team repositories failed')
-      ) {
-        return await this.getTeamReposWithRest(teams);
-      }
-    } //end of catch and REST call
+    await this.queryGraphQL('team repositories', async () => {
+      const { teamRepositories, rateLimitConsumed } =
+        await this.v4.fetchFromSingle(
+          TEAM_REPOS_QUERY_STRING,
+          GithubResource.Organization,
+          [GithubResource.TeamRepositories],
+          { login: this.login },
+        );
+      response = teamRepositories as OrgTeamRepoQueryResponse[];
+      return rateLimitConsumed;
+    });
     return response || [];
   }
 
@@ -281,65 +262,6 @@ export default class OrganizationAccountClient {
    * object hierarchy.
    *
    */
-
-  // This is a hack to allow large github accounts to bypass a Github error. Please delete this code once that error is fixed.
-  // Do not attempt to call REST version of getTeamRepositories without first calling getTeams
-  async getTeamReposWithRest(
-    teams: OrgTeamQueryResponse[],
-  ): Promise<OrgTeamRepoQueryResponse[]> {
-    let totalTeamRepos: OrgTeamRepoQueryResponse[] = [];
-    for (const team of teams) {
-      try {
-        const teamRepositories = await this.v3.paginate(
-          'GET /orgs/{org}/teams/{team_slug}/repos', // https://docs.github.com/en/rest/reference/teams#list-team-repositories
-          {
-            org: this.login,
-            team_slug: team.slug,
-            per_page: 100,
-          },
-          (response) => {
-            this.logger.info(
-              {
-                teamRepositoriesPageLength: response.data.length,
-                team: sha(team.slug),
-              },
-              'Fetched page of team repositories',
-            );
-            this.v3RateLimitConsumed++;
-            return response.data;
-          },
-        );
-        const processedTeamRepos = teamRepositories.map((tr) => {
-          let permission: TeamRepositoryPermission;
-          if (tr.permissions?.admin) {
-            permission = TeamRepositoryPermission.Admin;
-          } else if (tr.permissions?.push) {
-            permission = TeamRepositoryPermission.Write;
-          } else {
-            permission = TeamRepositoryPermission.Read;
-          }
-
-          return {
-            //more properties are possible, but we're only going to use id to make relationships
-            id: tr.node_id,
-            teams: team.id,
-            url: tr.url,
-            name: tr.name,
-            nameWithOwner: tr.full_name,
-            permission,
-            isPrivate: tr.private,
-            isArchived: tr.archived,
-            createdAt: tr.created_at as string,
-            updatedAt: tr.updated_at as string,
-          };
-        });
-        totalTeamRepos = totalTeamRepos.concat(processedTeamRepos);
-      } catch (err) {
-        throw new IntegrationError(err);
-      }
-    }
-    return totalTeamRepos || [];
-  }
 
   async getOrganizationSecrets(): Promise<SecretQueryResponse[]> {
     try {

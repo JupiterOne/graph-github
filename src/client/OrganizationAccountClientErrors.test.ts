@@ -33,7 +33,7 @@ describe('handles undefined resources from graphql', () => {
   });
 
   test('getTeamRepositories', async () => {
-    await expect(client.getTeamRepositories([])).resolves.toEqual([]);
+    await expect(client.getTeamRepositories()).resolves.toEqual([]);
   });
 
   test('getMembers', async () => {

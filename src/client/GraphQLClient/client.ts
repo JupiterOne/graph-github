@@ -71,7 +71,7 @@ export class GitHubGraphQLClient {
 
     do {
       this.logger.info(
-        { pullRequestQueryString, query, queryCursors },
+        { queryCursors },
         'Fetching batch of pull requests from GraphQL',
       );
       const pullRequestResponse = await this.retryGraphQL(async () => {
@@ -204,7 +204,7 @@ export class GitHubGraphQLClient {
 
     do {
       this.logger.info(
-        { issueQueryString, query, queryCursors },
+        { queryCursors },
         'Fetching batch of issues from GraphQL',
       );
       const issueResponse = await this.retryGraphQL(async () => {

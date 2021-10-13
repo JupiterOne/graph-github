@@ -1,21 +1,5 @@
 import { RepoKeyAndName, TokenPermissions } from '../../../types';
 
-export interface RepoCollaboratorQueryResponse {
-  id: number;
-  name?: string | null;
-  login: string;
-  permissions?: CollaboratorPermissions | undefined;
-  node_id: string; //Collaborator `node_id` matches a User `id`, whereas Collaborator `id` is just a unique index for the Collaborator object
-}
-
-export interface CollaboratorPermissions {
-  admin: boolean;
-  maintain?: boolean;
-  push: boolean;
-  triage?: boolean;
-  pull: boolean;
-}
-
 export interface OrgSecretRepoQueryResponse {
   //the repos that have been granted permission to an org secret
   id: number;

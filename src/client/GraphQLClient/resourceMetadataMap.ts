@@ -105,6 +105,11 @@ export default function (
     },
     [GithubResource.Repositories]: {
       graphRequestVariables: [`$${GithubResource.Repositories}: String`],
+      children: [GithubResource.Collaborators],
+    },
+    [GithubResource.Collaborators]: {
+      graphRequestVariables: [`$${GithubResource.Collaborators}: String`],
+      parent: GithubResource.Repositories,
     },
   };
 }

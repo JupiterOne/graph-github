@@ -24,6 +24,7 @@ export enum GithubResource {
   Reviews = 'reviews',
   Issues = 'issues',
   Assignees = 'assignees',
+  Collaborators = 'collaborators',
   LabelsOnIssues = 'labelsOnIssues',
 }
 
@@ -282,6 +283,13 @@ export interface Issue extends Node {
   labels?: Label[];
 }
 
+export interface Collaborator extends Node {
+  permission: string;
+  login: string;
+  name: string;
+  repositories: string; //the id of just one repo, despite the plurality of the entry
+}
+
 export interface GithubSearchResources {
   [GithubResource.Issues]: Issue[];
   [GithubResource.PullRequests]: PullRequest[];
@@ -290,6 +298,7 @@ export interface GithubSearchResources {
   [GithubResource.Labels]: Label[];
   [GithubResource.Reviews]: Review[];
   [GithubResource.Assignees]: Actor[];
+  [GithubResource.Collaborators]: Collaborator[];
 }
 
 export type GithubQueryResponse = {

@@ -301,7 +301,6 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
 export const COLLABORATORS_QUERY_STRING = `query ($login: String!, $repositories: String, $collaborators: String) {
   organization(login: $login) {
       id
-      ...organizationFields
       repositories(first: 100, after: $repositories) {
       edges {
         node {
@@ -310,8 +309,8 @@ export const COLLABORATORS_QUERY_STRING = `query ($login: String!, $repositories
       edges {
         node {
           id
+          name
           login
-
         }
         permission
       }

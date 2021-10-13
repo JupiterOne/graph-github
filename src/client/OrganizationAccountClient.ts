@@ -16,7 +16,6 @@ import {
   GithubResource,
 } from './GraphQLClient';
 import {
-  RepoCollaboratorQueryResponse,
   OrgAppQueryResponse,
   SecretQueryResponse,
   OrgSecretRepoQueryResponse,
@@ -34,6 +33,7 @@ import { ResourceIteratee } from '../client';
 import {
   PullRequest,
   Issue,
+  Collaborator,
   GithubQueryResponse as QueryResponse,
 } from './GraphQLClient/types';
 import {
@@ -45,6 +45,7 @@ import {
   PULL_REQUESTS_QUERY_STRING,
   TEAMS_QUERY_STRING,
   USERS_QUERY_STRING,
+  COLLABORATORS_QUERY_STRING,
 } from './GraphQLClient/queries';
 
 export default class OrganizationAccountClient {
@@ -218,6 +219,22 @@ export default class OrganizationAccountClient {
     return response || [];
   }
 
+  async getCollaborators(): Promise<Collaborator[]> {
+    let response;
+    await this.queryGraphQL('collaborators', async () => {
+      const { collaborators, rateLimitConsumed } =
+        await this.v4.fetchFromSingle(
+          COLLABORATORS_QUERY_STRING,
+          GithubResource.Organization,
+          [GithubResource.Collaborators],
+          { login: this.login },
+        );
+      response = collaborators as Collaborator[];
+      return rateLimitConsumed;
+    });
+    return response || [];
+  }
+
   async iteratePullRequestEntities(
     repo: RepoEntity,
     iteratee: ResourceIteratee<PullRequest>,
@@ -264,39 +281,6 @@ export default class OrganizationAccountClient {
    * object hierarchy.
    *
    */
-
-  async getRepoCollaboratorsWithRest(
-    repoName: string,
-  ): Promise<RepoCollaboratorQueryResponse[]> {
-    try {
-      const repoCollaborators = await this.v3.paginate(
-        'GET /repos/{owner}/{repo}/collaborators', // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
-        {
-          owner: this.login,
-          repo: repoName,
-          per_page: 100,
-        },
-        (response) => {
-          this.logger.info('Fetched page of repo collaborators');
-          this.v3RateLimitConsumed++;
-          return response.data;
-        },
-      );
-      return repoCollaborators || [];
-    } catch (err) {
-      //this method is called for every repo in the integration, but some might have special permissions restrictions
-      //if we fail for one repo, we don't want to fail the whole collaborators step
-      this.logger.warn(
-        {
-          err: err,
-          repo: repoName,
-          endpoint: `/repos/${this.login}/${repoName}/collaborators`,
-        },
-        `Failed to retrieve collaborators for repo ${repoName}, proceeding to other repos`,
-      );
-      return [];
-    }
-  }
 
   // This is a hack to allow large github accounts to bypass a Github error. Please delete this code once that error is fixed.
   // Do not attempt to call REST version of getTeamRepositories without first calling getTeams
@@ -449,11 +433,18 @@ export default class OrganizationAccountClient {
       );
       return repoEnvironments || [];
     } catch (err) {
-      this.logger.warn(
-        {},
-        'Error while attempting to ingest repo environments',
-      );
-      throw new IntegrationError(err);
+      if (err.status === 404) {
+        //private repos can only use environments in Enterprise level GitHub accounts
+        //you get 404 if you try to call the REST API for environments on a private repo otherwise
+        //but we don't know whether the account is Enterprise level, so we have to try private repos
+        return [];
+      } else {
+        this.logger.warn(
+          {},
+          `Error while attempting to ingest environments for repo ${repoName}`,
+        );
+        throw new IntegrationError(err);
+      }
     }
   }
 

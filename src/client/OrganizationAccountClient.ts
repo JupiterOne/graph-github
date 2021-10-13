@@ -218,13 +218,14 @@ export default class OrganizationAccountClient {
 
   async iteratePullRequestEntities(
     repo: RepoEntity,
+    lastExecutionTime: string, //expect .toISOString format, such as 2011-10-05T14:48:00.000Z or just 2011-10-05
     iteratee: ResourceIteratee<PullRequest>,
   ): Promise<QueryResponse> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
       return { rateLimitConsumed: 0 };
     }
-    const query = `is:pr repo:${repo.fullName}`;
+    const query = `is:pr repo:${repo.fullName} updated:>=${lastExecutionTime}`;
     return await this.v4.iteratePullRequests(
       PULL_REQUESTS_QUERY_STRING,
       query,
@@ -235,6 +236,7 @@ export default class OrganizationAccountClient {
 
   async iterateIssueEntities(
     repo: RepoEntity,
+    lastExecutionTime: string, //expect .toISOString format, such as 2011-10-05T14:48:00.000Z or just 2011-10-05
     iteratee: ResourceIteratee<Issue>,
   ): Promise<QueryResponse> {
     //issues and PRs are actually the same in the API
@@ -244,7 +246,7 @@ export default class OrganizationAccountClient {
       this.logger.info('Account not authorized for ingesting issues.');
       return { rateLimitConsumed: 0 };
     }
-    const query = `is:issue repo:${repo.fullName}`;
+    const query = `is:issue repo:${repo.fullName} updated:>=${lastExecutionTime}`;
     return await this.v4.iterateIssues(
       ISSUES_QUERY_STRING,
       query,

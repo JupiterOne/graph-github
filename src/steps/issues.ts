@@ -24,12 +24,19 @@ import {
   GITHUB_MEMBER_BY_LOGIN_MAP,
 } from '../constants';
 
-export async function fetchIssues({
-  instance,
-  logger,
-  jobState,
-}: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const config = instance.config;
+export async function fetchIssues(
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
+) {
+  const config = context.instance.config;
+  const jobState = context.jobState;
+  const logger = context.logger;
+  const lastSuccessfulSyncTime = context.executionHistory.lastSuccessful
+    ?.startedOn
+    ? context.executionHistory.lastSuccessful?.startedOn
+    : 0;
+  const lastSuccessfulExecution = new Date(
+    lastSuccessfulSyncTime,
+  ).toISOString();
   const apiClient = createAPIClient(config, logger);
 
   const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
@@ -45,65 +52,69 @@ export async function fetchIssues({
     { _type: GITHUB_REPO_ENTITY_TYPE },
     async (repoEntity) => {
       try {
-        await apiClient.iterateIssues(repoEntity, async (issue) => {
-          const issueEntity = (await jobState.addEntity(
-            toIssueEntity(issue, repoEntity.name),
-          )) as IssueEntity;
+        await apiClient.iterateIssues(
+          repoEntity,
+          lastSuccessfulExecution,
+          async (issue) => {
+            const issueEntity = (await jobState.addEntity(
+              toIssueEntity(issue, repoEntity.name),
+            )) as IssueEntity;
 
-          await jobState.addRelationship(
-            createDirectRelationship({
-              _class: RelationshipClass.HAS,
-              from: repoEntity,
-              to: issueEntity,
-            }),
-          );
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.HAS,
+                from: repoEntity,
+                to: issueEntity,
+              }),
+            );
 
-          if (issue.author) {
-            if (memberByLoginMap[issue.author.login]) {
-              await jobState.addRelationship(
-                createDirectRelationship({
-                  _class: RelationshipClass.CREATED,
-                  from: memberByLoginMap[issue.author.login],
-                  to: issueEntity,
-                }),
-              );
-            } else {
-              //we don't recognize this author - make a mapped relationship
-              await jobState.addRelationship(
-                createUnknownUserIssueRelationship(
-                  issue.author.login,
-                  GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
-                  RelationshipClass.CREATED,
-                  issueEntity._key,
-                ),
-              );
-            }
-          }
-
-          if (issue.assignees) {
-            for (const assignee of issue.assignees) {
-              if (memberByLoginMap[assignee.login]) {
+            if (issue.author) {
+              if (memberByLoginMap[issue.author.login]) {
                 await jobState.addRelationship(
                   createDirectRelationship({
-                    _class: RelationshipClass.ASSIGNED,
-                    from: memberByLoginMap[assignee.login],
+                    _class: RelationshipClass.CREATED,
+                    from: memberByLoginMap[issue.author.login],
                     to: issueEntity,
                   }),
                 );
               } else {
-                //we don't recognize this assignee - make a mapped relationship
+                //we don't recognize this author - make a mapped relationship
                 await jobState.addRelationship(
                   createUnknownUserIssueRelationship(
-                    assignee.login,
-                    GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
-                    RelationshipClass.ASSIGNED,
+                    issue.author.login,
+                    GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
+                    RelationshipClass.CREATED,
                     issueEntity._key,
                   ),
                 );
               }
             }
-          }
-        });
+
+            if (issue.assignees) {
+              for (const assignee of issue.assignees) {
+                if (memberByLoginMap[assignee.login]) {
+                  await jobState.addRelationship(
+                    createDirectRelationship({
+                      _class: RelationshipClass.ASSIGNED,
+                      from: memberByLoginMap[assignee.login],
+                      to: issueEntity,
+                    }),
+                  );
+                } else {
+                  //we don't recognize this assignee - make a mapped relationship
+                  await jobState.addRelationship(
+                    createUnknownUserIssueRelationship(
+                      assignee.login,
+                      GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
+                      RelationshipClass.ASSIGNED,
+                      issueEntity._key,
+                    ),
+                  );
+                }
+              }
+            }
+          },
+        );
       } catch (err) {
         apiClient.logger.warn(
           err,

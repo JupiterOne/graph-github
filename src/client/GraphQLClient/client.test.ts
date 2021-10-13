@@ -137,7 +137,7 @@ describe('pull request resources', () => {
       },
     );
     expect(pullRequests.length).toEqual(4); // 2 rate limits
-    expect(data.rateLimitConsumed).toEqual(10); // 7 unaccounted for extras
+    expect(data.rateLimitConsumed).toEqual(9); // 7 unaccounted for extras
     let pullRequest = pullRequests[0]; // 2 extra
     expect(pullRequest.commits?.length).toEqual(4); // 1 extra rate limit (Actually 2 because 1 commit got filtered out)
     expect(pullRequest.reviews?.length).toEqual(4); // 1 extra rate limit

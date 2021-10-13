@@ -60,7 +60,7 @@ export class GitHubGraphQLClient {
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<PullRequest>,
-    limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
+    limit: number = 100, // requests PRs since last execution time, or upto this limit, whichever is less
   ): Promise<QueryResponse> {
     let queryCursors: ResourceMap<CursorHierarchy> = {};
     let rateLimitConsumed = 0;
@@ -80,7 +80,7 @@ export class GitHubGraphQLClient {
           ...queryCursors,
         });
       });
-      pullRequestsQueried += 25; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
+      pullRequestsQueried += 25;
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
         { rateLimit },
@@ -106,13 +106,17 @@ export class GitHubGraphQLClient {
         };
 
         // This indicates that we were not able to fetch all commits, reviews, etc for this PR
-        if (Object.keys(innerResourceCursors).length) {
+        // in the page of PRs, because some inner resource (eg. commit or review) had more than
+        // the limit number of entries (typically) 100. In that case, we have to go make a
+        // seperate API call for just that one PR so we can gather up all the inner resources
+        // before continuing on to process more PRs. This should be rare.
+        if (Object.values(innerResourceCursors).some((c) => c.hasNextPage)) {
           this.logger.info(
             {
               pageCursors: innerResourceCursors,
               pullRequest: pullRequestResponse.title,
             },
-            'Unable to fetch all inner resources. Attempting to fetch more.',
+            'More inner resources than fit in one page. Attempting to fetch more. (This should be rare).',
           );
 
           const urlPath = pullRequestResponse.url // ex: https://github.com/JupiterOne/graph-github/pull/1
@@ -194,7 +198,7 @@ export class GitHubGraphQLClient {
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<Issue>,
-    limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
+    limit: number = 100, // requests issues since last execution time, or upto this limit, whichever is less
   ): Promise<QueryResponse> {
     let queryCursors: ResourceMap<string> = {};
     let rateLimitConsumed = 0;
@@ -213,7 +217,7 @@ export class GitHubGraphQLClient {
           ...queryCursors,
         });
       });
-      issuesQueried += 25; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
+      issuesQueried += 25;
       const rateLimit = issueResponse.rateLimit;
       this.logger.info(
         { rateLimit },

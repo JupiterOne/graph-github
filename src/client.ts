@@ -256,13 +256,18 @@ export class APIClient {
   public async iteratePullRequests(
     repo: RepoEntity,
     logger: IntegrationLogger,
+    lastSuccessfulExecution: string,
     iteratee: ResourceIteratee<PullRequest>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     const { rateLimitConsumed } =
-      await this.accountClient.iteratePullRequestEntities(repo, iteratee);
+      await this.accountClient.iteratePullRequestEntities(
+        repo,
+        lastSuccessfulExecution,
+        iteratee,
+      );
     logger.info(
       { rateLimitConsumed },
       'Rate limit consumed while fetching Pull Requests.',
@@ -294,6 +299,7 @@ export class APIClient {
    */
   public async iterateIssues(
     repo: RepoEntity,
+    lastSuccessfulExecution: string,
     iteratee: ResourceIteratee<Issue>,
   ): Promise<void> {
     if (!this.accountClient) {
@@ -301,7 +307,11 @@ export class APIClient {
     }
     if (this.scopes.repoIssues) {
       const { rateLimitConsumed } =
-        await this.accountClient.iterateIssueEntities(repo, iteratee);
+        await this.accountClient.iterateIssueEntities(
+          repo,
+          lastSuccessfulExecution,
+          iteratee,
+        );
       this.logger.info(
         { rateLimitConsumed },
         'Rate limit consumed while fetching Issues.',

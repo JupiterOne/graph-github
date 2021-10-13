@@ -197,7 +197,6 @@ export default {
     createdViaEmail # boolean
     databaseId
     isPinned # boolean
-    # labels # these will be child objects 
     lastEditedAt
     locked # boolean
     # milestone # a Milestone object, could put the fields in-line like author

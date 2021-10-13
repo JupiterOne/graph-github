@@ -14,7 +14,6 @@ export const ACCOUNT_QUERY_STRING = `query ($login: String!) {
     organization(login: $login) {
         id
         ...organizationFields
-
       }
 ...rateLimit
   }`;
@@ -22,13 +21,11 @@ export const ACCOUNT_QUERY_STRING = `query ($login: String!) {
 export const REPOS_QUERY_STRING = `query ($login: String!, $repositories: String) {
       organization(login: $login) {
           id
-          ...organizationFields
           repositories(first: 100, after: $repositories) {
           edges {
             node {
               id
               ...repositoryFields
-
             }
           }
           pageInfo {
@@ -43,13 +40,11 @@ export const REPOS_QUERY_STRING = `query ($login: String!, $repositories: String
 export const USERS_QUERY_STRING = `query ($login: String!, $membersWithRole: String) {
     organization(login: $login) {
         id
-        ...organizationFields
         membersWithRole(first: 100, after: $membersWithRole) {
         edges {
           node {
             id
             ...userFields
-
           }
           ...userEdgeFields
         }
@@ -65,13 +60,11 @@ export const USERS_QUERY_STRING = `query ($login: String!, $membersWithRole: Str
 export const TEAMS_QUERY_STRING = `query ($login: String!, $teams: String) {
     organization(login: $login) {
         id
-        ...organizationFields
         teams(first: 100, after: $teams) {
         edges {
           node {
             id
             ...teamFields
-
           }
         }
         pageInfo {
@@ -86,18 +79,15 @@ export const TEAMS_QUERY_STRING = `query ($login: String!, $teams: String) {
 export const TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $teams: String, $members: String) {
     organization(login: $login) {
         id
-        ...organizationFields
         teams(first: 100, after: $teams) {
         edges {
           node {
             id
-            ...teamFields
             members(first: 100, after: $members) {
         edges {
           node {
             id
             ...teamMemberFields
-
           }
           ...teamMemberEdgeFields
         }
@@ -120,12 +110,10 @@ export const TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $teams: String
 export const TEAM_REPOS_QUERY_STRING = `query ($login: String!, $teams: String, $teamRepositories: String) {
     organization(login: $login) {
         id
-        ...organizationFields
         teams(first: 100, after: $teams) {
         edges {
           node {
             id
-            ...teamFields
             repositories(first: 100, after: $teamRepositories) {
         edges {
           node {
@@ -309,3 +297,36 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
       }
 ...rateLimit
   }`;
+
+export const COLLABORATORS_QUERY_STRING = `query ($login: String!, $repositories: String, $collaborators: String) {
+  organization(login: $login) {
+      id
+      ...organizationFields
+      repositories(first: 100, after: $repositories) {
+      edges {
+        node {
+          id
+          collaborators(first: 100, after: $collaborators) {
+      edges {
+        node {
+          id
+          login
+
+        }
+        permission
+      }
+      pageInfo {
+endCursor
+hasNextPage
+}
+    }
+        }
+      }
+      pageInfo {
+endCursor
+hasNextPage
+}
+    }
+    }
+...rateLimit
+}`;

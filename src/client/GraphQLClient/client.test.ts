@@ -95,7 +95,6 @@ describe('pull request resources', () => {
     expect(pullRequests).toMatchSnapshot();
   });
 
-  /* problem with thus test - commenting for now while I figure it out
   test('pullRequest pagination only', async () => {
     p = setupGithubRecording({
       directory: __dirname,
@@ -103,7 +102,7 @@ describe('pull request resources', () => {
     });
     const client = await getClient();
 
-    const query = 'is:pr repo:JupiterOne/graph-whitehat is:open';
+    const query = 'is:pr repo:Kei-Institute/Test-repo is:open';
     const pullRequests: PullRequest[] = [];
     const response = await client.iteratePullRequests(
       PULL_REQUESTS_QUERY_STRING,
@@ -116,7 +115,7 @@ describe('pull request resources', () => {
     expect(response.rateLimitConsumed).toEqual(3);
     expect(pullRequests.length).toEqual(6);
     expect(pullRequests).toMatchSnapshot();
-  }); */
+  });
 
   test('pullRequest with inner pagination', async () => {
     p = setupGithubRecording({

@@ -25,12 +25,11 @@ import {
   OrgTeamRepoQueryResponse,
 } from './client/GraphQLClient';
 import {
-  RepoCollaboratorQueryResponse,
   OrgAppQueryResponse,
   SecretQueryResponse,
   RepoEnvironmentQueryResponse,
 } from './client/RESTClient/types';
-import { PullRequest, Issue } from './client/GraphQLClient/types';
+import { PullRequest, Issue, Collaborator } from './client/GraphQLClient/types';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -82,7 +81,8 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const members: OrgMemberQueryResponse[] = await this.accountClient.getMembers();
+    const members: OrgMemberQueryResponse[] =
+      await this.accountClient.getMembers();
     for (const member of members) {
       await iteratee(member);
     }
@@ -100,14 +100,13 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
-    const allTeamMembers: OrgTeamMemberQueryResponse[] = await this.accountClient.getTeamMembers();
+    const allTeamMembers: OrgTeamMemberQueryResponse[] =
+      await this.accountClient.getTeamMembers();
 
     // Check 'useRestForTeamRepos' config variable as a hack to allow large github
     // accounts to bypass a Github error. Please delete this code once that error is fixed.
-    const allTeamRepos: OrgTeamRepoQueryResponse[] = this.config
-      .useRestForTeamRepos
-      ? await this.accountClient.getTeamReposWithRest(teams)
-      : await this.accountClient.getTeamRepositories(teams);
+    const allTeamRepos: OrgTeamRepoQueryResponse[] =
+      await this.accountClient.getTeamRepositories();
 
     for (const team of teams) {
       team.members = allTeamMembers.filter(
@@ -130,9 +129,8 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.orgAdmin) {
-      const apps: OrgAppQueryResponse[] = await this.accountClient.getInstalledApps(
-        this.ghsToken,
-      );
+      const apps: OrgAppQueryResponse[] =
+        await this.accountClient.getInstalledApps(this.ghsToken);
       for (const app of apps) {
         await iteratee(app);
       }
@@ -152,7 +150,8 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.orgSecrets) {
-      const secrets: SecretQueryResponse[] = await this.accountClient.getOrganizationSecrets();
+      const secrets: SecretQueryResponse[] =
+        await this.accountClient.getOrganizationSecrets();
       for (const secret of secrets) {
         //set repos that use this secret, so we can make relationships in iteratree
         secret.visibility === 'all'
@@ -163,9 +162,8 @@ export class APIClient {
           secret.visibility === 'private'
         ) {
           //go get the list of repos and add them
-          const reposForOrgSecret = await this.accountClient.getReposForOrgSecret(
-            secret.name,
-          );
+          const reposForOrgSecret =
+            await this.accountClient.getReposForOrgSecret(secret.name);
           const secretRepos: RepoKeyAndName[] = [];
           for (const repo of reposForOrgSecret) {
             const repoTag = allRepos.find((r) => r._key === repo.node_id);
@@ -193,9 +191,8 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.repoSecrets) {
-      const repoSecrets: SecretQueryResponse[] = await this.accountClient.getRepoSecrets(
-        repoName,
-      );
+      const repoSecrets: SecretQueryResponse[] =
+        await this.accountClient.getRepoSecrets(repoName);
       for (const secret of repoSecrets) {
         await iteratee(secret);
       }
@@ -216,9 +213,8 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.repoActions) {
-      const environments: RepoEnvironmentQueryResponse[] = await this.accountClient.getEnvironments(
-        repoName,
-      );
+      const environments: RepoEnvironmentQueryResponse[] =
+        await this.accountClient.getEnvironments(repoName);
       for (const env of environments) {
         env.envSecrets = [];
         if (this.scopes.repoSecrets) {
@@ -245,7 +241,8 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const repos: OrgRepoQueryResponse[] = await this.accountClient.getRepositories();
+    const repos: OrgRepoQueryResponse[] =
+      await this.accountClient.getRepositories();
     for (const repo of repos) {
       await iteratee(repo);
     }
@@ -259,14 +256,18 @@ export class APIClient {
   public async iteratePullRequests(
     repo: RepoEntity,
     logger: IntegrationLogger,
+    lastSuccessfulExecution: string,
     iteratee: ResourceIteratee<PullRequest>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const {
-      rateLimitConsumed,
-    } = await this.accountClient.iteratePullRequestEntities(repo, iteratee);
+    const { rateLimitConsumed } =
+      await this.accountClient.iteratePullRequestEntities(
+        repo,
+        lastSuccessfulExecution,
+        iteratee,
+      );
     logger.info(
       { rateLimitConsumed },
       'Rate limit consumed while fetching Pull Requests.',
@@ -279,15 +280,13 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateCollaborators(
-    repo: RepoKeyAndName,
-    iteratee: ResourceIteratee<RepoCollaboratorQueryResponse>,
+    iteratee: ResourceIteratee<Collaborator>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const collaborators: RepoCollaboratorQueryResponse[] = await this.accountClient.getRepoCollaboratorsWithRest(
-      repo.name,
-    );
+
+    const collaborators = await this.accountClient.getCollaborators();
     for (const collab of collaborators) {
       await iteratee(collab);
     }
@@ -300,15 +299,19 @@ export class APIClient {
    */
   public async iterateIssues(
     repo: RepoEntity,
+    lastSuccessfulExecution: string,
     iteratee: ResourceIteratee<Issue>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.repoIssues) {
-      const {
-        rateLimitConsumed,
-      } = await this.accountClient.iterateIssueEntities(repo, iteratee);
+      const { rateLimitConsumed } =
+        await this.accountClient.iterateIssueEntities(
+          repo,
+          lastSuccessfulExecution,
+          iteratee,
+        );
       this.logger.info(
         { rateLimitConsumed },
         'Rate limit consumed while fetching Issues.',

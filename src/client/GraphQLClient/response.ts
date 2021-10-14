@@ -110,36 +110,36 @@ function extractSelectedResourceFromData(
 } {
   const node: { [key: string]: any } = { ...edge };
 
-  for (const [key, value] of Object.entries(data)) {
-    if (value && typeof value === 'object' && value.edges) {
-      const nestedResource = Object.keys(resourceMetadataMap).find(
-        (resourceKey) => {
-          return (
-            (resourceMetadataMap[resourceKey].alternateGraphProperty ??
-              resourceKey) === key &&
-            (!resourceMetadataMap[resourceKey].parent ||
-              (!!parentResource &&
-                resourceMetadataMap[resourceKey].parent === selectedResource))
-          );
-        },
-      ) as GithubResource | undefined;
-      if (!nestedResource) {
-        continue;
-      }
+  if (data) {
+    for (const [key, value] of Object.entries(data)) {
+      if (value && typeof value === 'object' && value.edges) {
+        const nestedResource = Object.keys(resourceMetadataMap).find(
+          (resourceKey) => {
+            return (
+              (resourceMetadataMap[resourceKey].alternateGraphProperty ??
+                resourceKey) === key &&
+              (!resourceMetadataMap[resourceKey].parent ||
+                (!!parentResource &&
+                  resourceMetadataMap[resourceKey].parent === selectedResource))
+            );
+          },
+        ) as GithubResource | undefined;
+        if (!nestedResource) {
+          continue;
+        }
 
-      const selected = selectedResources.includes(nestedResource);
-      const resourceMetadata = resourceMetadataMap[nestedResource];
-      const childSelected =
-        resourceMetadata.children &&
-        resourceMetadata.children.reduce((cs: boolean, child) => {
-          return cs || selectedResources.includes(child);
-        }, false);
+        const selected = selectedResources.includes(nestedResource);
+        const resourceMetadata = resourceMetadataMap[nestedResource];
+        const childSelected =
+          resourceMetadata.children &&
+          resourceMetadata.children.reduce((cs: boolean, child) => {
+            return cs || selectedResources.includes(child);
+          }, false);
 
-      if (!selected && !childSelected) {
-        continue;
-      }
+        if (!selected && !childSelected) {
+          continue;
+        }
 
-      if (value.pageInfo && value.pageInfo.hasNextPage) {
         if (parentResource) {
           if (!cursors[selectedResource]) {
             cursors[selectedResource] = { self: null, children: {} };
@@ -154,34 +154,36 @@ function extractSelectedResourceFromData(
           parentCursorHierarchy.children[nestedResource].push({
             self: value.pageInfo.endCursor,
             children: {},
+            hasNextPage: value.pageInfo.hasNextPage,
           });
         } else {
           cursors[nestedResource] = {
             self: value.pageInfo.endCursor,
             children: {},
+            hasNextPage: value.pageInfo.hasNextPage,
           };
         }
+
+        for (const child of value.edges) {
+          const response = extractSelectedResourceFromData(
+            child.node,
+            resourceMetadataMap,
+            resources,
+            cursors,
+            selectedResources,
+            nestedResource,
+            [selectedResource, node.id],
+            { ...child, node: undefined },
+          );
+          resources = response.resources;
+          cursors = response.cursors;
+        }
+
+        continue;
       }
 
-      for (const child of value.edges) {
-        const response = extractSelectedResourceFromData(
-          child.node,
-          resourceMetadataMap,
-          resources,
-          cursors,
-          selectedResources,
-          nestedResource,
-          [selectedResource, node.id],
-          { ...child, node: undefined },
-        );
-        resources = response.resources;
-        cursors = response.cursors;
-      }
-
-      continue;
+      node[key] = value;
     }
-
-    node[key] = value;
   }
 
   if (parentResource) {

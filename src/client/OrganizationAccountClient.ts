@@ -12,11 +12,9 @@ import {
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
-  TeamRepositoryPermission,
   GithubResource,
 } from './GraphQLClient';
 import {
-  RepoCollaboratorQueryResponse,
   OrgAppQueryResponse,
   SecretQueryResponse,
   OrgSecretRepoQueryResponse,
@@ -28,14 +26,25 @@ import {
   DiffFiles,
   ReposListCommitsResponseItem,
 } from '../types';
-import sha from '../util/sha';
 import { request } from '@octokit/request';
 import { ResourceIteratee } from '../client';
 import {
   PullRequest,
   Issue,
+  Collaborator,
   GithubQueryResponse as QueryResponse,
 } from './GraphQLClient/types';
+import {
+  ACCOUNT_QUERY_STRING,
+  REPOS_QUERY_STRING,
+  TEAM_MEMBERS_QUERY_STRING,
+  TEAM_REPOS_QUERY_STRING,
+  ISSUES_QUERY_STRING,
+  PULL_REQUESTS_QUERY_STRING,
+  TEAMS_QUERY_STRING,
+  USERS_QUERY_STRING,
+  COLLABORATORS_QUERY_STRING,
+} from './GraphQLClient/queries';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -95,6 +104,7 @@ export default class OrganizationAccountClient {
     let response;
     await this.queryGraphQL('account and related resources', async () => {
       const { organization, rateLimitConsumed } = await this.v4.fetchFromSingle(
+        ACCOUNT_QUERY_STRING,
         GithubResource.Organization,
         [],
         {
@@ -110,14 +120,13 @@ export default class OrganizationAccountClient {
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
     let response;
     await this.queryGraphQL('members', async () => {
-      const {
-        membersWithRole,
-        rateLimitConsumed,
-      } = await this.v4.fetchFromSingle(
-        GithubResource.Organization,
-        [GithubResource.OrganizationMembers],
-        { login: this.login },
-      );
+      const { membersWithRole, rateLimitConsumed } =
+        await this.v4.fetchFromSingle(
+          USERS_QUERY_STRING,
+          GithubResource.Organization,
+          [GithubResource.OrganizationMembers],
+          { login: this.login },
+        );
       response = membersWithRole;
       return rateLimitConsumed;
     });
@@ -127,10 +136,8 @@ export default class OrganizationAccountClient {
   async getTeams(): Promise<OrgTeamQueryResponse[]> {
     let response;
     await this.queryGraphQL('teams', async () => {
-      const {
-        teams,
-        rateLimitConsumed,
-      } = await this.v4.fetchFromSingle(
+      const { teams, rateLimitConsumed } = await this.v4.fetchFromSingle(
+        TEAMS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.Teams],
         { login: this.login },
@@ -144,10 +151,8 @@ export default class OrganizationAccountClient {
   async getTeamMembers(): Promise<OrgTeamMemberQueryResponse[]> {
     let response;
     await this.queryGraphQL('team members', async () => {
-      const {
-        members,
-        rateLimitConsumed,
-      } = await this.v4.fetchFromSingle(
+      const { members, rateLimitConsumed } = await this.v4.fetchFromSingle(
+        TEAM_MEMBERS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.TeamMembers],
         { login: this.login },
@@ -161,10 +166,8 @@ export default class OrganizationAccountClient {
   async getRepositories(slugs?: string[]): Promise<OrgRepoQueryResponse[]> {
     let response;
     await this.queryGraphQL('repositories', async () => {
-      const {
-        repositories,
-        rateLimitConsumed,
-      } = await this.v4.fetchFromSingle(
+      const { repositories, rateLimitConsumed } = await this.v4.fetchFromSingle(
+        REPOS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.Repositories],
         { login: this.login },
@@ -181,50 +184,50 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getTeamRepositories(
-    teams: OrgTeamQueryResponse[],
-  ): Promise<OrgTeamRepoQueryResponse[]> {
-    // For certain unusually long account ids, GraphQL has been known to throw errors on this call
-    // This is a known bug from the Github side, but the exact triggering details are currently unknown
-    // Therefore, the GraphQL call is wrapped here in a try-catch, with a fallback to the REST call
-    // Note, however, that there are subtle differences in the response
-    // For example, if a team has a child team, and both have access to a CodeRepo, the GraphQL will
-    // return two team-repo entries - one showing the parent team allows the repo, and another showing
-    // that the child team also does. The REST client will only return the parent team entry.
+  async getTeamRepositories(): Promise<OrgTeamRepoQueryResponse[]> {
     let response;
-    try {
-      await this.queryGraphQL('team repositories', async () => {
-        const {
-          teamRepositories,
-          rateLimitConsumed,
-        } = await this.v4.fetchFromSingle(
+    await this.queryGraphQL('team repositories', async () => {
+      const { teamRepositories, rateLimitConsumed } =
+        await this.v4.fetchFromSingle(
+          TEAM_REPOS_QUERY_STRING,
           GithubResource.Organization,
           [GithubResource.TeamRepositories],
           { login: this.login },
         );
-        response = teamRepositories as OrgTeamRepoQueryResponse[];
-        return rateLimitConsumed;
-      });
-    } catch (err) {
-      if (
-        err.message.includes('Organization query for team repositories failed')
-      ) {
-        return await this.getTeamReposWithRest(teams);
-      }
-    } //end of catch and REST call
+      response = teamRepositories as OrgTeamRepoQueryResponse[];
+      return rateLimitConsumed;
+    });
+    return response || [];
+  }
+
+  async getCollaborators(): Promise<Collaborator[]> {
+    let response;
+    await this.queryGraphQL('collaborators', async () => {
+      const { collaborators, rateLimitConsumed } =
+        await this.v4.fetchFromSingle(
+          COLLABORATORS_QUERY_STRING,
+          GithubResource.Organization,
+          [GithubResource.Collaborators],
+          { login: this.login },
+        );
+      response = collaborators as Collaborator[];
+      return rateLimitConsumed;
+    });
     return response || [];
   }
 
   async iteratePullRequestEntities(
     repo: RepoEntity,
+    lastExecutionTime: string, //expect .toISOString format, such as 2011-10-05T14:48:00.000Z or just 2011-10-05
     iteratee: ResourceIteratee<PullRequest>,
   ): Promise<QueryResponse> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
       return { rateLimitConsumed: 0 };
     }
-    const query = `is:pr repo:${repo.fullName}`;
+    const query = `is:pr repo:${repo.fullName} updated:>=${lastExecutionTime}`;
     return await this.v4.iteratePullRequests(
+      PULL_REQUESTS_QUERY_STRING,
       query,
       [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       iteratee,
@@ -233,6 +236,7 @@ export default class OrganizationAccountClient {
 
   async iterateIssueEntities(
     repo: RepoEntity,
+    lastExecutionTime: string, //expect .toISOString format, such as 2011-10-05T14:48:00.000Z or just 2011-10-05
     iteratee: ResourceIteratee<Issue>,
   ): Promise<QueryResponse> {
     //issues and PRs are actually the same in the API
@@ -242,8 +246,9 @@ export default class OrganizationAccountClient {
       this.logger.info('Account not authorized for ingesting issues.');
       return { rateLimitConsumed: 0 };
     }
-    const query = `is:issue repo:${repo.fullName}`;
+    const query = `is:issue repo:${repo.fullName} updated:>=${lastExecutionTime}`;
     return await this.v4.iterateIssues(
+      ISSUES_QUERY_STRING,
       query,
       [GithubResource.Assignees, GithubResource.LabelsOnIssues],
       iteratee,
@@ -259,98 +264,6 @@ export default class OrganizationAccountClient {
    * object hierarchy.
    *
    */
-
-  async getRepoCollaboratorsWithRest(
-    repoName: string,
-  ): Promise<RepoCollaboratorQueryResponse[]> {
-    try {
-      const repoCollaborators = await this.v3.paginate(
-        'GET /repos/{owner}/{repo}/collaborators', // https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
-        {
-          owner: this.login,
-          repo: repoName,
-          per_page: 100,
-        },
-        (response) => {
-          this.logger.info('Fetched page of repo collaborators');
-          this.v3RateLimitConsumed++;
-          return response.data;
-        },
-      );
-      return repoCollaborators || [];
-    } catch (err) {
-      //this method is called for every repo in the integration, but some might have special permissions restrictions
-      //if we fail for one repo, we don't want to fail the whole collaborators step
-      this.logger.warn(
-        {
-          err: err,
-          repo: repoName,
-          endpoint: `/repos/${this.login}/${repoName}/collaborators`,
-        },
-        `Failed to retrieve collaborators for repo ${repoName}, proceeding to other repos`,
-      );
-      return [];
-    }
-  }
-
-  // This is a hack to allow large github accounts to bypass a Github error. Please delete this code once that error is fixed.
-  // Do not attempt to call REST version of getTeamRepositories without first calling getTeams
-  async getTeamReposWithRest(
-    teams: OrgTeamQueryResponse[],
-  ): Promise<OrgTeamRepoQueryResponse[]> {
-    let totalTeamRepos: OrgTeamRepoQueryResponse[] = [];
-    for (const team of teams) {
-      try {
-        const teamRepositories = await this.v3.paginate(
-          'GET /orgs/{org}/teams/{team_slug}/repos', // https://docs.github.com/en/rest/reference/teams#list-team-repositories
-          {
-            org: this.login,
-            team_slug: team.slug,
-            per_page: 100,
-          },
-          (response) => {
-            this.logger.info(
-              {
-                teamRepositoriesPageLength: response.data.length,
-                team: sha(team.slug),
-              },
-              'Fetched page of team repositories',
-            );
-            this.v3RateLimitConsumed++;
-            return response.data;
-          },
-        );
-        const processedTeamRepos = teamRepositories.map((tr) => {
-          let permission: TeamRepositoryPermission;
-          if (tr.permissions?.admin) {
-            permission = TeamRepositoryPermission.Admin;
-          } else if (tr.permissions?.push) {
-            permission = TeamRepositoryPermission.Write;
-          } else {
-            permission = TeamRepositoryPermission.Read;
-          }
-
-          return {
-            //more properties are possible, but we're only going to use id to make relationships
-            id: tr.node_id,
-            teams: team.id,
-            url: tr.url,
-            name: tr.name,
-            nameWithOwner: tr.full_name,
-            permission,
-            isPrivate: tr.private,
-            isArchived: tr.archived,
-            createdAt: tr.created_at as string,
-            updatedAt: tr.updated_at as string,
-          };
-        });
-        totalTeamRepos = totalTeamRepos.concat(processedTeamRepos);
-      } catch (err) {
-        throw new IntegrationError(err);
-      }
-    }
-    return totalTeamRepos || [];
-  }
 
   async getOrganizationSecrets(): Promise<SecretQueryResponse[]> {
     try {
@@ -444,11 +357,18 @@ export default class OrganizationAccountClient {
       );
       return repoEnvironments || [];
     } catch (err) {
-      this.logger.warn(
-        {},
-        'Error while attempting to ingest repo environments',
-      );
-      throw new IntegrationError(err);
+      if (err.status === 404) {
+        //private repos can only use environments in Enterprise level GitHub accounts
+        //you get 404 if you try to call the REST API for environments on a private repo otherwise
+        //but we don't know whether the account is Enterprise level, so we have to try private repos
+        return [];
+      } else {
+        this.logger.warn(
+          {},
+          `Error while attempting to ingest environments for repo ${repoName}`,
+        );
+        throw new IntegrationError(err);
+      }
     }
   }
 

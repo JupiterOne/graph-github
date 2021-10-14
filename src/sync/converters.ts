@@ -64,12 +64,11 @@ import {
   PullRequest,
   Review,
   Issue,
+  Collaborator,
 } from '../client/GraphQLClient';
 import {
-  RepoCollaboratorQueryResponse,
   OrgAppQueryResponse,
   SecretQueryResponse,
-  CollaboratorPermissions,
   RepoEnvironmentQueryResponse,
 } from '../client/RESTClient/types';
 
@@ -344,12 +343,12 @@ export function toOrganizationMemberEntityFromTeamMember(
 }
 
 export function toOrganizationCollaboratorEntity(
-  data: RepoCollaboratorQueryResponse,
+  data: Collaborator,
 ): UserEntity {
   const userEntity: UserEntity = {
     _class: GITHUB_COLLABORATOR_ENTITY_CLASS,
     _type: GITHUB_COLLABORATOR_ENTITY_TYPE,
-    _key: data.node_id,
+    _key: data.id,
     login: data.login,
     username: data.login,
     displayName: data.name || data.login,
@@ -358,7 +357,7 @@ export function toOrganizationCollaboratorEntity(
     role: 'OUTSIDE',
     siteAdmin: false,
     webLink: 'https://github.com/' + data.login,
-    node: data.node_id,
+    node: data.id,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -446,35 +445,26 @@ export function createRepoAllowsTeamRelationship(
 }
 
 export function createRepoAllowsUserRelationship(
-  repo: RepoKeyAndName,
+  repoId: string,
   user: UserEntity,
-  permissions?: CollaboratorPermissions,
+  permission: string,
 ): RepoAllowRelationship {
-  let role = 'READ';
-  if (permissions?.triage) {
-    role = 'TRIAGE';
-  }
-  if (permissions?.push) {
-    role = 'WRITE';
-  }
-  if (permissions?.maintain) {
-    role = 'MAINTAIN';
-  }
-  if (permissions?.admin) {
-    role = 'ADMIN';
-  }
+  const adminPermission = permission === 'ADMIN';
+  const maintainPermission = adminPermission || permission === 'MAINTAIN';
+  const pushPermission = maintainPermission || permission === 'WRITE';
+  const triagePermission = pushPermission || permission === 'TRIAGE';
   return {
-    _key: `${repo._key}|allows|${user._key}`,
+    _key: `${repoId}|allows|${user._key}`,
     _class: RelationshipClass.ALLOWS,
     _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-    _fromEntityKey: repo._key,
+    _fromEntityKey: repoId,
     _toEntityKey: user._key,
     displayName: RelationshipClass.ALLOWS,
-    role: role,
-    adminPermission: permissions?.admin || false,
-    maintainPermission: permissions?.maintain || false,
-    pushPermission: permissions?.push || false,
-    triagePermission: permissions?.triage || false,
+    role: permission,
+    adminPermission: adminPermission,
+    maintainPermission: maintainPermission,
+    pushPermission: pushPermission,
+    triagePermission: triagePermission,
     pullPermission: true, //always true if there is a relationship
   };
 }

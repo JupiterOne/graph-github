@@ -36,12 +36,19 @@ import {
 } from '../sync/converters';
 import { cloneDeep } from 'lodash';
 
-export async function fetchPrs({
-  instance,
-  logger,
-  jobState,
-}: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const config = instance.config;
+export async function fetchPrs(
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
+) {
+  const config = context.instance.config;
+  const jobState = context.jobState;
+  const logger = context.logger;
+  const lastSuccessfulSyncTime = context.executionHistory.lastSuccessful
+    ?.startedOn
+    ? context.executionHistory.lastSuccessful?.startedOn
+    : 0;
+  const lastSuccessfulExecution = new Date(
+    lastSuccessfulSyncTime,
+  ).toISOString();
   const apiClient = createAPIClient(config, logger);
   const accountEntity = await jobState.getData<AccountEntity>(
     DATA_ACCOUNT_ENTITY,
@@ -86,6 +93,7 @@ export async function fetchPrs({
         await apiClient.iteratePullRequests(
           repoEntity,
           logger,
+          lastSuccessfulExecution,
           async (pullRequest) => {
             const pr = toPullRequestEntity(
               pullRequest,

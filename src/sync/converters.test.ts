@@ -250,7 +250,7 @@ describe('toOrganizationMemberEntity', () => {
 
 describe('toOrganizationCollaboratorEntity', () => {
   const apiResponse = {
-    node_id: 'member-node-id',
+    id: 'member-node-id',
     login: 'user-login',
     name: 'User Flynn',
   };

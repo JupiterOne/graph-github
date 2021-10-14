@@ -14,14 +14,15 @@ import {
   GithubQueryResponse as QueryResponse,
   GithubResource,
   Node,
+  CursorHierarchy,
 } from './types';
-import buildGraphQL from './buildGraphQL';
+
 import {
   extractSelectedResources,
   mapResponseCursorsForQuery,
-  mapResponseResourcesForQuery,
 } from './response';
 import { ResourceIteratee } from '../../client';
+import { SINGLE_PULL_REQUEST_QUERY_STRING } from './queries';
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -55,25 +56,22 @@ export class GitHubGraphQLClient {
    * @param iteratee - a callback function for each PullRequest
    */
   public async iteratePullRequests(
+    pullRequestQueryString: string,
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<PullRequest>,
-    limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
+    limit: number = 100, // requests PRs since last execution time, or upto this limit, whichever is less
   ): Promise<QueryResponse> {
-    let queryCursors: ResourceMap<string> = {};
+    let queryCursors: ResourceMap<CursorHierarchy> = {};
     let rateLimitConsumed = 0;
     let pullRequestsQueried = 0;
+    let hasMorePullRequests = false;
 
-    const pullRequestQueryString = buildGraphQL(
-      this.resourceMetadataMap,
-      GithubResource.PullRequests,
-      selectedResources,
-    );
     const queryPullRequests = this.graph(pullRequestQueryString);
 
     do {
       this.logger.info(
-        { pullRequestQueryString, query, queryCursors },
+        { queryCursors },
         'Fetching batch of pull requests from GraphQL',
       );
       const pullRequestResponse = await this.retryGraphQL(async () => {
@@ -82,7 +80,7 @@ export class GitHubGraphQLClient {
           ...queryCursors,
         });
       });
-      pullRequestsQueried += 25; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
+      pullRequestsQueried += 25;
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
         { rateLimit },
@@ -108,13 +106,17 @@ export class GitHubGraphQLClient {
         };
 
         // This indicates that we were not able to fetch all commits, reviews, etc for this PR
-        if (Object.keys(innerResourceCursors).length) {
+        // in the page of PRs, because some inner resource (eg. commit or review) had more than
+        // the limit number of entries (typically) 100. In that case, we have to go make a
+        // seperate API call for just that one PR so we can gather up all the inner resources
+        // before continuing on to process more PRs. This should be rare.
+        if (Object.values(innerResourceCursors).some((c) => c.hasNextPage)) {
           this.logger.info(
             {
               pageCursors: innerResourceCursors,
               pullRequest: pullRequestResponse.title,
             },
-            'Unable to fetch all inner resources. Attempting to fetch more.',
+            'More inner resources than fit in one page. Attempting to fetch more. (This should be rare).',
           );
 
           const urlPath = pullRequestResponse.url // ex: https://github.com/JupiterOne/graph-github/pull/1
@@ -137,6 +139,7 @@ export class GitHubGraphQLClient {
           } else {
             // Fetch the remaining inner resources on this PR (this should be rare)
             const innerResourceResponse = await this.fetchFromSingle(
+              SINGLE_PULL_REQUEST_QUERY_STRING,
               GithubResource.PullRequest,
               selectedResources,
               {
@@ -164,19 +167,18 @@ export class GitHubGraphQLClient {
         await iteratee(pullRequestResponse);
       }
 
-      // Check to see if we have iterated through every PR yet. We do not need to care about inner resources at this point.
-      queryCursors =
+      hasMorePullRequests =
         pullRequestResponse.search.pageInfo &&
-        pullRequestResponse.search.pageInfo.hasNextPage
-          ? {
-              [GithubResource.PullRequests]:
-                pullRequestResponse.search.pageInfo.endCursor,
-            }
-          : {};
-    } while (
-      Object.values(queryCursors).some((c) => !!c) &&
-      pullRequestsQueried <= limit
-    );
+        pullRequestResponse.search.pageInfo.hasNextPage;
+
+      // Check to see if we have iterated through every PR yet. We do not need to care about inner resources at this point.
+      queryCursors = hasMorePullRequests
+        ? {
+            [GithubResource.PullRequests]:
+              pullRequestResponse.search.pageInfo.endCursor,
+          }
+        : {};
+    } while (hasMorePullRequests && pullRequestsQueried <= limit);
 
     return {
       rateLimitConsumed,
@@ -192,25 +194,21 @@ export class GitHubGraphQLClient {
    * @param iteratee - a callback function for each Issue
    */
   public async iterateIssues(
+    issueQueryString: string,
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<Issue>,
-    limit: number = 100, // This is a temporary limit as a stopgap before we get rolling ingestion working for this integration
+    limit: number = 100, // requests issues since last execution time, or upto this limit, whichever is less
   ): Promise<QueryResponse> {
     let queryCursors: ResourceMap<string> = {};
     let rateLimitConsumed = 0;
     let issuesQueried = 0;
 
-    const issueQueryString = buildGraphQL(
-      this.resourceMetadataMap,
-      GithubResource.Issues,
-      selectedResources,
-    );
     const queryIssues = this.graph(issueQueryString);
 
     do {
       this.logger.info(
-        { issueQueryString, query, queryCursors },
+        { queryCursors },
         'Fetching batch of issues from GraphQL',
       );
       const issueResponse = await this.retryGraphQL(async () => {
@@ -219,7 +217,7 @@ export class GitHubGraphQLClient {
           ...queryCursors,
         });
       });
-      issuesQueried += 25; // This is a temporary counter as a stopgap before we get rolling ingestion working for this integration
+      issuesQueried += 25;
       const rateLimit = issueResponse.rateLimit;
       this.logger.info(
         { rateLimit },
@@ -282,26 +280,19 @@ export class GitHubGraphQLClient {
    * @returns A destructured object that contains all resources that were queried for. Ex: { pullRequests: [{...}], commits: [{...}] }
    */
   public async fetchFromSingle<T extends GithubResource>(
+    queryString: string,
     baseResource: T,
     selectedResources: GithubResource[],
     extraQueryParams?: { [k: string]: string | number },
     queryCursors: ResourceMap<string> = {},
   ): Promise<QueryResponse> {
     let resources: ResourceMap<any> = {};
-    let queryResources = selectedResources;
     let rateLimitConsumed = 0;
+    let hasMoreResources = false;
+
+    const query = this.graph(queryString);
 
     do {
-      const queryString = buildGraphQL(
-        this.resourceMetadataMap,
-        baseResource,
-        queryResources,
-      );
-      this.logger.info(
-        { queryString, extraQueryParams, queryCursors },
-        'Querying with GraphQL',
-      );
-      const query = this.graph(queryString);
       const response = await this.retryGraphQL(async () => {
         return await query({
           ...extraQueryParams,
@@ -310,10 +301,7 @@ export class GitHubGraphQLClient {
       });
 
       const rateLimit = response.rateLimit;
-      this.logger.info(
-        { rateLimit },
-        'Rate limit response for Pull Request iteration',
-      );
+      this.logger.info({ rateLimit }, `Rate limit response for iteration`);
       rateLimitConsumed += rateLimit.cost;
 
       const pathToData =
@@ -330,12 +318,8 @@ export class GitHubGraphQLClient {
 
       resources = this.extractPageResources(pageResources, resources);
       queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
-      queryResources = mapResponseResourcesForQuery(
-        pageCursors,
-        this.resourceMetadataMap,
-        selectedResources,
-      ) as GithubResource[];
-    } while (Object.values(queryCursors).some((c) => !!c));
+      hasMoreResources = Object.values(pageCursors).some((c) => c.hasNextPage);
+    } while (hasMoreResources);
 
     return {
       ...resources,

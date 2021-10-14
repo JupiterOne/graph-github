@@ -60,7 +60,7 @@ export class GitHubGraphQLClient {
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<PullRequest>,
-    limit: number = 100, // requests PRs since last execution time, or upto this limit, whichever is less
+    limit: number = 500, // requests PRs since last execution time, or upto this limit, whichever is less
   ): Promise<QueryResponse> {
     let queryCursors: ResourceMap<CursorHierarchy> = {};
     let rateLimitConsumed = 0;
@@ -198,7 +198,7 @@ export class GitHubGraphQLClient {
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<Issue>,
-    limit: number = 100, // requests issues since last execution time, or upto this limit, whichever is less
+    limit: number = 500, // requests issues since last execution time, or upto this limit, whichever is less
   ): Promise<QueryResponse> {
     let queryCursors: ResourceMap<string> = {};
     let rateLimitConsumed = 0;

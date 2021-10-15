@@ -218,13 +218,14 @@ export default class OrganizationAccountClient {
 
   async iteratePullRequestEntities(
     repo: RepoEntity,
-    lastExecutionTime: string, //expect .toISOString format, such as 2011-10-05T14:48:00.000Z or just 2011-10-05
+    lastExecutionTime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<PullRequest>,
   ): Promise<QueryResponse> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
       return { rateLimitConsumed: 0 };
     }
+    lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
     const query = `is:pr repo:${repo.fullName} updated:>=${lastExecutionTime}`;
     return await this.v4.iteratePullRequests(
       PULL_REQUESTS_QUERY_STRING,
@@ -236,7 +237,7 @@ export default class OrganizationAccountClient {
 
   async iterateIssueEntities(
     repo: RepoEntity,
-    lastExecutionTime: string, //expect .toISOString format, such as 2011-10-05T14:48:00.000Z or just 2011-10-05
+    lastExecutionTime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<Issue>,
   ): Promise<QueryResponse> {
     //issues and PRs are actually the same in the API
@@ -246,6 +247,7 @@ export default class OrganizationAccountClient {
       this.logger.info('Account not authorized for ingesting issues.');
       return { rateLimitConsumed: 0 };
     }
+    lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
     const query = `is:issue repo:${repo.fullName} updated:>=${lastExecutionTime}`;
     return await this.v4.iterateIssues(
       ISSUES_QUERY_STRING,
@@ -361,6 +363,10 @@ export default class OrganizationAccountClient {
         //private repos can only use environments in Enterprise level GitHub accounts
         //you get 404 if you try to call the REST API for environments on a private repo otherwise
         //but we don't know whether the account is Enterprise level, so we have to try private repos
+        this.logger.info(
+          {},
+          `404 error on environments for private repo, probably indicating a GitHub account that is not Enterprise level. Proceeding.`,
+        );
         return [];
       } else {
         this.logger.warn(
@@ -549,5 +555,29 @@ export default class OrganizationAccountClient {
     } catch (responseErrors) {
       throw new IntegrationError(responseErrors);
     }
+  }
+
+  private sanitizeLastExecutionTime(lastExecutionTime: string): string {
+    // defensive programming just in case of bad code changes later
+    // Github expects the query string for the updated parameter to be in format 'YYYY-MM-DD'.
+    // It will also take a full Date.toIsoString output with time.
+    // Examples: 2011-10-05 or 2011-10-05T14:48:00.000Z
+    // It will NOT behave properly with a msec-since-epoch integer.
+    // If a malformed string is passed to Github, it does NOT throw an error
+    // It simply returns no data, as if no data meets the criteria
+    // So if we have a bad string, we'll just set lastExecutionTime far back so we get the
+    // behavior of a first-time execution
+    let sanitizedExecutionTime = lastExecutionTime;
+    if (
+      new Date(lastExecutionTime).toString() === 'Invalid Date' ||
+      !lastExecutionTime.includes('-')
+    ) {
+      this.logger.warn(
+        { lastExecutionTime },
+        `Bad string format passed to lastExecutionTime, setting to 2000-01-01 for safety`,
+      );
+      sanitizedExecutionTime = '2000-01-01';
+    }
+    return sanitizedExecutionTime;
   }
 }

@@ -47,7 +47,6 @@ import {
   AccountType,
   EnvironmentEntity,
   RepoAllowRelationship,
-  RepoKeyAndName,
 } from '../types';
 import {
   decomposePermissions,
@@ -402,7 +401,7 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
 }
 
 export function createRepoAllowsTeamRelationship(
-  repo: RepoKeyAndName,
+  repoId: string,
   team: TeamEntity,
   permission: string,
 ): RepoAllowRelationship {
@@ -429,10 +428,10 @@ export function createRepoAllowsTeamRelationship(
     admin = true;
   }
   return {
-    _key: `${repo._key}|allows|${team._key}`,
+    _key: `${repoId}|allows|${team._key}`,
     _class: RelationshipClass.ALLOWS,
     _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
-    _fromEntityKey: repo._key,
+    _fromEntityKey: repoId,
     _toEntityKey: team._key,
     displayName: RelationshipClass.ALLOWS,
     role: permission,

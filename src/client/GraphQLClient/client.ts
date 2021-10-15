@@ -23,6 +23,7 @@ import {
 } from './response';
 import { ResourceIteratee } from '../../client';
 import { SINGLE_PULL_REQUEST_QUERY_STRING } from './queries';
+import { LIMITED_REQUESTS_NUM } from './queries';
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -60,7 +61,7 @@ export class GitHubGraphQLClient {
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<PullRequest>,
-    limit: number = 100, // requests PRs since last execution time, or upto this limit, whichever is less
+    limit: number = 500, // requests PRs since last execution time, or upto this limit, whichever is less
   ): Promise<QueryResponse> {
     let queryCursors: ResourceMap<CursorHierarchy> = {};
     let rateLimitConsumed = 0;
@@ -80,7 +81,7 @@ export class GitHubGraphQLClient {
           ...queryCursors,
         });
       });
-      pullRequestsQueried += 25;
+      pullRequestsQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
         { rateLimit },
@@ -198,7 +199,7 @@ export class GitHubGraphQLClient {
     query: string,
     selectedResources: GithubResource[],
     iteratee: ResourceIteratee<Issue>,
-    limit: number = 100, // requests issues since last execution time, or upto this limit, whichever is less
+    limit: number = 500, // requests issues since last execution time, or upto this limit, whichever is less
   ): Promise<QueryResponse> {
     let queryCursors: ResourceMap<string> = {};
     let rateLimitConsumed = 0;
@@ -217,7 +218,7 @@ export class GitHubGraphQLClient {
           ...queryCursors,
         });
       });
-      issuesQueried += 25;
+      issuesQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = issueResponse.rateLimit;
       this.logger.info(
         { rateLimit },

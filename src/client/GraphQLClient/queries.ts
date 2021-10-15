@@ -16,6 +16,9 @@
  *
  */
 
+export const MAX_REQUESTS_NUM = 100;
+export const LIMITED_REQUESTS_NUM = 25; //this is sometimes used to avoid errors
+
 export const ACCOUNT_QUERY_STRING = `query ($login: String!) {
     organization(login: $login) {
         id
@@ -27,7 +30,7 @@ export const ACCOUNT_QUERY_STRING = `query ($login: String!) {
 export const REPOS_QUERY_STRING = `query ($login: String!, $repositories: String) {
       organization(login: $login) {
           id
-          repositories(first: 100, after: $repositories) {
+          repositories(first: ${MAX_REQUESTS_NUM}, after: $repositories) {
           edges {
             node {
               id
@@ -46,7 +49,7 @@ export const REPOS_QUERY_STRING = `query ($login: String!, $repositories: String
 export const USERS_QUERY_STRING = `query ($login: String!, $membersWithRole: String) {
     organization(login: $login) {
         id
-        membersWithRole(first: 100, after: $membersWithRole) {
+        membersWithRole(first: ${MAX_REQUESTS_NUM}, after: $membersWithRole) {
         edges {
           node {
             id
@@ -66,7 +69,7 @@ export const USERS_QUERY_STRING = `query ($login: String!, $membersWithRole: Str
 export const TEAMS_QUERY_STRING = `query ($login: String!, $teams: String) {
     organization(login: $login) {
         id
-        teams(first: 100, after: $teams) {
+        teams(first: ${MAX_REQUESTS_NUM}, after: $teams) {
         edges {
           node {
             id
@@ -85,11 +88,11 @@ export const TEAMS_QUERY_STRING = `query ($login: String!, $teams: String) {
 export const TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $teams: String, $members: String) {
     organization(login: $login) {
         id
-        teams(first: 100, after: $teams) {
+        teams(first: ${MAX_REQUESTS_NUM}, after: $teams) {
         edges {
           node {
             id
-            members(first: 100, after: $members) {
+            members(first: ${MAX_REQUESTS_NUM}, after: $members) {
         edges {
           node {
             id
@@ -116,11 +119,11 @@ export const TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $teams: String
 export const TEAM_REPOS_QUERY_STRING = `query ($login: String!, $teams: String, $teamRepositories: String) {
     organization(login: $login) {
         id
-        teams(first: 25, after: $teams) {
+        teams(first: ${LIMITED_REQUESTS_NUM}, after: $teams) {
         edges {
           node {
             id
-            repositories(first: 100, after: $teamRepositories) {
+            repositories(first: ${MAX_REQUESTS_NUM}, after: $teamRepositories) {
         edges {
           node {
             id
@@ -144,13 +147,13 @@ export const TEAM_REPOS_QUERY_STRING = `query ($login: String!, $teams: String, 
   }`;
 
 export const ISSUES_QUERY_STRING = `query ($query: String!, $issues: String, $assignees: String, $labels: String) {
-    search(first: 25, after: $issues, type: ISSUE, query: $query) {
+    search(first: ${LIMITED_REQUESTS_NUM}, after: $issues, type: ISSUE, query: $query) {
         issueCount
         edges {
           node {
             ...issueFields
             ... on Issue {
-          assignees(first: 100, after: $assignees) {
+          assignees(first: ${MAX_REQUESTS_NUM}, after: $assignees) {
           totalCount
           edges {
             node {
@@ -165,7 +168,7 @@ export const ISSUES_QUERY_STRING = `query ($query: String!, $issues: String, $as
         }
       }
 ... on Issue {
-          labels(first: 100, after: $labels) {
+          labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
           totalCount
           edges {
             node {
@@ -190,13 +193,13 @@ export const ISSUES_QUERY_STRING = `query ($query: String!, $issues: String, $as
   }`;
 
 export const PULL_REQUESTS_QUERY_STRING = `query ($query: String!, $pullRequests: String, $commits: String, $reviews: String, $labels: String) {
-    search(first: 25, after: $pullRequests, type: ISSUE, query: $query) {
+    search(first: ${LIMITED_REQUESTS_NUM}, after: $pullRequests, type: ISSUE, query: $query) {
         issueCount
         edges {
           node {
             ...pullRequestFields
             ... on PullRequest {
-        commits(first: 100, after: $commits) {
+        commits(first: ${MAX_REQUESTS_NUM}, after: $commits) {
           totalCount
           edges {
             node {
@@ -212,7 +215,7 @@ export const PULL_REQUESTS_QUERY_STRING = `query ($query: String!, $pullRequests
         }
       }
 ... on PullRequest {
-        reviews(first: 100, after: $reviews) {
+        reviews(first: ${MAX_REQUESTS_NUM}, after: $reviews) {
           totalCount
           edges {
             node {
@@ -226,7 +229,7 @@ export const PULL_REQUESTS_QUERY_STRING = `query ($query: String!, $pullRequests
         }
       }
 ... on PullRequest {
-          labels(first: 100, after: $labels) {
+          labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
           totalCount
           edges {
             node {
@@ -255,7 +258,7 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
           pullRequest(number: $pullRequestNumber) {
             ...pullRequestFields
             ... on PullRequest {
-        commits(first: 100, after: $commits) {
+        commits(first: ${MAX_REQUESTS_NUM}, after: $commits) {
           totalCount
           edges {
             node {
@@ -271,7 +274,7 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
         }
       }
 ... on PullRequest {
-        reviews(first: 100, after: $reviews) {
+        reviews(first: ${MAX_REQUESTS_NUM}, after: $reviews) {
           totalCount
           edges {
             node {
@@ -285,7 +288,7 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
         }
       }
 ... on PullRequest {
-          labels(first: 100, after: $labels) {
+          labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
           totalCount
           edges {
             node {
@@ -307,11 +310,11 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
 export const COLLABORATORS_QUERY_STRING = `query ($login: String!, $repositories: String, $collaborators: String) {
   organization(login: $login) {
       id
-      repositories(first: 100, after: $repositories) {
+      repositories(first: ${MAX_REQUESTS_NUM}, after: $repositories) {
       edges {
         node {
           id
-          collaborators(first: 100, after: $collaborators) {
+          collaborators(first: ${MAX_REQUESTS_NUM}, after: $collaborators) {
       edges {
         node {
           id

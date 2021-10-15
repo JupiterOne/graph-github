@@ -14,7 +14,7 @@ import {
   toOrganizationMemberEntityFromTeamMember,
   createRepoAllowsTeamRelationship,
 } from '../sync/converters';
-import { AccountEntity, TeamEntity, RepoKeyAndName } from '../types';
+import { AccountEntity, TeamEntity } from '../types';
 import { TeamMemberRole } from '../client/GraphQLClient';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
@@ -26,7 +26,6 @@ import {
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
-  GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
 
 export async function fetchTeams({
@@ -43,14 +42,6 @@ export async function fetchTeams({
   if (!accountEntity) {
     throw new IntegrationMissingKeyError(
       `Expected to find Account entity in jobState.`,
-    );
-  }
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(
-    GITHUB_REPO_TAGS_ARRAY,
-  );
-  if (!repoTags) {
-    throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set GITHUB_REPO_ARRAY in jobState.`,
     );
   }
 
@@ -99,14 +90,13 @@ export async function fetchTeams({
     }
 
     for (const repo of team.repos || []) {
-      const repoTag = repoTags.find((r) => r._key === repo.id);
-      if (!repoTag) {
+      if (!jobState.hasKey(repo.id)) {
         throw new IntegrationMissingKeyError(
           `Expected repo (CodeRepo) with id to exist (key=${repo.id})`,
         );
       }
       const repoTeamRelationship = createRepoAllowsTeamRelationship(
-        repoTag,
+        repo.id,
         teamEntity,
         repo.permission,
       );

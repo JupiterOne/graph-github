@@ -42,10 +42,8 @@ export async function fetchPrs(
   const config = context.instance.config;
   const jobState = context.jobState;
   const logger = context.logger;
-  const lastSuccessfulSyncTime = context.executionHistory.lastSuccessful
-    ?.startedOn
-    ? context.executionHistory.lastSuccessful?.startedOn
-    : 0;
+  const lastSuccessfulSyncTime =
+    context.executionHistory.lastSuccessful?.startedOn ?? 0;
   const lastSuccessfulExecution = new Date(
     lastSuccessfulSyncTime,
   ).toISOString();

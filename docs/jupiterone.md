@@ -23,8 +23,9 @@
 - Configure alerts to take action when the JupiterOne graph changes.
 
 !!! note The integration limits ingestion of pull requests during each execution
-to 100 of those most recently created/modified. This is an accumulative process
-so that PRs which have been ingested but are not changing remain in the graph.
+to 500 of those most recently created/modified since the last execution. This is
+an accumulative process so that PRs which have been ingested but are not
+changing remain in the graph.
 
 ## Requirements
 

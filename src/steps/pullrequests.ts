@@ -203,7 +203,7 @@ export async function fetchPrs(
           throw new IntegrationError({
             message: errors.map((e) => e.message).join(' | '),
             code: errors[0].Code,
-            cause: errors[0],
+            cause: errors[0].stack ? errors : JSON.stringify(errors),
           });
         }
       }

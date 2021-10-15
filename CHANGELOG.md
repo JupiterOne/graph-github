@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.6.0 - 2021-10-15
+
 ### Fixed
 
 - Crash on fetch-environments for private repos in accounts that are not
@@ -183,15 +185,15 @@ and this project adheres to
 
 - Properties added to graph objects:
 
-  | Entity / Relationship     | Property                      | Notes               |
-  | ------------------------- | ----------------------------- | ------------------- | ------- | ---------- | -------- | --- |
-  | `github_repo_allows_team` | `adminPermission: boolean`    |                     |
-  | `github_repo_allows_team` | `maintainPermission: boolean` |                     |
-  | `github_repo_allows_team` | `pushPermission: boolean`     |                     |
-  | `github_repo_allows_team` | `triagePermission: boolean`   |                     |
-  | `github_repo_allows_team` | `pullPermission: boolean`     |                     |
-  | `github_repo_allows_user` | `role: 'READ'                 | 'TRIAGE'            | 'WRITE' | 'MAINTAIN' | 'ADMIN'` |     |
-  | `github_user`             | `webLink: string`             | GitHub user profile |
+  | Entity / Relationship     | Property                                                   | Notes               |
+  | ------------------------- | ---------------------------------------------------------- | ------------------- |
+  | `github_repo_allows_team` | `adminPermission: boolean`                                 |                     |
+  | `github_repo_allows_team` | `maintainPermission: boolean`                              |                     |
+  | `github_repo_allows_team` | `pushPermission: boolean`                                  |                     |
+  | `github_repo_allows_team` | `triagePermission: boolean`                                |                     |
+  | `github_repo_allows_team` | `pullPermission: boolean`                                  |                     |
+  | `github_repo_allows_user` | `role: 'READ' | 'TRIAGE' | 'WRITE' | 'MAINTAIN' | 'ADMIN'` |                     |
+  | `github_user`             | `webLink: string`                                          | GitHub user profile |
 
 - Properties changed on graph objects:
 

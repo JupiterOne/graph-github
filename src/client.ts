@@ -103,8 +103,6 @@ export class APIClient {
     const allTeamMembers: OrgTeamMemberQueryResponse[] =
       await this.accountClient.getTeamMembers();
 
-    // Check 'useRestForTeamRepos' config variable as a hack to allow large github
-    // accounts to bypass a Github error. Please delete this code once that error is fixed.
     const allTeamRepos: OrgTeamRepoQueryResponse[] =
       await this.accountClient.getTeamRepositories();
 

@@ -23,6 +23,7 @@ import {
 } from './response';
 import { ResourceIteratee } from '../../client';
 import { SINGLE_PULL_REQUEST_QUERY_STRING } from './queries';
+import { LIMITED_REQUESTS_NUM } from './queries';
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -80,7 +81,7 @@ export class GitHubGraphQLClient {
           ...queryCursors,
         });
       });
-      pullRequestsQueried += 25;
+      pullRequestsQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
         { rateLimit },
@@ -217,7 +218,7 @@ export class GitHubGraphQLClient {
           ...queryCursors,
         });
       });
-      issuesQueried += 25;
+      issuesQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = issueResponse.rateLimit;
       this.logger.info(
         { rateLimit },

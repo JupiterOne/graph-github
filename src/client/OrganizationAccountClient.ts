@@ -120,13 +120,15 @@ export default class OrganizationAccountClient {
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
     let response;
     await this.queryGraphQL('members', async () => {
-      const { membersWithRole, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          USERS_QUERY_STRING,
-          GithubResource.Organization,
-          [GithubResource.OrganizationMembers],
-          { login: this.login },
-        );
+      const {
+        membersWithRole,
+        rateLimitConsumed,
+      } = await this.v4.fetchFromSingle(
+        USERS_QUERY_STRING,
+        GithubResource.Organization,
+        [GithubResource.OrganizationMembers],
+        { login: this.login },
+      );
       response = membersWithRole;
       return rateLimitConsumed;
     });
@@ -136,7 +138,10 @@ export default class OrganizationAccountClient {
   async getTeams(): Promise<OrgTeamQueryResponse[]> {
     let response;
     await this.queryGraphQL('teams', async () => {
-      const { teams, rateLimitConsumed } = await this.v4.fetchFromSingle(
+      const {
+        teams,
+        rateLimitConsumed,
+      } = await this.v4.fetchFromSingle(
         TEAMS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.Teams],
@@ -151,7 +156,10 @@ export default class OrganizationAccountClient {
   async getTeamMembers(): Promise<OrgTeamMemberQueryResponse[]> {
     let response;
     await this.queryGraphQL('team members', async () => {
-      const { members, rateLimitConsumed } = await this.v4.fetchFromSingle(
+      const {
+        members,
+        rateLimitConsumed,
+      } = await this.v4.fetchFromSingle(
         TEAM_MEMBERS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.TeamMembers],
@@ -166,7 +174,10 @@ export default class OrganizationAccountClient {
   async getRepositories(slugs?: string[]): Promise<OrgRepoQueryResponse[]> {
     let response;
     await this.queryGraphQL('repositories', async () => {
-      const { repositories, rateLimitConsumed } = await this.v4.fetchFromSingle(
+      const {
+        repositories,
+        rateLimitConsumed,
+      } = await this.v4.fetchFromSingle(
         REPOS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.Repositories],
@@ -187,13 +198,15 @@ export default class OrganizationAccountClient {
   async getTeamRepositories(): Promise<OrgTeamRepoQueryResponse[]> {
     let response;
     await this.queryGraphQL('team repositories', async () => {
-      const { teamRepositories, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          TEAM_REPOS_QUERY_STRING,
-          GithubResource.Organization,
-          [GithubResource.TeamRepositories],
-          { login: this.login },
-        );
+      const {
+        teamRepositories,
+        rateLimitConsumed,
+      } = await this.v4.fetchFromSingle(
+        TEAM_REPOS_QUERY_STRING,
+        GithubResource.Organization,
+        [GithubResource.TeamRepositories],
+        { login: this.login },
+      );
       response = teamRepositories as OrgTeamRepoQueryResponse[];
       return rateLimitConsumed;
     });
@@ -203,13 +216,15 @@ export default class OrganizationAccountClient {
   async getCollaborators(): Promise<Collaborator[]> {
     let response;
     await this.queryGraphQL('collaborators', async () => {
-      const { collaborators, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          COLLABORATORS_QUERY_STRING,
-          GithubResource.Organization,
-          [GithubResource.Collaborators],
-          { login: this.login },
-        );
+      const {
+        collaborators,
+        rateLimitConsumed,
+      } = await this.v4.fetchFromSingle(
+        COLLABORATORS_QUERY_STRING,
+        GithubResource.Organization,
+        [GithubResource.Collaborators],
+        { login: this.login },
+      );
       response = collaborators as Collaborator[];
       return rateLimitConsumed;
     });
@@ -553,7 +568,12 @@ export default class OrganizationAccountClient {
       const rateLimitConsumed = await performQuery();
       this.v4RateLimitConsumed += rateLimitConsumed;
     } catch (responseErrors) {
-      throw new IntegrationError(responseErrors);
+      const errors = responseErrors[0] ? responseErrors : [responseErrors];
+      throw new IntegrationError({
+        message: name + ': ' + errors.map((e) => e.message).join(' | '),
+        code: errors[0].Code,
+        cause: errors[0],
+      });
     }
   }
 

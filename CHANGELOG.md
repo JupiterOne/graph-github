@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+## Fixed
+
+- Log graphQL errors properly.
+
 ## 1.6.1 - 2021-10-15
 
 - Increase `github_pull_request` limit from 100 to 500.

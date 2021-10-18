@@ -123,7 +123,7 @@ export const TEAM_REPOS_QUERY_STRING = `query ($login: String!, $teams: String, 
         edges {
           node {
             id
-            repositories(first: ${MAX_REQUESTS_NUM}, after: $teamRepositories) {
+            repositories(first: ${LIMITED_REQUESTS_NUM}, after: $teamRepositories) {
         edges {
           node {
             id
@@ -310,11 +310,11 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
 export const COLLABORATORS_QUERY_STRING = `query ($login: String!, $repositories: String, $collaborators: String) {
   organization(login: $login) {
       id
-      repositories(first: ${MAX_REQUESTS_NUM}, after: $repositories) {
+      repositories(first: ${LIMITED_REQUESTS_NUM}, after: $repositories) {
       edges {
         node {
           id
-          collaborators(first: ${MAX_REQUESTS_NUM}, after: $collaborators) {
+          collaborators(first: ${LIMITED_REQUESTS_NUM}, after: $collaborators) {
       edges {
         node {
           id

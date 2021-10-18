@@ -8,6 +8,18 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Only retry graphQL errors 5 times instead of 10.
+- Only query for the limit of `github_pull_request`s and `github_issue`s instead
+  of the limit +1.
+- Request fewer repositiories in a single calls in the `fetch-teams` step.
+- Request fewer repositories and collaborators in a single call in the
+  `fetch-collaborators`.
+- Format graphQL errors even better.
+- Do not throw an `IntegrationError` when the integration does not have access
+  to environment secrets.
+
 ## 1.6.2 - 2021-10-15
 
 ## Fixed

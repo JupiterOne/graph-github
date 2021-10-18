@@ -179,7 +179,7 @@ export class GitHubGraphQLClient {
               pullRequestResponse.search.pageInfo.endCursor,
           }
         : {};
-    } while (hasMorePullRequests && pullRequestsQueried <= limit);
+    } while (hasMorePullRequests && pullRequestsQueried < limit);
 
     return {
       rateLimitConsumed,
@@ -262,7 +262,7 @@ export class GitHubGraphQLClient {
           : {};
     } while (
       Object.values(queryCursors).some((c) => !!c) &&
-      issuesQueried <= limit
+      issuesQueried < limit
     );
 
     return {
@@ -359,7 +359,7 @@ export class GitHubGraphQLClient {
   private async retryGraphQL(query: () => Promise<any>) {
     const { logger } = this;
     return await retry(query, {
-      maxAttempts: 10,
+      maxAttempts: 5,
       delay: 60_000,
       handleError(error: any, attemptContext: AttemptContext) {
         // Github has "Secondary Rate Limits" to prevent us from making these costly to Github graphQL calls.

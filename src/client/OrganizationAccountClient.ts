@@ -363,10 +363,7 @@ export default class OrganizationAccountClient {
         //private repos can only use environments in Enterprise level GitHub accounts
         //you get 404 if you try to call the REST API for environments on a private repo otherwise
         //but we don't know whether the account is Enterprise level, so we have to try private repos
-        this.logger.info(
-          { repoName },
-          `404 error on environments for private repo, probably indicating a GitHub account that is not Enterprise level. Proceeding.`,
-        );
+        //once I move getEnvironments to GraphQL, this won't be an issue. private will return []
         return [];
       } else {
         this.logger.warn(

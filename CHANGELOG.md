@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.6.3 - 2021-10-18
+
 ### Changed
 
 - Only retry graphQL errors 5 times instead of 10.

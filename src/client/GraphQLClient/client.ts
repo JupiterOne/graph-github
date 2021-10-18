@@ -358,23 +358,30 @@ export class GitHubGraphQLClient {
 
   private async retryGraphQL(query: () => Promise<any>) {
     const { logger } = this;
+    // https://github.com/lifeomic/attempt for options on retry
     return await retry(query, {
       maxAttempts: 5,
-      delay: 60_000,
+      delay: 15_000, //15 seconds to start
+      factor: 2, //exponential backoff factor. with 15 sec start and 5 attempts, longest delay is 8 min
       handleError(error: any, attemptContext: AttemptContext) {
-        // Github has "Secondary Rate Limits" to prevent us from making these costly to Github graphQL calls.
-        // From what I can tell, there is no way around it outside of waiting for "a few minutes" when we get
-        // one of these errors. I guess checking every minute for 10 minutes seems reasonable.
+        // Github has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
+        // GitHub guidance is to "wait a few minutes" when we get one of these errors.
         // https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
+        // this link is REST specific - however, the limits might apply to GraphQL as well,
+        // and our GraphQL client is not using the @octokit throttling and retry plugins like our REST client
+        // therefore some retry logic is appropriate here
         if (
           error.message?.includes('You have exceeded a secondary rate limit')
         ) {
           logger.warn(
             { attemptContext, error },
-            'Hit a "Secondary Rate Limit" when attempting to query GraphQL. Waiting a minute before trying again.',
+            'Hit a "Secondary Rate Limit" when attempting to query GraphQL. Waiting before trying again.',
           );
           // TODO: handle Primary Rate Limit errors as well
         } else {
+          if (error.retryable === false) {
+            attemptContext.abort();
+          }
           throw error;
         }
       },

@@ -276,6 +276,8 @@ export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
     disabled: data.isDisabled,
     empty: data.isEmpty,
     fork: data.isFork,
+    forkingAllowed: data.forkingAllowed,
+    forkCount: data.forkCount,
     inOrganization: data.isInOrganization,
     locked: data.isLocked,
     mirror: data.isMirror,

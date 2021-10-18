@@ -122,6 +122,8 @@ export interface RepoEntity extends Entity {
   disabled: boolean | undefined;
   empty: boolean | undefined;
   fork: boolean | undefined;
+  forkingAllowed: boolean | undefined;
+  forkCount: number | undefined;
   inOrganization: boolean | undefined;
   locked: boolean | undefined;
   mirror: boolean | undefined;

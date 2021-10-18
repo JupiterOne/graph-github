@@ -120,6 +120,8 @@ export interface OrgRepoQueryResponse extends Node {
   databaseId?: string;
   deleteBranchOnMerge?: boolean;
   description?: string;
+  forkCount?: number;
+  forkingAllowed?: boolean;
   homepageUrl?: string;
   isDisabled?: boolean;
   isEmpty?: boolean;

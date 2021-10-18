@@ -59,6 +59,8 @@ export default {
     databaseId
     deleteBranchOnMerge
     description
+    forkCount
+    forkingAllowed
     homepageUrl
     isDisabled
     isEmpty

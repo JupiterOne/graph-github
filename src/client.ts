@@ -48,7 +48,7 @@ export class APIClient {
     orgAdmin: boolean;
     orgSecrets: boolean;
     repoSecrets: boolean;
-    repoActions: boolean;
+    repoEnvironments: boolean;
     repoIssues: boolean;
   };
   constructor(
@@ -210,7 +210,7 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.scopes.repoActions) {
+    if (this.scopes.repoEnvironments) {
       const environments: RepoEnvironmentQueryResponse[] =
         await this.accountClient.getEnvironments(repoName);
       for (const env of environments) {
@@ -377,7 +377,7 @@ export class APIClient {
         orgAdmin: false,
         orgSecrets: false,
         repoSecrets: false,
-        repoActions: false,
+        repoEnvironments: false,
         repoIssues: false,
       };
     }
@@ -438,15 +438,15 @@ export class APIClient {
       this.scopes.repoSecrets = true;
     }
 
-    //ingesting environments or environmental secrets requires scope actions:read
-    if (!(perms.actions === 'read' || perms.actions === 'write')) {
-      this.scopes.repoActions = false;
+    //ingesting environments or environmental secrets requires scope environments:read
+    if (!(perms.environments === 'read' || perms.environments === 'write')) {
+      this.scopes.repoEnvironments = false;
       this.logger.info(
         {},
-        "Token does not have 'actions' scope. Environments and environmental secrets cannot be ingested",
+        "Token does not have 'environments' scope. Environments and environmental secrets cannot be ingested",
       );
     } else {
-      this.scopes.repoActions = true;
+      this.scopes.repoEnvironments = true;
     }
 
     //ingesting repo issues requires scope issues:read

@@ -20,7 +20,7 @@ export default async function getStepStartStates(
     ['fetch-apps']: { disabled: !scopes.orgAdmin },
     ['fetch-org-secrets']: { disabled: !scopes.orgSecrets },
     ['fetch-repo-secrets']: { disabled: !scopes.repoSecrets },
-    ['fetch-environments']: { disabled: !scopes.repoActions },
+    ['fetch-environments']: { disabled: !scopes.repoEnvironments },
     ['fetch-issues']: { disabled: !scopes.repoIssues },
   };
 }

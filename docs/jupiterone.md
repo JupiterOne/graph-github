@@ -48,7 +48,7 @@ from the Organization installing the app. The app requests the following Read
 Only permissions:
 
 - Organization Metadata, Administration, Members, and Secrets
-- Repository Metadata, Secrets, Actions, and Issues
+- Repository Metadata, Secrets, Environments, and Issues
 
 All of these permissions are Read Only.
 

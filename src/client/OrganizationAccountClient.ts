@@ -402,15 +402,20 @@ export default class OrganizationAccountClient {
         { repoDatabaseId, envName },
         'Error while attempting to ingest repo environment secrets',
       );
-      if (err.status != '403') {
+      if (err.status == '403') {
         // Don't fail step if integration does not have access to secrets.
-        throw new IntegrationError({
-          message: err.message,
-          code: err.status,
-          cause: err,
+        this.logger.publishEvent({
+          name: 'UNAUTHORIZED',
+          description:
+            'Unable to ingest environment secrets. Ensure scope secrets:read is enabled',
         });
+        return [];
       }
-      return [];
+      throw new IntegrationError({
+        message: err.message,
+        code: err.status,
+        cause: err,
+      });
     }
   }
 

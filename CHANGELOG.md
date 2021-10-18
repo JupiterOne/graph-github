@@ -19,6 +19,8 @@ and this project adheres to
 - Format graphQL errors even better.
 - Do not throw an `IntegrationError` when the integration does not have access
   to environment secrets.
+- Add a JobLog item when environment secrets could not be ingested due to a
+  `403` error.
 
 ## 1.6.2 - 2021-10-15
 

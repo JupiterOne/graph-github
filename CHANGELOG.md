@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Properties `forkingAllowed` and `forkCount` to RepoEntity
+
 ## 1.6.3 - 2021-10-18
 
 ### Changed

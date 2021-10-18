@@ -2,6 +2,7 @@ import { Octokit } from '@octokit/rest';
 import {
   IntegrationError,
   IntegrationLogger,
+  IntegrationProviderAPIError,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -391,21 +392,18 @@ export default class OrganizationAccountClient {
         (response) => {
           this.logger.info('Fetched page of secrets for a repo environment');
           this.v3RateLimitConsumed++;
-          return response.data;
+          return response?.data;
         },
       );
       return repoSecrets || [];
     } catch (err) {
-      this.logger.warn(
-        { repoDatabaseId, envName },
-        'Error while attempting to ingest repo environment secrets',
-      );
-      // Don't fail step if integration can not pull secrets for repo.
-      this.logger.publishEvent({
-        name: 'unprocessed_secrets',
-        description: `Unable to ingest environment secrets for repository ${repoName}`,
+      throw new IntegrationProviderAPIError({
+        message: repoName + ': ' + err.message,
+        status: err.status,
+        statusText: err.statusText,
+        cause: err,
+        endpoint: `https://api.github.com/repositories/${repoDatabaseId}/environments/${envName}/secrets`,
       });
-      return [];
     }
   }
 

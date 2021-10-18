@@ -8,10 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
-### Removed
+### Changed
 
-- `IntegrationError` when repository environment secrets can not be ingested,
-  opting instead to submit a message to the JobLog.
+- Always throw an `IntegrationError` when repository environment secrets can not
+  be ingested.
 
 ### Added
 

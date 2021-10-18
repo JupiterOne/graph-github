@@ -402,7 +402,7 @@ export default class OrganizationAccountClient {
       );
       // Don't fail step if integration can not pull secrets for repo.
       this.logger.publishEvent({
-        name: 'ERROR',
+        name: 'unprocessed_secrets',
         description: `Unable to ingest environment secrets for repository ${repoName}`,
       });
       return [];

@@ -80,7 +80,7 @@ export async function validateInvocation(
   orgAdmin: boolean;
   orgSecrets: boolean;
   repoSecrets: boolean;
-  repoActions: boolean;
+  repoEnvironments: boolean;
   repoIssues: boolean;
 }> {
   const { config } = context.instance;

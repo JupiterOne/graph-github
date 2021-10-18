@@ -378,6 +378,7 @@ export default class OrganizationAccountClient {
   async getEnvSecrets(
     repoDatabaseId: string,
     envName: string,
+    repoName: string,
   ): Promise<SecretQueryResponse[]> {
     try {
       const repoSecrets = await this.v3.paginate(
@@ -399,20 +400,12 @@ export default class OrganizationAccountClient {
         { repoDatabaseId, envName },
         'Error while attempting to ingest repo environment secrets',
       );
-      if (err.status == '403') {
-        // Don't fail step if integration does not have access to secrets.
-        this.logger.publishEvent({
-          name: 'UNAUTHORIZED',
-          description:
-            'Unable to ingest environment secrets. Ensure scope secrets:read is enabled',
-        });
-        return [];
-      }
-      throw new IntegrationError({
-        message: err.message,
-        code: err.status,
-        cause: err,
+      // Don't fail step if integration can not pull secrets for repo.
+      this.logger.publishEvent({
+        name: 'ERROR',
+        description: `Unable to ingest environment secrets for repository ${repoName}`,
       });
+      return [];
     }
   }
 

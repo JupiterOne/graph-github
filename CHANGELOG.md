@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Removed
+
+- `IntegrationError` when repository environment secrets can not be ingested,
+  opting instead to submit a message to the JobLog.
+
 ### Added
 
 - Properties `forkingAllowed` and `forkCount` to RepoEntity

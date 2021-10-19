@@ -198,12 +198,11 @@ export class APIClient {
   }
 
   /**
-   * Iterates each Github environment and ingests any environmental secrets.
+   * Iterates each Github environment.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateEnvironments(
-    repoDatabaseId: string,
     repoName: string,
     iteratee: ResourceIteratee<RepoEnvironmentQueryResponse>,
   ): Promise<void> {
@@ -214,17 +213,31 @@ export class APIClient {
       const environments: RepoEnvironmentQueryResponse[] =
         await this.accountClient.getEnvironments(repoName);
       for (const env of environments) {
-        env.envSecrets = [];
-        if (this.scopes.repoSecrets) {
-          //go get env secrets and load the env object
-          const envSecrets = await this.accountClient.getEnvSecrets(
-            repoDatabaseId,
-            env.name,
-            repoName,
-          );
-          env.envSecrets = envSecrets;
-        }
         await iteratee(env);
+      }
+    }
+  }
+
+  /**
+   * Iterates each Github environmental secret.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateEnvSecrets(
+    repoDatabaseId: string,
+    envName: string,
+    iteratee: ResourceIteratee<SecretQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.repoSecrets) {
+      const envSecrets = await this.accountClient.getEnvSecrets(
+        repoDatabaseId,
+        envName,
+      );
+      for (const envSecret of envSecrets) {
+        await iteratee(envSecret);
       }
     }
   }

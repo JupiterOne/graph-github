@@ -8,10 +8,20 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Property `id` to `github_member` entities
+
 ### Changed
 
 - Always throw an `IntegrationError` when repository environment secrets can not
   be ingested.
+- Separated out `fetch-env-secrets` step from the `fetch-environments` step
+
+### Fixed
+
+- Changed incorrectly spelled `github_app` property `respositorySelected` to
+  `repositorySelected`
 
 ## 1.7.0 - 2021-10-18
 

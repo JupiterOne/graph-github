@@ -237,6 +237,7 @@ describe('toOrganizationMemberEntity', () => {
       databaseId: 62492097,
       email: 'flynn@test.com',
       node: 'member-node-id',
+      id: 'member-node-id',
       employee: false,
       location: 'Best place ever',
       websiteUrl: 'https://about.me/user-login',
@@ -280,6 +281,7 @@ describe('toOrganizationCollaboratorEntity', () => {
       siteAdmin: false,
       webLink: 'https://github.com/user-login',
       node: 'member-node-id',
+      id: 'member-node-id',
     });
   });
 
@@ -363,7 +365,6 @@ describe('toAppEntity', () => {
       webLink:
         'https://github.com/organizations/Kei-Institute/settings/installations/19232829',
       installationId: 19232829,
-      respositorySelection: undefined,
       appId: 135931,
       appSlug: 'kai-institute-mknoedel',
       targetId: 84923503,
@@ -371,7 +372,7 @@ describe('toAppEntity', () => {
       createdOn: 1630607828000,
       updatedOn: 1630609099000,
       events: [],
-      repositorySelection: undefined,
+      repositorySelection: 'all',
       singleFileName: '',
       hasMultipleSingleFiles: false,
       singleFilePaths: [],
@@ -533,11 +534,11 @@ describe('toEnvironmentEntity', () => {
   };
 
   test('properties transferred', () => {
-    const entity = toEnvironmentEntity(
-      apiResponse as any,
-      'SomeOrg',
-      'SomeRepo',
-    );
+    const entity = toEnvironmentEntity(apiResponse as any, 'SomeOrg', {
+      name: 'SomeRepo',
+      _key: 'pretendKey',
+      databaseId: 'pretendId',
+    });
     expect(entity).toEqual({
       _class: ['Configuration'],
       _type: 'github_environment',
@@ -560,16 +561,19 @@ describe('toEnvironmentEntity', () => {
       createdOn: 1629762800000,
       updatedOn: 1629762800000,
       protectionRulesExist: true,
+      parentRepoName: 'SomeRepo',
+      parentRepoKey: 'pretendKey',
+      parentRepoDatabaseId: 'pretendId',
     });
   });
 
   test('missing protection rules detected', () => {
     apiResponse.protection_rules = [];
-    const entity = toEnvironmentEntity(
-      apiResponse as any,
-      'SomeOrg',
-      'SomeRepo',
-    );
+    const entity = toEnvironmentEntity(apiResponse as any, 'SomeOrg', {
+      name: 'SomeRepo',
+      _key: 'pretendKey',
+      databaseId: 'pretendId',
+    });
     expect(entity).toEqual({
       _class: ['Configuration'],
       _type: 'github_environment',
@@ -592,6 +596,9 @@ describe('toEnvironmentEntity', () => {
       createdOn: 1629762800000,
       updatedOn: 1629762800000,
       protectionRulesExist: false,
+      parentRepoName: 'SomeRepo',
+      parentRepoKey: 'pretendKey',
+      parentRepoDatabaseId: 'pretendId',
     });
   });
 });
@@ -617,20 +624,22 @@ describe('toEnvSecretEntity', () => {
       name: 'Ambiente',
       displayName: 'Ambiente',
       webLink:
-        'https://github.com/SomeOrg/SomeRepo/settings/environments/288429400/edit',
+        'https://github.com/SomeOrg/Test-repo/settings/environments/288429400/edit',
       id: '288429400',
       nodeId: 'MDExOkVudmlyb25tZW50Mjg4NDI5NDAw',
-      url: 'https://api.github.com/repos/SomeOrg/SomeRepo/environments/Ambiente',
+      url: 'https://api.github.com/repos/SomeOrg/Test-repo/environments/Ambiente',
       htmlUrl:
-        'https://github.com/SomeOrg/SomeRepo/deployments/activity_log?environments_filter=Ambiente',
+        'https://github.com/SomeOrg/Test-repo/deployments/activity_log?environments_filter=Ambiente',
       createdOn: 1629762800000,
       updatedOn: 1629762800000,
       protectionRulesExist: false,
+      parentRepoName: 'Test-repo',
+      parentRepoKey: 'pretendKey',
+      parentRepoDatabaseId: 'pretendId',
     } as EnvironmentEntity;
     const entity = toEnvSecretEntity(
       apiResponse as any,
       'SomeOrg',
-      'Test-repo',
       environment,
     );
     expect(entity).toEqual({

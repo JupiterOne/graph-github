@@ -47,6 +47,7 @@ import {
   AccountType,
   EnvironmentEntity,
   RepoAllowRelationship,
+  RepoKeyAndName,
 } from '../types';
 import {
   decomposePermissions,
@@ -108,7 +109,6 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
     displayName: data.app_slug,
     webLink: data.html_url,
     installationId: data.id, //the installation id
-    respositorySelection: data.respository_selection,
     appId: data.app_id,
     appSlug: data.app_slug,
     targetId: data.target_id,
@@ -116,7 +116,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
     events: data.events,
-    repositorySelection: data.respository_selection,
+    repositorySelection: data.repository_selection,
     singleFileName: data.single_file_name || '',
     hasMultipleSingleFiles: data.has_multiple_single_files,
     singleFilePaths: data.single_file_paths,
@@ -179,7 +179,7 @@ export function toRepoSecretEntity(
 export function toEnvironmentEntity(
   data: RepoEnvironmentQueryResponse,
   orgLogin: string,
-  repoName: string,
+  repoTag: RepoKeyAndName,
 ): EnvironmentEntity {
   let protRulesExist = false;
   if (data.protection_rules && data.protection_rules[0]) {
@@ -191,7 +191,7 @@ export function toEnvironmentEntity(
     _key: data.node_id,
     name: data.name,
     displayName: data.name,
-    webLink: `https://github.com/${orgLogin}/${repoName}/settings/environments/${data.id}/edit`,
+    webLink: `https://github.com/${orgLogin}/${repoTag.name}/settings/environments/${data.id}/edit`,
     id: String(data.id), //force to string to pass SDK validation
     nodeId: data.node_id,
     url: data.url,
@@ -199,6 +199,10 @@ export function toEnvironmentEntity(
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
     protectionRulesExist: protRulesExist,
+    //parent properties for use in creating envSecrets entities
+    parentRepoName: repoTag.name,
+    parentRepoKey: repoTag._key,
+    parentRepoDatabaseId: repoTag.databaseId,
   };
   setRawData(envEntity, { name: 'default', rawData: data });
   return envEntity;
@@ -207,8 +211,7 @@ export function toEnvironmentEntity(
 export function toEnvSecretEntity(
   data: SecretQueryResponse,
   orgLogin: string,
-  repoName: string,
-  environment: EnvironmentEntity,
+  env: EnvironmentEntity,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
     _class: GITHUB_SECRET_ENTITY_CLASS,
@@ -216,11 +219,11 @@ export function toEnvSecretEntity(
     _key: getSecretEntityKey({
       name: data.name,
       secretOwnerType: 'Env',
-      secretOwnerName: environment.name,
+      secretOwnerName: env.name,
     }),
     name: data.name,
     displayName: data.name,
-    webLink: `https://github.com/${orgLogin}/${repoName}/settings/environments/${environment.id}/edit`,
+    webLink: `https://github.com/${orgLogin}/${env.parentRepoName}/settings/environments/${env.id}/edit`,
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: 'selected',
@@ -311,6 +314,7 @@ export function toOrganizationMemberEntity(
     createdOn: parseTimePropertyValue(data.createdAt),
     updatedOn: parseTimePropertyValue(data.updatedAt),
     databaseId: data.databaseId,
+    id: data.id,
     node: data.id,
     employee: data.isEmployee,
     location: data.location || '',
@@ -338,6 +342,7 @@ export function toOrganizationMemberEntityFromTeamMember(
     role: data.role,
     webLink: 'https://github.com/' + data.login,
     node: data.id,
+    id: data.id,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -359,6 +364,7 @@ export function toOrganizationCollaboratorEntity(
     siteAdmin: false,
     webLink: 'https://github.com/' + data.login,
     node: data.id,
+    id: data.id,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;

@@ -17,10 +17,13 @@ export default async function getStepStartStates(
     ['fetch-teams']: { disabled: false },
     ['fetch-collaborators']: { disabled: false },
     ['fetch-prs']: { disabled: false },
+    ['fetch-issues']: { disabled: !scopes.repoIssues },
     ['fetch-apps']: { disabled: !scopes.orgAdmin },
+    ['fetch-environments']: { disabled: !scopes.repoEnvironments },
     ['fetch-org-secrets']: { disabled: !scopes.orgSecrets },
     ['fetch-repo-secrets']: { disabled: !scopes.repoSecrets },
-    ['fetch-environments']: { disabled: !scopes.repoEnvironments },
-    ['fetch-issues']: { disabled: !scopes.repoIssues },
+    ['fetch-env-secrets']: {
+      disabled: !scopes.repoSecrets || !scopes.repoEnvironments,
+    },
   };
 }

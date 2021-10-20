@@ -23,7 +23,6 @@ export interface AppEntity extends Entity {
   displayName: string;
   webLink: string;
   installationId: string; //the installation id
-  respositorySelection: string;
   appId: number;
   appSlug: string; //a name for the app
   targetId: number;
@@ -65,6 +64,10 @@ export interface EnvironmentEntity extends Entity {
   createdOn: number | undefined;
   updatedOn: number | undefined;
   protectionRulesExist: boolean;
+  // parent properties used in creating environmental secret entities
+  parentRepoName: string;
+  parentRepoKey: string;
+  parentRepoDatabaseId: string;
 }
 
 export interface TeamEntity extends Entity {

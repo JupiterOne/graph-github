@@ -8,25 +8,15 @@ import {
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { RepoKeyAndName, EnvironmentEntity, SecretEntity } from '../types';
+import { RepoKeyAndName, EnvironmentEntity } from '../types';
 import {
   GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_REPO_SECRET_ENTITY_TYPE,
-  GITHUB_ORG_SECRET_ENTITY_TYPE,
-  GITHUB_ENV_SECRET_ENTITY_TYPE,
-  GITHUB_SECRET_ENTITY_CLASS,
   GITHUB_ENVIRONMENT_ENTITY_TYPE,
   GITHUB_ENVIRONMENT_ENTITY_CLASS,
   GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
-  GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
   GITHUB_REPO_TAGS_ARRAY,
-  GITHUB_ORG_SECRET_BY_NAME_MAP,
 } from '../constants';
-import { toEnvironmentEntity, toEnvSecretEntity } from '../sync/converters';
+import { toEnvironmentEntity } from '../sync/converters';
 
 export async function fetchEnvironments({
   instance,
@@ -45,96 +35,21 @@ export async function fetchEnvironments({
     );
   }
 
-  const orgSecretEntities = await jobState.getData<string[]>(
-    GITHUB_ORG_SECRET_BY_NAME_MAP,
-  );
-  if (!orgSecretEntities) {
-    throw new IntegrationMissingKeyError(
-      `Expected orgsecrets.ts to have set ${GITHUB_ORG_SECRET_BY_NAME_MAP} in jobState.`,
-    );
-  }
-
-  const repoSecretEntitiesByRepoNameMap = await jobState.getData<string[]>(
-    GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
-  );
-  if (!repoSecretEntitiesByRepoNameMap) {
-    throw new IntegrationMissingKeyError(
-      `Expected reposecrets.ts to have set ${GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP} in jobState.`,
-    );
-  }
-
   for (const repoTag of repoTags) {
-    await apiClient.iterateEnvironments(
-      repoTag.databaseId,
-      repoTag.name,
-      async (env) => {
-        const envEntity = (await jobState.addEntity(
-          toEnvironmentEntity(env, apiClient.accountClient.login, repoTag.name),
-        )) as EnvironmentEntity;
-        await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.HAS,
-            fromType: GITHUB_REPO_ENTITY_TYPE,
-            toType: GITHUB_ENVIRONMENT_ENTITY_TYPE,
-            fromKey: repoTag._key,
-            toKey: envEntity._key,
-          }),
-        );
-
-        if (env.envSecrets) {
-          for (const secret of env.envSecrets) {
-            const secretEntity = (await jobState.addEntity(
-              toEnvSecretEntity(
-                secret,
-                apiClient.accountClient.login,
-                repoTag.name,
-                envEntity,
-              ),
-            )) as SecretEntity;
-
-            await jobState.addRelationship(
-              createDirectRelationship({
-                _class: RelationshipClass.HAS,
-                from: envEntity,
-                to: secretEntity,
-              }),
-            );
-
-            await jobState.addRelationship(
-              createDirectRelationship({
-                _class: RelationshipClass.USES,
-                fromType: GITHUB_REPO_ENTITY_TYPE,
-                toType: GITHUB_ENV_SECRET_ENTITY_TYPE,
-                fromKey: repoTag._key,
-                toKey: secretEntity._key,
-              }),
-            );
-
-            if (orgSecretEntities[secret.name]) {
-              await jobState.addRelationship(
-                createDirectRelationship({
-                  _class: RelationshipClass.OVERRIDES,
-                  from: secretEntity,
-                  to: orgSecretEntities[secret.name],
-                }),
-              );
-            }
-
-            const repoSecretEntities =
-              repoSecretEntitiesByRepoNameMap[repoTag.name];
-            if (repoSecretEntities && repoSecretEntities[secret.name]) {
-              await jobState.addRelationship(
-                createDirectRelationship({
-                  _class: RelationshipClass.OVERRIDES,
-                  from: secretEntity,
-                  to: repoSecretEntities[secret.name],
-                }),
-              );
-            }
-          } //end of env secrets for loop
-        }
-      }, //end of environments iterator
-    );
+    await apiClient.iterateEnvironments(repoTag.name, async (env) => {
+      const envEntity = (await jobState.addEntity(
+        toEnvironmentEntity(env, apiClient.accountClient.login, repoTag),
+      )) as EnvironmentEntity;
+      await jobState.addRelationship(
+        createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          fromType: GITHUB_REPO_ENTITY_TYPE,
+          toType: GITHUB_ENVIRONMENT_ENTITY_TYPE,
+          fromKey: repoTag._key,
+          toKey: envEntity._key,
+        }),
+      );
+    });
   }
 }
 
@@ -148,11 +63,6 @@ export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
         _type: GITHUB_ENVIRONMENT_ENTITY_TYPE,
         _class: GITHUB_ENVIRONMENT_ENTITY_CLASS,
       },
-      {
-        resourceName: 'GitHub Env Secret',
-        _type: GITHUB_ENV_SECRET_ENTITY_TYPE,
-        _class: GITHUB_SECRET_ENTITY_CLASS,
-      },
     ],
     relationships: [
       {
@@ -161,32 +71,8 @@ export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
         sourceType: GITHUB_REPO_ENTITY_TYPE,
         targetType: GITHUB_ENVIRONMENT_ENTITY_TYPE,
       },
-      {
-        _type: GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GITHUB_ENVIRONMENT_ENTITY_TYPE,
-        targetType: GITHUB_ENV_SECRET_ENTITY_TYPE,
-      },
-      {
-        _type: GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.USES,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_ENV_SECRET_ENTITY_TYPE,
-      },
-      {
-        _type: GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.OVERRIDES,
-        sourceType: GITHUB_ENV_SECRET_ENTITY_TYPE,
-        targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,
-      },
-      {
-        _type: GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.OVERRIDES,
-        sourceType: GITHUB_ENV_SECRET_ENTITY_TYPE,
-        targetType: GITHUB_REPO_SECRET_ENTITY_TYPE,
-      },
     ],
-    dependsOn: ['fetch-repo-secrets'],
+    dependsOn: ['fetch-repos'],
     executionHandler: fetchEnvironments,
   },
 ];

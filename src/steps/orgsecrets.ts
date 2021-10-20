@@ -67,7 +67,7 @@ export async function fetchOrgSecrets({
       }),
     );
 
-    //for every org type, add a USES relationship for all repos with access to secret
+    //for every org secret, add a USES relationship for all repos with access to secret
     if (secret.repos) {
       for (const repoTag of secret.repos) {
         await jobState.addRelationship(

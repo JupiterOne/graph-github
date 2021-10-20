@@ -24,6 +24,7 @@ import { fetchOrgSecrets } from './orgsecrets';
 import { fetchRepoSecrets } from './reposecrets';
 import { fetchEnvironments } from './environments';
 import { fetchIssues } from './issues';
+import { fetchEnvSecrets } from './envsecrets';
 
 jest.setTimeout(20000);
 
@@ -54,10 +55,11 @@ test('should collect data', async () => {
   await fetchTeams(context);
   await fetchCollaborators(context);
   await fetchPrs(context);
+  await fetchIssues(context);
+  await fetchEnvironments(context);
   await fetchOrgSecrets(context);
   await fetchRepoSecrets(context);
-  await fetchEnvironments(context);
-  await fetchIssues(context);
+  await fetchEnvSecrets(context);
 
   // Review snapshot, failure is a regression
   expect({
@@ -253,9 +255,10 @@ test('should collect data', async () => {
     },
   });
 
-  const secretRepoOrgOverrideRelationships = context.jobState.collectedRelationships.filter(
-    (r) => r._type === GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-  );
+  const secretRepoOrgOverrideRelationships =
+    context.jobState.collectedRelationships.filter(
+      (r) => r._type === GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
+    );
   expect(secretRepoOrgOverrideRelationships.length).toBeGreaterThan(0);
 
   const envs = context.jobState.collectedEntities.filter((e) =>
@@ -303,14 +306,16 @@ test('should collect data', async () => {
     },
   });
 
-  const secretEnvOrgOverrideRelationships = context.jobState.collectedRelationships.filter(
-    (r) => r._type === GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-  );
+  const secretEnvOrgOverrideRelationships =
+    context.jobState.collectedRelationships.filter(
+      (r) => r._type === GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
+    );
   expect(secretEnvOrgOverrideRelationships.length).toBeGreaterThan(0);
 
-  const secretEnvRepoOverrideRelationships = context.jobState.collectedRelationships.filter(
-    (r) => r._type === GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
-  );
+  const secretEnvRepoOverrideRelationships =
+    context.jobState.collectedRelationships.filter(
+      (r) => r._type === GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
+    );
   expect(secretEnvRepoOverrideRelationships.length).toBeGreaterThan(0);
 
   const issues = context.jobState.collectedEntities.filter(

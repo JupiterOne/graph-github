@@ -54,59 +54,55 @@ export async function fetchEnvSecrets({
   await jobState.iterateEntities<EnvironmentEntity>(
     { _type: GITHUB_ENVIRONMENT_ENTITY_TYPE },
     async (envEntity) => {
-      await apiClient.iterateEnvSecrets(
-        envEntity.parentRepoDatabaseId,
-        envEntity.name,
-        async (envSecret) => {
-          const secretEntity = (await jobState.addEntity(
-            toEnvSecretEntity(
-              envSecret,
-              apiClient.accountClient.login,
-              envEntity,
-            ),
-          )) as SecretEntity;
+      await apiClient.iterateEnvSecrets(envEntity, async (envSecret) => {
+        const secretEntity = (await jobState.addEntity(
+          toEnvSecretEntity(
+            envSecret,
+            apiClient.accountClient.login,
+            envEntity,
+          ),
+        )) as SecretEntity;
 
+        await jobState.addRelationship(
+          createDirectRelationship({
+            _class: RelationshipClass.HAS,
+            from: envEntity,
+            to: secretEntity,
+          }),
+        );
+
+        await jobState.addRelationship(
+          createDirectRelationship({
+            _class: RelationshipClass.USES,
+            fromType: GITHUB_REPO_ENTITY_TYPE,
+            toType: GITHUB_ENV_SECRET_ENTITY_TYPE,
+            fromKey: envEntity.parentRepoKey,
+            toKey: secretEntity._key,
+          }),
+        );
+
+        if (orgSecretEntities[envSecret.name]) {
           await jobState.addRelationship(
             createDirectRelationship({
-              _class: RelationshipClass.HAS,
-              from: envEntity,
-              to: secretEntity,
+              _class: RelationshipClass.OVERRIDES,
+              from: secretEntity,
+              to: orgSecretEntities[envSecret.name],
             }),
           );
+        }
 
+        const repoSecretEntities =
+          repoSecretEntitiesByRepoNameMap[envEntity.parentRepoName];
+        if (repoSecretEntities && repoSecretEntities[envSecret.name]) {
           await jobState.addRelationship(
             createDirectRelationship({
-              _class: RelationshipClass.USES,
-              fromType: GITHUB_REPO_ENTITY_TYPE,
-              toType: GITHUB_ENV_SECRET_ENTITY_TYPE,
-              fromKey: envEntity.parentRepoKey,
-              toKey: secretEntity._key,
+              _class: RelationshipClass.OVERRIDES,
+              from: secretEntity,
+              to: repoSecretEntities[envSecret.name],
             }),
           );
-
-          if (orgSecretEntities[envSecret.name]) {
-            await jobState.addRelationship(
-              createDirectRelationship({
-                _class: RelationshipClass.OVERRIDES,
-                from: secretEntity,
-                to: orgSecretEntities[envSecret.name],
-              }),
-            );
-          }
-
-          const repoSecretEntities =
-            repoSecretEntitiesByRepoNameMap[envEntity.parentRepoName];
-          if (repoSecretEntities && repoSecretEntities[envSecret.name]) {
-            await jobState.addRelationship(
-              createDirectRelationship({
-                _class: RelationshipClass.OVERRIDES,
-                from: secretEntity,
-                to: repoSecretEntities[envSecret.name],
-              }),
-            );
-          }
-        },
-      );
+        }
+      });
     },
   );
 }

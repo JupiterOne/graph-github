@@ -7,6 +7,7 @@ import {
 import { IntegrationConfig } from './config';
 import {
   AccountType,
+  EnvironmentEntity,
   RepoEntity,
   RepoKeyAndName,
   TokenPermissions,
@@ -224,8 +225,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateEnvSecrets(
-    repoDatabaseId: string,
-    envName: string,
+    envEntity: EnvironmentEntity,
     iteratee: ResourceIteratee<SecretQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
@@ -233,8 +233,9 @@ export class APIClient {
     }
     if (this.scopes.repoSecrets) {
       const envSecrets = await this.accountClient.getEnvSecrets(
-        repoDatabaseId,
-        envName,
+        envEntity.parentRepoDatabaseId,
+        envEntity.name,
+        envEntity.parentRepoName,
       );
       for (const envSecret of envSecrets) {
         await iteratee(envSecret);

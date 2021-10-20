@@ -220,6 +220,7 @@ export class APIClient {
           const envSecrets = await this.accountClient.getEnvSecrets(
             repoDatabaseId,
             env.name,
+            repoName,
           );
           env.envSecrets = envSecrets;
         }

@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Always throw an `IntegrationError` when repository environment secrets can not
+  be ingested.
+
 ## 1.7.0 - 2021-10-18
 
 ### Added

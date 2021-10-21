@@ -361,7 +361,13 @@ export class APIClient {
       });
     }
 
-    this.processScopes(myPermissions);
+    if (myPermissions) {
+      this.processScopes(myPermissions);
+    } else {
+      throw new IntegrationValidationError(
+        'Module setupAccountClient failed to receive any permissions from client authentication.',
+      );
+    }
 
     let login: string = this.config.githubAppDefaultLogin;
     const installation = await getInstallation(appClient, installationId);

@@ -3,7 +3,10 @@ import { get } from 'lodash';
 import { retry, AttemptContext } from '@lifeomic/attempt';
 import { URL } from 'url';
 
-import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
+import {
+  IntegrationLogger,
+  IntegrationError,
+} from '@jupiterone/integration-sdk-core';
 
 import fragments from './fragments';
 import {
@@ -358,8 +361,28 @@ export class GitHubGraphQLClient {
 
   private async retryGraphQL(query: () => Promise<any>) {
     const { logger } = this;
-    // https://github.com/lifeomic/attempt for options on retry
-    return await retry(query, {
+    /*
+     * we have to account for normal HTTP errors (4xx/5xx), but also the case where
+     * if GraphQL rate limits are exceeded, it might give a [200] with a valid JSON like:
+     *
+     * {"message":"API rate limit exceeded for 98.53.189.133. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"}
+     *
+     * Check https://github.com/lifeomic/attempt for options on retry
+     *
+     */
+
+    const queryWithRateLimitCatch = async () => {
+      const response = await query();
+      if (response.message?.includes('API rate limit exceeded')) {
+        throw new IntegrationError({
+          code: '429',
+          message: response.message,
+        });
+      }
+      return response;
+    };
+
+    return await retry(queryWithRateLimitCatch, {
       maxAttempts: 5,
       delay: 15_000, //15 seconds to start
       factor: 2, //exponential backoff factor. with 15 sec start and 5 attempts, longest delay is 8 min

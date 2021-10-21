@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.7.1 - 2021-10-21
+
 ### Added
 
 - Property `id` to `github_member` entities

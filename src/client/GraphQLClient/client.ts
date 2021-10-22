@@ -5,7 +5,7 @@ import { URL } from 'url';
 
 import {
   IntegrationLogger,
-  IntegrationError,
+  IntegrationProviderAPIError,
 } from '@jupiterone/integration-sdk-core';
 
 import fragments from './fragments';
@@ -78,12 +78,15 @@ export class GitHubGraphQLClient {
         { queryCursors },
         'Fetching batch of pull requests from GraphQL',
       );
-      const pullRequestResponse = await this.retryGraphQL(async () => {
-        return await queryPullRequests({
-          query,
-          ...queryCursors,
-        });
-      });
+      const pullRequestResponse = await this.retryGraphQL(
+        pullRequestQueryString,
+        async () => {
+          return await queryPullRequests({
+            query,
+            ...queryCursors,
+          });
+        },
+      );
       pullRequestsQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
@@ -215,12 +218,15 @@ export class GitHubGraphQLClient {
         { queryCursors },
         'Fetching batch of issues from GraphQL',
       );
-      const issueResponse = await this.retryGraphQL(async () => {
-        return await queryIssues({
-          query,
-          ...queryCursors,
-        });
-      });
+      const issueResponse = await this.retryGraphQL(
+        issueQueryString,
+        async () => {
+          return await queryIssues({
+            query,
+            ...queryCursors,
+          });
+        },
+      );
       issuesQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = issueResponse.rateLimit;
       this.logger.info(
@@ -297,7 +303,7 @@ export class GitHubGraphQLClient {
     const query = this.graph(queryString);
 
     do {
-      const response = await this.retryGraphQL(async () => {
+      const response = await this.retryGraphQL(queryString, async () => {
         return await query({
           ...extraQueryParams,
           ...queryCursors,
@@ -359,7 +365,7 @@ export class GitHubGraphQLClient {
     return resources;
   }
 
-  private async retryGraphQL(query: () => Promise<any>) {
+  private async retryGraphQL(queryString: string, query: () => Promise<any>) {
     const { logger } = this;
     /*
      * we have to account for normal HTTP errors (4xx/5xx), but also the case where
@@ -372,11 +378,26 @@ export class GitHubGraphQLClient {
      */
 
     const queryWithRateLimitCatch = async () => {
-      const response = await query();
+      let response;
+      try {
+        response = await query();
+      } catch (err) {
+        throw new IntegrationProviderAPIError({
+          message: 'Error during GraphQL query',
+          status: err.status,
+          statusText: `Error msg: ${err.statusText}, query string: ${queryString}`,
+          cause: err,
+          endpoint: `https://api.github.com/graphql`,
+        });
+      }
+
       if (response.message?.includes('API rate limit exceeded')) {
-        throw new IntegrationError({
-          code: '429',
+        throw new IntegrationProviderAPIError({
           message: response.message,
+          status: 429,
+          statusText: `Error msg: ${response.message}, query string: ${queryString}`,
+          cause: undefined,
+          endpoint: `https://api.github.com/graphql`,
         });
       }
       return response;

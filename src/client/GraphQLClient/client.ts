@@ -405,8 +405,8 @@ export class GitHubGraphQLClient {
 
     return await retry(queryWithRateLimitCatch, {
       maxAttempts: 5,
-      delay: 15_000, //15 seconds to start
-      factor: 2, //exponential backoff factor. with 15 sec start and 5 attempts, longest delay is 8 min
+      delay: 30_000, //30 seconds to start
+      factor: 2, //exponential backoff factor. with 30 sec start and 5 attempts, longest delay is 8 min
       handleError(error: any, attemptContext: AttemptContext) {
         // Github has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
         // GitHub guidance is to "wait a few minutes" when we get one of these errors.

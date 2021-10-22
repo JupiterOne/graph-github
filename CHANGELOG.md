@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Better error handling, including support for when GitHub rate-limiting errors
+  are provided with non-error (200) codes.
+
 ## 1.7.1 - 2021-10-21
 
 ### Added
@@ -24,8 +29,6 @@ and this project adheres to
 
 - Changed incorrectly spelled `github_app` property `respositorySelected` to
   `repositorySelected`
-- Better error handling, including support for when GitHub errors are provided
-  with non-error (200) codes.
 
 ## 1.7.0 - 2021-10-18
 

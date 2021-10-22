@@ -365,7 +365,7 @@ export class APIClient {
       this.processScopes(myPermissions);
     } else {
       throw new IntegrationValidationError(
-        'Module setupAccountClient failed to receive any permissions from client authentication.',
+        'Installed GitHub app did not provide any permissions. Aborting step.',
       );
     }
 

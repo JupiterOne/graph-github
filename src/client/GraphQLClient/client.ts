@@ -368,17 +368,18 @@ export class GitHubGraphQLClient {
   private async retryGraphQL(queryString: string, query: () => Promise<any>) {
     const { logger } = this;
     /*
-     * we have to account for normal HTTP errors (4xx/5xx), but also the case where
-     * if GraphQL rate limits are exceeded, it might give a [200] with a valid JSON like:
+     * in addition to normal HTTP errors (4xx/5xx),
+     * GitHub sometimes returns an error message with a 200 code
+     * for example, if GraphQL rate limits are exceeded, it might give a [200] with a valid JSON like:
      *
      * {"message":"API rate limit exceeded for 98.53.189.133. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"}
      *
-     * Check https://github.com/lifeomic/attempt for options on retry
-     *
      */
 
+    //everything in this function is going into the retry function below
     const queryWithRateLimitCatch = async () => {
       let response;
+      //check for 4xx/5xx errors
       try {
         response = await query();
       } catch (err) {
@@ -391,6 +392,7 @@ export class GitHubGraphQLClient {
         });
       }
 
+      //check for Github special "error with a 200 code"
       if (response.message?.includes('API rate limit exceeded')) {
         throw new IntegrationProviderAPIError({
           message: response.message,
@@ -403,6 +405,7 @@ export class GitHubGraphQLClient {
       return response;
     };
 
+    // Check https://github.com/lifeomic/attempt for options on retry
     return await retry(queryWithRateLimitCatch, {
       maxAttempts: 5,
       delay: 30_000, //30 seconds to start
@@ -414,6 +417,7 @@ export class GitHubGraphQLClient {
         // this link is REST specific - however, the limits might apply to GraphQL as well,
         // and our GraphQL client is not using the @octokit throttling and retry plugins like our REST client
         // therefore some retry logic is appropriate here
+        // primary rate limits appear as [200] messages, so don't trigger this error function
         if (
           error.message?.includes('You have exceeded a secondary rate limit')
         ) {
@@ -421,7 +425,6 @@ export class GitHubGraphQLClient {
             { attemptContext, error },
             'Hit a "Secondary Rate Limit" when attempting to query GraphQL. Waiting before trying again.',
           );
-          // TODO: handle Primary Rate Limit errors as well
         } else {
           if (error.retryable === false) {
             attemptContext.abort();

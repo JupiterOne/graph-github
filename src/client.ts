@@ -361,7 +361,13 @@ export class APIClient {
       });
     }
 
-    this.processScopes(myPermissions);
+    if (myPermissions) {
+      this.processScopes(myPermissions);
+    } else {
+      throw new IntegrationValidationError(
+        'Installed GitHub app did not provide any permissions. Aborting step.',
+      );
+    }
 
     let login: string = this.config.githubAppDefaultLogin;
     const installation = await getInstallation(appClient, installationId);

@@ -103,7 +103,7 @@ export function sanitizeConfig(config: IntegrationConfig) {
     if (content) {
       config.githubAppPrivateKey = content.toString();
     } else {
-      throw new Error(
+      throw new IntegrationValidationError(
         `'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH' ${localPath}: cannot read content`,
       );
     }

@@ -112,10 +112,15 @@ export default class OrganizationAccountClient {
           login: this.login,
         },
       );
-      response = organization![0] as OrgQueryResponse;
+      response = organization;
       return rateLimitConsumed;
     });
-    return response;
+    this.validateGraphQLResponseAsArray(
+      response,
+      'organization',
+      ACCOUNT_QUERY_STRING,
+    );
+    return response[0];
   }
 
   async getMembers(): Promise<OrgMemberQueryResponse[]> {
@@ -131,7 +136,12 @@ export default class OrganizationAccountClient {
       response = membersWithRole;
       return rateLimitConsumed;
     });
-    return response || [];
+    this.validateGraphQLResponseAsArray(
+      response,
+      'membersWithRole',
+      USERS_QUERY_STRING,
+    );
+    return response;
   }
 
   async getTeams(): Promise<OrgTeamQueryResponse[]> {
@@ -146,7 +156,8 @@ export default class OrganizationAccountClient {
       response = teams as OrgTeamQueryResponse[];
       return rateLimitConsumed;
     });
-    return response || [];
+    this.validateGraphQLResponseAsArray(response, 'teams', TEAMS_QUERY_STRING);
+    return response;
   }
 
   async getTeamMembers(): Promise<OrgTeamMemberQueryResponse[]> {
@@ -161,7 +172,12 @@ export default class OrganizationAccountClient {
       response = members as OrgTeamMemberQueryResponse[];
       return rateLimitConsumed;
     });
-    return response || [];
+    this.validateGraphQLResponseAsArray(
+      response,
+      'team members',
+      TEAM_MEMBERS_QUERY_STRING,
+    );
+    return response;
   }
 
   async getRepositories(slugs?: string[]): Promise<OrgRepoQueryResponse[]> {
@@ -177,11 +193,15 @@ export default class OrganizationAccountClient {
       return rateLimitConsumed;
     });
 
+    this.validateGraphQLResponseAsArray(
+      response,
+      'repositories',
+      REPOS_QUERY_STRING,
+    );
     if (slugs) {
-      // TODO: allow selection of specific resources in the GQL. should be p ez
-      return (response || []).filter((repo) => slugs.includes(repo.name));
+      return response.filter((repo) => slugs.includes(repo.name));
     } else {
-      return response || [];
+      return response;
     }
   }
 
@@ -198,7 +218,12 @@ export default class OrganizationAccountClient {
       response = teamRepositories as OrgTeamRepoQueryResponse[];
       return rateLimitConsumed;
     });
-    return response || [];
+    this.validateGraphQLResponseAsArray(
+      response,
+      'team repositories',
+      TEAM_REPOS_QUERY_STRING,
+    );
+    return response;
   }
 
   async getCollaborators(): Promise<Collaborator[]> {
@@ -214,7 +239,12 @@ export default class OrganizationAccountClient {
       response = collaborators as Collaborator[];
       return rateLimitConsumed;
     });
-    return response || [];
+    this.validateGraphQLResponseAsArray(
+      response,
+      'collaborators',
+      COLLABORATORS_QUERY_STRING,
+    );
+    return response;
   }
 
   async iteratePullRequestEntities(
@@ -587,5 +617,33 @@ export default class OrganizationAccountClient {
       sanitizedExecutionTime = '2000-01-01';
     }
     return sanitizedExecutionTime;
+  }
+
+  private validateGraphQLResponseAsArray(
+    response,
+    queryName: string,
+    query: string,
+  ) {
+    if (!Array.isArray(response)) {
+      /*
+       * this happens if the GraphQL call returned a 200 response, so no error,
+       * but didn't include the desired property in the reply for some reason
+       * (rate limiting does this sometimes)
+       * or returned malformed data (this has not been witnessed, but could happen)
+       *
+       * if an error is thrown during the GraphQL API call, we won't get this far
+       * this is just a safety check for weird non-error errors that were causing
+       * the integration to infer an assertion of no entities of that type, and
+       * hence delete entities from the graph incorrectly
+       *
+       */
+      throw new IntegrationProviderAPIError({
+        message: 'Error during getAccount GraphQL query',
+        status: 404,
+        statusText: `GraphQL response for ${queryName} undefined or malformed. Query string: ${query}`,
+        cause: undefined,
+        endpoint: `https://api.github.com/graphql`,
+      });
+    }
   }
 }

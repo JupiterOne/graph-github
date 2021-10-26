@@ -3,7 +3,10 @@ import { get } from 'lodash';
 import { retry, AttemptContext } from '@lifeomic/attempt';
 import { URL } from 'url';
 
-import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
+import {
+  IntegrationLogger,
+  IntegrationProviderAPIError,
+} from '@jupiterone/integration-sdk-core';
 
 import fragments from './fragments';
 import {
@@ -75,12 +78,15 @@ export class GitHubGraphQLClient {
         { queryCursors },
         'Fetching batch of pull requests from GraphQL',
       );
-      const pullRequestResponse = await this.retryGraphQL(async () => {
-        return await queryPullRequests({
-          query,
-          ...queryCursors,
-        });
-      });
+      const pullRequestResponse = await this.retryGraphQL(
+        pullRequestQueryString,
+        async () => {
+          return await queryPullRequests({
+            query,
+            ...queryCursors,
+          });
+        },
+      );
       pullRequestsQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
@@ -212,12 +218,15 @@ export class GitHubGraphQLClient {
         { queryCursors },
         'Fetching batch of issues from GraphQL',
       );
-      const issueResponse = await this.retryGraphQL(async () => {
-        return await queryIssues({
-          query,
-          ...queryCursors,
-        });
-      });
+      const issueResponse = await this.retryGraphQL(
+        issueQueryString,
+        async () => {
+          return await queryIssues({
+            query,
+            ...queryCursors,
+          });
+        },
+      );
       issuesQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = issueResponse.rateLimit;
       this.logger.info(
@@ -294,7 +303,7 @@ export class GitHubGraphQLClient {
     const query = this.graph(queryString);
 
     do {
-      const response = await this.retryGraphQL(async () => {
+      const response = await this.retryGraphQL(queryString, async () => {
         return await query({
           ...extraQueryParams,
           ...queryCursors,
@@ -356,13 +365,51 @@ export class GitHubGraphQLClient {
     return resources;
   }
 
-  private async retryGraphQL(query: () => Promise<any>) {
+  private async retryGraphQL(queryString: string, query: () => Promise<any>) {
     const { logger } = this;
-    // https://github.com/lifeomic/attempt for options on retry
-    return await retry(query, {
+    /*
+     * in addition to normal HTTP errors (4xx/5xx),
+     * GitHub sometimes returns an error message with a 200 code
+     * for example, if GraphQL rate limits are exceeded, it might give a [200] with a valid JSON like:
+     *
+     * {"message":"API rate limit exceeded for 98.53.189.133. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"}
+     *
+     */
+
+    //everything in this function is going into the retry function below
+    const queryWithRateLimitCatch = async () => {
+      let response;
+      //check for 4xx/5xx errors
+      try {
+        response = await query();
+      } catch (err) {
+        throw new IntegrationProviderAPIError({
+          message: 'Error during GraphQL query',
+          status: err.status,
+          statusText: `Error msg: ${err.statusText}, query string: ${queryString}`,
+          cause: err,
+          endpoint: `https://api.github.com/graphql`,
+        });
+      }
+
+      //check for Github special "error with a 200 code"
+      if (response.message?.includes('API rate limit exceeded')) {
+        throw new IntegrationProviderAPIError({
+          message: response.message,
+          status: 429,
+          statusText: `Error msg: ${response.message}, query string: ${queryString}`,
+          cause: undefined,
+          endpoint: `https://api.github.com/graphql`,
+        });
+      }
+      return response;
+    };
+
+    // Check https://github.com/lifeomic/attempt for options on retry
+    return await retry(queryWithRateLimitCatch, {
       maxAttempts: 5,
-      delay: 15_000, //15 seconds to start
-      factor: 2, //exponential backoff factor. with 15 sec start and 5 attempts, longest delay is 8 min
+      delay: 30_000, //30 seconds to start
+      factor: 2, //exponential backoff factor. with 30 sec start and 5 attempts, longest delay is 8 min
       handleError(error: any, attemptContext: AttemptContext) {
         // Github has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
         // GitHub guidance is to "wait a few minutes" when we get one of these errors.
@@ -370,6 +417,7 @@ export class GitHubGraphQLClient {
         // this link is REST specific - however, the limits might apply to GraphQL as well,
         // and our GraphQL client is not using the @octokit throttling and retry plugins like our REST client
         // therefore some retry logic is appropriate here
+        // primary rate limits appear as [200] messages, so don't trigger this error function
         if (
           error.message?.includes('You have exceeded a secondary rate limit')
         ) {
@@ -377,7 +425,6 @@ export class GitHubGraphQLClient {
             { attemptContext, error },
             'Hit a "Secondary Rate Limit" when attempting to query GraphQL. Waiting before trying again.',
           );
-          // TODO: handle Primary Rate Limit errors as well
         } else {
           if (error.retryable === false) {
             attemptContext.abort();

@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- When GitHub returns `null` for `hasTwoFactorEnabled` due to permissions
+  limitations, `github_user` property `mfaEnabled` will now be set to
+  `undefined` instead of `false`
+
 ## 1.7.3 - 2021-10-27
 
 ### Changed

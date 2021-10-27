@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.7.3 - 2021-10-27
+
 ### Changed
 
 - Better error handling, including support for when GitHub rate-limiting errors

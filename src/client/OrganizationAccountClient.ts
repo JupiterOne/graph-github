@@ -641,7 +641,7 @@ export default class OrganizationAccountClient {
         message: 'Error during getAccount GraphQL query',
         status: '200 Error',
         statusText: `GraphQL response for ${queryName} undefined or malformed. Response: ${JSON.stringify(
-          response,
+          response.message,
           null,
           2,
         )} Query string: ${query}`,

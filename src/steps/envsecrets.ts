@@ -8,7 +8,7 @@ import {
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { EnvironmentEntity, SecretEntity } from '../types';
+import { EnvironmentEntity, SecretEntity, IdEntityMap } from '../types';
 import {
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_SECRET_ENTITY_TYPE,
@@ -33,7 +33,7 @@ export async function fetchEnvSecrets({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const orgSecretEntities = await jobState.getData<string[]>(
+  const orgSecretEntities = await jobState.getData<IdEntityMap<SecretEntity>>(
     GITHUB_ORG_SECRET_BY_NAME_MAP,
   );
   if (!orgSecretEntities) {
@@ -42,9 +42,9 @@ export async function fetchEnvSecrets({
     );
   }
 
-  const repoSecretEntitiesByRepoNameMap = await jobState.getData<string[]>(
-    GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
-  );
+  const repoSecretEntitiesByRepoNameMap = await jobState.getData<
+    IdEntityMap<IdEntityMap<SecretEntity>>
+  >(GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP);
   if (!repoSecretEntitiesByRepoNameMap) {
     throw new IntegrationMissingKeyError(
       `Expected reposecrets.ts to have set ${GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP} in jobState.`,

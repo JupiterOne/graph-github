@@ -8,7 +8,7 @@ import {
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { RepoKeyAndName, SecretEntity } from '../types';
+import { RepoKeyAndName, SecretEntity, IdEntityMap } from '../types';
 import {
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_SECRET_ENTITY_TYPE,
@@ -40,7 +40,7 @@ export async function fetchRepoSecrets({
     );
   }
 
-  const orgSecretEntities = await jobState.getData<string[]>(
+  const orgSecretEntities = await jobState.getData<IdEntityMap<SecretEntity>>(
     GITHUB_ORG_SECRET_BY_NAME_MAP,
   );
   if (!orgSecretEntities) {

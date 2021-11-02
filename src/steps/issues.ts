@@ -154,7 +154,7 @@ export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GITHUB_ISSUE_ENTITY_TYPE,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-teams'],
+    dependsOn: ['fetch-repos', 'fetch-users'],
     executionHandler: fetchIssues,
   },
 ];

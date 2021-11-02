@@ -144,7 +144,11 @@ export const envSecretSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GITHUB_REPO_SECRET_ENTITY_TYPE,
       },
     ],
-    dependsOn: ['fetch-environments', 'fetch-repo-secrets'],
+    dependsOn: [
+      'fetch-environments',
+      'fetch-repo-secrets',
+      'fetch-org-secrets',
+    ],
     executionHandler: fetchEnvSecrets,
   },
 ];

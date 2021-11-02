@@ -35,16 +35,20 @@ async function getAccess() {
     token: string;
   };
 
-  return token;
+  //ignore token expiry from recording and set it a day in the future
+  const tokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+  return { token, tokenExpires, appClient };
 }
 
 const pageLimit = 2;
 async function getClient() {
-  const access = await getAccess();
+  const { token, tokenExpires, appClient } = await getAccess();
   return new GitHubGraphQLClient(
-    access,
+    token,
+    tokenExpires,
     resourceMetadataMap(pageLimit, pageLimit),
     createMockIntegrationLogger(),
+    appClient,
   );
 }
 

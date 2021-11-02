@@ -129,7 +129,7 @@ export const repoSecretSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,
       },
     ],
-    dependsOn: ['fetch-org-secrets'],
+    dependsOn: ['fetch-org-secrets', 'fetch-repos'],
     executionHandler: fetchRepoSecrets,
   },
 ];

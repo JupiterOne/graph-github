@@ -2,6 +2,7 @@ import {
   IntegrationLogger,
   IntegrationValidationError,
   IntegrationProviderAuthenticationError,
+  parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
@@ -340,18 +341,19 @@ export class APIClient {
     }
     const installationId = Number(this.config.installationId);
     const appClient = createGitHubAppClient(this.config, this.logger);
-    let myToken: string;
+    let tokenExpires: number;
     let myPermissions: TokenPermissions;
     try {
-      const { token, permissions } = (await appClient.auth({
+      const { token, permissions, expiresAt } = (await appClient.auth({
         type: 'installation',
       })) as {
         token: string;
         permissions: TokenPermissions;
+        expiresAt: string;
       };
-      myToken = token;
       this.ghsToken = token;
       myPermissions = permissions;
+      tokenExpires = parseTimePropertyValue(expiresAt) || 0;
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
@@ -384,9 +386,11 @@ export class APIClient {
       login: login,
       restClient: appClient,
       graphqlClient: new GitHubGraphQLClient(
-        myToken,
+        this.ghsToken,
+        tokenExpires,
         resourceMetadataMap(),
         this.logger,
+        appClient,
       ),
       logger: this.logger,
     });

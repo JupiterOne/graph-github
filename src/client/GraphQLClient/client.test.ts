@@ -16,6 +16,7 @@ import {
   TEAM_MEMBERS_QUERY_STRING,
   USERS_QUERY_STRING,
 } from './queries';
+import { parseTimePropertyValue } from '@jupiterone/integration-sdk-core';
 
 async function getAccess() {
   const context = createMockStepExecutionContext<IntegrationConfig>({
@@ -31,12 +32,13 @@ async function getAccess() {
     config,
     createMockIntegrationLogger(),
   );
-  const { token } = (await appClient.auth({ type: 'installation' })) as {
+  const { token, expiresAt } = (await appClient.auth({
+    type: 'installation',
+  })) as {
     token: string;
+    expiresAt: string;
   };
-
-  //ignore token expiry from recording and set it a day in the future
-  const tokenExpires = Date.now() + 24 * 60 * 60 * 1000;
+  const tokenExpires = parseTimePropertyValue(expiresAt) || 0;
   return { token, tokenExpires, appClient };
 }
 

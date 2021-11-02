@@ -63,7 +63,7 @@ export class GitHubGraphQLClient {
     try {
       const { token, expiresAt } = (await this.authClient.auth({
         type: 'installation',
-        refresh: true,
+        refresh: true, //required or else client will return the previous token from cache
       })) as {
         token: string;
         expiresAt: string;

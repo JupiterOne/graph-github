@@ -107,9 +107,14 @@ export class GitHubGraphQLClient {
     let pullRequestsQueried = 0;
     let hasMorePullRequests = false;
 
-    const queryPullRequests = this.graph(pullRequestQueryString);
+    let queryPullRequests = this.graph(pullRequestQueryString);
 
     do {
+      if (this.tokenExpires - 60000 < Date.now()) {
+        //token expires in less than a minute
+        await this.refreshToken();
+        queryPullRequests = this.graph(pullRequestQueryString);
+      }
       this.logger.info(
         { queryCursors },
         'Fetching batch of pull requests from GraphQL',
@@ -247,9 +252,14 @@ export class GitHubGraphQLClient {
     let rateLimitConsumed = 0;
     let issuesQueried = 0;
 
-    const queryIssues = this.graph(issueQueryString);
+    let queryIssues = this.graph(issueQueryString);
 
     do {
+      if (this.tokenExpires - 60000 < Date.now()) {
+        //token expires in less than a minute
+        await this.refreshToken();
+        queryIssues = this.graph(issueQueryString);
+      }
       this.logger.info(
         { queryCursors },
         'Fetching batch of issues from GraphQL',
@@ -341,8 +351,6 @@ export class GitHubGraphQLClient {
     do {
       if (this.tokenExpires - 60000 < Date.now()) {
         //token expires in less than a minute
-        console.log(`token expiry is ${this.tokenExpires}`);
-        console.log(`current date is ${Date.now()}`);
         await this.refreshToken();
         query = this.graph(queryString);
       }

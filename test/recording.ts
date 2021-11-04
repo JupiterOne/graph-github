@@ -40,6 +40,7 @@ function redact(entry): void {
   if (/access_tokens/.exec(entry.request.url)) {
     const responseContent = JSON.parse(entry.response.content.text);
     responseContent.token = '[REDACTED]';
+    responseContent.expires_at = '2050-12-31T18:09:20Z'; //so that tests from recordings don't try to refresh tokens
     entry.response.content.text = JSON.stringify(responseContent);
   }
 }

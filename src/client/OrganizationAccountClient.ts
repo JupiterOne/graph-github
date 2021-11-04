@@ -631,16 +631,20 @@ export default class OrganizationAccountClient {
        * (rate limiting does this sometimes)
        * or returned malformed data (this has not been witnessed, but could happen)
        *
-       * if an error is thrown during the GraphQL API call, we won't get this far
-       * this is just a safety check for weird non-error errors that were causing
-       * the integration to infer an assertion of no entities of that type, and
+       * if an HTML error is thrown during the GraphQL API call, we won't get this far
+       * this is just a safety check for errors returned with a [200] code, which were
+       * causing the integration to infer an assertion of no entities of that type, and
        * hence delete entities from the graph incorrectly
        *
        */
       throw new IntegrationProviderAPIError({
         message: 'Error during getAccount GraphQL query',
-        status: 404,
-        statusText: `GraphQL response for ${queryName} undefined or malformed. Query string: ${query}`,
+        status: '200 Error',
+        statusText: `GraphQL response for ${queryName} undefined or malformed. Response: ${JSON.stringify(
+          response.message,
+          null,
+          2,
+        )} Query string: ${query}`,
         cause: undefined,
         endpoint: `https://api.github.com/graphql`,
       });

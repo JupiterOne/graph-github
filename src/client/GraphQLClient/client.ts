@@ -6,6 +6,8 @@ import { URL } from 'url';
 import {
   IntegrationLogger,
   IntegrationProviderAPIError,
+  IntegrationProviderAuthenticationError,
+  parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
 import fragments from './fragments';
@@ -27,16 +29,21 @@ import {
 import { ResourceIteratee } from '../../client';
 import { SINGLE_PULL_REQUEST_QUERY_STRING } from './queries';
 import { LIMITED_REQUESTS_NUM } from './queries';
+import { Octokit } from '@octokit/rest';
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
   private resourceMetadataMap: ResourceMap<ResourceMetadata>;
   private logger: IntegrationLogger;
+  private authClient: Octokit;
+  private tokenExpires: number;
 
   constructor(
     token: string,
+    tokenExpires: number,
     resourceMetadataMap: ResourceMap<ResourceMetadata>,
     logger: IntegrationLogger,
+    authClient: Octokit,
   ) {
     this.graph = graphql('https://api.github.com/graphql', {
       headers: {
@@ -46,9 +53,38 @@ export class GitHubGraphQLClient {
       asJSON: true,
     });
     this.graph.fragment(fragments);
-
+    this.tokenExpires = tokenExpires;
     this.resourceMetadataMap = resourceMetadataMap;
     this.logger = logger;
+    this.authClient = authClient;
+  }
+
+  private async refreshToken() {
+    try {
+      const { token, expiresAt } = (await this.authClient.auth({
+        type: 'installation',
+        refresh: true, //required or else client will return the previous token from cache
+      })) as {
+        token: string;
+        expiresAt: string;
+      };
+      this.graph = graphql('https://api.github.com/graphql', {
+        headers: {
+          'User-Agent': 'jupiterone-graph-github',
+          Authorization: `token ${token}`,
+        },
+        asJSON: true,
+      });
+      this.graph.fragment(fragments);
+      this.tokenExpires = parseTimePropertyValue(expiresAt) || 0;
+    } catch (err) {
+      throw new IntegrationProviderAuthenticationError({
+        cause: err,
+        endpoint: `https://api.github.com/app/installations/\${installationId}/access_tokens`,
+        status: err.status,
+        statusText: err.statusText,
+      });
+    }
   }
 
   /**
@@ -71,9 +107,14 @@ export class GitHubGraphQLClient {
     let pullRequestsQueried = 0;
     let hasMorePullRequests = false;
 
-    const queryPullRequests = this.graph(pullRequestQueryString);
+    let queryPullRequests = this.graph(pullRequestQueryString);
 
     do {
+      if (this.tokenExpires - 60000 < Date.now()) {
+        //token expires in less than a minute
+        await this.refreshToken();
+        queryPullRequests = this.graph(pullRequestQueryString);
+      }
       this.logger.info(
         { queryCursors },
         'Fetching batch of pull requests from GraphQL',
@@ -211,9 +252,14 @@ export class GitHubGraphQLClient {
     let rateLimitConsumed = 0;
     let issuesQueried = 0;
 
-    const queryIssues = this.graph(issueQueryString);
+    let queryIssues = this.graph(issueQueryString);
 
     do {
+      if (this.tokenExpires - 60000 < Date.now()) {
+        //token expires in less than a minute
+        await this.refreshToken();
+        queryIssues = this.graph(issueQueryString);
+      }
       this.logger.info(
         { queryCursors },
         'Fetching batch of issues from GraphQL',
@@ -300,9 +346,14 @@ export class GitHubGraphQLClient {
     let rateLimitConsumed = 0;
     let hasMoreResources = false;
 
-    const query = this.graph(queryString);
+    let query = this.graph(queryString);
 
     do {
+      if (this.tokenExpires - 60000 < Date.now()) {
+        //token expires in less than a minute
+        await this.refreshToken();
+        query = this.graph(queryString);
+      }
       const response = await this.retryGraphQL(queryString, async () => {
         return await query({
           ...extraQueryParams,

@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- When GitHub returns `null` for `hasTwoFactorEnabled` due to permissions
+  limitations, `github_user` property `mfaEnabled` will now be set to
+  `undefined` instead of `false`
+- When a step takes more than an hour to complete, the GraphQL client can now
+  request a new API token on the fly without losing track of where it was
+
 ## 1.7.3 - 2021-10-27
 
 ### Changed

@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.0 - 2021-11-04
+
 ### Fixed
 
 - When GitHub returns `null` for `hasTwoFactorEnabled` due to permissions

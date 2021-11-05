@@ -637,11 +637,15 @@ export default class OrganizationAccountClient {
        * hence delete entities from the graph incorrectly
        *
        */
+
+      const processedResponse: string = response.message
+        ? response.message
+        : response;
       throw new IntegrationProviderAPIError({
         message: 'Error during getAccount GraphQL query',
         status: '200 Error',
         statusText: `GraphQL response for ${queryName} undefined or malformed. Response: ${JSON.stringify(
-          response.message,
+          processedResponse,
           null,
           2,
         )} Query string: ${query}`,

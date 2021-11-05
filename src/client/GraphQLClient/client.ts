@@ -499,19 +499,48 @@ export class GitHubGraphQLClient {
         });
       }
 
+      /*
+       * in the happy path, the raw response should be an object with two properties
+
+       * One is `rateLimit`, and it is an object with rate-limiting-related properties
+       * such as 'limit', 'cost', 'remaining' and 'resetAt'
+       * 
+       * The other property will depend on the query. It might be 'organization' for
+       * GraphQL queries that start with the org and return entities as sub-objects
+       * Or it might be 'search', because the GraphQL query was structured that way 
+       * for pull-requests or issues. In any event, the object structure will mirror
+       * the query structure found in queries.ts
+       * 
+       * In the case of a successful connection to the GitHub GraphQL API, but an 
+       * error in processing such as rate-limiting or a malformed query, we might get 
+       * a [200] code HTML response, but the returned response is an object with just
+       * an error message as a string property called `message`
+       *
+       */
+
       //check for Github special "error with a 200 code"
-      if (response.message?.includes('rate limit')) {
-        logger.warn(
-          { response },
-          'Hit a rate limit message when attempting to query GraphQL. Waiting before trying again.',
-        );
-        throw new IntegrationProviderAPIError({
-          message: response.message,
-          status: 429,
-          statusText: `Error msg: ${response.message}, query string: ${queryString}`,
-          cause: undefined,
-          endpoint: `https://api.github.com/graphql`,
-        });
+      if (response.message) {
+        if (response.message?.includes('rate limit')) {
+          logger.warn(
+            { response },
+            'Hit a rate limit message when attempting to query GraphQL. Waiting before trying again.',
+          );
+          throw new IntegrationProviderAPIError({
+            message: response.message,
+            status: 429,
+            statusText: `Error msg: ${response.message}, query string: ${queryString}`,
+            cause: undefined,
+            endpoint: `https://api.github.com/graphql`,
+          });
+        } else {
+          throw new IntegrationProviderAPIError({
+            message: response.message,
+            status: 'unknown',
+            statusText: `Error msg: ${response.message}, query string: ${queryString}`,
+            cause: undefined,
+            endpoint: `https://api.github.com/graphql`,
+          });
+        }
       }
       return response;
     };

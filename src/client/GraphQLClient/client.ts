@@ -1,6 +1,6 @@
 import graphql, { GraphQLClient } from 'graphql.js';
 import { get } from 'lodash';
-import { retry, AttemptContext } from '@lifeomic/attempt';
+import { retry, sleep, AttemptContext } from '@lifeomic/attempt';
 import { URL } from 'url';
 
 import {
@@ -495,7 +495,7 @@ export class GitHubGraphQLClient {
           status: err.status,
           statusText: `Error msg: ${err.message}, ${err.statusText}, query string: ${queryString}`,
           cause: err,
-          endpoint: `https://api.github.com/graphql`,
+          endpoint: `GraphQL API 4xx/5xx at GitHubGraphQLClient.ts > retryGraphQL`,
         });
       }
 
@@ -542,14 +542,59 @@ export class GitHubGraphQLClient {
           });
         }
       }
+
+      /*
+       * finally, if we got this far, let's see how we're doing on rate limits.
+       * If we're getting too low, let's take a break until the resetAt time.
+       *
+       * When you start using the API, GitHub sets your reset time to one hour in the future.
+       * At that time, you get your full limit back. Until then, you do not refresh limits at all.
+       * That means that if you burned up all your rate limits in 15 minutes, you're not getting more
+       * for another 45 minutes (ie. until your first API calls are an hour old).
+       * But then you get your full limit again right on the one hour mark (ie. your rate-limit
+       * doesn't trickle in over 15 minutes like in a rolling-window scenario).
+       *
+       * In most cases, these rate limits are not a problem, but for large accounts they can be
+       * They are very likely to become a problem if a customer has other automation hitting
+       * these same limits at the same time that this integration is running
+       */
+      if (
+        response.rateLimit &&
+        response.rateLimit.remaining &&
+        response.rateLimit.limit &&
+        response.rateLimit.resetAt
+      ) {
+        const thresholdToTakeABreak = 0.1;
+        const rateLimitRemainingProportion =
+          response.rateLimit.remaining / response.rateLimit.limit;
+        const msUntilRateLimitReset =
+          parseTimePropertyValue(response.rateLimit.resetAt)! - Date.now();
+        if (rateLimitRemainingProportion < thresholdToTakeABreak) {
+          this.logger.warn(
+            {},
+            `Rate limits are down to ${(
+              rateLimitRemainingProportion * 100
+            ).toPrecision(4)}% remaining, sleeping ${
+              msUntilRateLimitReset / 1000
+            } sec until ${response.rateLimit.resetAt}`,
+          );
+          await sleep(msUntilRateLimitReset);
+        }
+      } else {
+        this.logger.warn(
+          {},
+          'Ratelimit object not found in response, so could not calculate rate limit remaining',
+        );
+      }
+
       return response;
     };
 
     // Check https://github.com/lifeomic/attempt for options on retry
     return await retry(queryWithRateLimitCatch, {
-      maxAttempts: 5,
+      maxAttempts: 8,
       delay: 30_000, //30 seconds to start
-      factor: 2, //exponential backoff factor. with 30 sec start and 5 attempts, longest delay is 8 min
+      factor: 2, //exponential backoff factor. with 30 sec start and 8 attempts, longest delay is 64 min
       handleError(error: any, attemptContext: AttemptContext) {
         /* retry will keep trying to the limits of retryOptions
          * but it lets you intervene in this function - if you throw an error from in here,

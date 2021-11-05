@@ -10,6 +10,14 @@ and this project adheres to
 
 ## 1.8.3 - 2021-11-05
 
+### Changed
+
+- Increased tolerance for delays due to GraphQL API errors, to upto 1 hour.
+- Integration now respects `resetAt` property of rate-limiting messages to
+  better predict when the API will permit further usage
+- Integration begins to slow down when rate limits are 90% used, to reduce
+  impact and contention with any other automation running against this account's
+  API limits
 - Additional GraphQL failure debug logging
 
 ## 1.8.2 - 2021-11-05

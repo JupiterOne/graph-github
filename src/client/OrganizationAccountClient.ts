@@ -631,6 +631,9 @@ export default class OrganizationAccountClient {
        * (rate limiting does this sometimes)
        * or returned malformed data (this has not been witnessed, but could happen)
        *
+       * In such cases, the response will probably be 'undefined', or it could be
+       * some kind of message, but no real data, so we're safe to log it
+       *
        * if an HTML error is thrown during the GraphQL API call, we won't get this far
        * this is just a safety check for errors returned with a [200] code, which were
        * causing the integration to infer an assertion of no entities of that type, and
@@ -638,14 +641,11 @@ export default class OrganizationAccountClient {
        *
        */
 
-      const processedResponse: string = response.message
-        ? response.message
-        : response;
       throw new IntegrationProviderAPIError({
         message: 'Error during getAccount GraphQL query',
         status: '200 Error',
         statusText: `GraphQL response for ${queryName} undefined or malformed. Response: ${JSON.stringify(
-          processedResponse,
+          response,
           null,
           2,
         )} Query string: ${query}`,

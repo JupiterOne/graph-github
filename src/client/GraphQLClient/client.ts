@@ -382,6 +382,61 @@ export class GitHubGraphQLClient {
       hasMoreResources = Object.values(pageCursors).some((c) => c.hasNextPage);
     } while (hasMoreResources);
 
+    /*
+      * there is some complicated cursor management happening here that can
+      * make debugging difficult in case of GitHub GraphQL API failure
+      * 
+      * if all has gone well, the return statement below will return an object
+      * with a property for each GitHubResource requested (such as 'organization'
+      * or 'collaborators'). Each of those properties will be an array of
+      * the particular objects appropriate to that resource - generally a flat object
+      * with a list of resource-specific properties
+      * 
+      * Here's a short example of the processed reply provided by all the above code,
+      * from our test account, where the requested GitHubResources are
+      * 'organization', 'teams', and 'teamRepositories':
+      * 
+      {
+        teamRepositories: [
+          {
+            node: undefined,
+            permission: 'TRIAGE',
+            id: 'MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=',
+            teams: 'MDQ6VGVhbTQ4NTgxNjk='
+          },
+          {
+            node: undefined,
+            permission: 'TRIAGE',
+            id: 'MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=',
+            teams: 'MDQ6VGVhbTQ4NTgxNzA='
+          }
+        ],
+        teams: [
+          {
+            node: undefined,
+            id: 'MDQ6VGVhbTQ4NTgxNjk=',
+            organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz'
+          },
+          {
+            node: undefined,
+            id: 'MDQ6VGVhbTQ4NTgxNzA=',
+            organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz'
+          },
+          {
+            node: undefined,
+            id: 'MDQ6VGVhbTQ4NTc0OTU=',
+            organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz'
+          }
+        ],
+        organization: [ { id: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz' } ],
+        rateLimitConsumed: 1
+      }
+      * 
+      * When something goes wrong, the object returned by this function may lack
+      * the expected GitHubResource property, leaving the calling function with
+      * an undefined response
+      */
+
     return {
       ...resources,
       rateLimitConsumed,

@@ -520,7 +520,7 @@ export class GitHubGraphQLClient {
 
       //check for Github special "error with a 200 code"
       if (response.message) {
-        if (response.message?.includes('rate limit')) {
+        if (response.message.includes('rate limit')) {
           logger.warn(
             { response },
             'Hit a rate limit message when attempting to query GraphQL. Waiting before trying again.',
@@ -535,7 +535,7 @@ export class GitHubGraphQLClient {
         } else {
           throw new IntegrationProviderAPIError({
             message: response.message,
-            status: 'unknown',
+            status: '200 error',
             statusText: `Error msg: ${response.message}, query string: ${queryString}`,
             cause: undefined,
             endpoint: `https://api.github.com/graphql`,

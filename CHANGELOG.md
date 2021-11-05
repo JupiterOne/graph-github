@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.3 - 2021-11-05
+
+- Additional GraphQL failure debug logging
+
 ## 1.8.2 - 2021-11-05
 
 - Improved error messaging when a non-rate limit error occurs

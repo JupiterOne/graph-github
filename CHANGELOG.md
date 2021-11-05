@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.2 - 2021-11-05
+
+- Improved error messaging when a non-rate limit error occurs
+
 ## 1.8.1 - 2021-11-05
 
 ### Fixed

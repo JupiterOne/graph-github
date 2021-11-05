@@ -641,7 +641,7 @@ export default class OrganizationAccountClient {
        *
        */
 
-      throw new IntegrationProviderAPIError({
+      const providerApiErrorOptions = {
         message: 'Error during getAccount GraphQL query',
         status: '200 Error',
         statusText: `GraphQL response for ${queryName} undefined or malformed. Response: ${JSON.stringify(
@@ -651,7 +651,16 @@ export default class OrganizationAccountClient {
         )} Query string: ${query}`,
         cause: undefined,
         endpoint: `https://api.github.com/graphql`,
-      });
+      };
+
+      // The `IntegrationProviderAPIError` exception does not cause all
+      // properties to be exposed in the logs today. For now, we will add a log
+      // with all properties.
+      this.logger.error(
+        providerApiErrorOptions,
+        'Invalid GraphQL response received. Re-throwing...',
+      );
+      throw new IntegrationProviderAPIError(providerApiErrorOptions);
     }
   }
 }

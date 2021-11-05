@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.1 - 2021-11-05
+
 ### Fixed
 
 - An error in the error handler for certain GraphQL API failures

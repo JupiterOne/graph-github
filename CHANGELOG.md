@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.5 - 2021-11-06
+
+- Properly handle cases when GitHub does not return expected array properties
+  from the GraphQL API
+
 ## 1.8.4 - 2021-11-05
 
 ### Changed

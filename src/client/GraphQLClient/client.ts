@@ -1,6 +1,6 @@
 import graphql, { GraphQLClient } from 'graphql.js';
 import { get } from 'lodash';
-import { retry, sleep, AttemptContext } from '@lifeomic/attempt';
+import { retry, AttemptContext } from '@lifeomic/attempt';
 import { URL } from 'url';
 
 import {
@@ -30,6 +30,8 @@ import { ResourceIteratee } from '../../client';
 import { SINGLE_PULL_REQUEST_QUERY_STRING } from './queries';
 import { LIMITED_REQUESTS_NUM } from './queries';
 import { Octokit } from '@octokit/rest';
+import validateGraphQLResponse from '../../util/validateGraphQLReponse';
+import sleepIfApproachingRateLimit from '../../util/sleepIfApproachingRateLimit';
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -383,9 +385,6 @@ export class GitHubGraphQLClient {
     } while (hasMoreResources);
 
     /*
-      * there is some complicated cursor management happening here that can
-      * make debugging difficult in case of GitHub GraphQL API failure
-      * 
       * if all has gone well, the return statement below will return an object
       * with a property for each GitHubResource requested (such as 'organization'
       * or 'collaborators'). Each of those properties will be an array of
@@ -432,7 +431,6 @@ export class GitHubGraphQLClient {
       * an undefined response. This happens if there were no instances of that
       * entity returned by the API, either because they don't exist in the
       * account, or something went wrong in GitHub's API processing.
-      * 
       */
 
     return {
@@ -488,108 +486,8 @@ export class GitHubGraphQLClient {
           endpoint: `GraphQL API 4xx/5xx at GitHubGraphQLClient.ts > retryGraphQL`,
         });
       }
-
-      /*
-       * In the case of a successful connection to the GitHub GraphQL API, but an
-       * error in processing such as rate-limiting or a malformed query, we might get
-       * a [200] code HTML response, but the returned response is an object with just
-       * an error message as a string property called `message`
-       * Example: {"message":"API rate limit exceeded for 98.53.189.133."}
-       */
-
-      if (response.message) {
-        if (response.message.includes('rate limit')) {
-          logger.warn(
-            { response },
-            'Hit a rate limit message when attempting to query GraphQL. Waiting before trying again.',
-          );
-          throw new IntegrationProviderAPIError({
-            message: response.message,
-            status: 429,
-            statusText: `Error msg: ${response.message}, query string: ${queryString}`,
-            cause: undefined,
-            endpoint: `GraphQL API rate limiting at GitHubGraphQLClient.ts > retryGraphQL`,
-          });
-        } else {
-          throw new IntegrationProviderAPIError({
-            message: response.message,
-            status: '200 error',
-            statusText: `Error msg: ${response.message}, query string: ${queryString}`,
-            cause: undefined,
-            endpoint: `GraphQL API [200] custom error at GitHubGraphQLClient.ts > retryGraphQL`,
-          });
-        }
-      }
-
-      /*
-       * in the happy path, the raw response should be an object with two properties
-
-       * One is `rateLimit`, and it is an object with rate-limiting-related properties
-       * such as 'limit', 'cost', 'remaining' and 'resetAt'
-       * 
-       * The other property will depend on the query. It might be 'organization' for
-       * GraphQL queries that start with the org and return entities as sub-objects
-       * Or it might be 'search', because the GraphQL query was structured that way 
-       * for pull-requests or issues. In some inner-resource fetches, it might be
-       * the name of the inner resource. In general, the object structure will mirror
-       * the query structure found in queries.ts
-       */
-
-      if (!response.rateLimit) {
-        throw new IntegrationProviderAPIError({
-          message: 'GraphQL reply not valid or in unexpected format',
-          status: '200 error',
-          statusText: `Raw response properties: ${Object.keys(
-            response,
-          )}, query string: ${queryString}`,
-          cause: undefined,
-          endpoint: `GraphQL API failed to find rate limit info at GitHubGraphQLClient.ts > retryGraphQL`,
-        });
-      }
-
-      /*
-       * If we got this far, we have a well-formed GraphQL reply
-       * Let's check how close we are to a rate limit, and take a break if needed.
-       *
-       * When you start using the API, GitHub sets your reset time to one hour in the future.
-       * At that time, you get your full limit back. Until then, you do not refresh limits at all.
-       * That means that if you burned up all your rate limits in 15 minutes, you're not getting more
-       * for another 45 minutes (ie. until your first API calls are an hour old).
-       * But then you get your full limit again right on the one hour mark (ie. your rate-limit
-       * doesn't trickle in over 15 minutes like in a rolling-window scenario).
-       *
-       * In most cases, these rate limits are not a problem, but for large accounts they can be
-       * They are very likely to become a problem if a customer has other automation hitting
-       * these same limits at the same time that this integration is running
-       */
-      if (
-        Number.isInteger(response.rateLimit.remaining) &&
-        Number.isInteger(response.rateLimit.limit) &&
-        parseTimePropertyValue(response.rateLimit.resetAt)
-      ) {
-        const thresholdToTakeABreak = 0.1;
-        const rateLimitRemainingProportion =
-          response.rateLimit.remaining / response.rateLimit.limit;
-        const msUntilRateLimitReset =
-          parseTimePropertyValue(response.rateLimit.resetAt)! - Date.now();
-        if (rateLimitRemainingProportion < thresholdToTakeABreak) {
-          this.logger.warn(
-            {},
-            `Rate limits are down to ${(
-              rateLimitRemainingProportion * 100
-            ).toPrecision(4)}% remaining, sleeping ${
-              msUntilRateLimitReset / 1000
-            } sec until ${response.rateLimit.resetAt}`,
-          );
-          await sleep(msUntilRateLimitReset);
-        }
-      } else {
-        this.logger.warn(
-          {},
-          'GraphQL API Ratelimit details malformed in response, so could not calculate rate limit remaining',
-        );
-      }
-
+      validateGraphQLResponse(response, logger, queryString);
+      await sleepIfApproachingRateLimit(response.rateLimit, logger);
       return response;
     };
 

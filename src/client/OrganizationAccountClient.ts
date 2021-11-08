@@ -115,11 +115,6 @@ export default class OrganizationAccountClient {
       response = organization;
       return rateLimitConsumed;
     });
-    this.validateGraphQLResponseAsArray(
-      response,
-      'organization',
-      ACCOUNT_QUERY_STRING,
-    );
     return response[0];
   }
 
@@ -628,50 +623,5 @@ export default class OrganizationAccountClient {
       sanitizedExecutionTime = '2000-01-01';
     }
     return sanitizedExecutionTime;
-  }
-
-  private validateGraphQLResponseAsArray(
-    response,
-    queryName: string,
-    query: string,
-  ) {
-    if (!Array.isArray(response)) {
-      /*
-       * this happens if the GraphQL call returned a 200 response, so no error,
-       * but didn't include the desired property in the reply for some reason
-       * (rate limiting does this sometimes)
-       * or returned malformed data (this has not been witnessed, but could happen)
-       *
-       * In such cases, the response will probably be 'undefined', or it could be
-       * some kind of message, but no real data, so we're safe to log it
-       *
-       * if an HTML error is thrown during the GraphQL API call, we won't get this far
-       * this is just a safety check for errors returned with a [200] code, which were
-       * causing the integration to infer an assertion of no entities of that type, and
-       * hence delete entities from the graph incorrectly
-       *
-       */
-
-      const providerApiErrorOptions = {
-        message: 'Error during getAccount GraphQL query',
-        status: '200 Error',
-        statusText: `GraphQL response for ${queryName} undefined or malformed. Response: ${JSON.stringify(
-          response,
-          null,
-          2,
-        )} Query string: ${query}`,
-        cause: undefined,
-        endpoint: `https://api.github.com/graphql`,
-      };
-
-      // The `IntegrationProviderAPIError` exception does not cause all
-      // properties to be exposed in the logs today. For now, we will add a log
-      // with all properties.
-      this.logger.error(
-        providerApiErrorOptions,
-        'Invalid GraphQL response received. Re-throwing...',
-      );
-      throw new IntegrationProviderAPIError(providerApiErrorOptions);
-    }
   }
 }

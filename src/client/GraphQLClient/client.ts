@@ -422,19 +422,17 @@ export class GitHubGraphQLClient {
             id: 'MDQ6VGVhbTQ4NTgxNzA=',
             organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz'
           },
-          {
-            node: undefined,
-            id: 'MDQ6VGVhbTQ4NTc0OTU=',
-            organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz'
-          }
         ],
         organization: [ { id: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz' } ],
         rateLimitConsumed: 1
       }
       * 
-      * When something goes wrong, the object returned by this function may lack
+      * It is possible that the object returned by this function may lack
       * the expected GitHubResource property, leaving the calling function with
-      * an undefined response
+      * an undefined response. This happens if there were no instances of that
+      * entity returned by the API, either because they don't exist in the
+      * account, or something went wrong in GitHub's API processing.
+      * 
       */
 
     return {
@@ -473,16 +471,8 @@ export class GitHubGraphQLClient {
 
   private async retryGraphQL(queryString: string, query: () => Promise<any>) {
     const { logger } = this;
-    /*
-     * in addition to normal HTTP errors (4xx/5xx),
-     * GitHub sometimes returns an error message with a 200 code
-     * for example, if GraphQL rate limits are exceeded, it might give a [200] with a valid JSON like:
-     *
-     * {"message":"API rate limit exceeded for 98.53.189.133. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"}
-     *
-     */
 
-    //everything in this function is going into the retry function below
+    //queryWithRateLimitCatch will be passed to the retry function below
     const queryWithRateLimitCatch = async () => {
       let response;
       //check for 4xx/5xx errors
@@ -500,25 +490,13 @@ export class GitHubGraphQLClient {
       }
 
       /*
-       * in the happy path, the raw response should be an object with two properties
-
-       * One is `rateLimit`, and it is an object with rate-limiting-related properties
-       * such as 'limit', 'cost', 'remaining' and 'resetAt'
-       * 
-       * The other property will depend on the query. It might be 'organization' for
-       * GraphQL queries that start with the org and return entities as sub-objects
-       * Or it might be 'search', because the GraphQL query was structured that way 
-       * for pull-requests or issues. In any event, the object structure will mirror
-       * the query structure found in queries.ts
-       * 
-       * In the case of a successful connection to the GitHub GraphQL API, but an 
-       * error in processing such as rate-limiting or a malformed query, we might get 
+       * In the case of a successful connection to the GitHub GraphQL API, but an
+       * error in processing such as rate-limiting or a malformed query, we might get
        * a [200] code HTML response, but the returned response is an object with just
        * an error message as a string property called `message`
-       *
+       * Example: {"message":"API rate limit exceeded for 98.53.189.133."}
        */
 
-      //check for Github special "error with a 200 code"
       if (response.message) {
         if (response.message.includes('rate limit')) {
           logger.warn(
@@ -530,7 +508,7 @@ export class GitHubGraphQLClient {
             status: 429,
             statusText: `Error msg: ${response.message}, query string: ${queryString}`,
             cause: undefined,
-            endpoint: `https://api.github.com/graphql`,
+            endpoint: `GraphQL API rate limiting at GitHubGraphQLClient.ts > retryGraphQL`,
           });
         } else {
           throw new IntegrationProviderAPIError({
@@ -538,14 +516,40 @@ export class GitHubGraphQLClient {
             status: '200 error',
             statusText: `Error msg: ${response.message}, query string: ${queryString}`,
             cause: undefined,
-            endpoint: `https://api.github.com/graphql`,
+            endpoint: `GraphQL API [200] custom error at GitHubGraphQLClient.ts > retryGraphQL`,
           });
         }
       }
 
       /*
-       * finally, if we got this far, let's see how we're doing on rate limits.
-       * If we're getting too low, let's take a break until the resetAt time.
+       * in the happy path, the raw response should be an object with two properties
+
+       * One is `rateLimit`, and it is an object with rate-limiting-related properties
+       * such as 'limit', 'cost', 'remaining' and 'resetAt'
+       * 
+       * The other property will depend on the query. It might be 'organization' for
+       * GraphQL queries that start with the org and return entities as sub-objects
+       * Or it might be 'search', because the GraphQL query was structured that way 
+       * for pull-requests or issues. In some inner-resource fetches, it might be
+       * the name of the inner resource. In general, the object structure will mirror
+       * the query structure found in queries.ts
+       */
+
+      if (!response.rateLimit) {
+        throw new IntegrationProviderAPIError({
+          message: 'GraphQL reply not valid or in unexpected format',
+          status: '200 error',
+          statusText: `Raw response properties: ${Object.keys(
+            response,
+          )}, query string: ${queryString}`,
+          cause: undefined,
+          endpoint: `GraphQL API failed to find rate limit info at GitHubGraphQLClient.ts > retryGraphQL`,
+        });
+      }
+
+      /*
+       * If we got this far, we have a well-formed GraphQL reply
+       * Let's check how close we are to a rate limit, and take a break if needed.
        *
        * When you start using the API, GitHub sets your reset time to one hour in the future.
        * At that time, you get your full limit back. Until then, you do not refresh limits at all.
@@ -559,10 +563,9 @@ export class GitHubGraphQLClient {
        * these same limits at the same time that this integration is running
        */
       if (
-        response.rateLimit &&
-        response.rateLimit.remaining &&
-        response.rateLimit.limit &&
-        response.rateLimit.resetAt
+        Number.isInteger(response.rateLimit.remaining) &&
+        Number.isInteger(response.rateLimit.limit) &&
+        parseTimePropertyValue(response.rateLimit.resetAt)
       ) {
         const thresholdToTakeABreak = 0.1;
         const rateLimitRemainingProportion =
@@ -583,7 +586,7 @@ export class GitHubGraphQLClient {
       } else {
         this.logger.warn(
           {},
-          'Ratelimit object not found in response, so could not calculate rate limit remaining',
+          'GraphQL API Ratelimit details malformed in response, so could not calculate rate limit remaining',
         );
       }
 
@@ -598,7 +601,7 @@ export class GitHubGraphQLClient {
       handleError(error: any, attemptContext: AttemptContext) {
         /* retry will keep trying to the limits of retryOptions
          * but it lets you intervene in this function - if you throw an error from in here,
-         *it stops retrying. Otherwise you can just log the attempts.
+         * it stops retrying. Otherwise you can just log the attempts.
          *
          * Github has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
          * GitHub guidance is to "wait a few minutes" when we get one of these errors.

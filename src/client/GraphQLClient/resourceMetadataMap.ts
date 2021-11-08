@@ -26,10 +26,7 @@ import { ResourceMap, ResourceMetadata, GithubResource } from './types';
  * that are difficult to troubleshoot.
  */
 
-export default function (
-  pageLimit: number = 100,
-  pullRequestPageLimit: number = 25,
-): ResourceMap<ResourceMetadata> {
+export default function (): ResourceMap<ResourceMetadata> {
   return {
     [GithubResource.PullRequest]: {
       graphRequestVariables: [

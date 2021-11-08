@@ -19,10 +19,13 @@ export default function validateGraphQLResponse(
    */
 
   if (response.message) {
-    if (response.message.includes('rate limit')) {
+    if (
+      response.message.includes('rate limit') ||
+      response.message.includes('Rate limit')
+    ) {
       logger.warn(
         { response },
-        'Hit a rate limit message when attempting to query GraphQL. Waiting before trying again.',
+        'Got a rate limit message when attempting to query GraphQL.',
       );
       throw new IntegrationProviderAPIError({
         message: response.message,

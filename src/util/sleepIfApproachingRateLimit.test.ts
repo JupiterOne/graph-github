@@ -29,7 +29,7 @@ describe('sleepRespectsTenPercentLimit', () => {
     const testStart = Date.now();
     await sleepIfApproachingRateLimit(rateLimitBelowTenPercent, logger);
     const testEnd = Date.now();
-    expect(testEnd - testStart).toBeGreaterThanOrEqual(TIME_TO_SLEEP - 1000); //giving 1000 msec leeway here for execution time
+    expect(testEnd - testStart).toBeGreaterThanOrEqual(TIME_TO_SLEEP - 1200); //giving 1200 msec leeway here for execution time
   });
 });
 

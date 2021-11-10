@@ -21,9 +21,9 @@ import {
   GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
-  GITHUB_ORG_SECRET_BY_NAME_MAP,
 } from '../constants';
 import { toEnvSecretEntity } from '../sync/converters';
+import { getSecretEntityKey } from '../util/propertyHelpers';
 
 export async function fetchEnvSecrets({
   instance,
@@ -32,15 +32,6 @@ export async function fetchEnvSecrets({
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
-
-  const orgSecretEntities = await jobState.getData<IdEntityMap<SecretEntity>>(
-    GITHUB_ORG_SECRET_BY_NAME_MAP,
-  );
-  if (!orgSecretEntities) {
-    throw new IntegrationMissingKeyError(
-      `Expected orgsecrets.ts to have set ${GITHUB_ORG_SECRET_BY_NAME_MAP} in jobState.`,
-    );
-  }
 
   const repoSecretEntitiesByRepoNameMap = await jobState.getData<
     IdEntityMap<IdEntityMap<SecretEntity>>
@@ -81,12 +72,19 @@ export async function fetchEnvSecrets({
           }),
         );
 
-        if (orgSecretEntities[envSecret.name]) {
+        const keyOfHypotheticalOrgSecretOfSameName = getSecretEntityKey({
+          name: envSecret.name,
+          secretOwnerType: 'Org',
+          secretOwnerName: apiClient.accountClient.login,
+        });
+        if (jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
           await jobState.addRelationship(
             createDirectRelationship({
               _class: RelationshipClass.OVERRIDES,
-              from: secretEntity,
-              to: orgSecretEntities[envSecret.name],
+              fromType: GITHUB_ENV_SECRET_ENTITY_TYPE,
+              toType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+              fromKey: secretEntity._key,
+              toKey: keyOfHypotheticalOrgSecretOfSameName,
             }),
           );
         }

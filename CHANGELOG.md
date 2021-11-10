@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed duplicate key error for when Environments of the same name exist on
+  multiple repositories, and they have Secrets with the same name.
+
 ## 1.8.5 - 2021-11-06
 
 - Properly handle cases when GitHub does not return expected array properties

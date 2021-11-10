@@ -9,12 +9,7 @@ import {
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import {
-  AccountEntity,
-  IdEntityMap,
-  RepoKeyAndName,
-  SecretEntity,
-} from '../types';
+import { AccountEntity, RepoKeyAndName, SecretEntity } from '../types';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
   GITHUB_REPO_ENTITY_TYPE,
@@ -23,7 +18,6 @@ import {
   GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
-  GITHUB_ORG_SECRET_BY_NAME_MAP,
 } from '../constants';
 import { toOrgSecretEntity } from '../sync/converters';
 
@@ -52,8 +46,6 @@ export async function fetchOrgSecrets({
     );
   }
 
-  const orgSecretsByNameMap: IdEntityMap<SecretEntity> = {};
-
   await apiClient.iterateOrgSecrets(repoTags, async (secret) => {
     const secretEntity = (await jobState.addEntity(
       toOrgSecretEntity(secret, apiClient.accountClient.login || ''),
@@ -81,16 +73,7 @@ export async function fetchOrgSecrets({
         );
       }
     }
-    if (orgSecretsByNameMap[secret.name]) {
-      logger.warn(
-        { secret: secret },
-        'Name conflict in org secrets. This should be impossible.',
-      );
-    }
-    orgSecretsByNameMap[secret.name] = secretEntity;
   });
-
-  await jobState.setData(GITHUB_ORG_SECRET_BY_NAME_MAP, orgSecretsByNameMap);
 }
 
 export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [

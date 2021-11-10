@@ -377,6 +377,7 @@ export default class OrganizationAccountClient {
     }
   }
 
+  //Environments are available on GraphQL now, but with many less properties
   async getEnvironments(
     repoName: string,
   ): Promise<RepoEnvironmentQueryResponse[]> {
@@ -400,7 +401,7 @@ export default class OrganizationAccountClient {
         //private repos can only use environments in Enterprise level GitHub accounts
         //you get 404 if you try to call the REST API for environments on a private repo otherwise
         //but we don't know whether the account is Enterprise level, so we have to try private repos
-        //once I move getEnvironments to GraphQL, this won't be an issue. private will return []
+        //once we move getEnvironments to GraphQL, this won't be an issue. private will return []
         return [];
       } else {
         this.logger.warn(

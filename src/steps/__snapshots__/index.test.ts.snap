@@ -1454,7 +1454,7 @@ Object {
       "_class": Array [
         "Secret",
       ],
-      "_key": "GitHub_Env_Ambiente_Secret_ENVIRONMENTAL_SECRET",
+      "_key": "GitHub_Env_AmbienteInRepoTest-repo_Secret_ENVIRONMENTAL_SECRET",
       "_rawData": Array [
         Object {
           "name": "default",
@@ -1477,7 +1477,7 @@ Object {
       "_class": Array [
         "Secret",
       ],
-      "_key": "GitHub_Env_Ambiente_Secret_KINDA_SECRET",
+      "_key": "GitHub_Env_AmbienteInRepoTest-repo_Secret_KINDA_SECRET",
       "_rawData": Array [
         Object {
           "name": "default",
@@ -2029,47 +2029,47 @@ Object {
     Object {
       "_class": "HAS",
       "_fromEntityKey": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw",
-      "_key": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw|has|GitHub_Env_Ambiente_Secret_ENVIRONMENTAL_SECRET",
-      "_toEntityKey": "GitHub_Env_Ambiente_Secret_ENVIRONMENTAL_SECRET",
+      "_key": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw|has|GitHub_Env_AmbienteInRepoTest-repo_Secret_ENVIRONMENTAL_SECRET",
+      "_toEntityKey": "GitHub_Env_AmbienteInRepoTest-repo_Secret_ENVIRONMENTAL_SECRET",
       "_type": "github_environment_has_env_secret",
       "displayName": "HAS",
     },
     Object {
       "_class": "USES",
       "_fromEntityKey": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=",
-      "_key": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=|uses|GitHub_Env_Ambiente_Secret_ENVIRONMENTAL_SECRET",
-      "_toEntityKey": "GitHub_Env_Ambiente_Secret_ENVIRONMENTAL_SECRET",
+      "_key": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=|uses|GitHub_Env_AmbienteInRepoTest-repo_Secret_ENVIRONMENTAL_SECRET",
+      "_toEntityKey": "GitHub_Env_AmbienteInRepoTest-repo_Secret_ENVIRONMENTAL_SECRET",
       "_type": "github_repo_uses_env_secret",
       "displayName": "USES",
     },
     Object {
       "_class": "HAS",
       "_fromEntityKey": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw",
-      "_key": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw|has|GitHub_Env_Ambiente_Secret_KINDA_SECRET",
-      "_toEntityKey": "GitHub_Env_Ambiente_Secret_KINDA_SECRET",
+      "_key": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw|has|GitHub_Env_AmbienteInRepoTest-repo_Secret_KINDA_SECRET",
+      "_toEntityKey": "GitHub_Env_AmbienteInRepoTest-repo_Secret_KINDA_SECRET",
       "_type": "github_environment_has_env_secret",
       "displayName": "HAS",
     },
     Object {
       "_class": "USES",
       "_fromEntityKey": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=",
-      "_key": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=|uses|GitHub_Env_Ambiente_Secret_KINDA_SECRET",
-      "_toEntityKey": "GitHub_Env_Ambiente_Secret_KINDA_SECRET",
+      "_key": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=|uses|GitHub_Env_AmbienteInRepoTest-repo_Secret_KINDA_SECRET",
+      "_toEntityKey": "GitHub_Env_AmbienteInRepoTest-repo_Secret_KINDA_SECRET",
       "_type": "github_repo_uses_env_secret",
       "displayName": "USES",
     },
     Object {
       "_class": "OVERRIDES",
-      "_fromEntityKey": "GitHub_Env_Ambiente_Secret_KINDA_SECRET",
-      "_key": "GitHub_Env_Ambiente_Secret_KINDA_SECRET|overrides|GitHub_Org_Kei-Institute_Secret_KINDA_SECRET",
+      "_fromEntityKey": "GitHub_Env_AmbienteInRepoTest-repo_Secret_KINDA_SECRET",
+      "_key": "GitHub_Env_AmbienteInRepoTest-repo_Secret_KINDA_SECRET|overrides|GitHub_Org_Kei-Institute_Secret_KINDA_SECRET",
       "_toEntityKey": "GitHub_Org_Kei-Institute_Secret_KINDA_SECRET",
       "_type": "github_env_secret_overrides_org_secret",
       "displayName": "OVERRIDES",
     },
     Object {
       "_class": "OVERRIDES",
-      "_fromEntityKey": "GitHub_Env_Ambiente_Secret_KINDA_SECRET",
-      "_key": "GitHub_Env_Ambiente_Secret_KINDA_SECRET|overrides|GitHub_Repo_Test-repo_Secret_KINDA_SECRET",
+      "_fromEntityKey": "GitHub_Env_AmbienteInRepoTest-repo_Secret_KINDA_SECRET",
+      "_key": "GitHub_Env_AmbienteInRepoTest-repo_Secret_KINDA_SECRET|overrides|GitHub_Repo_Test-repo_Secret_KINDA_SECRET",
       "_toEntityKey": "GitHub_Repo_Test-repo_Secret_KINDA_SECRET",
       "_type": "github_env_secret_overrides_repo_secret",
       "displayName": "OVERRIDES",

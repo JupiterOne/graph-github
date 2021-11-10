@@ -645,7 +645,7 @@ describe('toEnvSecretEntity', () => {
     expect(entity).toEqual({
       _class: ['Secret'],
       _type: 'github_env_secret',
-      _key: 'GitHub_Env_Ambiente_Secret_ENVIRONMENTAL_SECRET',
+      _key: 'GitHub_Env_AmbienteInRepoTest-repo_Secret_ENVIRONMENTAL_SECRET',
       _rawData: [
         {
           name: 'default',

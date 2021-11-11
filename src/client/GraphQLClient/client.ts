@@ -112,8 +112,9 @@ export class GitHubGraphQLClient {
     let queryPullRequests = this.graph(pullRequestQueryString);
 
     do {
-      if (this.tokenExpires - 60000 < Date.now()) {
-        //token expires in less than a minute
+      if (this.tokenExpires - 300000 < Date.now()) {
+        //300000 msec = 5 min
+        //token expires soon; we'd rather refresh proactively
         await this.refreshToken();
         queryPullRequests = this.graph(pullRequestQueryString);
       }
@@ -121,15 +122,34 @@ export class GitHubGraphQLClient {
         { queryCursors },
         'Fetching batch of pull requests from GraphQL',
       );
-      const pullRequestResponse = await this.retryGraphQL(
-        pullRequestQueryString,
-        async () => {
-          return await queryPullRequests({
-            query,
-            ...queryCursors,
-          });
-        },
-      );
+      let pullRequestResponse;
+      try {
+        pullRequestResponse = await this.retryGraphQL(
+          pullRequestQueryString,
+          async () => {
+            return await queryPullRequests({
+              query,
+              ...queryCursors,
+            });
+          },
+        );
+      } catch (err) {
+        if (err.status === 401) {
+          await this.refreshToken();
+          queryPullRequests = this.graph(pullRequestQueryString);
+          pullRequestResponse = await this.retryGraphQL(
+            pullRequestQueryString,
+            async () => {
+              return await queryPullRequests({
+                query,
+                ...queryCursors,
+              });
+            },
+          );
+        } else {
+          throw err;
+        }
+      }
       pullRequestsQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
@@ -257,8 +277,9 @@ export class GitHubGraphQLClient {
     let queryIssues = this.graph(issueQueryString);
 
     do {
-      if (this.tokenExpires - 60000 < Date.now()) {
-        //token expires in less than a minute
+      if (this.tokenExpires - 300000 < Date.now()) {
+        //300000 msec = 5 min
+        //token expires soon; we'd rather refresh it proactively
         await this.refreshToken();
         queryIssues = this.graph(issueQueryString);
       }
@@ -266,15 +287,33 @@ export class GitHubGraphQLClient {
         { queryCursors },
         'Fetching batch of issues from GraphQL',
       );
-      const issueResponse = await this.retryGraphQL(
-        issueQueryString,
-        async () => {
+
+      let issueResponse;
+      try {
+        issueResponse = await this.retryGraphQL(issueQueryString, async () => {
           return await queryIssues({
             query,
             ...queryCursors,
           });
-        },
-      );
+        });
+      } catch (err) {
+        if (err.status === 401) {
+          await this.refreshToken();
+          queryIssues = this.graph(issueQueryString);
+          issueResponse = await this.retryGraphQL(
+            issueQueryString,
+            async () => {
+              return await queryIssues({
+                query,
+                ...queryCursors,
+              });
+            },
+          );
+        } else {
+          throw err;
+        }
+      }
+
       issuesQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = issueResponse.rateLimit;
       this.logger.info(
@@ -351,17 +390,34 @@ export class GitHubGraphQLClient {
     let query = this.graph(queryString);
 
     do {
-      if (this.tokenExpires - 60000 < Date.now()) {
-        //token expires in less than a minute
+      if (this.tokenExpires - 300000 < Date.now()) {
+        //300000 msec = 5 min
+        //token expires soon - we'd rather refresh it proactively
         await this.refreshToken();
         query = this.graph(queryString);
       }
-      const response = await this.retryGraphQL(queryString, async () => {
-        return await query({
-          ...extraQueryParams,
-          ...queryCursors,
+      let response;
+      try {
+        response = await this.retryGraphQL(queryString, async () => {
+          return await query({
+            ...extraQueryParams,
+            ...queryCursors,
+          });
         });
-      });
+      } catch (err) {
+        if (err.status === 401) {
+          await this.refreshToken();
+          query = this.graph(queryString);
+          response = await this.retryGraphQL(queryString, async () => {
+            return await query({
+              ...extraQueryParams,
+              ...queryCursors,
+            });
+          });
+        } else {
+          throw err;
+        }
+      }
 
       const rateLimit = response.rateLimit;
       this.logger.info({ rateLimit }, `Rate limit response for iteration`);
@@ -493,9 +549,9 @@ export class GitHubGraphQLClient {
 
     // Check https://github.com/lifeomic/attempt for options on retry
     return await retry(queryWithRateLimitCatch, {
-      maxAttempts: 8,
+      maxAttempts: 7,
       delay: 30_000, //30 seconds to start
-      factor: 2, //exponential backoff factor. with 30 sec start and 8 attempts, longest delay is 64 min
+      factor: 2, //exponential backoff factor. with 30 sec start and 7 attempts, longest wait is 32 min (total 64 min)
       handleError(error: any, attemptContext: AttemptContext) {
         /* retry will keep trying to the limits of retryOptions
          * but it lets you intervene in this function - if you throw an error from in here,

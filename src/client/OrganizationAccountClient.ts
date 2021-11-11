@@ -373,6 +373,13 @@ export default class OrganizationAccountClient {
       return repoSecrets || [];
     } catch (err) {
       this.logger.warn({}, 'Error while attempting to ingest repo secrets');
+      if (err.status === 403) {
+        //this is caused by repos with more restrictive privacy settings
+        this.logger.info(
+          `Repo ${repoName} returned a 403 unauthorized when secrets requested.`,
+        );
+        return [];
+      }
       throw new IntegrationError(err);
     }
   }
@@ -397,11 +404,13 @@ export default class OrganizationAccountClient {
       );
       return repoEnvironments || [];
     } catch (err) {
-      if (err.status === 404) {
+      if (err.status === 404 || err.status === 403) {
         //private repos can only use environments in Enterprise level GitHub accounts
         //you get 404 if you try to call the REST API for environments on a private repo otherwise
         //but we don't know whether the account is Enterprise level, so we have to try private repos
-        //once we move getEnvironments to GraphQL, this won't be an issue. private will return []
+        //once we move getEnvironments to GraphQL, this won't be an issue - private repos will simply
+        //not be included in the API rely
+        //403 can happen if the GitHub App is not permitted to access all repos
         return [];
       } else {
         this.logger.warn(

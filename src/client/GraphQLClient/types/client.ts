@@ -100,10 +100,12 @@ export interface OrgTeamQueryResponse extends Node {
   repos?: OrgTeamRepoQueryResponse[];
 }
 
+//this response expresses the association between a team and a member of the team
 export interface OrgTeamMemberQueryResponse extends Node {
+  //id will be github User's id
   name?: string;
   login: string;
-  teams: string;
+  teams: string; // a single team's id
   role: TeamMemberRole;
 }
 

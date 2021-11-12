@@ -15,6 +15,7 @@ export default async function getStepStartStates(
     ['fetch-users']: { disabled: false },
     ['fetch-repos']: { disabled: false },
     ['fetch-teams']: { disabled: false },
+    ['fetch-team-members']: { disabled: false },
     ['fetch-team-repos']: { disabled: false },
     ['fetch-collaborators']: { disabled: false },
     ['fetch-prs']: { disabled: false },

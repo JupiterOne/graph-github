@@ -134,6 +134,26 @@ export class APIClient {
   }
 
   /**
+   * Iterates each team-member association from the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateTeamMembers(
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+
+    const allTeamMembers: OrgTeamMemberQueryResponse[] =
+      await this.accountClient.getTeamMembers();
+
+    for (const teamUserAssociation of allTeamMembers) {
+      await iteratee(teamUserAssociation);
+    }
+  }
+
+  /**
    * Iterates each installed GitHub application.
    *
    * @param iteratee receives each resource to produce entities/relationships

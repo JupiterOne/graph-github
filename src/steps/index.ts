@@ -11,12 +11,14 @@ import { environmentSteps } from './environments';
 import { issueSteps } from './issues';
 import { envSecretSteps } from './envsecrets';
 import { teamRepoSteps } from './teamRepos';
+import { teamMemberSteps } from './teamMembers';
 
 const integrationSteps = [
   ...accountSteps,
   ...memberSteps,
   ...repoSteps,
   ...teamSteps,
+  ...teamMemberSteps,
   ...teamRepoSteps,
   ...collaboratorSteps,
   ...prSteps,

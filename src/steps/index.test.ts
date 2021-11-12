@@ -26,6 +26,7 @@ import { fetchEnvironments } from './environments';
 import { fetchIssues } from './issues';
 import { fetchEnvSecrets } from './envsecrets';
 import { fetchTeamRepos } from './teamRepos';
+import { fetchTeamMembers } from './teamMembers';
 
 jest.setTimeout(20000);
 
@@ -55,6 +56,7 @@ test('should collect data', async () => {
   await fetchRepos(context);
   await fetchTeams(context);
   await fetchTeamRepos(context);
+  await fetchTeamMembers(context);
   await fetchCollaborators(context);
   await fetchPrs(context);
   await fetchIssues(context);

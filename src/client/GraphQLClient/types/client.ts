@@ -138,8 +138,10 @@ export interface OrgRepoQueryResponse extends Node {
   rebaseMergeAllowed?: boolean;
 }
 
-export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
-  teams: string;
+//this is expressing the edge between a repo and a team that it allows
+export interface OrgTeamRepoQueryResponse extends Node {
+  //property id will be the repo id
+  teams: string; // this will be just one team key as a string, despite the plural property name
   permission: TeamRepositoryPermission;
 }
 

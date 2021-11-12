@@ -105,15 +105,31 @@ export class APIClient {
     const allTeamMembers: OrgTeamMemberQueryResponse[] =
       await this.accountClient.getTeamMembers();
 
-    const allTeamRepos: OrgTeamRepoQueryResponse[] =
-      await this.accountClient.getTeamRepositories();
-
     for (const team of teams) {
       team.members = allTeamMembers.filter(
         (member) => member.teams === team.id,
       );
-      team.repos = allTeamRepos.filter((repo) => repo.teams === team.id);
       await iteratee(team);
+    }
+  }
+
+  /**
+   * Iterates each team-repo association from the provider.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateTeamRepos(
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+
+    const allTeamRepos: OrgTeamRepoQueryResponse[] =
+      await this.accountClient.getTeamRepositories();
+
+    for (const teamRepoAssociation of allTeamRepos) {
+      await iteratee(teamRepoAssociation);
     }
   }
 

@@ -8,6 +8,16 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Separated `fetch-teams` step into three steps so that any crashes have less
+  impact. The 3 steps are `fetch-teams`, `fetch-team-repos` and
+  `fetch-team-members`. Step `fetch-teams` just gets the team entities and the
+  relationship `github_account` HAS `github_team`. Step `fetch-team-repos`
+  ingests the `github_repo` ALLOWS `github_team` relationship. Step
+  `fetch-team-members` ingests the relationships `github_team` HAS `github_user`
+  and `github_user` MANAGES `github_team`.
+
 ## 1.8.6 - 2021-11-15
 
 ### Fixed
@@ -16,6 +26,7 @@ and this project adheres to
   multiple repositories, and they have Secrets with the same name.
 - Fixed crash on `fetch-repo-secrets` when the GitHub App was not authorized for
   all repos (403 error)
+- Fixed token expiration after sleep due to rate-limiting
 
 ## 1.8.5 - 2021-11-06
 

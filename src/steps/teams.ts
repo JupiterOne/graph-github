@@ -12,18 +12,15 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import {
   toTeamEntity,
   toOrganizationMemberEntityFromTeamMember,
-  createRepoAllowsTeamRelationship,
 } from '../sync/converters';
 import { AccountEntity, TeamEntity } from '../types';
 import { TeamMemberRole } from '../client/GraphQLClient';
 import {
   GITHUB_ACCOUNT_ENTITY_TYPE,
   GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_REPO_ENTITY_TYPE,
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_TEAM_ENTITY_CLASS,
   GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
-  GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
@@ -88,20 +85,6 @@ export async function fetchTeams({
         );
       }
     }
-
-    for (const repo of team.repos || []) {
-      if (!jobState.hasKey(repo.id)) {
-        throw new IntegrationMissingKeyError(
-          `Expected repo (CodeRepo) with id to exist (key=${repo.id})`,
-        );
-      }
-      const repoTeamRelationship = createRepoAllowsTeamRelationship(
-        repo.id,
-        teamEntity,
-        repo.permission,
-      );
-      await jobState.addRelationship(repoTeamRelationship);
-    }
   });
 }
 
@@ -133,12 +116,6 @@ export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
         _type: GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.MANAGES,
         sourceType: GITHUB_MEMBER_ENTITY_TYPE,
-        targetType: GITHUB_TEAM_ENTITY_TYPE,
-      },
-      {
-        _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.ALLOWS,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
         targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
     ],

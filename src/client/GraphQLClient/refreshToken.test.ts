@@ -15,6 +15,7 @@ import {
   REPOS_QUERY_STRING,
   TEAM_MEMBERS_QUERY_STRING,
   USERS_QUERY_STRING,
+  MAX_REQUESTS_NUM,
 } from './queries';
 import { parseTimePropertyValue } from '@jupiterone/integration-sdk-core';
 
@@ -51,17 +52,34 @@ async function getAccess() {
   return { token, tokenExpires, appClient };
 }
 
-const pageLimit = 2;
 async function getClient() {
   const { token, tokenExpires, appClient } = await getAccess();
   return new GitHubGraphQLClient(
     token,
     tokenExpires * 0, //making this be time zero simulates an expired token and forces a refresh
-    resourceMetadataMap(pageLimit, pageLimit),
+    resourceMetadataMap(),
     createMockIntegrationLogger(),
     appClient,
   );
 }
+
+//reduce page limit size so we can test pagination
+const pullRequestsQueryString = PULL_REQUESTS_QUERY_STRING.replace(
+  `first: ${MAX_REQUESTS_NUM}`,
+  'first: 2',
+);
+const reposQueryString = REPOS_QUERY_STRING.replace(
+  `first: ${MAX_REQUESTS_NUM}`,
+  'first: 2',
+);
+const usersQueryString = USERS_QUERY_STRING.replace(
+  `first: ${MAX_REQUESTS_NUM}`,
+  'first: 2',
+);
+const teamMembersQueryString = TEAM_MEMBERS_QUERY_STRING.replace(
+  `first: ${MAX_REQUESTS_NUM}`,
+  'first: 2',
+);
 
 describe('pull request resources', () => {
   let p: Recording; //p for polly
@@ -80,7 +98,7 @@ describe('pull request resources', () => {
     const query = 'is:pr repo:Kei-Institute/Test-repo is:open';
     const pullRequests: PullRequest[] = [];
     const response = await client.iteratePullRequests(
-      PULL_REQUESTS_QUERY_STRING,
+      pullRequestsQueryString,
       query,
       [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       (pr) => {
@@ -111,9 +129,8 @@ describe('organization resources', () => {
       },
     });
     const client = await getClient();
-
     const data = await client.fetchFromSingle(
-      REPOS_QUERY_STRING,
+      reposQueryString,
       GithubResource.Organization,
       [GithubResource.Repositories],
       { login: 'Kei-Institute' },
@@ -138,9 +155,8 @@ describe('organization resources', () => {
       },
     });
     const client = await getClient();
-
     const data = await client.fetchFromSingle(
-      USERS_QUERY_STRING,
+      usersQueryString,
       GithubResource.Organization,
       [GithubResource.OrganizationMembers],
       { login: 'Kei-Institute' },
@@ -165,9 +181,8 @@ describe('organization resources', () => {
       },
     });
     const client = await getClient();
-
     const data = await client.fetchFromSingle(
-      TEAM_MEMBERS_QUERY_STRING,
+      teamMembersQueryString,
       GithubResource.Organization,
       [GithubResource.TeamMembers],
       { login: 'Kei-Institute' },

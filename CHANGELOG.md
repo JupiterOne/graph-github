@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed duplicate key error for when Environments of the same name exist on
+  multiple repositories, and they have Secrets with the same name.
+- Fixed crash on `fetch-repo-secrets` when the GitHub App was not authorized for
+  all repos (403 error)
+
 ## 1.8.5 - 2021-11-06
 
 - Properly handle cases when GitHub does not return expected array properties

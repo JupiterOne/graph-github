@@ -1,6 +1,6 @@
 import graphql, { GraphQLClient } from 'graphql.js';
 import { get } from 'lodash';
-import { retry, sleep, AttemptContext } from '@lifeomic/attempt';
+import { retry, AttemptContext } from '@lifeomic/attempt';
 import { URL } from 'url';
 
 import {
@@ -30,6 +30,8 @@ import { ResourceIteratee } from '../../client';
 import { SINGLE_PULL_REQUEST_QUERY_STRING } from './queries';
 import { LIMITED_REQUESTS_NUM } from './queries';
 import { Octokit } from '@octokit/rest';
+import validateGraphQLResponse from '../../util/validateGraphQLReponse';
+import sleepIfApproachingRateLimit from '../../util/sleepIfApproachingRateLimit';
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -110,8 +112,9 @@ export class GitHubGraphQLClient {
     let queryPullRequests = this.graph(pullRequestQueryString);
 
     do {
-      if (this.tokenExpires - 60000 < Date.now()) {
-        //token expires in less than a minute
+      if (this.tokenExpires - 300000 < Date.now()) {
+        //300000 msec = 5 min
+        //token expires soon; we'd rather refresh proactively
         await this.refreshToken();
         queryPullRequests = this.graph(pullRequestQueryString);
       }
@@ -119,15 +122,34 @@ export class GitHubGraphQLClient {
         { queryCursors },
         'Fetching batch of pull requests from GraphQL',
       );
-      const pullRequestResponse = await this.retryGraphQL(
-        pullRequestQueryString,
-        async () => {
-          return await queryPullRequests({
-            query,
-            ...queryCursors,
-          });
-        },
-      );
+      let pullRequestResponse;
+      try {
+        pullRequestResponse = await this.retryGraphQL(
+          pullRequestQueryString,
+          async () => {
+            return await queryPullRequests({
+              query,
+              ...queryCursors,
+            });
+          },
+        );
+      } catch (err) {
+        if (err.status === 401) {
+          await this.refreshToken();
+          queryPullRequests = this.graph(pullRequestQueryString);
+          pullRequestResponse = await this.retryGraphQL(
+            pullRequestQueryString,
+            async () => {
+              return await queryPullRequests({
+                query,
+                ...queryCursors,
+              });
+            },
+          );
+        } else {
+          throw err;
+        }
+      }
       pullRequestsQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info(
@@ -255,8 +277,9 @@ export class GitHubGraphQLClient {
     let queryIssues = this.graph(issueQueryString);
 
     do {
-      if (this.tokenExpires - 60000 < Date.now()) {
-        //token expires in less than a minute
+      if (this.tokenExpires - 300000 < Date.now()) {
+        //300000 msec = 5 min
+        //token expires soon; we'd rather refresh it proactively
         await this.refreshToken();
         queryIssues = this.graph(issueQueryString);
       }
@@ -264,15 +287,33 @@ export class GitHubGraphQLClient {
         { queryCursors },
         'Fetching batch of issues from GraphQL',
       );
-      const issueResponse = await this.retryGraphQL(
-        issueQueryString,
-        async () => {
+
+      let issueResponse;
+      try {
+        issueResponse = await this.retryGraphQL(issueQueryString, async () => {
           return await queryIssues({
             query,
             ...queryCursors,
           });
-        },
-      );
+        });
+      } catch (err) {
+        if (err.status === 401) {
+          await this.refreshToken();
+          queryIssues = this.graph(issueQueryString);
+          issueResponse = await this.retryGraphQL(
+            issueQueryString,
+            async () => {
+              return await queryIssues({
+                query,
+                ...queryCursors,
+              });
+            },
+          );
+        } else {
+          throw err;
+        }
+      }
+
       issuesQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = issueResponse.rateLimit;
       this.logger.info(
@@ -349,17 +390,34 @@ export class GitHubGraphQLClient {
     let query = this.graph(queryString);
 
     do {
-      if (this.tokenExpires - 60000 < Date.now()) {
-        //token expires in less than a minute
+      if (this.tokenExpires - 300000 < Date.now()) {
+        //300000 msec = 5 min
+        //token expires soon - we'd rather refresh it proactively
         await this.refreshToken();
         query = this.graph(queryString);
       }
-      const response = await this.retryGraphQL(queryString, async () => {
-        return await query({
-          ...extraQueryParams,
-          ...queryCursors,
+      let response;
+      try {
+        response = await this.retryGraphQL(queryString, async () => {
+          return await query({
+            ...extraQueryParams,
+            ...queryCursors,
+          });
         });
-      });
+      } catch (err) {
+        if (err.status === 401) {
+          await this.refreshToken();
+          query = this.graph(queryString);
+          response = await this.retryGraphQL(queryString, async () => {
+            return await query({
+              ...extraQueryParams,
+              ...queryCursors,
+            });
+          });
+        } else {
+          throw err;
+        }
+      }
 
       const rateLimit = response.rateLimit;
       this.logger.info({ rateLimit }, `Rate limit response for iteration`);
@@ -383,9 +441,6 @@ export class GitHubGraphQLClient {
     } while (hasMoreResources);
 
     /*
-      * there is some complicated cursor management happening here that can
-      * make debugging difficult in case of GitHub GraphQL API failure
-      * 
       * if all has gone well, the return statement below will return an object
       * with a property for each GitHubResource requested (such as 'organization'
       * or 'collaborators'). Each of those properties will be an array of
@@ -422,19 +477,16 @@ export class GitHubGraphQLClient {
             id: 'MDQ6VGVhbTQ4NTgxNzA=',
             organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz'
           },
-          {
-            node: undefined,
-            id: 'MDQ6VGVhbTQ4NTc0OTU=',
-            organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz'
-          }
         ],
         organization: [ { id: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz' } ],
         rateLimitConsumed: 1
       }
       * 
-      * When something goes wrong, the object returned by this function may lack
+      * It is possible that the object returned by this function may lack
       * the expected GitHubResource property, leaving the calling function with
-      * an undefined response
+      * an undefined response. This happens if there were no instances of that
+      * entity returned by the API, either because they don't exist in the
+      * account, or something went wrong in GitHub's API processing.
       */
 
     return {
@@ -473,16 +525,8 @@ export class GitHubGraphQLClient {
 
   private async retryGraphQL(queryString: string, query: () => Promise<any>) {
     const { logger } = this;
-    /*
-     * in addition to normal HTTP errors (4xx/5xx),
-     * GitHub sometimes returns an error message with a 200 code
-     * for example, if GraphQL rate limits are exceeded, it might give a [200] with a valid JSON like:
-     *
-     * {"message":"API rate limit exceeded for 98.53.189.133. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)","documentation_url":"https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"}
-     *
-     */
 
-    //everything in this function is going into the retry function below
+    //queryWithRateLimitCatch will be passed to the retry function below
     const queryWithRateLimitCatch = async () => {
       let response;
       //check for 4xx/5xx errors
@@ -498,107 +542,20 @@ export class GitHubGraphQLClient {
           endpoint: `GraphQL API 4xx/5xx at GitHubGraphQLClient.ts > retryGraphQL`,
         });
       }
-
-      /*
-       * in the happy path, the raw response should be an object with two properties
-
-       * One is `rateLimit`, and it is an object with rate-limiting-related properties
-       * such as 'limit', 'cost', 'remaining' and 'resetAt'
-       * 
-       * The other property will depend on the query. It might be 'organization' for
-       * GraphQL queries that start with the org and return entities as sub-objects
-       * Or it might be 'search', because the GraphQL query was structured that way 
-       * for pull-requests or issues. In any event, the object structure will mirror
-       * the query structure found in queries.ts
-       * 
-       * In the case of a successful connection to the GitHub GraphQL API, but an 
-       * error in processing such as rate-limiting or a malformed query, we might get 
-       * a [200] code HTML response, but the returned response is an object with just
-       * an error message as a string property called `message`
-       *
-       */
-
-      //check for Github special "error with a 200 code"
-      if (response.message) {
-        if (response.message.includes('rate limit')) {
-          logger.warn(
-            { response },
-            'Hit a rate limit message when attempting to query GraphQL. Waiting before trying again.',
-          );
-          throw new IntegrationProviderAPIError({
-            message: response.message,
-            status: 429,
-            statusText: `Error msg: ${response.message}, query string: ${queryString}`,
-            cause: undefined,
-            endpoint: `https://api.github.com/graphql`,
-          });
-        } else {
-          throw new IntegrationProviderAPIError({
-            message: response.message,
-            status: '200 error',
-            statusText: `Error msg: ${response.message}, query string: ${queryString}`,
-            cause: undefined,
-            endpoint: `https://api.github.com/graphql`,
-          });
-        }
-      }
-
-      /*
-       * finally, if we got this far, let's see how we're doing on rate limits.
-       * If we're getting too low, let's take a break until the resetAt time.
-       *
-       * When you start using the API, GitHub sets your reset time to one hour in the future.
-       * At that time, you get your full limit back. Until then, you do not refresh limits at all.
-       * That means that if you burned up all your rate limits in 15 minutes, you're not getting more
-       * for another 45 minutes (ie. until your first API calls are an hour old).
-       * But then you get your full limit again right on the one hour mark (ie. your rate-limit
-       * doesn't trickle in over 15 minutes like in a rolling-window scenario).
-       *
-       * In most cases, these rate limits are not a problem, but for large accounts they can be
-       * They are very likely to become a problem if a customer has other automation hitting
-       * these same limits at the same time that this integration is running
-       */
-      if (
-        response.rateLimit &&
-        response.rateLimit.remaining &&
-        response.rateLimit.limit &&
-        response.rateLimit.resetAt
-      ) {
-        const thresholdToTakeABreak = 0.1;
-        const rateLimitRemainingProportion =
-          response.rateLimit.remaining / response.rateLimit.limit;
-        const msUntilRateLimitReset =
-          parseTimePropertyValue(response.rateLimit.resetAt)! - Date.now();
-        if (rateLimitRemainingProportion < thresholdToTakeABreak) {
-          this.logger.warn(
-            {},
-            `Rate limits are down to ${(
-              rateLimitRemainingProportion * 100
-            ).toPrecision(4)}% remaining, sleeping ${
-              msUntilRateLimitReset / 1000
-            } sec until ${response.rateLimit.resetAt}`,
-          );
-          await sleep(msUntilRateLimitReset);
-        }
-      } else {
-        this.logger.warn(
-          {},
-          'Ratelimit object not found in response, so could not calculate rate limit remaining',
-        );
-      }
-
+      validateGraphQLResponse(response, logger, queryString);
+      await sleepIfApproachingRateLimit(response.rateLimit, logger);
       return response;
     };
 
     // Check https://github.com/lifeomic/attempt for options on retry
     return await retry(queryWithRateLimitCatch, {
-      maxAttempts: 8,
+      maxAttempts: 7,
       delay: 30_000, //30 seconds to start
-      factor: 2, //exponential backoff factor. with 30 sec start and 8 attempts, longest delay is 64 min
+      factor: 2, //exponential backoff factor. with 30 sec start and 7 attempts, longest wait is 32 min (total 64 min)
       handleError(error: any, attemptContext: AttemptContext) {
         /* retry will keep trying to the limits of retryOptions
          * but it lets you intervene in this function - if you throw an error from in here,
-         *it stops retrying. Otherwise you can just log the attempts.
+         * it stops retrying. Otherwise you can just log the attempts.
          *
          * Github has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
          * GitHub guidance is to "wait a few minutes" when we get one of these errors.

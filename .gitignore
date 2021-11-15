@@ -2,6 +2,10 @@ node_modules/
 dist/
 .j1-integration/
 .env
+.env-mine
+.env-populated
+.env-empty
+.env-j1
 .eslintcache
 tsconfig.tsbuildinfo
 .gitignore

@@ -219,7 +219,7 @@ export function toEnvSecretEntity(
     _key: getSecretEntityKey({
       name: data.name,
       secretOwnerType: 'Env',
-      secretOwnerName: env.name,
+      secretOwnerName: env.name + 'InRepo' + env.parentRepoName,
     }),
     name: data.name,
     displayName: data.name,

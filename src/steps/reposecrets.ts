@@ -8,7 +8,7 @@ import {
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { RepoKeyAndName, SecretEntity, IdEntityMap } from '../types';
+import { RepoKeyAndName, SecretEntity } from '../types';
 import {
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_REPO_SECRET_ENTITY_TYPE,
@@ -17,11 +17,11 @@ import {
   GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
-  GITHUB_ORG_SECRET_BY_NAME_MAP,
   GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
 } from '../constants';
 import { toRepoSecretEntity } from '../sync/converters';
+import { getSecretEntityKey } from '../util/propertyHelpers';
 
 export async function fetchRepoSecrets({
   instance,
@@ -37,15 +37,6 @@ export async function fetchRepoSecrets({
   if (!repoTags) {
     throw new IntegrationMissingKeyError(
       `Expected repos.ts to have set ${GITHUB_REPO_TAGS_ARRAY} in jobState.`,
-    );
-  }
-
-  const orgSecretEntities = await jobState.getData<IdEntityMap<SecretEntity>>(
-    GITHUB_ORG_SECRET_BY_NAME_MAP,
-  );
-  if (!orgSecretEntities) {
-    throw new IntegrationMissingKeyError(
-      `Expected orgsecrets.ts to have set ${GITHUB_ORG_SECRET_BY_NAME_MAP} in jobState.`,
     );
   }
 
@@ -80,12 +71,19 @@ export async function fetchRepoSecrets({
         }),
       );
 
-      if (orgSecretEntities[secret.name]) {
+      const keyOfHypotheticalOrgSecretOfSameName = getSecretEntityKey({
+        name: secret.name,
+        secretOwnerType: 'Org',
+        secretOwnerName: apiClient.accountClient.login,
+      });
+      if (jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
         await jobState.addRelationship(
           createDirectRelationship({
             _class: RelationshipClass.OVERRIDES,
-            from: secretEntity,
-            to: orgSecretEntities[secret.name],
+            fromType: GITHUB_REPO_SECRET_ENTITY_TYPE,
+            toType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+            fromKey: secretEntity._key,
+            toKey: keyOfHypotheticalOrgSecretOfSameName,
           }),
         );
       }

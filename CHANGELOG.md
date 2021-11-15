@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.6 - 2021-11-15
+
 ### Fixed
 
 - Fixed duplicate key error for when Environments of the same name exist on

@@ -40,17 +40,32 @@ If you need help with this integration, please contact
 
 ## Integration Walkthrough
 
+### In GitHub
+
 Upon creating a new GitHub integration configuration in JupiterOne, the user is
-re-directed to GitHub to install the JupiterOne GitHub app.
+re-directed to GitHub to install the JupiterOne GitHub App. The App will request
+read-only permissions to support ingestion of
+[entities and relationships](#data-model).
 
-The integration is using GitHub Apps authentication, which requests permissions
-from the Organization installing the app. The app requests the following Read
-Only permissions:
+#### Repository Permissions
 
-- Organization Metadata, Administration, Members, and Secrets
-- Repository Metadata, Secrets, Environments, and Issues
+- Actions: Read-only
+- Environments: Read-only
+- Metadata: Read-only
+- Pull requests: Read-only
+- [Secrets](#secrets-caveat): Read-only
 
-All of these permissions are Read Only.
+#### Organization Permissions
+
+- Members: Read-only
+- Administration: Read-only
+- [Secrets](#secrets-caveat): Read-only
+
+#### User Permissions
+
+- None
+
+#### Secrets Caveat
 
 Note that the Secrets API does not reveal the values of Secrets - only their
 names and creation dates.
@@ -63,25 +78,19 @@ Github References:
 - <https://docs.github.com/en/rest/reference/actions#secrets>
 - <https://docs.github.com/en/rest/reference/permissions-required-for-github-apps#permission-on-secrets>
 
-### In GitHub
-
-Install the JupiterOne app in GitHub after creating the GitHub configuration in
-JupiterOne.
-
 ### In JupiterOne
 
 1. From the configuration **Gear Icon**, select **Integrations**.
 2. Scroll to the **GitHub** integration tile and click it.
 3. Click the **Add Configuration** button and configure the following settings:
-
-- Enter the **Account Name** by which you'd like to identify this GitHub account
-  in JupiterOne. Ingested entities will have this value stored in
-  `tag.AccountName` when **Tag with Account Name** is checked.
-- Enter a **Description** that will further assist your team when identifying
-  the integration instance.
-- Select a **Polling Interval** that you feel is sufficient for your monitoring
-  needs. You may leave this as `DISABLED` and manually execute the integration.
-
+   - Enter the **Account Name** by which you'd like to identify this GitHub
+     account in JupiterOne. Ingested entities will have this value stored in
+     `tag.AccountName` when **Tag with Account Name** is checked.
+   - Enter a **Description** that will further assist your team when identifying
+     the integration instance.
+   - Select a **Polling Interval** that you feel is sufficient for your
+     monitoring needs. You may leave this as `DISABLED` and manually execute the
+     integration.
 4. Click **Create Configuration** once all values are provided.
 
 ## How to Uninstall

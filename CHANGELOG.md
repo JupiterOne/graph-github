@@ -17,6 +17,8 @@ and this project adheres to
   ingests the `github_repo` ALLOWS `github_team` relationship. Step
   `fetch-team-members` ingests the relationships `github_team` HAS `github_user`
   and `github_user` MANAGES `github_team`.
+- Fixed crash on `fetch-env-secrets` when the GitHub App was not authorized for
+  environmental secrets on a subset of repos (403 error)
 
 ## 1.8.6 - 2021-11-15
 

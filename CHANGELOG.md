@@ -19,6 +19,7 @@ and this project adheres to
   and `github_user` MANAGES `github_team`.
 - Fixed crash on `fetch-env-secrets` when the GitHub App was not authorized for
   environmental secrets on a subset of repos (403 error)
+- Improved logs
 
 ## 1.8.6 - 2021-11-15
 

@@ -76,7 +76,7 @@ export async function fetchRepoSecrets({
         secretOwnerType: 'Org',
         secretOwnerName: apiClient.accountClient.login,
       });
-      if (jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
+      if (await jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
         await jobState.addRelationship(
           createDirectRelationship({
             _class: RelationshipClass.OVERRIDES,

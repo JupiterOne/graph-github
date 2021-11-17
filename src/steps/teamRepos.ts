@@ -2,7 +2,6 @@ import {
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
-  IntegrationMissingKeyError,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
@@ -23,23 +22,22 @@ export async function fetchTeamRepos({
   const apiClient = createAPIClient(config, logger);
 
   await apiClient.iterateTeamRepos(async (teamRepo) => {
-    if (!jobState.hasKey(teamRepo.id)) {
-      throw new IntegrationMissingKeyError(
-        `Expected repo (CodeRepo) with id to exist (key=${teamRepo.id})`,
+    if (
+      (await jobState.hasKey(teamRepo.id)) &&
+      (await jobState.hasKey(teamRepo.teams))
+    ) {
+      const repoTeamRelationship = createRepoAllowsTeamRelationship(
+        teamRepo.id,
+        teamRepo.teams,
+        teamRepo.permission,
+      );
+      await jobState.addRelationship(repoTeamRelationship);
+    } else {
+      logger.warn(
+        { repoId: teamRepo.id, teamId: teamRepo.teams },
+        `Could not build relationship between team and repo.`,
       );
     }
-    //property .teams is just a single key
-    if (!jobState.hasKey(teamRepo.teams)) {
-      throw new IntegrationMissingKeyError(
-        `Expected team (UserGroup) with id to exist (key=${teamRepo.teams})`,
-      );
-    }
-    const repoTeamRelationship = createRepoAllowsTeamRelationship(
-      teamRepo.id,
-      teamRepo.teams,
-      teamRepo.permission,
-    );
-    await jobState.addRelationship(repoTeamRelationship);
   });
 }
 

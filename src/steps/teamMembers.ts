@@ -2,15 +2,12 @@ import {
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
-  IntegrationMissingKeyError,
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { DATA_ACCOUNT_ENTITY } from './account';
 import { toOrganizationMemberEntityFromTeamMember } from '../sync/converters';
-import { AccountEntity } from '../types';
 import { TeamMemberRole } from '../client/GraphQLClient';
 import {
   GITHUB_MEMBER_ENTITY_TYPE,
@@ -26,15 +23,6 @@ export async function fetchTeamMembers({
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
-
-  const accountEntity = await jobState.getData<AccountEntity>(
-    DATA_ACCOUNT_ENTITY,
-  );
-  if (!accountEntity) {
-    throw new IntegrationMissingKeyError(
-      `Expected to find Account entity in jobState.`,
-    );
-  }
 
   await apiClient.iterateTeamMembers(async (user) => {
     if (!(await jobState.hasKey(user.id))) {

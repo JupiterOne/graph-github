@@ -376,7 +376,8 @@ export default class OrganizationAccountClient {
       if (err.status === 403) {
         //this is caused by repos with more restrictive privacy settings
         this.logger.info(
-          `Repo ${repoName} returned a 403 unauthorized when secrets requested.`,
+          { repoName },
+          `Repo returned a 403 unauthorized when secrets requested.`,
         );
         return [];
       }
@@ -446,7 +447,8 @@ export default class OrganizationAccountClient {
       if (err.status === 403) {
         //this is caused by repos with more restrictive privacy settings
         this.logger.info(
-          `Repo ${repoName} returned a 403 unauthorized when environmental secrets requested.`,
+          { repoName },
+          `Repo returned a 403 unauthorized when environmental secrets requested.`,
         );
         return [];
       }

@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.7 - 2021-11-18
+
 ### Changed
 
 - Separated `fetch-teams` step into three steps so that any crashes have less

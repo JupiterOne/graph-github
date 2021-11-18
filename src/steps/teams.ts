@@ -69,7 +69,7 @@ export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users'],
+    dependsOn: ['fetch-account'],
     executionHandler: fetchTeams,
   },
 ];

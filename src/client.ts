@@ -102,13 +102,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
-    const allTeamMembers: OrgTeamMemberQueryResponse[] =
-      await this.accountClient.getTeamMembers();
-
     for (const team of teams) {
-      team.members = allTeamMembers.filter(
-        (member) => member.teams === team.id,
-      );
       await iteratee(team);
     }
   }

@@ -22,6 +22,8 @@ export async function fetchTeamRepos({
   const apiClient = createAPIClient(config, logger);
 
   await apiClient.iterateTeamRepos(async (teamRepo) => {
+    //teamRepo.id is the repo id
+    //teamRepo.teams is the team id
     if (
       (await jobState.hasKey(teamRepo.id)) &&
       (await jobState.hasKey(teamRepo.teams))

@@ -111,7 +111,7 @@ export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GITHUB_COLLABORATOR_ENTITY_TYPE,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-teams'],
+    dependsOn: ['fetch-repos', 'fetch-users'],
     executionHandler: fetchCollaborators,
   },
 ];

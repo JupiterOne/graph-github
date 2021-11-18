@@ -28,7 +28,7 @@ import { fetchEnvSecrets } from './envsecrets';
 import { fetchTeamRepos } from './teamRepos';
 import { fetchTeamMembers } from './teamMembers';
 
-jest.setTimeout(20000);
+jest.setTimeout(30000);
 
 let recording: Recording;
 afterEach(async () => {

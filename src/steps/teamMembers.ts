@@ -74,7 +74,7 @@ export const teamMemberSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GITHUB_TEAM_ENTITY_TYPE,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-teams', 'fetch-users'],
+    dependsOn: ['fetch-teams', 'fetch-users'],
     executionHandler: fetchTeamMembers,
   },
 ];

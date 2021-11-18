@@ -17,9 +17,16 @@ and this project adheres to
   ingests the `github_repo` ALLOWS `github_team` relationship. Step
   `fetch-team-members` ingests the relationships `github_team` HAS `github_user`
   and `github_user` MANAGES `github_team`.
+- Improved logs
+
+### Fixed
+
 - Fixed crash on `fetch-env-secrets` when the GitHub App was not authorized for
   environmental secrets on a subset of repos (403 error)
-- Improved logs
+- Fixed unnecessary dependency where `fetch-collaborators` was waiting on
+  `fetch-teams`, which in turn delayed `fetch-prs`.
+- Fixed some instances where async functions were not being properly awaited.
+- Added check to avoid invoking and logging sleep function for negative time.
 
 ## 1.8.6 - 2021-11-15
 

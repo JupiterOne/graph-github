@@ -18,8 +18,6 @@ const integrationSteps = [
   ...memberSteps,
   ...repoSteps,
   ...teamSteps,
-  ...teamMemberSteps,
-  ...teamRepoSteps,
   ...collaboratorSteps,
   ...prSteps,
   ...issueSteps,
@@ -28,6 +26,8 @@ const integrationSteps = [
   ...orgSecretSteps,
   ...repoSecretSteps,
   ...envSecretSteps,
+  ...teamMemberSteps,
+  ...teamRepoSteps,
 ];
 
 export { integrationSteps };

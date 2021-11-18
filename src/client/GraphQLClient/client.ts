@@ -135,6 +135,12 @@ export class GitHubGraphQLClient {
         );
       } catch (err) {
         if (err.status === 401) {
+          // why isn't this being handled inside of .retryGraphQL above?
+          // because we need to generate the function queryPullRequests from the graph function
+          // of the GraphQL client, and the token in the GraphQL client at the time of
+          // invoking this.graph(queryString) gets embedded in the returned function
+          // therefore, we can't change tokens without recreating the queryPullRequests function,
+          // which means we have to re-invoke the retry function
           await this.refreshToken();
           queryPullRequests = this.graph(pullRequestQueryString);
           pullRequestResponse = await this.retryGraphQL(
@@ -298,6 +304,12 @@ export class GitHubGraphQLClient {
         });
       } catch (err) {
         if (err.status === 401) {
+          // why isn't this being handled inside of .retryGraphQL above?
+          // because we need to generate the function queryIssues from the graph function
+          // of the GraphQL client, and the token in the GraphQL client at the time of
+          // invoking this.graph(queryString) gets embedded in the returned function
+          // therefore, we can't change tokens without recreating the queryIssues function,
+          // which means we have to re-invoke the retry function
           await this.refreshToken();
           queryIssues = this.graph(issueQueryString);
           issueResponse = await this.retryGraphQL(
@@ -406,6 +418,12 @@ export class GitHubGraphQLClient {
         });
       } catch (err) {
         if (err.status === 401) {
+          // why isn't this being handled inside of .retryGraphQL above?
+          // because we need to generate the function 'query' from the graph function
+          // of the GraphQL client, and the token in the GraphQL client at the time of
+          // invoking this.graph(queryString) gets embedded in the returned function
+          // therefore, we can't change tokens without recreating the 'query' function,
+          // which means we have to re-invoke the retry function
           await this.refreshToken();
           query = this.graph(queryString);
           response = await this.retryGraphQL(queryString, async () => {

@@ -410,7 +410,7 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
 
 export function createRepoAllowsTeamRelationship(
   repoId: string,
-  team: TeamEntity,
+  teamKey: string,
   permission: string,
 ): RepoAllowRelationship {
   let admin = false;
@@ -436,11 +436,11 @@ export function createRepoAllowsTeamRelationship(
     admin = true;
   }
   return {
-    _key: `${repoId}|allows|${team._key}`,
+    _key: `${repoId}|allows|${teamKey}`,
     _class: RelationshipClass.ALLOWS,
     _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
     _fromEntityKey: repoId,
-    _toEntityKey: team._key,
+    _toEntityKey: teamKey,
     displayName: RelationshipClass.ALLOWS,
     role: permission,
     adminPermission: admin,

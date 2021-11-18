@@ -100,10 +100,12 @@ export interface OrgTeamQueryResponse extends Node {
   repos?: OrgTeamRepoQueryResponse[];
 }
 
+//this response expresses the association between a team and a member of the team
 export interface OrgTeamMemberQueryResponse extends Node {
+  //id will be github User's id
   name?: string;
   login: string;
-  teams: string;
+  teams: string; // a single team's id
   role: TeamMemberRole;
 }
 
@@ -138,8 +140,10 @@ export interface OrgRepoQueryResponse extends Node {
   rebaseMergeAllowed?: boolean;
 }
 
-export interface OrgTeamRepoQueryResponse extends OrgRepoQueryResponse {
-  teams: string;
+//this is expressing the edge between a repo and a team that it allows
+export interface OrgTeamRepoQueryResponse extends Node {
+  //property id will be the repo id
+  teams: string; // this will be just one team key as a string, despite the plural property name
   permission: TeamRepositoryPermission;
 }
 

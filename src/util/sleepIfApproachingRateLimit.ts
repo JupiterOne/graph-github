@@ -30,21 +30,22 @@ export default async function sleepIfApproachingRateLimit(
     parseTimePropertyValue(rateLimit?.resetAt)
   ) {
     const rateLimitRemainingProportion = rateLimit.remaining / rateLimit.limit;
-    let msUntilRateLimitReset =
+    const msUntilRateLimitReset =
       parseTimePropertyValue(rateLimit.resetAt)! - Date.now();
     if (rateLimitRemainingProportion < RATELIMIT_PERCENT_REMAINING_TO_SLEEP) {
-      logger.warn(
-        {},
-        `Rate limits are down to ${(
-          rateLimitRemainingProportion * 100
-        ).toPrecision(4)}% remaining, sleeping ${
-          msUntilRateLimitReset / 1000
-        } sec until ${rateLimit.resetAt}`,
-      );
-      if (msUntilRateLimitReset < 1) {
-        msUntilRateLimitReset = 1;
+      if (msUntilRateLimitReset > 0) {
+        logger.warn(
+          {
+            rateLimitPercentLeft: (
+              rateLimitRemainingProportion * 100
+            ).toPrecision(4),
+            secondsUntilReset: msUntilRateLimitReset / 1000,
+            resetAt: rateLimit.resetAt,
+          },
+          `Rate limit almost exhausted, sleeping until reset time`,
+        );
+        await sleep(msUntilRateLimitReset);
       }
-      await sleep(msUntilRateLimitReset);
     }
   } else {
     logger.warn(

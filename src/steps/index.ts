@@ -10,6 +10,8 @@ import { repoSecretSteps } from './reposecrets';
 import { environmentSteps } from './environments';
 import { issueSteps } from './issues';
 import { envSecretSteps } from './envsecrets';
+import { teamRepoSteps } from './teamRepos';
+import { teamMemberSteps } from './teamMembers';
 
 const integrationSteps = [
   ...accountSteps,
@@ -24,6 +26,8 @@ const integrationSteps = [
   ...orgSecretSteps,
   ...repoSecretSteps,
   ...envSecretSteps,
+  ...teamMemberSteps,
+  ...teamRepoSteps,
 ];
 
 export { integrationSteps };

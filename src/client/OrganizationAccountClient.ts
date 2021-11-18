@@ -376,7 +376,8 @@ export default class OrganizationAccountClient {
       if (err.status === 403) {
         //this is caused by repos with more restrictive privacy settings
         this.logger.info(
-          `Repo ${repoName} returned a 403 unauthorized when secrets requested.`,
+          { repoName },
+          `Repo returned a 403 unauthorized when secrets requested.`,
         );
         return [];
       }
@@ -428,7 +429,7 @@ export default class OrganizationAccountClient {
     repoName: string,
   ): Promise<SecretQueryResponse[]> {
     try {
-      const repoSecrets = await this.v3.paginate(
+      const repoEnvSecrets = await this.v3.paginate(
         'GET /repositories/{repository_id}/environments/{environment_name}/secrets' as any, //https://docs.github.com/en/rest/reference/actions#list-environment-secrets
         {
           repository_id: repoDatabaseId,
@@ -441,8 +442,16 @@ export default class OrganizationAccountClient {
           return response?.data;
         },
       );
-      return repoSecrets || [];
+      return repoEnvSecrets || [];
     } catch (err) {
+      if (err.status === 403) {
+        //this is caused by repos with more restrictive privacy settings
+        this.logger.info(
+          { repoName },
+          `Repo returned a 403 unauthorized when environmental secrets requested.`,
+        );
+        return [];
+      }
       throw new IntegrationProviderAPIError({
         message: repoName + ': ' + err.message,
         status: err.status,

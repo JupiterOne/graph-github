@@ -25,8 +25,10 @@ import { fetchRepoSecrets } from './reposecrets';
 import { fetchEnvironments } from './environments';
 import { fetchIssues } from './issues';
 import { fetchEnvSecrets } from './envsecrets';
+import { fetchTeamRepos } from './teamRepos';
+import { fetchTeamMembers } from './teamMembers';
 
-jest.setTimeout(20000);
+jest.setTimeout(30000);
 
 let recording: Recording;
 afterEach(async () => {
@@ -53,6 +55,8 @@ test('should collect data', async () => {
   await fetchMembers(context);
   await fetchRepos(context);
   await fetchTeams(context);
+  await fetchTeamRepos(context);
+  await fetchTeamMembers(context);
   await fetchCollaborators(context);
   await fetchPrs(context);
   await fetchIssues(context);

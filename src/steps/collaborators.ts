@@ -64,7 +64,7 @@ export async function fetchCollaborators({
       }
     }
     const repoId = collab.repositories;
-    if (repoId && userEntity && jobState.hasKey(repoId)) {
+    if (repoId && userEntity && (await jobState.hasKey(repoId))) {
       const repoUserRelationship = createRepoAllowsUserRelationship(
         repoId,
         userEntity,
@@ -73,8 +73,8 @@ export async function fetchCollaborators({
       await jobState.addRelationship(repoUserRelationship);
     } else {
       logger.warn(
-        { collab: collab },
-        `Could not build relationship btwn collaborator ${collab.login} and repo ${repoId}`,
+        { collab: collab, repoId: repoId },
+        `Could not build relationship between collaborator and repo`,
       );
     }
   });
@@ -111,7 +111,7 @@ export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GITHUB_COLLABORATOR_ENTITY_TYPE,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-teams'],
+    dependsOn: ['fetch-repos', 'fetch-users'],
     executionHandler: fetchCollaborators,
   },
 ];

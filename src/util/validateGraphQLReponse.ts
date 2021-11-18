@@ -23,10 +23,7 @@ export default function validateGraphQLResponse(
       response.message.includes('rate limit') ||
       response.message.includes('Rate limit')
     ) {
-      logger.warn(
-        { response },
-        'Got a rate limit message when attempting to query GraphQL.',
-      );
+      logger.warn({ response }, 'Rate limit exceeded while querying GraphQL.');
       throw new IntegrationProviderAPIError({
         message: response.message,
         status: 429,

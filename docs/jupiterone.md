@@ -93,6 +93,23 @@ Github References:
      integration.
 4. Click **Create Configuration** once all values are provided.
 
+## Hierarchy of Steps
+
+This integration uses many steps to retrieve data. Some of the steps depend on
+others. If there is a crash or error, it might be helpful to understand the
+hierarchy of step dependency.
+
+- The root step is `fetch-account`. All other steps depend on it.
+- There are four steps that depend only on `fetch-account`. These are
+  `fetch-apps`, `fetch-repos`, `fetch-users`, and `fetch-teams`. These could be
+  considered primary steps.
+- Other steps logically require multiple primary steps to complete. Examples
+  include `fetch-collaborators`, `fetch-team-members`, and `fetch-team-repos`.
+- Finally, some sophisticated steps require both primary steps and secondary
+  steps before they can execute. For example, `fetch-prs` needs both
+  `fetch-repos` and `fetch-collaborators` in order to properly label reviewers
+  and approvers.
+
 ## How to Uninstall
 
 1. From the configuration **Gear Icon**, select **Integrations**.

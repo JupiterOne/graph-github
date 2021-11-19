@@ -453,12 +453,14 @@ export class GitHubGraphQLClient {
           resourceNums[res] = resources[res].length;
         }
       }
+
+      queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
+
       this.logger.info(
         { rateLimit, queryCursors, pageCursors, resourceNums },
         `Rate limit response for iteration`,
       );
 
-      queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
       hasMoreResources = Object.values(pageCursors).some((c) => c.hasNextPage);
     } while (hasMoreResources);
 

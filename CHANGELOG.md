@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Added logs for pagination details
+
 ## 1.8.7 - 2021-11-18
 
 ### Changed

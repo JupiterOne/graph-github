@@ -158,10 +158,7 @@ export class GitHubGraphQLClient {
       }
       pullRequestsQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = pullRequestResponse.rateLimit;
-      this.logger.info(
-        { rateLimit },
-        'Rate limit response for Pull Request iteration',
-      );
+      this.logger.info({ rateLimit }, 'Rate limit response for iteration');
       rateLimitConsumed += rateLimit.cost;
 
       for (const pullRequestQueryData of pullRequestResponse.search.edges) {
@@ -328,10 +325,7 @@ export class GitHubGraphQLClient {
 
       issuesQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = issueResponse.rateLimit;
-      this.logger.info(
-        { rateLimit },
-        'Rate limit response for Issue iteration',
-      );
+      this.logger.info({ rateLimit }, 'Rate limit response for iteration');
       rateLimitConsumed += rateLimit.cost;
 
       //hack to account for resourceMetadataMap on LabelsForIssues
@@ -438,7 +432,6 @@ export class GitHubGraphQLClient {
       }
 
       const rateLimit = response.rateLimit;
-      this.logger.info({ rateLimit }, `Rate limit response for iteration`);
       rateLimitConsumed += rateLimit.cost;
 
       const pathToData =
@@ -454,7 +447,20 @@ export class GitHubGraphQLClient {
         );
 
       resources = this.extractPageResources(pageResources, resources);
+      const resourceNums: Record<string, number> = {};
+      for (const res of selectedResources) {
+        if (Array.isArray(resources[res])) {
+          resourceNums[res] = resources[res].length;
+        }
+      }
+
       queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
+
+      this.logger.info(
+        { rateLimit, queryCursors, pageCursors, resourceNums },
+        `Rate limit response for iteration`,
+      );
+
       hasMoreResources = Object.values(pageCursors).some((c) => c.hasNextPage);
     } while (hasMoreResources);
 

@@ -16,8 +16,8 @@
  *
  */
 
-export const MAX_REQUESTS_NUM = 100;
-export const LIMITED_REQUESTS_NUM = 25; //this is sometimes used to avoid errors
+export const MAX_REQUESTS_NUM = 1;
+export const LIMITED_REQUESTS_NUM = 1; //this is sometimes used to avoid errors
 
 export const ACCOUNT_QUERY_STRING = `query ($login: String!) {
     organization(login: $login) {

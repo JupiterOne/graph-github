@@ -5,12 +5,12 @@ describe('mapResponseCursorsForQuery', () => {
     const cursors = {
       teams: {
         self: 'teamsSelfCursor',
-        children: {}
-      }
+        children: {},
+      },
     };
 
     expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
-      teams: 'teamsSelfCursor'
+      teams: 'teamsSelfCursor',
     });
   });
 
@@ -22,19 +22,20 @@ describe('mapResponseCursorsForQuery', () => {
           teamMembers: [
             {
               self: 'teamMembersSelfCursorOne',
-              children: {}
+              children: {},
             },
             {
               self: 'teamMembersSelfCursorTwo',
-              children: {}
-            }
-          ]
-        }
-      }
+              children: {},
+            },
+          ],
+        },
+      },
     };
 
     expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
-      teamMembers: 'teamMembersSelfCursorOne'
+      teamMembers: 'teamMembersSelfCursorOne',
+      teams: 'teamsSelfCursor',
     });
   });
 
@@ -46,31 +47,32 @@ describe('mapResponseCursorsForQuery', () => {
           teamMembers: [
             {
               self: 'teamMembersSelfCursorOne',
-              children: {}
+              children: {},
             },
             {
               self: 'teamMembersSelfCursorTwo',
-              children: {}
-            }
+              children: {},
+            },
           ],
           teamRepositories: [
             {
               self: 'teamRepositoriesSelfCursor',
-              children: {}
-            }
-          ]
-        }
+              children: {},
+            },
+          ],
+        },
       },
       repositories: {
         self: 'repositoriesSelfCursor',
-        children: {}
-      }
+        children: {},
+      },
     };
 
     expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
       teamMembers: 'teamMembersSelfCursorOne',
       teamRepositories: 'teamRepositoriesSelfCursor',
-      repositories: 'repositoriesSelfCursor'
+      repositories: 'repositoriesSelfCursor',
+      teams: 'teamsSelfCursor',
     });
   });
 
@@ -86,18 +88,20 @@ describe('mapResponseCursorsForQuery', () => {
                 teamMemberRepositories: [
                   {
                     self: 'teamMemberRepositoriesSelfCursor',
-                    children: {}
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
+                    children: {},
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
     };
 
     expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
-      teamMemberRepositories: 'teamMemberRepositoriesSelfCursor'
+      teamMemberRepositories: 'teamMemberRepositoriesSelfCursor',
+      teamMembers: 'teamMembersSelfCursorOne',
+      teams: 'teamsSelfCursor',
     });
   });
 
@@ -109,20 +113,20 @@ describe('mapResponseCursorsForQuery', () => {
           teamMembers: [
             {
               self: 'teamMembersSelfCursorOne',
-              children: {}
-            }
-          ]
-        }
-      }
+              children: {},
+            },
+          ],
+        },
+      },
     };
 
     expect(
       mapResponseCursorsForQuery(cursors, {
-        teams: 'teamsPreviousCursor'
-      })
+        teams: 'teamsPreviousCursor',
+      }),
     ).toEqual({
       teams: 'teamsPreviousCursor',
-      teamMembers: 'teamMembersSelfCursorOne'
+      teamMembers: 'teamMembersSelfCursorOne',
     });
   });
 
@@ -130,16 +134,16 @@ describe('mapResponseCursorsForQuery', () => {
     const cursors = {
       teams: {
         self: 'teamsSelfCursor',
-        children: {}
-      }
+        children: {},
+      },
     };
 
     expect(
       mapResponseCursorsForQuery(cursors, {
-        teams: 'teamsPreviousCursor'
-      })
+        teams: 'teamsPreviousCursor',
+      }),
     ).toEqual({
-      teams: 'teamsSelfCursor'
+      teams: 'teamsSelfCursor',
     });
   });
 });

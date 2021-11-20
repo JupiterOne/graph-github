@@ -31,6 +31,10 @@ export function mapResponseCursorsForQuery(
 
       if (queryCursors[key]) {
         cursors[key] = queryCursors[key];
+      } else {
+        if (hierarchy.self) {
+          cursors[key] = hierarchy.self;
+        }
       }
     } else if (hierarchy.self) {
       cursors[key] = hierarchy.self;

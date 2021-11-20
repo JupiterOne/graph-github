@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed broken cursor handling for nested objects, which made some larger
+  GraphQL queries never terminate.
+
 ## 1.8.9 - 2021-11-19
 
 ### Changed

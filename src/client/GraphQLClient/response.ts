@@ -6,7 +6,7 @@ import {
 } from './types';
 
 export function mapResponseCursorsForQuery(
-  cursors: ResourceMap<CursorHierarchy>,
+  pageCursors: ResourceMap<CursorHierarchy>,
   queryCursors: ResourceMap<string>,
 ): ResourceMap<string> {
   function cursorsFromHierarchy(
@@ -31,6 +31,10 @@ export function mapResponseCursorsForQuery(
 
       if (queryCursors[key]) {
         cursors[key] = queryCursors[key];
+      } else {
+        if (hierarchy.self) {
+          cursors[key] = hierarchy.self;
+        }
       }
     } else if (hierarchy.self) {
       cursors[key] = hierarchy.self;
@@ -40,7 +44,7 @@ export function mapResponseCursorsForQuery(
   }
 
   let flatCursors: ResourceMap<string> = {};
-  for (const [resource, cursorHierarchy] of Object.entries(cursors)) {
+  for (const [resource, cursorHierarchy] of Object.entries(pageCursors)) {
     flatCursors = {
       ...flatCursors,
       ...cursorsFromHierarchy(cursorHierarchy, resource, queryCursors),

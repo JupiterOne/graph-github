@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.10 - 2021-11-20
+
 ### Fixed
 
 - Fixed broken cursor handling for nested objects, which made some larger

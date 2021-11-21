@@ -1,8 +1,10 @@
+import { get } from 'lodash';
 import {
   ResourceMetadata,
   ResourceMap,
   CursorHierarchy,
   GithubResource,
+  Node,
 } from './types';
 
 // TODO: Why accumulate queryCursors? Can we not simply extract the cursors from
@@ -240,4 +242,89 @@ function addResourcesFromHierarchy(
   }
 
   return resources;
+}
+
+export type ExtractDataFromGraphQLResponse<T extends Node> = {
+  resourceMetadataMap: ResourceMap<ResourceMetadata>;
+  baseResource: GithubResource;
+  selectedResources: GithubResource[];
+  response: any;
+  queryCursors: ResourceMap<string>;
+  accumulatedResources: ResourceMap<T[]>;
+};
+
+export function extractDataFromGraphQLResponse<T extends Node>({
+  resourceMetadataMap,
+  baseResource,
+  selectedResources,
+  response,
+  queryCursors,
+  accumulatedResources,
+}: ExtractDataFromGraphQLResponse<T>) {
+  const pathToData =
+    resourceMetadataMap[baseResource].pathToDataInGraphQlResponse;
+  const data = pathToData ? get(response, pathToData) : response;
+
+  const { resources: pageResources, cursors: pageCursors } =
+    extractSelectedResources(
+      selectedResources,
+      resourceMetadataMap,
+      data,
+      baseResource,
+    );
+
+  const resources = extractPageResources({
+    resourceMetadataMap,
+    pageResources,
+    accumulatedResources,
+  });
+
+  const responseCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
+
+  return {
+    resources,
+    pageCursors,
+    queryCursors: responseCursors,
+  };
+}
+
+export type ExtractPageResourcesParams<T> = {
+  resourceMetadataMap: ResourceMap<ResourceMetadata>;
+  pageResources: ResourceMap<T[]>;
+  accumulatedResources: ResourceMap<T[]>;
+};
+
+export function extractPageResources<T extends Node>({
+  resourceMetadataMap,
+  pageResources,
+  accumulatedResources,
+}: ExtractPageResourcesParams<T>): ResourceMap<T[]> {
+  for (const [resource, data] of Object.entries(pageResources)) {
+    if (!accumulatedResources[resource]) {
+      accumulatedResources[resource] = data;
+      continue;
+    }
+    for (const item of data) {
+      if (
+        !accumulatedResources[resource].find((r: T) => {
+          const found = r.id === item.id; // This is enforced with the Node type
+          const metadata = resourceMetadataMap[resource];
+          if (metadata && metadata.parent) {
+            return found && r[metadata.parent] === item[metadata.parent];
+          } else {
+            return found;
+          }
+        })
+      ) {
+        accumulatedResources[resource].push(item);
+      }
+    }
+  }
+  return accumulatedResources;
+}
+
+export function hasMoreResources(
+  pageCursors: ResourceMap<CursorHierarchy>,
+): boolean {
+  return Object.values(pageCursors).some((c) => c.hasNextPage);
 }

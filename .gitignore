@@ -9,4 +9,5 @@ dist/
 .eslintcache
 tsconfig.tsbuildinfo
 .gitignore
+private_key
 *.pem

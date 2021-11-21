@@ -1,5 +1,4 @@
 import graphql, { GraphQLClient } from 'graphql.js';
-import { get } from 'lodash';
 import { retry, AttemptContext } from '@lifeomic/attempt';
 import { URL } from 'url';
 
@@ -18,13 +17,14 @@ import {
   Issue,
   GithubQueryResponse as QueryResponse,
   GithubResource,
-  Node,
   CursorHierarchy,
 } from './types';
 
 import {
+  extractDataFromGraphQLResponse,
   extractSelectedResources,
   mapResponseCursorsForQuery,
+  hasMoreResources,
 } from './response';
 import { ResourceIteratee } from '../../client';
 import { SINGLE_PULL_REQUEST_QUERY_STRING } from './queries';
@@ -32,63 +32,6 @@ import { LIMITED_REQUESTS_NUM } from './queries';
 import { Octokit } from '@octokit/rest';
 import validateGraphQLResponse from '../../util/validateGraphQLReponse';
 import sleepIfApproachingRateLimit from '../../util/sleepIfApproachingRateLimit';
-
-export type DoitParams = {
-  baseResource: GithubResource;
-  selectedResources: GithubResource[];
-  response: any;
-};
-
-export function doit({
-  baseResource,
-  selectedResources,
-  response,
-}: DoitParams) {
-  const pathToData =
-    this.resourceMetadataMap[baseResource].pathToDataInGraphQlResponse;
-  const data = pathToData ? get(response, pathToData) : response;
-
-  const { resources: pageResources, cursors: pageCursors } =
-    extractSelectedResources(
-      selectedResources,
-      this.resourceMetadataMap,
-      data,
-      baseResource,
-    );
-
-  const resources = extractPageResources(pageResources, resources);
-  const queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
-
-  return { resources, queryCursors, pageCursors };
-}
-
-function extractPageResources<T extends Node>(
-  pageResources: ResourceMap<T[]>,
-  accumulatedResources: ResourceMap<T[]>,
-): ResourceMap<T[]> {
-  for (const [resource, data] of Object.entries(pageResources)) {
-    if (!accumulatedResources[resource]) {
-      accumulatedResources[resource] = data;
-      continue;
-    }
-    for (const item of data) {
-      if (
-        !accumulatedResources[resource].find((r: T) => {
-          const found = r.id === item.id; // This is enforced with the Node type
-          const metadata = this.resourceMetadataMap[resource];
-          if (metadata && metadata.parent) {
-            return found && r[metadata.parent] === item[metadata.parent];
-          } else {
-            return found;
-          }
-        })
-      ) {
-        accumulatedResources[resource].push(item);
-      }
-    }
-  }
-  return accumulatedResources;
-}
 
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
@@ -446,9 +389,9 @@ export class GitHubGraphQLClient {
     extraQueryParams?: { [k: string]: string | number },
     queryCursors: ResourceMap<string> = {},
   ): Promise<QueryResponse> {
-    let resources: ResourceMap<any> = {};
+    let accumulatedResources: ResourceMap<any> = {};
     let rateLimitConsumed = 0;
-    let hasMoreResources = false;
+    let shouldContinuePagination = false;
 
     let query = this.graph(queryString);
 
@@ -491,20 +434,27 @@ export class GitHubGraphQLClient {
       const rateLimit = response.rateLimit;
       rateLimitConsumed += rateLimit.cost;
 
-      const { resources, queryCursors, pageCursors } = doit({
+      const {
+        resources: extractedResources,
+        queryCursors: extractedQueryCursors,
+        pageCursors,
+      } = extractDataFromGraphQLResponse({
+        resourceMetadataMap: this.resourceMetadataMap,
         baseResource,
         selectedResources,
         response,
+        queryCursors,
+        accumulatedResources,
       });
 
-      const hasMoreResources = Object.values(pageCursors).some(
-        (c) => c.hasNextPage,
-      );
+      queryCursors = extractedQueryCursors;
+      accumulatedResources = extractedResources;
+      shouldContinuePagination = hasMoreResources(pageCursors);
 
       const resourceCounts: Record<string, number> = {};
       for (const res of selectedResources) {
-        if (Array.isArray(resources[res])) {
-          resourceCounts[res] = resources[res].length;
+        if (Array.isArray(accumulatedResources[res])) {
+          resourceCounts[res] = accumulatedResources[res].length;
         }
       }
 
@@ -512,7 +462,7 @@ export class GitHubGraphQLClient {
         { rateLimit, queryCursors, resourceCounts, hasMoreResources },
         'GraphQL response metadata',
       );
-    } while (hasMoreResources);
+    } while (shouldContinuePagination);
 
     /*
       * if all has gone well, the return statement below will return an object
@@ -520,11 +470,11 @@ export class GitHubGraphQLClient {
       * or 'collaborators'). Each of those properties will be an array of
       * the particular objects appropriate to that resource - generally a flat object
       * with a list of resource-specific properties
-      * 
+      *
       * Here's a short example of the processed reply provided by all the above code,
       * from our test account, where the requested GitHubResources are
       * 'organization', 'teams', and 'teamRepositories':
-      * 
+      *
       {
         teamRepositories: [
           {
@@ -555,7 +505,7 @@ export class GitHubGraphQLClient {
         organization: [ { id: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz' } ],
         rateLimitConsumed: 1
       }
-      * 
+      *
       * It is possible that the object returned by this function may lack
       * the expected GitHubResource property, leaving the calling function with
       * an undefined response. This happens if there were no instances of that
@@ -564,7 +514,7 @@ export class GitHubGraphQLClient {
       */
 
     return {
-      ...resources,
+      ...accumulatedResources,
       rateLimitConsumed,
     } as QueryResponse;
   }

@@ -33,6 +33,63 @@ import { Octokit } from '@octokit/rest';
 import validateGraphQLResponse from '../../util/validateGraphQLReponse';
 import sleepIfApproachingRateLimit from '../../util/sleepIfApproachingRateLimit';
 
+export type DoitParams = {
+  baseResource: GithubResource;
+  selectedResources: GithubResource[];
+  response: any;
+};
+
+export function doit({
+  baseResource,
+  selectedResources,
+  response,
+}: DoitParams) {
+  const pathToData =
+    this.resourceMetadataMap[baseResource].pathToDataInGraphQlResponse;
+  const data = pathToData ? get(response, pathToData) : response;
+
+  const { resources: pageResources, cursors: pageCursors } =
+    extractSelectedResources(
+      selectedResources,
+      this.resourceMetadataMap,
+      data,
+      baseResource,
+    );
+
+  const resources = extractPageResources(pageResources, resources);
+  const queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
+
+  return { resources, queryCursors, pageCursors };
+}
+
+function extractPageResources<T extends Node>(
+  pageResources: ResourceMap<T[]>,
+  accumulatedResources: ResourceMap<T[]>,
+): ResourceMap<T[]> {
+  for (const [resource, data] of Object.entries(pageResources)) {
+    if (!accumulatedResources[resource]) {
+      accumulatedResources[resource] = data;
+      continue;
+    }
+    for (const item of data) {
+      if (
+        !accumulatedResources[resource].find((r: T) => {
+          const found = r.id === item.id; // This is enforced with the Node type
+          const metadata = this.resourceMetadataMap[resource];
+          if (metadata && metadata.parent) {
+            return found && r[metadata.parent] === item[metadata.parent];
+          } else {
+            return found;
+          }
+        })
+      ) {
+        accumulatedResources[resource].push(item);
+      }
+    }
+  }
+  return accumulatedResources;
+}
+
 export class GitHubGraphQLClient {
   private graph: GraphQLClient;
   private resourceMetadataMap: ResourceMap<ResourceMetadata>;
@@ -434,34 +491,27 @@ export class GitHubGraphQLClient {
       const rateLimit = response.rateLimit;
       rateLimitConsumed += rateLimit.cost;
 
-      const pathToData =
-        this.resourceMetadataMap[baseResource].pathToDataInGraphQlResponse;
-      const data = pathToData ? get(response, pathToData) : response;
+      const { resources, queryCursors, pageCursors } = doit({
+        baseResource,
+        selectedResources,
+        response,
+      });
 
-      const { resources: pageResources, cursors: pageCursors } =
-        extractSelectedResources(
-          selectedResources,
-          this.resourceMetadataMap,
-          data,
-          baseResource,
-        );
+      const hasMoreResources = Object.values(pageCursors).some(
+        (c) => c.hasNextPage,
+      );
 
-      resources = this.extractPageResources(pageResources, resources);
-      const resourceNums: Record<string, number> = {};
+      const resourceCounts: Record<string, number> = {};
       for (const res of selectedResources) {
         if (Array.isArray(resources[res])) {
-          resourceNums[res] = resources[res].length;
+          resourceCounts[res] = resources[res].length;
         }
       }
 
       this.logger.info(
-        { rateLimit, queryCursors, pageCursors, resourceNums },
-        `Rate limit response for iteration`,
+        { rateLimit, queryCursors, resourceCounts, hasMoreResources },
+        'GraphQL response metadata',
       );
-
-      queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
-
-      hasMoreResources = Object.values(pageCursors).some((c) => c.hasNextPage);
     } while (hasMoreResources);
 
     /*
@@ -517,34 +567,6 @@ export class GitHubGraphQLClient {
       ...resources,
       rateLimitConsumed,
     } as QueryResponse;
-  }
-
-  private extractPageResources<T extends Node>(
-    pageResources: ResourceMap<T[]>,
-    resources: ResourceMap<T[]>,
-  ): ResourceMap<T[]> {
-    for (const [resource, data] of Object.entries(pageResources)) {
-      if (!resources[resource]) {
-        resources[resource] = data;
-        continue;
-      }
-      for (const item of data) {
-        if (
-          !resources[resource].find((r: T) => {
-            const found = r.id === item.id; // This is enforced with the Node type
-            const metadata = this.resourceMetadataMap[resource];
-            if (metadata && metadata.parent) {
-              return found && r[metadata.parent] === item[metadata.parent];
-            } else {
-              return found;
-            }
-          })
-        ) {
-          resources[resource].push(item);
-        }
-      }
-    }
-    return resources;
   }
 
   private async retryGraphQL(queryString: string, query: () => Promise<any>) {

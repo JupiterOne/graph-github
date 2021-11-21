@@ -1,0 +1,114 @@
+{
+  "pullRequest": {
+    "graphRequestVariables": [
+      "$pullRequestNumber: Int!",
+      "$repoName: String!",
+      "$repoOwner: String!"
+    ],
+    "pathToDataInGraphQlResponse": "repository.pullRequest",
+    "children": [
+      "commits",
+      "reviews",
+      "labels"
+    ]
+  },
+  "pullRequests": {
+    "graphRequestVariables": [
+      "$query: String!",
+      "$pullRequests: String"
+    ],
+    "children": [
+      "commits",
+      "reviews",
+      "labels"
+    ]
+  },
+  "commits": {
+    "graphRequestVariables": [
+      "$commits: String"
+    ]
+  },
+  "reviews": {
+    "graphRequestVariables": [
+      "$reviews: String"
+    ]
+  },
+  "labels": {
+    "graphRequestVariables": [
+      "$labels: String"
+    ]
+  },
+  "issues": {
+    "graphRequestVariables": [
+      "$query: String!",
+      "$issues: String"
+    ],
+    "children": [
+      "assignees",
+      "labelsOnIssues"
+    ]
+  },
+  "assignees": {
+    "graphRequestVariables": [
+      "$assignees: String"
+    ]
+  },
+  "labelsOnIssues": {
+    "graphRequestVariables": [
+      "$labels: String"
+    ]
+  },
+  "organization": {
+    "graphRequestVariables": [
+      "$login: String!"
+    ],
+    "pathToDataInGraphQlResponse": "organization",
+    "children": [
+      "membersWithRole",
+      "teams",
+      "members",
+      "repositories"
+    ]
+  },
+  "membersWithRole": {
+    "graphRequestVariables": [
+      "$membersWithRole: String"
+    ]
+  },
+  "teams": {
+    "graphRequestVariables": [
+      "$teams: String"
+    ],
+    "children": [
+      "members",
+      "teamRepositories"
+    ]
+  },
+  "members": {
+    "graphRequestVariables": [
+      "$members: String"
+    ],
+    "parent": "teams"
+  },
+  "teamRepositories": {
+    "graphRequestVariables": [
+      "$teamRepositories: String"
+    ],
+    "alternateGraphProperty": "repositories",
+    "parent": "teams"
+  },
+  "repositories": {
+    "graphRequestVariables": [
+      "$repositories: String"
+    ],
+    "children": [
+      "collaborators"
+    ]
+  },
+  "collaborators": {
+    "graphRequestVariables": [
+      "$collaborators: String"
+    ],
+    "parent": "repositories"
+  }
+}

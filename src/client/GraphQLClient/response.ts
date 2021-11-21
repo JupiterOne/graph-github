@@ -5,6 +5,8 @@ import {
   GithubResource,
 } from './types';
 
+// TODO: Why accumulate queryCursors? Can we not simply extract the cursors from
+// the last response without keeping any history?
 export function mapResponseCursorsForQuery(
   pageCursors: ResourceMap<CursorHierarchy>,
   queryCursors: ResourceMap<string>,

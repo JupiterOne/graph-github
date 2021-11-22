@@ -383,7 +383,6 @@ hasNextPage
     }
     pageInfo {
 endCursor
-hasNextPage
 }
   }
   }
@@ -414,7 +413,6 @@ hasNextPage
       }
       pageInfo {
 endCursor
-hasNextPage
 }
     }
     }

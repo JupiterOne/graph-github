@@ -35,7 +35,6 @@ describe('mapResponseCursorsForQuery', () => {
 
     expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
       teamMembers: 'teamMembersSelfCursorOne',
-      teams: 'teamsSelfCursor',
     });
   });
 
@@ -72,7 +71,6 @@ describe('mapResponseCursorsForQuery', () => {
       teamMembers: 'teamMembersSelfCursorOne',
       teamRepositories: 'teamRepositoriesSelfCursor',
       repositories: 'repositoriesSelfCursor',
-      teams: 'teamsSelfCursor',
     });
   });
 
@@ -100,8 +98,6 @@ describe('mapResponseCursorsForQuery', () => {
 
     expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
       teamMemberRepositories: 'teamMemberRepositoriesSelfCursor',
-      teamMembers: 'teamMembersSelfCursorOne',
-      teams: 'teamsSelfCursor',
     });
   });
 

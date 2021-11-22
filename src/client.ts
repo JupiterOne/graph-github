@@ -113,36 +113,34 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamRepos(
+    teamSlug: string,
     iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-
-    const allTeamRepos: OrgTeamRepoQueryResponse[] =
-      await this.accountClient.getTeamRepositories();
-
-    for (const teamRepoAssociation of allTeamRepos) {
+    const teamRepos: OrgTeamRepoQueryResponse[] =
+      await this.accountClient.getTeamRepositories(teamSlug);
+    for (const teamRepoAssociation of teamRepos) {
       await iteratee(teamRepoAssociation);
     }
   }
 
   /**
-   * Iterates each team-member association from the provider.
+   * Iterates each team-member association for a single team.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamMembers(
+    teamSlug: string,
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-
-    const allTeamMembers: OrgTeamMemberQueryResponse[] =
-      await this.accountClient.getTeamMembers();
-
-    for (const teamUserAssociation of allTeamMembers) {
+    const teamMembers: OrgTeamMemberQueryResponse[] =
+      await this.accountClient.getTeamMembers(teamSlug);
+    for (const teamUserAssociation of teamMembers) {
       await iteratee(teamUserAssociation);
     }
   }
@@ -316,24 +314,6 @@ export class APIClient {
       { rateLimitConsumed },
       'Rate limit consumed while fetching Pull Requests.',
     );
-  }
-
-  /**
-   * Iterates the collaborators for a repo in the provider.
-   *
-   * @param iteratee receives each resource to produce entities/relationships
-   */
-  public async iterateCollaborators(
-    iteratee: ResourceIteratee<Collaborator>,
-  ): Promise<void> {
-    if (!this.accountClient) {
-      await this.setupAccountClient();
-    }
-
-    const collaborators = await this.accountClient.getCollaborators();
-    for (const collab of collaborators) {
-      await iteratee(collab);
-    }
   }
 
   /**

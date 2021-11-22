@@ -359,3 +359,64 @@ export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!
   }
   ...rateLimit
 }`;
+
+export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String) {
+  organization(login: $login) {
+    id
+    teams(first: 1, query: $slug) {
+    edges {
+      node {
+        id
+        repositories(first: ${MAX_REQUESTS_NUM}, after: $teamRepositories) {
+    edges {
+      node {
+        id
+      }
+      ...teamRepositoryEdgeFields
+    }
+    pageInfo {
+endCursor
+hasNextPage
+}
+  }
+      }
+    }
+    pageInfo {
+endCursor
+hasNextPage
+}
+  }
+  }
+...rateLimit
+}`;
+
+export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String, $members: String) {
+  organization(login: $login) {
+      id
+      teams(first: 1, query: $slug) {
+      edges {
+        node {
+          id
+          members(first: ${MAX_REQUESTS_NUM}, after: $members) {
+      edges {
+        node {
+          id
+          ...teamMemberFields
+        }
+        ...teamMemberEdgeFields
+      }
+      pageInfo {
+endCursor
+hasNextPage
+}
+    }
+        }
+      }
+      pageInfo {
+endCursor
+hasNextPage
+}
+    }
+    }
+...rateLimit
+}`;

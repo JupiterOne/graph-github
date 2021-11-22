@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Made `fetch-collaborators`, `fetch-team-repos` and `fetch-team-members` ingest
+  entities in small batches to eliminate cursor confusion and timeouts on large
+  datasets
+
 ## 1.8.10 - 2021-11-20
 
 ### Fixed

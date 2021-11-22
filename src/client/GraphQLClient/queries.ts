@@ -16,8 +16,8 @@
  *
  */
 
-export const MAX_REQUESTS_NUM = 100;
-export const LIMITED_REQUESTS_NUM = 25; //this is sometimes used to avoid errors
+export const MAX_REQUESTS_NUM = 2;
+export const LIMITED_REQUESTS_NUM = 2; //this is sometimes used to avoid errors
 
 export const ACCOUNT_QUERY_STRING = `query ($login: String!) {
     organization(login: $login) {
@@ -310,7 +310,7 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
 export const COLLABORATORS_QUERY_STRING = `query ($login: String!, $repositories: String, $collaborators: String) {
   organization(login: $login) {
       id
-      repositories(first: ${LIMITED_REQUESTS_NUM}, after: $repositories) {
+      repositories(first: ${1}, after: $repositories) {
       edges {
         node {
           id

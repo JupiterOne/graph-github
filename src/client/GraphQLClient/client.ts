@@ -70,6 +70,9 @@ export class GitHubGraphQLClient {
         token: string;
         expiresAt: string;
       };
+
+      // console.log('TOKEN: ', token);
+
       this.graph = graphql('https://api.github.com/graphql', {
         headers: {
           'User-Agent': 'jupiterone-graph-github',
@@ -395,6 +398,8 @@ export class GitHubGraphQLClient {
 
     let query = this.graph(queryString);
 
+    // await this.refreshToken();
+
     do {
       if (this.tokenExpires - 300000 < Date.now()) {
         //300000 msec = 5 min
@@ -431,6 +436,12 @@ export class GitHubGraphQLClient {
         }
       }
 
+      console.log('MADE GRAPHQL REQUEST WITH PARAMS: ', JSON.stringify({
+        ...extraQueryParams,
+        ...queryCursors,
+        response
+      }, null, 2));
+
       const rateLimit = response.rateLimit;
       rateLimitConsumed += rateLimit.cost;
 
@@ -459,9 +470,15 @@ export class GitHubGraphQLClient {
       }
 
       this.logger.info(
-        { rateLimit, queryCursors, resourceCounts, hasMoreResources },
+        { rateLimit, queryCursors, resourceCounts, shouldContinuePagination },
         'GraphQL response metadata',
       );
+
+      console.log('DATA FROM GRAPHQL RESPONSE: ', JSON.stringify({
+        extractedResources,
+        extractedQueryCursors,
+        pageCursors,
+      }, null, 2))
     } while (shouldContinuePagination);
 
     /*

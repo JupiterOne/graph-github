@@ -1,4 +1,4 @@
-import { mapResponseCursorsForQuery } from './response';
+import { extractCursorsFromResponse, extractDataFromGraphQLResponse, mapResponseCursorsForQuery } from './response';
 
 describe('mapResponseCursorsForQuery', () => {
   test('returns self when hierarchy has no children', () => {
@@ -145,5 +145,18 @@ describe('mapResponseCursorsForQuery', () => {
     ).toEqual({
       teams: 'teamsSelfCursor',
     });
+  });
+});
+
+describe.only('#extractDataFromGraphQLResponse', () => {
+  test('should return expected extracted data', () => {
+    expect(
+      extractCursorsFromResponse({
+        resourcePath: [
+          'organization.repositories.collaborators',
+          'organization.teams.members',
+        ]
+      })
+    ).toEqual({});
   });
 });

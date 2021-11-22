@@ -1,0 +1,101 @@
+{
+  "graphqlQueryParams": {
+    "respositoriesFirst": 2,
+    "collaboratorsFirst": 3,
+    "login": "jupiterone-integration-test",
+    "collaborators": "Y3Vyc29yOnYyOpHOADmOFA=="
+  },
+  "response": {
+    "organization": {
+      "id": "MDEyOk9yZ2FuaXphdGlvbjgzOTU5Mjgw",
+      "repositories": {
+        "edges": [
+          {
+            "node": {
+              "id": "MDEwOlJlcG9zaXRvcnkzODgxMzE0ODU=",
+              "collaborators": {
+                "edges": [
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjgwMDkxNDI=",
+                      "name": "Stefan Virag",
+                      "login": "eXtremeX"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjE1MzMzMDYx",
+                      "name": "Nick Dowmon",
+                      "login": "ndowmon"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjg3NzY2MzMz",
+                      "name": null,
+                      "login": "austinkelleher-jupiterone"
+                    },
+                    "permission": "ADMIN"
+                  }
+                ],
+                "pageInfo": {
+                  "endCursor": "Y3Vyc29yOnYyOpHOBTs1PQ==",
+                  "hasNextPage": false
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "R_kgDOGMs0ew",
+              "collaborators": {
+                "edges": [
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjgwMDkxNDI=",
+                      "name": "Stefan Virag",
+                      "login": "eXtremeX"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjE1MzMzMDYx",
+                      "name": "Nick Dowmon",
+                      "login": "ndowmon"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjg3NzY2MzMz",
+                      "name": null,
+                      "login": "austinkelleher-jupiterone"
+                    },
+                    "permission": "ADMIN"
+                  }
+                ],
+                "pageInfo": {
+                  "endCursor": "Y3Vyc29yOnYyOpHOBTs1PQ==",
+                  "hasNextPage": false
+                }
+              }
+            }
+          }
+        ],
+        "pageInfo": {
+          "endCursor": "Y3Vyc29yOnYyOpHOGMs0ew==",
+          "hasNextPage": true
+        }
+      }
+    },
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4998,
+      "resetAt": "2021-11-22T00:34:08Z"
+    }
+  }
+}

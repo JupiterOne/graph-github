@@ -1,0 +1,100 @@
+{
+  "graphqlQueryParams": {
+    "respositoriesFirst": 2,
+    "collaboratorsFirst": 3,
+    "login": "jupiterone-integration-test"
+  },
+  "response": {
+    "organization": {
+      "id": "MDEyOk9yZ2FuaXphdGlvbjgzOTU5Mjgw",
+      "repositories": {
+        "edges": [
+          {
+            "node": {
+              "id": "MDEwOlJlcG9zaXRvcnkzODgxMzE0ODU=",
+              "collaborators": {
+                "edges": [
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjI1NzE=",
+                      "name": "Adam Williams",
+                      "login": "aiwilliams"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjU1MjMwNQ==",
+                      "name": "Kenan Warren",
+                      "login": "kenanwarren"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjM3NzE5MjQ=",
+                      "name": "Austin Kelleher",
+                      "login": "austinkelleher"
+                    },
+                    "permission": "ADMIN"
+                  }
+                ],
+                "pageInfo": {
+                  "endCursor": "Y3Vyc29yOnYyOpHOADmOFA==",
+                  "hasNextPage": true
+                }
+              }
+            }
+          },
+          {
+            "node": {
+              "id": "R_kgDOGMs0ew",
+              "collaborators": {
+                "edges": [
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjI1NzE=",
+                      "name": "Adam Williams",
+                      "login": "aiwilliams"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjU1MjMwNQ==",
+                      "name": "Kenan Warren",
+                      "login": "kenanwarren"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjM3NzE5MjQ=",
+                      "name": "Austin Kelleher",
+                      "login": "austinkelleher"
+                    },
+                    "permission": "ADMIN"
+                  }
+                ],
+                "pageInfo": {
+                  "endCursor": "Y3Vyc29yOnYyOpHOADmOFA==",
+                  "hasNextPage": true
+                }
+              }
+            }
+          }
+        ],
+        "pageInfo": {
+          "endCursor": "Y3Vyc29yOnYyOpHOGMs0ew==",
+          "hasNextPage": true
+        }
+      }
+    },
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4999,
+      "resetAt": "2021-11-22T00:34:08Z"
+    }
+  }
+}

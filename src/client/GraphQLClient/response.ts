@@ -328,3 +328,7 @@ export function hasMoreResources(
 ): boolean {
   return Object.values(pageCursors).some((c) => c.hasNextPage);
 }
+
+export function extractCursorsFromResponse() {
+  // TODO
+}

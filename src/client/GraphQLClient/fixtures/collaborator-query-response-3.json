@@ -1,0 +1,65 @@
+{
+  "graphqlQueryParams": {
+    "respositoriesFirst": 2,
+    "collaboratorsFirst": 3,
+    "login": "jupiterone-integration-test",
+    "collaborators": "Y3Vyc29yOnYyOpHOADmOFA==",
+    "repositories": "Y3Vyc29yOnYyOpHOGMs0ew=="
+  },
+  "response": {
+    "organization": {
+      "id": "MDEyOk9yZ2FuaXphdGlvbjgzOTU5Mjgw",
+      "repositories": {
+        "edges": [
+          {
+            "node": {
+              "id": "R_kgDOGajXHw",
+              "collaborators": {
+                "edges": [
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjgwMDkxNDI=",
+                      "name": "Stefan Virag",
+                      "login": "eXtremeX"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjE1MzMzMDYx",
+                      "name": "Nick Dowmon",
+                      "login": "ndowmon"
+                    },
+                    "permission": "ADMIN"
+                  },
+                  {
+                    "node": {
+                      "id": "MDQ6VXNlcjg3NzY2MzMz",
+                      "name": null,
+                      "login": "austinkelleher-jupiterone"
+                    },
+                    "permission": "ADMIN"
+                  }
+                ],
+                "pageInfo": {
+                  "endCursor": "Y3Vyc29yOnYyOpHOBTs1PQ==",
+                  "hasNextPage": false
+                }
+              }
+            }
+          }
+        ],
+        "pageInfo": {
+          "endCursor": "Y3Vyc29yOnYyOpHOGajXHw==",
+          "hasNextPage": false
+        }
+      }
+    },
+    "rateLimit": {
+      "limit": 5000,
+      "cost": 1,
+      "remaining": 4987,
+      "resetAt": "2021-11-22T00:34:08Z"
+    }
+  }
+}

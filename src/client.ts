@@ -337,6 +337,27 @@ export class APIClient {
   }
 
   /**
+   * Iterates the collaborators for a single repo.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateRepoCollaborators(
+    repoName: string,
+    iteratee: ResourceIteratee<Collaborator>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+
+    const collaborators = await this.accountClient.getRepoCollaborators(
+      repoName,
+    );
+    for (const collab of collaborators) {
+      await iteratee(collab);
+    }
+  }
+
+  /**
    * Iterates the issues for a repo in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships

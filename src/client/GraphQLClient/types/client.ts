@@ -17,6 +17,7 @@ export enum GithubResource {
   TeamMembers = 'members',
   TeamRepositories = 'teamRepositories',
   Repositories = 'repositories',
+  Repository = 'repository',
   PullRequests = 'pullRequests',
   PullRequest = 'pullRequest',
   Commits = 'commits',
@@ -293,7 +294,7 @@ export interface Collaborator extends Node {
   permission: string;
   login: string;
   name: string;
-  repositories: string; //the id of just one repo, despite the plurality of the entry
+  repository: string;
 }
 
 export interface GithubSearchResources {

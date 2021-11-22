@@ -338,3 +338,24 @@ hasNextPage
     }
 ...rateLimit
 }`;
+
+export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!, $repoOwner: String!, $collaborators: String) {
+  repository(name: $repoName, owner: $repoOwner) {
+    id
+    collaborators(first: ${MAX_REQUESTS_NUM}, after: $collaborators) {
+      edges {
+        node {
+          id
+          name
+          login
+        }
+        permission
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+  ...rateLimit
+}`;

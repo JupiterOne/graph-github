@@ -45,6 +45,7 @@ import {
   TEAMS_QUERY_STRING,
   USERS_QUERY_STRING,
   COLLABORATORS_QUERY_STRING,
+  SINGLE_REPO_COLLABORATORS_QUERY_STRING,
 } from './GraphQLClient/queries';
 
 export default class OrganizationAccountClient {
@@ -250,6 +251,28 @@ export default class OrganizationAccountClient {
       return rateLimitConsumed;
     });
 
+    return response;
+  }
+
+  async getRepoCollaborators(repoName: string): Promise<Collaborator[]> {
+    let response: Collaborator[] = [];
+    await this.queryGraphQL('collaborators', async () => {
+      const { collaborators, rateLimitConsumed } =
+        await this.v4.fetchFromSingle(
+          SINGLE_REPO_COLLABORATORS_QUERY_STRING,
+          GithubResource.Repository,
+          [GithubResource.Collaborators],
+          {
+            repoName,
+            repoOwner: this.login,
+          },
+        );
+
+      if (collaborators) {
+        response = response.concat(collaborators as Collaborator[]);
+      }
+      return rateLimitConsumed;
+    });
     return response;
   }
 

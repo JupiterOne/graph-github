@@ -1,4 +1,4 @@
-import graphql, { GraphQLClient, GraphQLError } from 'graphql.js';
+import graphql, { GraphQLClient } from 'graphql.js';
 import { get } from 'lodash';
 import { URL } from 'url';
 

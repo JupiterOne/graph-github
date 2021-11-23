@@ -120,6 +120,16 @@ export default {
     updatedAt
     url
   }`,
+  privateRepoPRReviewFields: `on PullRequestReview {
+    id
+    author {
+      ...teamMemberFields # this used to be ...userFields
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }`,
   pullRequestFields: `on PullRequest {
     additions
     author {
@@ -163,6 +173,63 @@ export default {
     mergeCommit {
       ...commitFields
     }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...teamMemberFields # this used to be ...userFields
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }`,
+  privateRepoPullRequestFields: `on PullRequest {
+    additions
+    author {
+      ...teamMemberFields # this used to be ...userFields
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...repositoryOwnerFields
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...userFields
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...repositoryOwnerFields
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
     mergeable
     merged
     mergedAt

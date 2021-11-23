@@ -861,7 +861,7 @@ Object {
             "name": "Austin Kelleher",
             "node": undefined,
             "permission": "READ",
-            "repositories": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=",
+            "repository": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=",
           },
         },
       ],

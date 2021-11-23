@@ -38,13 +38,14 @@ import {
 import {
   ACCOUNT_QUERY_STRING,
   REPOS_QUERY_STRING,
-  TEAM_MEMBERS_QUERY_STRING,
-  TEAM_REPOS_QUERY_STRING,
+  SINGLE_TEAM_MEMBERS_QUERY_STRING,
   ISSUES_QUERY_STRING,
-  PULL_REQUESTS_QUERY_STRING,
+  PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING,
   TEAMS_QUERY_STRING,
   USERS_QUERY_STRING,
-  COLLABORATORS_QUERY_STRING,
+  SINGLE_REPO_COLLABORATORS_QUERY_STRING,
+  SINGLE_TEAM_REPOS_QUERY_STRING,
+  PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING,
 } from './GraphQLClient/queries';
 
 export default class OrganizationAccountClient {
@@ -161,15 +162,20 @@ export default class OrganizationAccountClient {
     return response;
   }
 
-  async getTeamMembers(): Promise<OrgTeamMemberQueryResponse[]> {
+  async getTeamMembers(
+    teamSlug: string,
+  ): Promise<OrgTeamMemberQueryResponse[]> {
     let response: OrgTeamMemberQueryResponse[] = [];
 
     await this.queryGraphQL('team members', async () => {
       const { members, rateLimitConsumed } = await this.v4.fetchFromSingle(
-        TEAM_MEMBERS_QUERY_STRING,
+        SINGLE_TEAM_MEMBERS_QUERY_STRING,
         GithubResource.Organization,
         [GithubResource.TeamMembers],
-        { login: this.login },
+        {
+          login: this.login,
+          slug: teamSlug,
+        },
       );
 
       if (members) {
@@ -207,16 +213,20 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getTeamRepositories(): Promise<OrgTeamRepoQueryResponse[]> {
+  async getTeamRepositories(
+    teamSlug: string,
+  ): Promise<OrgTeamRepoQueryResponse[]> {
     let response: OrgTeamRepoQueryResponse[] = [];
-
     await this.queryGraphQL('team repositories', async () => {
       const { teamRepositories, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
-          TEAM_REPOS_QUERY_STRING,
+          SINGLE_TEAM_REPOS_QUERY_STRING,
           GithubResource.Organization,
           [GithubResource.TeamRepositories],
-          { login: this.login },
+          {
+            login: this.login,
+            slug: teamSlug,
+          },
         );
 
       if (teamRepositories) {
@@ -231,25 +241,25 @@ export default class OrganizationAccountClient {
     return response;
   }
 
-  async getCollaborators(): Promise<Collaborator[]> {
+  async getRepoCollaborators(repoName: string): Promise<Collaborator[]> {
     let response: Collaborator[] = [];
-
     await this.queryGraphQL('collaborators', async () => {
       const { collaborators, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
-          COLLABORATORS_QUERY_STRING,
-          GithubResource.Organization,
+          SINGLE_REPO_COLLABORATORS_QUERY_STRING,
+          GithubResource.Repository,
           [GithubResource.Collaborators],
-          { login: this.login },
+          {
+            repoName,
+            repoOwner: this.login,
+          },
         );
 
       if (collaborators) {
         response = response.concat(collaborators as Collaborator[]);
       }
-
       return rateLimitConsumed;
     });
-
     return response;
   }
 
@@ -263,10 +273,14 @@ export default class OrganizationAccountClient {
       return { rateLimitConsumed: 0 };
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
-    const query = `is:pr repo:${repo.fullName} updated:>=${lastExecutionTime}`;
+
+    const prGraphQLQueryString = repo.public
+      ? PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING
+      : PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING;
+    const issuesSearchQuery = `is:pr repo:${repo.fullName} updated:>=${lastExecutionTime}`;
     return await this.v4.iteratePullRequests(
-      PULL_REQUESTS_QUERY_STRING,
-      query,
+      prGraphQLQueryString,
+      issuesSearchQuery,
       [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       iteratee,
     );

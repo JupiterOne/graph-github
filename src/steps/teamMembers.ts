@@ -15,6 +15,7 @@ import {
   GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
+import { TeamEntity } from '../types';
 
 export async function fetchTeamMembers({
   instance,
@@ -24,35 +25,42 @@ export async function fetchTeamMembers({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  await apiClient.iterateTeamMembers(async (user) => {
-    if (!(await jobState.hasKey(user.id))) {
-      //somehow this team has a user we didn't know about
-      //shouldn't happen, except through weird timing, but we'll make an entry
-      await jobState.addEntity(toOrganizationMemberEntityFromTeamMember(user));
-    }
+  await jobState.iterateEntities(
+    { _type: GITHUB_TEAM_ENTITY_TYPE },
+    async (teamEntity: TeamEntity) => {
+      await apiClient.iterateTeamMembers(teamEntity.name, async (user) => {
+        if (!(await jobState.hasKey(user.id))) {
+          //somehow this team has a user we didn't know about
+          //shouldn't happen, except through weird timing, but we'll make an entry
+          await jobState.addEntity(
+            toOrganizationMemberEntityFromTeamMember(user),
+          );
+        }
 
-    await jobState.addRelationship(
-      createDirectRelationship({
-        _class: RelationshipClass.HAS,
-        fromType: GITHUB_TEAM_ENTITY_TYPE,
-        toType: GITHUB_MEMBER_ENTITY_TYPE,
-        fromKey: user.teams, //a single team key
-        toKey: user.id,
-      }),
-    );
+        await jobState.addRelationship(
+          createDirectRelationship({
+            _class: RelationshipClass.HAS,
+            fromType: GITHUB_TEAM_ENTITY_TYPE,
+            toType: GITHUB_MEMBER_ENTITY_TYPE,
+            fromKey: user.teams, //a single team key
+            toKey: user.id,
+          }),
+        );
 
-    if (user.role === TeamMemberRole.Maintainer) {
-      await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.MANAGES,
-          fromType: GITHUB_MEMBER_ENTITY_TYPE,
-          toType: GITHUB_TEAM_ENTITY_TYPE,
-          fromKey: user.id,
-          toKey: user.teams,
-        }),
-      );
-    }
-  });
+        if (user.role === TeamMemberRole.Maintainer) {
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.MANAGES,
+              fromType: GITHUB_MEMBER_ENTITY_TYPE,
+              toType: GITHUB_TEAM_ENTITY_TYPE,
+              fromKey: user.id,
+              toKey: user.teams,
+            }),
+          );
+        }
+      });
+    },
+  );
 }
 
 export const teamMemberSteps: IntegrationStep<IntegrationConfig>[] = [

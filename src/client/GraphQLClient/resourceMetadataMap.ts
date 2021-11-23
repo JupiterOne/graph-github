@@ -104,9 +104,15 @@ export default function (): ResourceMap<ResourceMetadata> {
       graphRequestVariables: [`$${GithubResource.Repositories}: String`],
       children: [GithubResource.Collaborators],
     },
+    [GithubResource.Repository]: {
+      graphRequestVariables: ['$repoName: String!', '$repoOwner: String!'],
+      pathToDataInGraphQlResponse: 'repository',
+      children: [GithubResource.Collaborators],
+    },
     [GithubResource.Collaborators]: {
       graphRequestVariables: [`$${GithubResource.Collaborators}: String`],
-      parent: GithubResource.Repositories,
+      //pathToDataInGraphQlResponse: 'repository',
+      alternateGraphProperty: GithubResource.Collaborators,
     },
   };
 }

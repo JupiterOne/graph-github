@@ -192,66 +192,128 @@ export const ISSUES_QUERY_STRING = `query ($query: String!, $issues: String, $as
 ...rateLimit
   }`;
 
-export const PULL_REQUESTS_QUERY_STRING = `query ($query: String!, $pullRequests: String, $commits: String, $reviews: String, $labels: String) {
+// TODO: Should this argument be using `last` instead of `first` to get the most
+// recent? Would that require changing `after` to `before` so that we can walk back?
+// See https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#example-query
+/**
+ * A GraphQL query for fetching public repository data. This fetches data
+ * visible to everyone without requiring Repository Content permissions.
+ *
+ * @see PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING
+ */
+export const PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING = `
+  query ($query: String!, $pullRequests: String, $commits: String, $reviews: String, $labels: String) {
     search(first: ${LIMITED_REQUESTS_NUM}, after: $pullRequests, type: ISSUE, query: $query) {
-        issueCount
-        edges {
-          node {
-            ...pullRequestFields
-            ... on PullRequest {
-        commits(first: ${MAX_REQUESTS_NUM}, after: $commits) {
-          totalCount
-          edges {
-            node {
-              commit {
-                ...commitFields
+      issueCount
+      edges {
+        node {
+          ...pullRequestFields
+          ... on PullRequest {
+            commits(first: ${MAX_REQUESTS_NUM}, after: $commits) {
+              totalCount
+              edges {
+                node {
+                  commit {
+                    ...commitFields
+                  }
+                }
+              }
+              pageInfo {
+                endCursor
+                hasNextPage
               }
             }
           }
-          pageInfo {
-  endCursor
-  hasNextPage
-}
-        }
-      }
-... on PullRequest {
-        reviews(first: ${MAX_REQUESTS_NUM}, after: $reviews) {
-          totalCount
-          edges {
-            node {
-              ...reviewFields
+          ... on PullRequest {
+            reviews(first: ${MAX_REQUESTS_NUM}, after: $reviews) {
+              totalCount
+              edges {
+                node {
+                  ...reviewFields
+                }
+              }
+              pageInfo {
+                endCursor
+                hasNextPage
+              }
             }
           }
-          pageInfo {
-  endCursor
-  hasNextPage
-}
-        }
-      }
-... on PullRequest {
-          labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
-          totalCount
-          edges {
-            node {
-              id
-              name
+          ... on PullRequest {
+            labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
+              totalCount
+              edges {
+                node {
+                  id
+                  name
+                }
+              }
+              pageInfo {
+                endCursor
+                hasNextPage
+              }
             }
           }
-          pageInfo {
-  endCursor
-  hasNextPage
-}
         }
       }
-          }
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
+      pageInfo {
+        endCursor
+        hasNextPage
       }
-...rateLimit
+    }
+    ...rateLimit
   }`;
+
+/**
+ * A GraphQL query for fetching private repository data. This does not fetch
+ * data that would require Repository Content permissions.
+ *
+ * @see PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING
+ */
+export const PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING = `
+query ($query: String!, $pullRequests: String, $reviews: String, $labels: String) {
+  search(first: ${LIMITED_REQUESTS_NUM}, after: $pullRequests, type: ISSUE, query: $query) {
+    issueCount
+    edges {
+      node {
+        ...privateRepoPullRequestFields
+        ... on PullRequest {
+          reviews(first: ${MAX_REQUESTS_NUM}, after: $reviews) {
+            totalCount
+            edges {
+              node {
+                ...privateRepoPRReviewFields
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+        ... on PullRequest {
+          labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
+            totalCount
+            edges {
+              node {
+                id
+                name
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      }
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+  ...rateLimit
+}`;
 
 export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!, $repoName: String!, $repoOwner: String!, $commits: String, $reviews: String, $labels: String) {
     repository(name: $repoName, owner: $repoOwner) {
@@ -333,6 +395,86 @@ hasNextPage
       pageInfo {
 endCursor
 hasNextPage
+}
+    }
+    }
+...rateLimit
+}`;
+
+export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!, $repoOwner: String!, $collaborators: String) {
+  repository(name: $repoName, owner: $repoOwner) {
+    id
+    collaborators(first: ${MAX_REQUESTS_NUM}, after: $collaborators) {
+      edges {
+        node {
+          id
+          name
+          login
+        }
+        permission
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+  ...rateLimit
+}`;
+
+export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String) {
+  organization(login: $login) {
+    id
+    teams(first: 1, query: $slug) {
+    edges {
+      node {
+        id
+        repositories(first: ${MAX_REQUESTS_NUM}, after: $teamRepositories) {
+    edges {
+      node {
+        id
+      }
+      ...teamRepositoryEdgeFields
+    }
+    pageInfo {
+endCursor
+hasNextPage
+}
+  }
+      }
+    }
+    pageInfo {
+endCursor
+}
+  }
+  }
+...rateLimit
+}`;
+
+export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String, $members: String) {
+  organization(login: $login) {
+      id
+      teams(first: 1, query: $slug) {
+      edges {
+        node {
+          id
+          members(first: ${MAX_REQUESTS_NUM}, after: $members) {
+      edges {
+        node {
+          id
+          ...teamMemberFields
+        }
+        ...teamMemberEdgeFields
+      }
+      pageInfo {
+endCursor
+hasNextPage
+}
+    }
+        }
+      }
+      pageInfo {
+endCursor
 }
     }
     }

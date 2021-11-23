@@ -17,6 +17,7 @@ export enum GithubResource {
   TeamMembers = 'members',
   TeamRepositories = 'teamRepositories',
   Repositories = 'repositories',
+  Repository = 'repository',
   PullRequests = 'pullRequests',
   PullRequest = 'pullRequest',
   Commits = 'commits',
@@ -96,8 +97,6 @@ export interface OrgTeamQueryResponse extends Node {
   databaseId: string;
   description: string;
   privacy: string;
-  members?: OrgTeamMemberQueryResponse[];
-  repos?: OrgTeamRepoQueryResponse[];
 }
 
 //this response expresses the association between a team and a member of the team
@@ -105,7 +104,7 @@ export interface OrgTeamMemberQueryResponse extends Node {
   //id will be github User's id
   name?: string;
   login: string;
-  teams: string; // a single team's id
+  teams: string; // a single team id, even though it is listed as a plural
   role: TeamMemberRole;
 }
 
@@ -143,7 +142,7 @@ export interface OrgRepoQueryResponse extends Node {
 //this is expressing the edge between a repo and a team that it allows
 export interface OrgTeamRepoQueryResponse extends Node {
   //property id will be the repo id
-  teams: string; // this will be just one team key as a string, despite the plural property name
+  teams: string; // a single team key, even though it sounds plural
   permission: TeamRepositoryPermission;
 }
 
@@ -293,7 +292,7 @@ export interface Collaborator extends Node {
   permission: string;
   login: string;
   name: string;
-  repositories: string; //the id of just one repo, despite the plurality of the entry
+  repository: string;
 }
 
 export interface GithubSearchResources {

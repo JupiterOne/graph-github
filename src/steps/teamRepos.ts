@@ -12,6 +12,7 @@ import {
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
+import { TeamEntity } from '../types';
 
 export async function fetchTeamRepos({
   instance,
@@ -21,26 +22,31 @@ export async function fetchTeamRepos({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  await apiClient.iterateTeamRepos(async (teamRepo) => {
-    //teamRepo.id is the repo id
-    //teamRepo.teams is the team id
-    if (
-      (await jobState.hasKey(teamRepo.id)) &&
-      (await jobState.hasKey(teamRepo.teams))
-    ) {
-      const repoTeamRelationship = createRepoAllowsTeamRelationship(
-        teamRepo.id,
-        teamRepo.teams,
-        teamRepo.permission,
-      );
-      await jobState.addRelationship(repoTeamRelationship);
-    } else {
-      logger.warn(
-        { repoId: teamRepo.id, teamId: teamRepo.teams },
-        `Could not build relationship between team and repo.`,
-      );
-    }
-  });
+  await jobState.iterateEntities(
+    { _type: GITHUB_TEAM_ENTITY_TYPE },
+    async (teamEntity: TeamEntity) => {
+      await apiClient.iterateTeamRepos(teamEntity.name, async (teamRepo) => {
+        //teamRepo.id is the repo id
+        //teamRepo.teams is the team id
+        if (
+          (await jobState.hasKey(teamRepo.id)) &&
+          (await jobState.hasKey(teamRepo.teams))
+        ) {
+          const repoTeamRelationship = createRepoAllowsTeamRelationship(
+            teamRepo.id,
+            teamRepo.teams,
+            teamRepo.permission,
+          );
+          await jobState.addRelationship(repoTeamRelationship);
+        } else {
+          logger.warn(
+            { repoId: teamRepo.id, teamId: teamRepo.teams },
+            `Could not build relationship between team and repo.`,
+          );
+        }
+      });
+    },
+  );
 }
 
 export const teamRepoSteps: IntegrationStep<IntegrationConfig>[] = [

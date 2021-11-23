@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.11 - 2021-11-23
+
 ### Fixed
 
 - Made `fetch-collaborators`, `fetch-team-repos` and `fetch-team-members` ingest

@@ -32,8 +32,6 @@
     "@octokit/plugin-throttling": "^3.5.2",
     "@octokit/request": "^5.6.1",
     "@octokit/rest": "^18.11.4",
-    "graphql": "^16.0.1",
-    "graphql-tools": "^8.2.0",
     "graphql.js": "^0.6.7"
   },
   "peerDependencies": {

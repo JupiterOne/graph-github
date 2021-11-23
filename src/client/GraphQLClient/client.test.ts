@@ -1,23 +1,24 @@
+import { parseTimePropertyValue } from '@jupiterone/integration-sdk-core';
 import {
+  createMockIntegrationLogger,
   createMockStepExecutionContext,
   Recording,
-  createMockIntegrationLogger,
 } from '@jupiterone/integration-sdk-testing';
-import { setupGithubRecording } from '../../../test/recording';
-import { GitHubGraphQLClient, GithubResource } from '.';
-import resourceMetadataMap from './resourceMetadataMap';
-import createGitHubAppClient from '../../util/createGitHubAppClient';
-import { IntegrationConfig, sanitizeConfig } from '../../config';
+
 import { integrationConfig } from '../../../test/config';
-import { Commit, Label, PullRequest, Review } from './types';
+import { setupGithubRecording } from '../../../test/recording';
+import { IntegrationConfig, sanitizeConfig } from '../../config';
+import createGitHubAppClient from '../../util/createGitHubAppClient';
+import { GitHubGraphQLClient, GithubResource } from './';
 import {
-  PULL_REQUESTS_QUERY_STRING,
+  MAX_REQUESTS_NUM,
+  PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING,
   REPOS_QUERY_STRING,
   TEAM_MEMBERS_QUERY_STRING,
   USERS_QUERY_STRING,
-  MAX_REQUESTS_NUM,
 } from './queries';
-import { parseTimePropertyValue } from '@jupiterone/integration-sdk-core';
+import resourceMetadataMap from './resourceMetadataMap';
+import { Commit, Label, PullRequest, Review } from './types';
 
 async function getAccess() {
   const context = createMockStepExecutionContext<IntegrationConfig>({
@@ -55,7 +56,7 @@ async function getClient() {
 }
 
 //reduce page limit size so we can test pagination
-const pullRequestsQueryString = PULL_REQUESTS_QUERY_STRING.replace(
+const pullRequestsQueryString = PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING.replace(
   `first: ${MAX_REQUESTS_NUM}`,
   'first: 2',
 );

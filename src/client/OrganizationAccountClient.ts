@@ -40,11 +40,12 @@ import {
   REPOS_QUERY_STRING,
   SINGLE_TEAM_MEMBERS_QUERY_STRING,
   ISSUES_QUERY_STRING,
-  PULL_REQUESTS_QUERY_STRING,
+  PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING,
   TEAMS_QUERY_STRING,
   USERS_QUERY_STRING,
   SINGLE_REPO_COLLABORATORS_QUERY_STRING,
   SINGLE_TEAM_REPOS_QUERY_STRING,
+  PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING,
 } from './GraphQLClient/queries';
 
 export default class OrganizationAccountClient {
@@ -272,10 +273,14 @@ export default class OrganizationAccountClient {
       return { rateLimitConsumed: 0 };
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
-    const query = `is:pr repo:${repo.fullName} updated:>=${lastExecutionTime}`;
+
+    const prGraphQLQueryString = repo.public
+      ? PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING
+      : PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING;
+    const issuesSearchQuery = `is:pr repo:${repo.fullName} updated:>=${lastExecutionTime}`;
     return await this.v4.iteratePullRequests(
-      PULL_REQUESTS_QUERY_STRING,
-      query,
+      prGraphQLQueryString,
+      issuesSearchQuery,
       [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
       iteratee,
     );

@@ -626,7 +626,8 @@ export class GitHubGraphQLClient {
     // Check https://github.com/lifeomic/attempt for options on retry
     return await retry(queryWithRateLimitCatch, {
       maxAttempts: 3,
-      delay: 30_000, //30 seconds to start
+      delay: 30_000, // 30 seconds to start
+      timeout: 120_000, // 2 minute timeout. Github sometimes leaves us high-and-dry
       factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min (total 3.5 min)
       handleError(err: any, attemptContext: AttemptContext) {
         /* retry will keep trying to the limits of retryOptions
@@ -662,6 +663,10 @@ export class GitHubGraphQLClient {
         }
 
         if (err.message?.includes('Resource not accessible by integration')) {
+          logger.info(
+            { attemptContext, err },
+            'Resource not accessible by integration: Aborting attempt',
+          );
           attemptContext.abort();
         }
 

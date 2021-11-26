@@ -8,9 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.12 - 2021-11-26
+
 ### Added
 
-- A GraphQL timeout of two minutes to prevent infinate hanging of integration
+- A GraphQL timeout of two minutes to prevent infinite hanging of integration
   runs.
 
 ## 1.8.11 - 2021-11-23

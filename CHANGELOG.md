@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.8.13 - 2021-11-29
+
 ### Fixed
 
 - Children resources in graphQL queries will now be cursed through instead of

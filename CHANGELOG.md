@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Changed GraphQL timeout 1 hour so it doesn't interfere with GraphQL sleep for
+  rate limit
+
 ## 1.8.12 - 2021-11-26
 
 ### Added

@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Duplicate Key error in steps "Fetch Team Members" and "Fetch Team Repos".
+
 ## 1.8.12 - 2021-11-26
 
 ### Added

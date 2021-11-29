@@ -13,12 +13,14 @@ import {
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
 import { TeamEntity } from '../types';
+import { safeAddRelationship } from '../util/safeAddRelationship';
 
 export async function fetchTeamRepos({
   instance,
   logger,
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
+  const relationshipKeys = new Set<string>();
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
@@ -37,7 +39,11 @@ export async function fetchTeamRepos({
             teamRepo.teams,
             teamRepo.permission,
           );
-          await jobState.addRelationship(repoTeamRelationship);
+          await safeAddRelationship(
+            jobState,
+            relationshipKeys,
+            repoTeamRelationship,
+          );
         } else {
           logger.warn(
             { repoId: teamRepo.id, teamId: teamRepo.teams },

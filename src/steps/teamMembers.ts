@@ -16,12 +16,14 @@ import {
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
 import { TeamEntity } from '../types';
+import { safeAddRelationship } from '../util/safeAddRelationship';
 
 export async function fetchTeamMembers({
   instance,
   logger,
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
+  const relationshipKeys = new Set<string>();
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
@@ -37,7 +39,9 @@ export async function fetchTeamMembers({
           );
         }
 
-        await jobState.addRelationship(
+        await safeAddRelationship(
+          jobState,
+          relationshipKeys,
           createDirectRelationship({
             _class: RelationshipClass.HAS,
             fromType: GITHUB_TEAM_ENTITY_TYPE,
@@ -48,7 +52,9 @@ export async function fetchTeamMembers({
         );
 
         if (user.role === TeamMemberRole.Maintainer) {
-          await jobState.addRelationship(
+          await safeAddRelationship(
+            jobState,
+            relationshipKeys,
             createDirectRelationship({
               _class: RelationshipClass.MANAGES,
               fromType: GITHUB_MEMBER_ENTITY_TYPE,

@@ -20,7 +20,8 @@ import {
   SINGLE_PULL_REQUEST_QUERY_STRING,
 } from './queries';
 import {
-  extractSelectedResources,
+  responseHasNextPage,
+  processGraphQlPageResult,
   mapResponseCursorsForQuery,
 } from './response';
 import {
@@ -192,7 +193,7 @@ export class GitHubGraphQLClient {
 
       for (const pullRequestQueryData of pullRequestResponse.search.edges) {
         const { resources: pageResources, cursors: innerResourceCursors } =
-          extractSelectedResources(
+          processGraphQlPageResult(
             selectedResources,
             this.resourceMetadataMap,
             pullRequestQueryData.node,
@@ -249,7 +250,7 @@ export class GitHubGraphQLClient {
                 repoName,
                 repoOwner,
               },
-              mapResponseCursorsForQuery(innerResourceCursors, {}),
+              mapResponseCursorsForQuery(innerResourceCursors),
             );
 
             rateLimitConsumed += innerResourceResponse.rateLimitConsumed;
@@ -367,7 +368,7 @@ export class GitHubGraphQLClient {
       });
 
       for (const issueQueryData of issueResponse.search.edges) {
-        const { resources: pageResources } = extractSelectedResources(
+        const { resources: pageResources } = processGraphQlPageResult(
           selectedResources,
           this.resourceMetadataMap,
           issueQueryData.node,
@@ -468,7 +469,7 @@ export class GitHubGraphQLClient {
       const data = pathToData ? get(response, pathToData) : response;
 
       const { resources: pageResources, cursors: pageCursors } =
-        extractSelectedResources(
+        processGraphQlPageResult(
           selectedResources,
           this.resourceMetadataMap,
           data,
@@ -483,14 +484,22 @@ export class GitHubGraphQLClient {
         }
       }
 
+      // Enrich the queryCursors with the pageCursors from the most recent query.
+      Object.assign(queryCursors, mapResponseCursorsForQuery(pageCursors));
+
+      // Check only the pageCursors (which are the cursors for the most recent query) for hasNextPage = true
+      hasMoreResources = responseHasNextPage(pageCursors);
+
       this.logger.info(
-        { rateLimit, queryCursors, pageCursors, resourceNums },
+        {
+          rateLimit,
+          queryCursors,
+          pageCursors,
+          resourceNums,
+          hasMoreResources,
+        },
         `Rate limit response for iteration`,
       );
-
-      queryCursors = mapResponseCursorsForQuery(pageCursors, queryCursors);
-
-      hasMoreResources = Object.values(pageCursors).some((c) => c.hasNextPage);
     } while (hasMoreResources);
 
     /*
@@ -548,32 +557,40 @@ export class GitHubGraphQLClient {
     } as QueryResponse;
   }
 
+  /**
+   * Adds the page resources to the aggregated resources map.
+   * Includes deduplication logic.
+   */
   private extractPageResources<T extends Node>(
-    pageResources: ResourceMap<T[]>,
-    resources: ResourceMap<T[]>,
+    pageOfResources: ResourceMap<T[]>,
+    aggregatedResources: ResourceMap<T[]>,
   ): ResourceMap<T[]> {
-    for (const [resource, data] of Object.entries(pageResources)) {
-      if (!resources[resource]) {
-        resources[resource] = data;
+    for (const [resourceName, resources] of Object.entries(pageOfResources)) {
+      if (!aggregatedResources[resourceName]) {
+        aggregatedResources[resourceName] = resources;
         continue;
       }
-      for (const item of data) {
+      for (const resource of resources) {
         if (
-          !resources[resource].find((r: T) => {
-            const found = r.id === item.id; // This is enforced with the Node type
-            const metadata = this.resourceMetadataMap[resource];
+          !aggregatedResources[resourceName].find((r: T) => {
+            // This dedups based on the id which we know will exist for all resources
+            const found = r.id === resource.id;
+
+            // This will handle resources with the same name, but came from different parents.
+            // Unfortunately, this will never happen because of the way we are structuring graphQL :)
+            const metadata = this.resourceMetadataMap[resourceName];
             if (metadata && metadata.parent) {
-              return found && r[metadata.parent] === item[metadata.parent];
+              return found && r[metadata.parent] === resource[metadata.parent];
             } else {
               return found;
             }
           })
         ) {
-          resources[resource].push(item);
+          aggregatedResources[resourceName].push(resource);
         }
       }
     }
-    return resources;
+    return aggregatedResources;
   }
 
   /**

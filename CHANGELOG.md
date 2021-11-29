@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Children resources in graphQL queries will now be cursed through instead of
+  only getting the first 100 resources.
+- Children resource cursors are now being properly handled which prevents
+  ingesting the same child resource muliple times.
+
 ### Changed
 
 - Changed GraphQL timeout 1 hour so it doesn't interfere with GraphQL sleep for

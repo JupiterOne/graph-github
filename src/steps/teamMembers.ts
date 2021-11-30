@@ -37,26 +37,54 @@ export async function fetchTeamMembers({
           );
         }
 
-        await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.HAS,
-            fromType: GITHUB_TEAM_ENTITY_TYPE,
-            toType: GITHUB_MEMBER_ENTITY_TYPE,
-            fromKey: user.teams, //a single team key
-            toKey: user.id,
-          }),
-        );
+        const teamMemberRelationship = createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          fromType: GITHUB_TEAM_ENTITY_TYPE,
+          toType: GITHUB_MEMBER_ENTITY_TYPE,
+          fromKey: user.teams, //a single team key
+          toKey: user.id,
+        });
+
+        if (jobState.hasKey(teamMemberRelationship._key)) {
+          logger.warn(
+            {
+              teamId: teamEntity.id,
+              teamKey: teamEntity._key,
+              teamName: teamEntity.name,
+              teamRepoTeamKey: user.teams,
+              teamRepoId: user.id,
+              relationshipKey: teamMemberRelationship._key,
+            },
+            'Member-team relationship was already ingested: Skipping.',
+          );
+        } else {
+          await jobState.addRelationship(teamMemberRelationship);
+        }
 
         if (user.role === TeamMemberRole.Maintainer) {
-          await jobState.addRelationship(
-            createDirectRelationship({
-              _class: RelationshipClass.MANAGES,
-              fromType: GITHUB_MEMBER_ENTITY_TYPE,
-              toType: GITHUB_TEAM_ENTITY_TYPE,
-              fromKey: user.id,
-              toKey: user.teams,
-            }),
-          );
+          const maintainerTeamRelationship = createDirectRelationship({
+            _class: RelationshipClass.MANAGES,
+            fromType: GITHUB_MEMBER_ENTITY_TYPE,
+            toType: GITHUB_TEAM_ENTITY_TYPE,
+            fromKey: user.id,
+            toKey: user.teams,
+          });
+
+          if (jobState.hasKey(maintainerTeamRelationship._key)) {
+            logger.warn(
+              {
+                teamId: teamEntity.id,
+                teamKey: teamEntity._key,
+                teamName: teamEntity.name,
+                teamRepoTeamKey: user.teams,
+                teamRepoId: user.id,
+                relationshipKey: maintainerTeamRelationship._key,
+              },
+              'Maintainer-team relationship was already ingested: Skipping.',
+            );
+          } else {
+            await jobState.addRelationship(maintainerTeamRelationship);
+          }
         }
       });
     },

@@ -622,15 +622,28 @@ export default class OrganizationAccountClient {
     try {
       const rateLimitConsumed = await performQuery();
       this.v4RateLimitConsumed += rateLimitConsumed;
-    } catch (responseErrors) {
-      const errors = responseErrors.errors
-        ? responseErrors.errors
-        : [responseErrors];
-      throw new IntegrationError({
-        message: name + ': ' + errors.map((e) => e.message).join(' | '),
-        code: errors[0].Code,
-        cause: errors[0].stack ? errors : JSON.stringify(errors),
-      });
+    } catch (err) {
+      if (err.endpoint === `retryGraphQL timeout`) {
+        try {
+          //one more time in case error was a transient ETIMEDOUT Node error
+          const rateLimitConsumed = await performQuery();
+          this.v4RateLimitConsumed += rateLimitConsumed;
+        } catch (err) {
+          const errors = err.errors ? err.errors : [err];
+          throw new IntegrationError({
+            message: name + ': ' + errors.map((e) => e.message).join(' | '),
+            code: errors[0].Code,
+            cause: errors[0].stack ? errors : JSON.stringify(errors),
+          });
+        }
+      } else {
+        const errors = err.errors ? err.errors : [err];
+        throw new IntegrationError({
+          message: name + ': ' + errors.map((e) => e.message).join(' | '),
+          code: errors[0].Code,
+          cause: errors[0].stack ? errors : JSON.stringify(errors),
+        });
+      }
     }
   }
 

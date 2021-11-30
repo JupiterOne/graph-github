@@ -704,7 +704,7 @@ export class GitHubGraphQLClient {
           status: 'None',
           statusText: `GraphQL query timeout error: ${queryString}`,
           cause: undefined,
-          endpoint: `retryGraphQL`,
+          endpoint: `retryGraphQL timeout`,
         });
       },
     });

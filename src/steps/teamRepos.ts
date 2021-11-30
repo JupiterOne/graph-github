@@ -34,10 +34,24 @@ export async function fetchTeamRepos({
         ) {
           const repoTeamRelationship = createRepoAllowsTeamRelationship(
             teamRepo.id,
-            teamRepo.teams,
+            teamEntity._key,
             teamRepo.permission,
           );
-          await jobState.addRelationship(repoTeamRelationship);
+          if (jobState.hasKey(repoTeamRelationship._key)) {
+            logger.warn(
+              {
+                teamId: teamEntity.id,
+                teamKey: teamEntity._key,
+                teamName: teamEntity.name,
+                teamRepoTeamKey: teamRepo.teams,
+                teamRepoId: teamRepo.id,
+                relationshipKey: repoTeamRelationship._key,
+              },
+              'Repo-team relationship was already ingested: Skipping.',
+            );
+          } else {
+            await jobState.addRelationship(repoTeamRelationship);
+          }
         } else {
           logger.warn(
             { repoId: teamRepo.id, teamId: teamRepo.teams },

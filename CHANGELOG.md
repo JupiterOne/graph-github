@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- `github_team_has_user`, `github_user_manages_team`, and
+  `github_repo_allows_team` relationships will not be made if a relationship
+  with the same key has already been ingested in the same integration run.
+
 ## 1.8.13 - 2021-11-29
 
 ### Fixed

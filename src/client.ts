@@ -119,10 +119,17 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const teamRepos: OrgTeamRepoQueryResponse[] =
-      await this.accountClient.getTeamRepositories(teamSlug);
-    for (const teamRepoAssociation of teamRepos) {
-      await iteratee(teamRepoAssociation);
+    try {
+      const teamRepos: OrgTeamRepoQueryResponse[] =
+        await this.accountClient.getTeamRepositories(teamSlug);
+      for (const teamRepoAssociation of teamRepos) {
+        await iteratee(teamRepoAssociation);
+      }
+    } catch (err) {
+      this.logger.warn(
+        { teamSlug, err },
+        '[SKIP] Problem while ingesting repos accessed by a team.',
+      );
     }
   }
 
@@ -138,10 +145,17 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const teamMembers: OrgTeamMemberQueryResponse[] =
-      await this.accountClient.getTeamMembers(teamSlug);
-    for (const teamUserAssociation of teamMembers) {
-      await iteratee(teamUserAssociation);
+    try {
+      const teamMembers: OrgTeamMemberQueryResponse[] =
+        await this.accountClient.getTeamMembers(teamSlug);
+      for (const teamUserAssociation of teamMembers) {
+        await iteratee(teamUserAssociation);
+      }
+    } catch (err) {
+      this.logger.warn(
+        { teamSlug, err },
+        '[SKIP] Problem while ingesting members of a team.',
+      );
     }
   }
 
@@ -304,16 +318,23 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const { rateLimitConsumed } =
-      await this.accountClient.iteratePullRequestEntities(
-        repo,
-        lastSuccessfulExecution,
-        iteratee,
+    try {
+      const { rateLimitConsumed } =
+        await this.accountClient.iteratePullRequestEntities(
+          repo,
+          lastSuccessfulExecution,
+          iteratee,
+        );
+      logger.info(
+        { rateLimitConsumed },
+        'Rate limit consumed while fetching Pull Requests.',
       );
-    logger.info(
-      { rateLimitConsumed },
-      'Rate limit consumed while fetching Pull Requests.',
-    );
+    } catch (err) {
+      this.logger.warn(
+        { repo, err },
+        '[SKIP] Problem while ingesting pull requests for a repo.',
+      );
+    }
   }
 
   /**
@@ -329,11 +350,18 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    const collaborators = await this.accountClient.getRepoCollaborators(
-      repoName,
-    );
-    for (const collab of collaborators) {
-      await iteratee(collab);
+    try {
+      const collaborators = await this.accountClient.getRepoCollaborators(
+        repoName,
+      );
+      for (const collab of collaborators) {
+        await iteratee(collab);
+      }
+    } catch (err) {
+      this.logger.warn(
+        { repoName, err },
+        '[SKIP] Problem while ingesting collaborators for a repo.',
+      );
     }
   }
 

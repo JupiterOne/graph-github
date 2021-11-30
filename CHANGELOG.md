@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+### 1.8.14
+
 ### Changed
 
 - `github_team_has_user`, `github_user_manages_team`, and

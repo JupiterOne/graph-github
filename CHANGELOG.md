@@ -12,6 +12,20 @@ and this project adheres to
 
 - Duplicate Key error in steps "Fetch Team Members" and "Fetch Team Repos".
 
+## 1.8.13 - 2021-11-29
+
+### Fixed
+
+- Children resources in graphQL queries will now be cursed through instead of
+  only getting the first 100 resources.
+- Children resource cursors are now being properly handled which prevents
+  ingesting the same child resource muliple times.
+
+### Changed
+
+- Changed GraphQL timeout 1 hour so it doesn't interfere with GraphQL sleep for
+  rate limit
+
 ## 1.8.12 - 2021-11-26
 
 ### Added

@@ -5,49 +5,75 @@ import {
   GithubResource,
 } from './types';
 
+/**
+ * Extract all cursors from a graphQL cursor hierarchy response.
+ * This extracts outer cursors and inner cursors.
+ */
 export function mapResponseCursorsForQuery(
   pageCursors: ResourceMap<CursorHierarchy>,
-  queryCursors: ResourceMap<string>,
 ): ResourceMap<string> {
   function cursorsFromHierarchy(
     hierarchy: CursorHierarchy,
     key: string,
-    queryCursors: ResourceMap<string>,
   ): ResourceMap<string> {
-    let cursors: ResourceMap<string> = {};
+    const cursors: ResourceMap<string> = {};
 
+    // Then check if you have your own cursor.
+    if (hierarchy.self) {
+      cursors[key] = hierarchy.self;
+    }
+    // Finally, set the children
     if (Object.keys(hierarchy.children).length > 0) {
       for (const [resource, childrenHierarchies] of Object.entries(
         hierarchy.children,
       )) {
-        // Use the first child hierarchy until it stops showing up, which will
+        // The childrenHierarchy will always only have a length of 1 because we
+        // will continue pulling that child until it stops showing up, which will
         // happen when its paging ends (hasNextPage = false).
-        const first = childrenHierarchies[0];
-        cursors = {
-          ...cursors,
-          ...cursorsFromHierarchy(first, resource, queryCursors),
-        };
+        const firstAndOnlyChild = childrenHierarchies[0];
+        Object.assign(
+          cursors,
+          cursorsFromHierarchy(firstAndOnlyChild, resource),
+        );
       }
-
-      if (queryCursors[key]) {
-        cursors[key] = queryCursors[key];
-      }
-    } else if (hierarchy.self) {
-      cursors[key] = hierarchy.self;
     }
 
     return cursors;
   }
 
-  let flatCursors: ResourceMap<string> = {};
+  const flatCursors: ResourceMap<string> = {};
   for (const [resource, cursorHierarchy] of Object.entries(pageCursors)) {
-    flatCursors = {
-      ...flatCursors,
-      ...cursorsFromHierarchy(cursorHierarchy, resource, queryCursors),
-    };
+    Object.assign(flatCursors, cursorsFromHierarchy(cursorHierarchy, resource));
   }
 
   return flatCursors;
+}
+
+/**
+ * Recursively check a graphQL cursor hierarchy response to see if
+ * any resource has a nextPage.
+ */
+export function responseHasNextPage(pageCursors: ResourceMap<CursorHierarchy>) {
+  function hasNextPageInHierarchy(hierarchy: CursorHierarchy) {
+    if (hierarchy.hasNextPage) {
+      return true;
+    } else if (Object.keys(hierarchy.children).length > 0) {
+      for (const childrenHierarchies of Object.values(hierarchy.children)) {
+        for (const childHierarchy of childrenHierarchies) {
+          if (hasNextPageInHierarchy(childHierarchy)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+  }
+  for (const cursorHierarchy of Object.values(pageCursors)) {
+    if (hasNextPageInHierarchy(cursorHierarchy)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function mapResponseResourcesForQuery(
@@ -71,7 +97,11 @@ export function mapResponseResourcesForQuery(
   return resources;
 }
 
-export function extractSelectedResources(
+/**
+ * Flattens the graphQL response to a single-layer map of resources
+ * and returns any cursors that can be used to get more data.
+ */
+export function processGraphQlPageResult(
   selectedResources: GithubResource[],
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
   data: any,

@@ -1,7 +1,7 @@
-import { mapResponseCursorsForQuery } from './response';
+import { mapResponseCursorsForQuery, responseHasNextPage } from './response';
 
 describe('mapResponseCursorsForQuery', () => {
-  test('returns self when hierarchy has no children', () => {
+  test('returns the base cursor', () => {
     const cursors = {
       teams: {
         self: 'teamsSelfCursor',
@@ -9,12 +9,12 @@ describe('mapResponseCursorsForQuery', () => {
       },
     };
 
-    expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
+    expect(mapResponseCursorsForQuery(cursors)).toEqual({
       teams: 'teamsSelfCursor',
     });
   });
 
-  test('returns cursor of first child', () => {
+  test('returns the base cursor and the child cursors', () => {
     const cursors = {
       teams: {
         self: 'teamsSelfCursor',
@@ -24,16 +24,13 @@ describe('mapResponseCursorsForQuery', () => {
               self: 'teamMembersSelfCursorOne',
               children: {},
             },
-            {
-              self: 'teamMembersSelfCursorTwo',
-              children: {},
-            },
           ],
         },
       },
     };
 
-    expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
+    expect(mapResponseCursorsForQuery(cursors)).toEqual({
+      teams: 'teamsSelfCursor',
       teamMembers: 'teamMembersSelfCursorOne',
     });
   });
@@ -46,10 +43,6 @@ describe('mapResponseCursorsForQuery', () => {
           teamMembers: [
             {
               self: 'teamMembersSelfCursorOne',
-              children: {},
-            },
-            {
-              self: 'teamMembersSelfCursorTwo',
               children: {},
             },
           ],
@@ -67,14 +60,15 @@ describe('mapResponseCursorsForQuery', () => {
       },
     };
 
-    expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
+    expect(mapResponseCursorsForQuery(cursors)).toEqual({
+      teams: 'teamsSelfCursor',
       teamMembers: 'teamMembersSelfCursorOne',
       teamRepositories: 'teamRepositoriesSelfCursor',
       repositories: 'repositoriesSelfCursor',
     });
   });
 
-  test('returns most nested cursor', () => {
+  test('resurns all nested cursors', () => {
     const cursors = {
       teams: {
         self: 'teamsSelfCursor',
@@ -96,50 +90,120 @@ describe('mapResponseCursorsForQuery', () => {
       },
     };
 
-    expect(mapResponseCursorsForQuery(cursors, {})).toEqual({
+    expect(mapResponseCursorsForQuery(cursors)).toEqual({
+      teams: 'teamsSelfCursor',
+      teamMembers: 'teamMembersSelfCursorOne',
       teamMemberRepositories: 'teamMemberRepositoriesSelfCursor',
     });
   });
+});
 
-  test("returns parent's previous cursor when child is introduced", () => {
+describe('responseHasNextPage', () => {
+  test('false if parent and child both do not have a next page', () => {
     const cursors = {
       teams: {
         self: 'teamsSelfCursor',
+        hasNextPage: false,
         children: {
           teamMembers: [
             {
               self: 'teamMembersSelfCursorOne',
-              children: {},
+              hasNextPage: false,
+              children: {
+                teamMemberRepositories: [
+                  {
+                    self: 'teamMemberRepositoriesSelfCursor',
+                    hasNextPage: false,
+                    children: {},
+                  },
+                ],
+              },
             },
           ],
         },
       },
     };
-
-    expect(
-      mapResponseCursorsForQuery(cursors, {
-        teams: 'teamsPreviousCursor',
-      }),
-    ).toEqual({
-      teams: 'teamsPreviousCursor',
-      teamMembers: 'teamMembersSelfCursorOne',
-    });
+    expect(responseHasNextPage(cursors)).toBe(false);
   });
 
-  test('return new cursor if hierarchy has no children', () => {
+  test('true if nested child has next page', () => {
     const cursors = {
       teams: {
         self: 'teamsSelfCursor',
-        children: {},
+        hasNextPage: false,
+        children: {
+          teamMembers: [
+            {
+              self: 'teamMembersSelfCursorOne',
+              hasNextPage: false,
+              children: {
+                teamMemberRepositories: [
+                  {
+                    self: 'teamMemberRepositoriesSelfCursor',
+                    hasNextPage: true,
+                    children: {},
+                  },
+                ],
+              },
+            },
+          ],
+        },
       },
     };
+    expect(responseHasNextPage(cursors)).toBe(true);
+  });
 
-    expect(
-      mapResponseCursorsForQuery(cursors, {
-        teams: 'teamsPreviousCursor',
-      }),
-    ).toEqual({
-      teams: 'teamsSelfCursor',
-    });
+  test('true if first child has next page', () => {
+    const cursors = {
+      teams: {
+        self: 'teamsSelfCursor',
+        hasNextPage: false,
+        children: {
+          teamMembers: [
+            {
+              self: 'teamMembersSelfCursorOne',
+              hasNextPage: true,
+              children: {
+                teamMemberRepositories: [
+                  {
+                    self: 'teamMemberRepositoriesSelfCursor',
+                    hasNextPage: false,
+                    children: {},
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    };
+    expect(responseHasNextPage(cursors)).toBe(true);
+  });
+
+  test('true if parent has next page', () => {
+    const cursors = {
+      teams: {
+        self: 'teamsSelfCursor',
+        hasNextPage: true,
+        children: {
+          teamMembers: [
+            {
+              self: 'teamMembersSelfCursorOne',
+              hasNextPage: false,
+              children: {
+                teamMemberRepositories: [
+                  {
+                    self: 'teamMemberRepositoriesSelfCursor',
+                    hasNextPage: false,
+                    children: {},
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      },
+    };
+    expect(responseHasNextPage(cursors)).toBe(true);
   });
 });

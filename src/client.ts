@@ -328,7 +328,6 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-
     const collaborators = await this.accountClient.getRepoCollaborators(
       repoName,
     );

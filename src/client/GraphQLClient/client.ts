@@ -190,6 +190,10 @@ export class GitHubGraphQLClient {
       const rateLimit = pullRequestResponse.rateLimit;
       this.logger.info({ rateLimit }, 'Rate limit response for iteration');
       rateLimitConsumed += rateLimit.cost;
+      await sleepIfApproachingRateLimit(
+        pullRequestResponse.rateLimit,
+        this.logger,
+      );
 
       for (const pullRequestQueryData of pullRequestResponse.search.edges) {
         const { resources: pageResources, cursors: innerResourceCursors } =
@@ -352,11 +356,11 @@ export class GitHubGraphQLClient {
           throw err;
         }
       }
-
       issuesQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = issueResponse.rateLimit;
       this.logger.info({ rateLimit }, 'Rate limit response for iteration');
       rateLimitConsumed += rateLimit.cost;
+      await sleepIfApproachingRateLimit(issueResponse.rateLimit, this.logger);
 
       //hack to account for resourceMetadataMap on LabelsForIssues
       selectedResources = selectedResources.map((e) => {
@@ -460,9 +464,9 @@ export class GitHubGraphQLClient {
           throw err;
         }
       }
-
       const rateLimit = response.rateLimit;
       rateLimitConsumed += rateLimit.cost;
+      await sleepIfApproachingRateLimit(response.rateLimit, this.logger);
 
       const pathToData =
         this.resourceMetadataMap[baseResource].pathToDataInGraphQlResponse;
@@ -636,7 +640,6 @@ export class GitHubGraphQLClient {
         });
       }
       validateGraphQLResponse(response, logger, queryString);
-      await sleepIfApproachingRateLimit(response.rateLimit, logger);
       return response;
     };
 
@@ -644,8 +647,8 @@ export class GitHubGraphQLClient {
     return await retry(queryWithRateLimitCatch, {
       maxAttempts: 3,
       delay: 30_000, // 30 seconds to start
-      timeout: 60_000 * 60, // 1 hour timeout. Cut this back to 2 min once sleepIfApproachingRateLimit is moved outside of this retry
-      factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min (total 3.5 min)
+      timeout: 180_000, // 3 min timeout. We need this in case Node hangs with ETIMEDOUT
+      factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min
       handleError(err: any, attemptContext: AttemptContext) {
         /* retry will keep trying to the limits of retryOptions
          * but it lets you intervene in this function - if you throw an error from in here,
@@ -667,7 +670,7 @@ export class GitHubGraphQLClient {
         ) {
           logger.warn(
             { attemptContext, err },
-            `Hit an unrecoverable error ${err.status} when attempting to query GraphQL. Aborting.`,
+            `Hit an unrecoverable error when attempting to query GraphQL. Aborting.`,
           );
           attemptContext.abort();
         }
@@ -689,8 +692,20 @@ export class GitHubGraphQLClient {
 
         logger.warn(
           { attemptContext, err },
-          `Hit a possibly recoverable error ${err.status} when attempting to query GraphQL. Waiting before trying again.`,
+          `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
         );
+      },
+      handleTimeout(attemptContext: AttemptContext) {
+        logger.warn(
+          { attemptContext },
+          `Attempt to contact GraphQL timed out after 3 minutes.`,
+        );
+        throw new IntegrationProviderAPIError({
+          status: 'None',
+          statusText: `GraphQL query timeout error: ${queryString}`,
+          cause: undefined,
+          endpoint: `retryGraphQL timeout`,
+        });
       },
     });
   }

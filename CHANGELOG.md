@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Moved GraphQL sleep for rate limit outside of retry functions, and restored
+  GraphQL retry timeout to 3 minutes so catch errors where Node hangs without a
+  thrown error.
+
 ### 1.8.14
 
 ### Changed

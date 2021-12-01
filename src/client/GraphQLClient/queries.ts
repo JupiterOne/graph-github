@@ -425,7 +425,7 @@ export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!
 export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String) {
   organization(login: $login) {
     id
-    teams(first: 1, query: $slug) {
+    teams(first: 1, query: $slug, orderBy: {field: NAME, direction: ASC}) {
     edges {
       node {
         id
@@ -454,7 +454,7 @@ endCursor
 export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String, $members: String) {
   organization(login: $login) {
       id
-      teams(first: 1, query: $slug) {
+      teams(first: 1, query: $slug, orderBy: {field: NAME, direction: ASC}) {
       edges {
         node {
           id

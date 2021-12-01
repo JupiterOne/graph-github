@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Order to team-repos and team-members graphQL queries to ensure the correct
+  team is selected.
+
 ### Changed
 
 - Moved GraphQL sleep for rate limit outside of retry functions, and restored

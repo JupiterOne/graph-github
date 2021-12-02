@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Removed
+
+- The `handleTimeout` method when handling graphQL calls as it caused a promise
+  to never get resolved. Timeout errors are now handled in a way that resolves
+  all promises properly.
+
 ### 1.8.15
 
 ### Added

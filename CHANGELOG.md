@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+### 1.8.15
+
 ### Added
 
 - Order to team-repos and team-members graphQL queries to ensure the correct

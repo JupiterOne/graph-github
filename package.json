@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-github",
-  "version": "1.8.14",
+  "version": "1.8.15",
   "description": "A JupiterOne Integration",
   "license": "MPL-2.0",
   "main": "dist/index.js",

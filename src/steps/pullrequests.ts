@@ -4,7 +4,6 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   createDirectRelationship,
-  IntegrationError,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
@@ -35,6 +34,7 @@ import {
   toPullRequestEntity,
 } from '../sync/converters';
 import { cloneDeep } from 'lodash';
+import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
 
 export async function fetchPrs(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
@@ -200,11 +200,7 @@ export async function fetchPrs(
             },
             'Unable to process pull request entities due to error.',
           );
-          throw new IntegrationError({
-            message: errors.map((e) => e.message).join(' | '),
-            code: errors[0].Code,
-            cause: errors[0].stack ? errors : JSON.stringify(errors),
-          });
+          formatAndThrowGraphQlError(error, 'iteratePullRequests');
         }
       }
     },

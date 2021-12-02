@@ -695,18 +695,6 @@ export class GitHubGraphQLClient {
           `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
         );
       },
-      handleTimeout(attemptContext: AttemptContext) {
-        logger.warn(
-          { attemptContext },
-          `Attempt to contact GraphQL timed out after 3 minutes.`,
-        );
-        throw new IntegrationProviderAPIError({
-          status: 'None',
-          statusText: `GraphQL query timeout error: ${queryString}`,
-          cause: undefined,
-          endpoint: `retryGraphQL timeout`,
-        });
-      },
     });
   }
 }

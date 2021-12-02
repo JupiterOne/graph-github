@@ -47,6 +47,7 @@ import {
   SINGLE_TEAM_REPOS_QUERY_STRING,
   PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING,
 } from './GraphQLClient/queries';
+import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -623,26 +624,16 @@ export default class OrganizationAccountClient {
       const rateLimitConsumed = await performQuery();
       this.v4RateLimitConsumed += rateLimitConsumed;
     } catch (err) {
-      if (err.endpoint === `retryGraphQL timeout`) {
+      if (err.message?.startsWith('Retry timeout')) {
         try {
           //one more time in case error was a transient ETIMEDOUT Node error
           const rateLimitConsumed = await performQuery();
           this.v4RateLimitConsumed += rateLimitConsumed;
         } catch (err) {
-          const errors = err.errors ? err.errors : [err];
-          throw new IntegrationError({
-            message: name + ': ' + errors.map((e) => e.message).join(' | '),
-            code: errors[0].Code,
-            cause: errors[0].stack ? errors : JSON.stringify(errors),
-          });
+          formatAndThrowGraphQlError(err, name);
         }
       } else {
-        const errors = err.errors ? err.errors : [err];
-        throw new IntegrationError({
-          message: name + ': ' + errors.map((e) => e.message).join(' | '),
-          code: errors[0].Code,
-          cause: errors[0].stack ? errors : JSON.stringify(errors),
-        });
+        formatAndThrowGraphQlError(err, name);
       }
     }
   }

@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+### 1.8.16
+
 ### Removed
 
 - The `handleTimeout` method when handling graphQL calls as it caused a promise

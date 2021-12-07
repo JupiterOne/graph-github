@@ -2,7 +2,6 @@ import {
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
-  IntegrationMissingKeyError,
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
@@ -22,6 +21,7 @@ import {
   GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
+  GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
 } from '../constants';
 
 export async function fetchIssues(
@@ -37,12 +37,29 @@ export async function fetchIssues(
   ).toISOString();
   const apiClient = createAPIClient(config, logger);
 
-  const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+  let usersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
   );
-  if (!memberByLoginMap) {
-    throw new IntegrationMissingKeyError(
-      `Expected members.ts to have set ${GITHUB_MEMBER_BY_LOGIN_MAP} in jobState.`,
+
+  if (!usersByLoginMap) {
+    logger.warn(
+      {},
+      `Expected members.ts to have set ${GITHUB_MEMBER_BY_LOGIN_MAP} in jobState. Proceeding anyway.`,
+    );
+    usersByLoginMap = {};
+  }
+
+  const outsideCollaboratorEntities = await jobState.getData<UserEntity[]>(
+    GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  );
+  if (outsideCollaboratorEntities) {
+    for (const collab of outsideCollaboratorEntities) {
+      usersByLoginMap[collab.login] = collab;
+    }
+  } else {
+    logger.warn(
+      {},
+      `Expected collaborators.ts to have set ${GITHUB_OUTSIDE_COLLABORATOR_ARRAY} in jobState. Proceeding anyway.`,
     );
   }
 
@@ -67,11 +84,11 @@ export async function fetchIssues(
             );
 
             if (issue.author) {
-              if (memberByLoginMap[issue.author.login]) {
+              if (usersByLoginMap![issue.author.login]) {
                 await jobState.addRelationship(
                   createDirectRelationship({
                     _class: RelationshipClass.CREATED,
-                    from: memberByLoginMap[issue.author.login],
+                    from: usersByLoginMap![issue.author.login],
                     to: issueEntity,
                   }),
                 );
@@ -90,11 +107,11 @@ export async function fetchIssues(
 
             if (issue.assignees) {
               for (const assignee of issue.assignees) {
-                if (memberByLoginMap[assignee.login]) {
+                if (usersByLoginMap![assignee.login]) {
                   await jobState.addRelationship(
                     createDirectRelationship({
                       _class: RelationshipClass.ASSIGNED,
-                      from: memberByLoginMap[assignee.login],
+                      from: usersByLoginMap![assignee.login],
                       to: issueEntity,
                     }),
                   );
@@ -154,7 +171,7 @@ export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GITHUB_ISSUE_ENTITY_TYPE,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users'],
+    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-collaborators'],
     executionHandler: fetchIssues,
   },
 ];

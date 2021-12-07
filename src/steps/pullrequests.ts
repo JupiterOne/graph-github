@@ -57,25 +57,25 @@ export async function fetchPrs(
     );
   }
 
-  let UsersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+  let usersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
   );
 
-  if (!UsersByLoginMap) {
+  if (!usersByLoginMap) {
     logger.warn(
       {},
       `Expected members.ts to have set ${GITHUB_MEMBER_BY_LOGIN_MAP} in jobState. Proceeding anyway.`,
     );
-    UsersByLoginMap = {};
+    usersByLoginMap = {};
   }
-  const teamMembersByLoginMap = cloneDeep(UsersByLoginMap) ?? {};
+  const teamMembersByLoginMap = cloneDeep(usersByLoginMap) ?? {};
 
   const outsideCollaboratorEntities = await jobState.getData<UserEntity[]>(
     GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
   );
   if (outsideCollaboratorEntities) {
     for (const collab of outsideCollaboratorEntities) {
-      UsersByLoginMap[collab.login] = collab;
+      usersByLoginMap[collab.login] = collab;
     }
   } else {
     logger.warn(
@@ -96,7 +96,7 @@ export async function fetchPrs(
             const pr = toPullRequestEntity(
               pullRequest,
               teamMembersByLoginMap,
-              UsersByLoginMap!,
+              usersByLoginMap!,
             );
             const prEntity = (await jobState.addEntity(
               pr,
@@ -110,11 +110,11 @@ export async function fetchPrs(
               }),
             );
 
-            if (UsersByLoginMap![pr.authorLogin]) {
+            if (usersByLoginMap![pr.authorLogin]) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.OPENED,
-                  from: UsersByLoginMap![pr.authorLogin],
+                  from: usersByLoginMap![pr.authorLogin],
                   to: prEntity,
                 }),
               );
@@ -132,11 +132,11 @@ export async function fetchPrs(
 
             if (pr.reviewerLogins) {
               for (const reviewer of pr.reviewerLogins) {
-                if (UsersByLoginMap![reviewer]) {
+                if (usersByLoginMap![reviewer]) {
                   await jobState.addRelationship(
                     createDirectRelationship({
                       _class: RelationshipClass.REVIEWED,
-                      from: UsersByLoginMap![reviewer],
+                      from: usersByLoginMap![reviewer],
                       to: prEntity,
                     }),
                   );
@@ -156,11 +156,11 @@ export async function fetchPrs(
 
             if (pr.approverLogins) {
               for (const approver of pr.approverLogins) {
-                if (UsersByLoginMap![approver]) {
+                if (usersByLoginMap![approver]) {
                   await jobState.addRelationship(
                     createDirectRelationship({
                       _class: RelationshipClass.APPROVED,
-                      from: UsersByLoginMap![approver],
+                      from: usersByLoginMap![approver],
                       to: prEntity,
                     }),
                   );

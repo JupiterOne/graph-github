@@ -85,67 +85,6 @@ export const TEAMS_QUERY_STRING = `query ($login: String!, $teams: String) {
 ...rateLimit
   }`;
 
-export const TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $teams: String, $members: String) {
-    organization(login: $login) {
-        id
-        teams(first: ${MAX_REQUESTS_NUM}, after: $teams) {
-        edges {
-          node {
-            id
-            members(first: ${MAX_REQUESTS_NUM}, after: $members) {
-        edges {
-          node {
-            id
-            ...teamMemberFields
-          }
-          ...teamMemberEdgeFields
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
-      }
-          }
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
-      }
-      }
-...rateLimit
-  }`;
-
-export const TEAM_REPOS_QUERY_STRING = `query ($login: String!, $teams: String, $teamRepositories: String) {
-    organization(login: $login) {
-        id
-        teams(first: ${LIMITED_REQUESTS_NUM}, after: $teams) {
-        edges {
-          node {
-            id
-            repositories(first: ${LIMITED_REQUESTS_NUM}, after: $teamRepositories) {
-        edges {
-          node {
-            id
-          }
-          ...teamRepositoryEdgeFields
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
-      }
-          }
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
-      }
-      }
-...rateLimit
-  }`;
-
 export const ISSUES_QUERY_STRING = `query ($query: String!, $issues: String, $assignees: String, $labels: String) {
     search(first: ${LIMITED_REQUESTS_NUM}, after: $issues, type: ISSUE, query: $query) {
         issueCount
@@ -369,6 +308,172 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
 ...rateLimit
   }`;
 
+export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!, $repoOwner: String!, $collaborators: String) {
+  repository(name: $repoName, owner: $repoOwner) {
+    id
+    collaborators(first: ${MAX_REQUESTS_NUM}, after: $collaborators) {
+      edges {
+        node {
+          id
+          name
+          login
+        }
+        permission
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+  ...rateLimit
+}`;
+
+/**
+ * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
+ * Unfortunately, the GraphQL API sometimes returns multiples for a single slug (it shouldn't do that!)
+ *  We will ask for as many as 5 teams under the one slug, and then filter later for the one we wanted
+ *  We could pull all the teams at once (we used to) and avoid this, but then we can't ingest entries on a
+ *  per-team basis
+ */
+
+export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String) {
+  organization(login: $login) {
+    id
+    teams(first: 5, query: $slug, orderBy: {field: NAME, direction: ASC}) {
+    edges {
+      node {
+        id
+        name
+        repositories(first: ${MAX_REQUESTS_NUM}, after: $teamRepositories) {
+    edges {
+      node {
+        id
+      }
+      ...teamRepositoryEdgeFields
+    }
+    pageInfo {
+endCursor
+hasNextPage
+}
+  }
+      }
+    }
+    pageInfo {
+endCursor
+}
+  }
+  }
+...rateLimit
+}`;
+
+/**
+ * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
+ * Unfortunately, the GraphQL API sometimes returns multiples for a single slug (it shouldn't do that!)
+ *  We will ask for as many as 5 teams under the one slug, and then filter later for the one we wanted
+ *  We could pull all the teams at once (we used to) and avoid this, but then we can't ingest entries on a
+ *  per-team basis
+ */
+
+export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String, $members: String) {
+  organization(login: $login) {
+      id
+      teams(first: 5, query: $slug, orderBy: {field: NAME, direction: ASC}) {
+      edges {
+        node {
+          id
+          name
+          members(first: ${MAX_REQUESTS_NUM}, after: $members) {
+      edges {
+        node {
+          id
+          ...teamMemberFields
+        }
+        ...teamMemberEdgeFields
+      }
+      pageInfo {
+endCursor
+hasNextPage
+}
+    }
+        }
+      }
+      pageInfo {
+endCursor
+}
+    }
+    }
+...rateLimit
+}`;
+
+/**
+ * Queries not used anymore
+ * Kept here for comparison in designing new queries
+ */
+
+/*
+
+export const TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $teams: String, $members: String) {
+    organization(login: $login) {
+        id
+        teams(first: ${MAX_REQUESTS_NUM}, after: $teams) {
+        edges {
+          node {
+            id
+            members(first: ${MAX_REQUESTS_NUM}, after: $members) {
+        edges {
+          node {
+            id
+            ...teamMemberFields
+          }
+          ...teamMemberEdgeFields
+        }
+        pageInfo {
+  endCursor
+  hasNextPage
+}
+      }
+          }
+        }
+        pageInfo {
+  endCursor
+  hasNextPage
+}
+      }
+      }
+...rateLimit
+  }`;
+
+export const TEAM_REPOS_QUERY_STRING = `query ($login: String!, $teams: String, $teamRepositories: String) {
+    organization(login: $login) {
+        id
+        teams(first: ${LIMITED_REQUESTS_NUM}, after: $teams) {
+        edges {
+          node {
+            id
+            repositories(first: ${LIMITED_REQUESTS_NUM}, after: $teamRepositories) {
+        edges {
+          node {
+            id
+          }
+          ...teamRepositoryEdgeFields
+        }
+        pageInfo {
+  endCursor
+  hasNextPage
+}
+      }
+          }
+        }
+        pageInfo {
+  endCursor
+  hasNextPage
+}
+      }
+      }
+...rateLimit
+  }`;
+
 export const COLLABORATORS_QUERY_STRING = `query ($login: String!, $repositories: String, $collaborators: String) {
   organization(login: $login) {
       id
@@ -401,82 +506,4 @@ hasNextPage
 ...rateLimit
 }`;
 
-export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!, $repoOwner: String!, $collaborators: String) {
-  repository(name: $repoName, owner: $repoOwner) {
-    id
-    collaborators(first: ${MAX_REQUESTS_NUM}, after: $collaborators) {
-      edges {
-        node {
-          id
-          name
-          login
-        }
-        permission
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-  ...rateLimit
-}`;
-
-export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String) {
-  organization(login: $login) {
-    id
-    teams(first: 1, query: $slug, orderBy: {field: NAME, direction: ASC}) {
-    edges {
-      node {
-        id
-        repositories(first: ${MAX_REQUESTS_NUM}, after: $teamRepositories) {
-    edges {
-      node {
-        id
-      }
-      ...teamRepositoryEdgeFields
-    }
-    pageInfo {
-endCursor
-hasNextPage
-}
-  }
-      }
-    }
-    pageInfo {
-endCursor
-}
-  }
-  }
-...rateLimit
-}`;
-
-export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String, $members: String) {
-  organization(login: $login) {
-      id
-      teams(first: 1, query: $slug, orderBy: {field: NAME, direction: ASC}) {
-      edges {
-        node {
-          id
-          members(first: ${MAX_REQUESTS_NUM}, after: $members) {
-      edges {
-        node {
-          id
-          ...teamMemberFields
-        }
-        ...teamMemberEdgeFields
-      }
-      pageInfo {
-endCursor
-hasNextPage
-}
-    }
-        }
-      }
-      pageInfo {
-endCursor
-}
-    }
-    }
-...rateLimit
-}`;
+*/

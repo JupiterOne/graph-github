@@ -14,7 +14,7 @@ import {
   MAX_REQUESTS_NUM,
   PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING,
   REPOS_QUERY_STRING,
-  TEAM_MEMBERS_QUERY_STRING,
+  SINGLE_TEAM_MEMBERS_QUERY_STRING,
   USERS_QUERY_STRING,
 } from './queries';
 import resourceMetadataMap from './resourceMetadataMap';
@@ -74,10 +74,6 @@ const reposQueryString = REPOS_QUERY_STRING.replace(
   'first: 2',
 );
 const usersQueryString = USERS_QUERY_STRING.replace(
-  `first: ${MAX_REQUESTS_NUM}`,
-  'first: 2',
-);
-const teamMembersQueryString = TEAM_MEMBERS_QUERY_STRING.replace(
   `first: ${MAX_REQUESTS_NUM}`,
   'first: 2',
 );
@@ -183,16 +179,16 @@ describe('organization resources', () => {
     });
     const client = await getClient();
     const data = await client.fetchFromSingle(
-      teamMembersQueryString,
+      SINGLE_TEAM_MEMBERS_QUERY_STRING,
       GithubResource.Organization,
       [GithubResource.TeamMembers],
-      { login: 'Kei-Institute' },
+      { login: 'Kei-Institute', slug: 'betterteam' },
     );
 
     expect(data.organization).toHaveLength(1);
     expect(data.membersWithRole).toBeUndefined();
     expect(data.repositories).toBeUndefined();
-    expect(data.members).toHaveLength(6);
+    expect(data.members).toHaveLength(3);
     expect(data.members).toEqual([
       {
         id: 'MDQ6VXNlcjUxMzUyMw==',
@@ -216,30 +212,6 @@ describe('organization resources', () => {
         name: 'Kevin Casey',
         node: undefined,
         teams: 'MDQ6VGVhbTQ4NTgxNjk=',
-        role: 'MAINTAINER',
-      },
-      {
-        id: 'MDQ6VXNlcjYyNDkyMDk3',
-        login: 'kevincasey1222',
-        name: 'Kevin Casey',
-        node: undefined,
-        teams: 'MDQ6VGVhbTQ4NTgxNzA=',
-        role: 'MAINTAINER',
-      },
-      {
-        id: 'MDQ6VXNlcjI1NDg5NDgy',
-        login: 'mknoedel',
-        name: 'Michael Knoedel',
-        node: undefined,
-        teams: 'MDQ6VGVhbTQ4NTc0OTU=',
-        role: 'MEMBER',
-      },
-      {
-        id: 'MDQ6VXNlcjYyNDkyMDk3',
-        login: 'kevincasey1222',
-        name: 'Kevin Casey',
-        node: undefined,
-        teams: 'MDQ6VGVhbTQ4NTc0OTU=',
         role: 'MAINTAINER',
       },
     ]);

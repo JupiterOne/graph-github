@@ -165,28 +165,36 @@ export default class OrganizationAccountClient {
 
   async getTeamMembers(
     teamSlug: string,
+    teamKey: string,
   ): Promise<OrgTeamMemberQueryResponse[]> {
     let response: OrgTeamMemberQueryResponse[] = [];
 
     await this.queryGraphQL('team members', async () => {
-      const { members, rateLimitConsumed } = await this.v4.fetchFromSingle(
-        SINGLE_TEAM_MEMBERS_QUERY_STRING,
-        GithubResource.Organization,
-        [GithubResource.TeamMembers],
-        {
-          login: this.login,
-          slug: teamSlug,
-        },
-      );
+      const { members, teams, rateLimitConsumed } =
+        await this.v4.fetchFromSingle(
+          SINGLE_TEAM_MEMBERS_QUERY_STRING,
+          GithubResource.Organization,
+          [GithubResource.TeamMembers],
+          {
+            login: this.login,
+            slug: teamSlug,
+          },
+        );
 
       if (members) {
         response = response.concat(members as OrgTeamMemberQueryResponse[]);
       }
 
+      if (!teams?.every((t) => t.id === teamKey)) {
+        this.logger.warn(
+          { teamSlug, teamKey, teams },
+          'Teams contained more than the one expected team',
+        );
+      }
+
       return rateLimitConsumed;
     });
-
-    return response;
+    return response.filter((t) => t.teams === teamKey);
   }
 
   async getRepositories(slugs?: string[]): Promise<OrgRepoQueryResponse[]> {
@@ -216,10 +224,11 @@ export default class OrganizationAccountClient {
 
   async getTeamRepositories(
     teamSlug: string,
+    teamKey: string,
   ): Promise<OrgTeamRepoQueryResponse[]> {
     let response: OrgTeamRepoQueryResponse[] = [];
     await this.queryGraphQL('team repositories', async () => {
-      const { teamRepositories, rateLimitConsumed } =
+      const { teamRepositories, teams, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
           SINGLE_TEAM_REPOS_QUERY_STRING,
           GithubResource.Organization,
@@ -236,10 +245,16 @@ export default class OrganizationAccountClient {
         );
       }
 
+      if (!teams?.every((t) => t.id === teamKey)) {
+        this.logger.warn(
+          { teamSlug, teamKey, teams },
+          'Teams contained more than the one expected team',
+        );
+      }
+
       return rateLimitConsumed;
     });
-
-    return response;
+    return response.filter((t) => t.teams === teamKey);
   }
 
   async getRepoCollaborators(repoName: string): Promise<Collaborator[]> {

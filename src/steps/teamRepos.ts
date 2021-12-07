@@ -25,7 +25,7 @@ export async function fetchTeamRepos({
   await jobState.iterateEntities(
     { _type: GITHUB_TEAM_ENTITY_TYPE },
     async (teamEntity: TeamEntity) => {
-      await apiClient.iterateTeamRepos(teamEntity.name, async (teamRepo) => {
+      await apiClient.iterateTeamRepos(teamEntity, async (teamRepo) => {
         //teamRepo.id is the repo id
         //teamRepo.teams is the team id
         if (

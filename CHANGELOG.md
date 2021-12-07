@@ -8,6 +8,16 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- If multiple teams are returned by the GraphQL API for a single slug, the
+  integration filters for the team it is working with at that moment instead of
+  throwing duplicate relationship errors
+- Issues can now discover outside collaborators for CREATED and ASSIGNED
+  relationships
+- Updated tests to match the single-team queries for team-members and team-repos
+  that are being used by the ingestion code
+
 ### 1.8.16
 
 ### Removed

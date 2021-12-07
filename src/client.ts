@@ -11,6 +11,7 @@ import {
   EnvironmentEntity,
   RepoEntity,
   RepoKeyAndName,
+  TeamEntity,
   TokenPermissions,
 } from './types';
 import getInstallation from './util/getInstallation';
@@ -113,14 +114,14 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamRepos(
-    teamSlug: string,
+    team: TeamEntity,
     iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     const teamRepos: OrgTeamRepoQueryResponse[] =
-      await this.accountClient.getTeamRepositories(teamSlug);
+      await this.accountClient.getTeamRepositories(team.name, team._key);
     for (const teamRepoAssociation of teamRepos) {
       await iteratee(teamRepoAssociation);
     }
@@ -132,14 +133,14 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamMembers(
-    teamSlug: string,
+    team: TeamEntity,
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     const teamMembers: OrgTeamMemberQueryResponse[] =
-      await this.accountClient.getTeamMembers(teamSlug);
+      await this.accountClient.getTeamMembers(team.name, team._key);
     for (const teamUserAssociation of teamMembers) {
       await iteratee(teamUserAssociation);
     }

@@ -165,6 +165,7 @@ export default class OrganizationAccountClient {
 
   async getTeamMembers(
     teamSlug: string,
+    teamKey: string,
   ): Promise<OrgTeamMemberQueryResponse[]> {
     let response: OrgTeamMemberQueryResponse[] = [];
 
@@ -185,8 +186,7 @@ export default class OrganizationAccountClient {
 
       return rateLimitConsumed;
     });
-
-    return response;
+    return response.filter((t) => t.teams === teamKey);
   }
 
   async getRepositories(slugs?: string[]): Promise<OrgRepoQueryResponse[]> {
@@ -216,6 +216,7 @@ export default class OrganizationAccountClient {
 
   async getTeamRepositories(
     teamSlug: string,
+    teamKey: string,
   ): Promise<OrgTeamRepoQueryResponse[]> {
     let response: OrgTeamRepoQueryResponse[] = [];
     await this.queryGraphQL('team repositories', async () => {
@@ -238,8 +239,7 @@ export default class OrganizationAccountClient {
 
       return rateLimitConsumed;
     });
-
-    return response;
+    return response.filter((t) => t.teams === teamKey);
   }
 
   async getRepoCollaborators(repoName: string): Promise<Collaborator[]> {

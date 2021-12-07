@@ -329,10 +329,18 @@ export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!
   ...rateLimit
 }`;
 
+/**
+ * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
+ * Unfortunately, the GraphQL API sometimes returns multiples for a single slug (it shouldn't do that!)
+ *  We will ask for as many as 5 teams under the one slug, and then filter later for the one we wanted
+ *  We could pull all the teams at once (we used to) and avoid this, but then we can't ingest entries on a
+ *  per-team basis
+ */
+
 export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String) {
   organization(login: $login) {
     id
-    teams(first: 1, query: $slug, orderBy: {field: NAME, direction: ASC}) {
+    teams(first: 5, query: $slug, orderBy: {field: NAME, direction: ASC}) {
     edges {
       node {
         id
@@ -358,10 +366,18 @@ endCursor
 ...rateLimit
 }`;
 
+/**
+ * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
+ * Unfortunately, the GraphQL API sometimes returns multiples for a single slug (it shouldn't do that!)
+ *  We will ask for as many as 5 teams under the one slug, and then filter later for the one we wanted
+ *  We could pull all the teams at once (we used to) and avoid this, but then we can't ingest entries on a
+ *  per-team basis
+ */
+
 export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String, $members: String) {
   organization(login: $login) {
       id
-      teams(first: 1, query: $slug, orderBy: {field: NAME, direction: ASC}) {
+      teams(first: 5, query: $slug, orderBy: {field: NAME, direction: ASC}) {
       edges {
         node {
           id

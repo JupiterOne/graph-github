@@ -344,6 +344,7 @@ export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: St
     edges {
       node {
         id
+        name
         repositories(first: ${MAX_REQUESTS_NUM}, after: $teamRepositories) {
     edges {
       node {
@@ -381,6 +382,7 @@ export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: 
       edges {
         node {
           id
+          name
           members(first: ${MAX_REQUESTS_NUM}, after: $members) {
       edges {
         node {

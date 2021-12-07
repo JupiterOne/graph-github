@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+### 1.8.17 2021-12-06
+
 ### Fixed
 
 - If multiple teams are returned by the GraphQL API for a single slug, the

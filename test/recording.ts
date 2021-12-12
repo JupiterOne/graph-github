@@ -7,9 +7,15 @@ import {
 
 export { Recording };
 
+function isRecordingEnabled() {
+  return Boolean(process.env.LOAD_ENV) === true;
+}
+
 export function setupGithubRecording(
   input: Omit<SetupRecordingInput, 'mutateEntry'>,
 ): Recording {
+  const recordingEnabled = isRecordingEnabled();
+
   return setupRecording({
     ...input,
     redactedRequestHeaders: ['Authorization'],
@@ -18,6 +24,7 @@ export function setupGithubRecording(
       redact(entry);
     },
     options: {
+      mode: recordingEnabled ? 'record' : 'replay',
       recordFailedRequests: true,
     },
   });

@@ -154,6 +154,7 @@ export interface GithubOrganizationResources {
   [GithubResource.TeamRepositories]: OrgTeamRepoQueryResponse[];
   [GithubResource.Repositories]: OrgRepoQueryResponse[];
   // [GithubResource. RepositoryCollaborators]: OrgCollaboratorQueryResponse[];
+  // [GithubResource.DependencyGraphManifest]: DependencyGraphManifest[];
 }
 
 /**
@@ -310,3 +311,8 @@ export type GithubQueryResponse = {
   rateLimitConsumed: number;
 } & Partial<GithubOrganizationResources> &
   Partial<GithubSearchResources>;
+
+export type RefreshTokenResponse = {
+  token: string;
+  expiresAt: string;
+};

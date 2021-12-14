@@ -329,6 +329,41 @@ export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!
   ...rateLimit
 }`;
 
+export const SINGLE_REPO_DEPENDENCIES_QUERY_STRING = `query ($repoName: String!, $repoOwner: String!, $dependencyGraphManifests: String, $dependencies: String) {
+  repository(name: $repoName, owner: $repoOwner) {
+    id
+    dependencyGraphManifests(first: ${MAX_REQUESTS_NUM}, after: $dependencyGraphManifests) {
+      totalCount
+      nodes {
+        filename
+      }
+      edges {
+        node {
+          blobPath
+          dependencies(first: ${MAX_REQUESTS_NUM}, after: $dependencies) {
+            totalCount
+            nodes {
+              packageName
+              requirements
+              hasDependencies
+              packageManager
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+  ...rateLimit
+}`;
+
 /**
  * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
  * Unfortunately, the GraphQL API sometimes returns multiples for a single slug (it shouldn't do that!)

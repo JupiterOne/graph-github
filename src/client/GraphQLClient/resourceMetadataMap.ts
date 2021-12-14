@@ -114,5 +114,21 @@ export default function (): ResourceMap<ResourceMetadata> {
       //pathToDataInGraphQlResponse: 'repository',
       alternateGraphProperty: GithubResource.Collaborators,
     },
+    [GithubResource.DependencyGraphManifests]: {
+      graphRequestVariables: [
+        `$${GithubResource.DependencyGraphManifests}: String`,
+      ],
+      // pathToDataInGraphQlResponse: 'repository.dependencyGraphManifests',
+      pathToDataInGraphQlResponse:
+        'repository.dependencyGraphManifests.edges.node',
+      // alternateGraphProperty: GithubResource.DependencyGraphManifests,
+      children: [GithubResource.Dependencies],
+    },
+    // [GithubResource.Dependencies]: {
+    //   graphRequestVariables: [`$${GithubResource.Dependencies}: String`],
+    //   // alternateGraphProperty: GithubResource.Dependencies,
+    //   // pathToDataInGraphQlResponse: 'repository.dependencyGraphManifests.edges.node.dependencies',
+    //   parent: GithubResource.DependencyGraphManifests,
+    // },
   };
 }

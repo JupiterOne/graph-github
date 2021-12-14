@@ -14,6 +14,7 @@ import sleepIfApproachingRateLimit from '../../util/sleepIfApproachingRateLimit'
 import {
   LIMITED_REQUESTS_NUM,
   SINGLE_PULL_REQUEST_QUERY_STRING,
+  SINGLE_REPO_DEPENDENCIES_QUERY_STRING,
 } from './queries';
 import {
   responseHasNextPage,
@@ -515,9 +516,7 @@ export class GitHubGraphQLClient {
     queryParams?: { [k: string]: string | number };
   }) {
     const { logger } = this;
-
     let query = await this.createGraphqlQueryClient(graphqlQuery);
-    let response;
 
     function makeRequest(query: any) {
       return requestWithRetry({
@@ -531,6 +530,8 @@ export class GitHubGraphQLClient {
         },
       });
     }
+
+    let response;
 
     try {
       response = await makeRequest(query);

@@ -24,6 +24,11 @@ export const GITHUB_REPO_ENTITY_TYPE = 'github_repo';
 export const GITHUB_REPO_ENTITY_CLASS = ['CodeRepo'];
 export const GITHUB_REPO_PR_RELATIONSHIP_TYPE = 'github_repo_has_pullrequest';
 
+export const GITHUB_REPO_DEPENDENCY_ENTITY_TYPE = 'github_repo_dependency';
+export const GITHUB_REPO_DEPENDENCY_ENTITY_CLASS = ['CodeModule'];
+export const GITHUB_REPO_DEPENDENCY_RELATIONSHIP_TYPE =
+  'github_repo_uses_repo_dependency';
+
 export const GITHUB_PR_ENTITY_TYPE = 'github_pullrequest';
 export const GITHUB_PR_ENTITY_CLASS = ['PR'];
 

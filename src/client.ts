@@ -337,6 +337,17 @@ export class APIClient {
     }
   }
 
+  public async iterateRepoDependencies(
+    repoName: string,
+    iteratee: ResourceIteratee<any>, // TODO: Fix type
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+
+    await this.accountClient.iterateRepoDependencies(repoName, iteratee);
+  }
+
   /**
    * Iterates the issues for a repo in the provider.
    *

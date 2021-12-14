@@ -27,6 +27,8 @@ export enum GithubResource {
   Assignees = 'assignees',
   Collaborators = 'collaborators',
   LabelsOnIssues = 'labelsOnIssues',
+  DependencyGraphManifests = 'dependencyGraphManifests',
+  Dependencies = 'dependencies',
 }
 
 export enum OrgMemberRole {
@@ -305,6 +307,8 @@ export interface GithubSearchResources {
   [GithubResource.Reviews]: Review[];
   [GithubResource.Assignees]: Actor[];
   [GithubResource.Collaborators]: Collaborator[];
+  [GithubResource.DependencyGraphManifests]: any[];
+  [GithubResource.Dependencies]: any[];
 }
 
 export type GithubQueryResponse = {

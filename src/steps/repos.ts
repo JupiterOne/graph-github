@@ -17,6 +17,9 @@ import {
   GITHUB_REPO_ENTITY_CLASS,
   GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
+  GITHUB_REPO_DEPENDENCY_ENTITY_TYPE,
+  GITHUB_REPO_DEPENDENCY_ENTITY_CLASS,
+  GITHUB_REPO_DEPENDENCY_RELATIONSHIP_TYPE,
 } from '../constants';
 
 export async function fetchRepos({
@@ -62,6 +65,31 @@ export async function fetchRepos({
   await jobState.setData(GITHUB_REPO_TAGS_ARRAY, repoTags);
 }
 
+export async function fetchRepoDependencies({
+  instance,
+  logger,
+  jobState,
+}: IntegrationStepExecutionContext<IntegrationConfig>) {
+  const config = instance.config;
+  const apiClient = createAPIClient(config, logger);
+
+  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+    GITHUB_REPO_TAGS_ARRAY,
+  );
+
+  if (!repoTags) {
+    throw new IntegrationMissingKeyError(
+      'Expected repos to have been ingested before attempting to ingest repo dependencies.',
+    );
+  }
+
+  for (const repoTag of repoTags) {
+    await apiClient.iterateRepoDependencies(repoTag.name, async (data) => {
+      return Promise.resolve();
+    });
+  }
+}
+
 export const repoSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: 'fetch-repos',
@@ -83,5 +111,26 @@ export const repoSteps: IntegrationStep<IntegrationConfig>[] = [
     ],
     dependsOn: ['fetch-account'],
     executionHandler: fetchRepos,
+  },
+  {
+    id: 'fetch-repo-dependencies',
+    name: 'Fetch Repo Dependencies',
+    entities: [
+      {
+        resourceName: 'Github Repo Dependency',
+        _type: GITHUB_REPO_DEPENDENCY_ENTITY_TYPE,
+        _class: GITHUB_REPO_DEPENDENCY_ENTITY_CLASS,
+      },
+    ],
+    relationships: [
+      {
+        _type: GITHUB_REPO_DEPENDENCY_RELATIONSHIP_TYPE,
+        _class: RelationshipClass.USES,
+        sourceType: GITHUB_REPO_ENTITY_TYPE,
+        targetType: GITHUB_REPO_DEPENDENCY_ENTITY_TYPE,
+      },
+    ],
+    dependsOn: ['fetch-repos'],
+    executionHandler: fetchRepoDependencies,
   },
 ];

@@ -46,6 +46,7 @@ import {
   SINGLE_REPO_COLLABORATORS_QUERY_STRING,
   SINGLE_TEAM_REPOS_QUERY_STRING,
   PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING,
+  SINGLE_REPO_DEPENDENCIES_QUERY_STRING,
 } from './GraphQLClient/queries';
 import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
 
@@ -277,6 +278,26 @@ export default class OrganizationAccountClient {
       return rateLimitConsumed;
     });
     return response;
+  }
+
+  async iterateRepoDependencies(
+    repoName: string,
+    iteratee: ResourceIteratee<any>, // TODO: Fix type
+  ): Promise<void> {
+    await this.queryGraphQL('dependencyGraphManifests', async () => {
+      const result = await this.v4.fetchFromSingle(
+        SINGLE_REPO_DEPENDENCIES_QUERY_STRING,
+        GithubResource.DependencyGraphManifests,
+        [GithubResource.Dependencies],
+        {
+          repoName,
+          repoOwner: this.login,
+        },
+      );
+
+      await iteratee(result.dependencyGraphManifests);
+      return result.rateLimitConsumed;
+    });
   }
 
   async iteratePullRequestEntities(

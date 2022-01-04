@@ -195,6 +195,14 @@ export class GitHubGraphQLClient {
         this.logger,
       );
 
+      this.logger.info(
+        {
+          issuesSearchQuery,
+          numPullRequests: pullRequestResponse.search.edges.length,
+        },
+        'Found pull requests for repo',
+      );
+
       for (const pullRequestQueryData of pullRequestResponse.search.edges) {
         const { resources: pageResources, cursors: innerResourceCursors } =
           processGraphQlPageResult(
@@ -512,11 +520,11 @@ export class GitHubGraphQLClient {
       * or 'collaborators'). Each of those properties will be an array of
       * the particular objects appropriate to that resource - generally a flat object
       * with a list of resource-specific properties
-      * 
+      *
       * Here's a short example of the processed reply provided by all the above code,
       * from our test account, where the requested GitHubResources are
       * 'organization', 'teams', and 'teamRepositories':
-      * 
+      *
       {
         teamRepositories: [
           {
@@ -547,7 +555,7 @@ export class GitHubGraphQLClient {
         organization: [ { id: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz' } ],
         rateLimitConsumed: 1
       }
-      * 
+      *
       * It is possible that the object returned by this function may lack
       * the expected GitHubResource property, leaving the calling function with
       * an undefined response. This happens if there were no instances of that

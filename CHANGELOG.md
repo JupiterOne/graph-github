@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### 1.8.18 2021-1-04
+
+### Changed
+
+- Additional logging to pull request iteration
+
 ### 1.8.17 2021-12-06
 
 ### Fixed

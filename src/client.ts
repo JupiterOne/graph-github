@@ -437,6 +437,7 @@ export class APIClient {
         repoIssues: false,
       };
     }
+    this.logger.info({ perms }, 'Permissions received with token');
     //checking for proper scopes
     if (!(perms.members === 'read' || perms.members === 'write')) {
       throw new IntegrationValidationError(
@@ -510,7 +511,7 @@ export class APIClient {
       this.scopes.repoIssues = false;
       this.logger.info(
         {},
-        "Token does not have 'issues' scope. Repo issues cannot be ingested",
+        "Token does not have 'issues' scope. Repo Issues cannot be ingested. PRs from private repos also cannot be ingested.",
       );
     } else {
       this.scopes.repoIssues = true;

@@ -35,12 +35,12 @@
     "graphql.js": "^0.6.7"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^7.4.0"
+    "@jupiterone/integration-sdk-core": "^8.1.2"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^7.4.0",
-    "@jupiterone/integration-sdk-dev-tools": "^7.4.0",
-    "@jupiterone/integration-sdk-testing": "^7.4.0",
+    "@jupiterone/integration-sdk-core": "^8.1.2",
+    "@jupiterone/integration-sdk-dev-tools": "^8.1.2",
+    "@jupiterone/integration-sdk-testing": "^8.1.2",
     "@octokit/auth-app": "^3.6.0",
     "@octokit/core": "^3.5.1",
     "@octokit/plugin-retry": "^3.0.9",

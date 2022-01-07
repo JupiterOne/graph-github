@@ -209,6 +209,7 @@ describe('toOrganizationMemberEntity', () => {
     updatedAt: '2021-08-12T18:55:22Z',
     url: 'https://github.com/user-login',
     websiteUrl: 'https://about.me/user-login',
+    active: true,
   };
 
   test('properties transferred', () => {
@@ -241,6 +242,7 @@ describe('toOrganizationMemberEntity', () => {
       employee: false,
       location: 'Best place ever',
       websiteUrl: 'https://about.me/user-login',
+      active: true,
     });
   });
 
@@ -282,6 +284,7 @@ describe('toOrganizationCollaboratorEntity', () => {
       webLink: 'https://github.com/user-login',
       node: 'member-node-id',
       id: 'member-node-id',
+      active: true,
     });
   });
 

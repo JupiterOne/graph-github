@@ -319,6 +319,7 @@ export function toOrganizationMemberEntity(
     employee: data.isEmployee,
     location: data.location || '',
     websiteUrl: data.websiteUrl || '',
+    active: true,
   };
   if (data.email) {
     userEntity.email = data.email;
@@ -343,6 +344,7 @@ export function toOrganizationMemberEntityFromTeamMember(
     webLink: 'https://github.com/' + data.login,
     node: data.id,
     id: data.id,
+    active: true,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
@@ -365,6 +367,7 @@ export function toOrganizationCollaboratorEntity(
     webLink: 'https://github.com/' + data.login,
     node: data.id,
     id: data.id,
+    active: true,
   };
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;

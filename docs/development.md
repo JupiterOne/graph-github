@@ -108,3 +108,15 @@ with `User.role` === 'outside collaborator'
 To find all collaborators for a repo, filter for relationship
 'github_repo_allows_user' from that repo. These relationships will point to both
 organization members and outside collaborators.
+
+## Issues and Pull Requests
+
+Note that GitHub considers all Pull Requests to be a type of Issue. Therefore,
+to get PRs from the API, one often has to ask for Issues and then filter for
+ones that are PRs. However, in other syntactical contexts, Pull Requests might
+have their own namespace. Beware.
+
+Also note that enabled Pull Request scope for the app grants access to
+public-repo Pull Requests, but not private repo ones. The Issues scope grants
+access to private-repo Pull Requests, as well as all Issues on public and
+private repos.

@@ -12,6 +12,8 @@ and this project adheres to
 
 - Added logging of token scopes for troubleshooting purposes
 - Updated documentation with notes on GitHub App scope details
+- Concurrency added to `fetch-collaborators` and `fetch-team-repos` to improve
+  integration speed
 
 ### Added
 

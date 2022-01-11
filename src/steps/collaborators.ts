@@ -22,6 +22,7 @@ import {
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
   GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
+import PQueue from 'p-queue';
 
 export async function fetchCollaborators({
   instance,
@@ -52,43 +53,48 @@ export async function fetchCollaborators({
     );
   }
 
+  const iteratorQueue = new PQueue({ concurrency: 3 });
+
   for (const repo of repoTags) {
-    await apiClient.iterateRepoCollaborators(repo.name, async (collab) => {
-      //a collaborator is either an organization member or an outside collaborator
-      //we can tell the difference based on whether the login was discovered in members.ts
-      let userEntity;
-      if (memberByLoginMap[collab.login]) {
-        //if the organization member has repo permission via both direct assignment and some team membership(s),
-        //where the permissions for the repo are different between the direct assignment and team(s) assignments,
-        //GitHub has already taken that into account and returned the best applicable permissions for this collaborator
-        userEntity = memberByLoginMap[collab.login];
-      } else {
-        //retrieve or create outside collaborator entity
-        if (await jobState.hasKey(collab.id)) {
-          userEntity = outsideCollaboratorsByLoginMap[collab.login];
-        } else {
-          userEntity = (await jobState.addEntity(
-            toOrganizationCollaboratorEntity(collab),
-          )) as UserEntity;
-          outsideCollaboratorsByLoginMap[collab.login] = userEntity;
-          outsideCollaboratorsArray.push(userEntity);
-        }
-      }
-      const repoId = collab.repository;
-      if (repoId && userEntity && (await jobState.hasKey(repoId))) {
-        const repoUserRelationship = createRepoAllowsUserRelationship(
-          repoId,
-          userEntity,
-          collab.permission,
-        );
-        await jobState.addRelationship(repoUserRelationship);
-      } else {
-        logger.warn(
-          { collab: collab, repoId: repoId },
-          `Could not build relationship between collaborator and repo`,
-        );
-      }
-    });
+    await iteratorQueue.add(
+      async () =>
+        await apiClient.iterateRepoCollaborators(repo.name, async (collab) => {
+          //a collaborator is either an organization member or an outside collaborator
+          //we can tell the difference based on whether the login was discovered in members.ts
+          let userEntity;
+          if (memberByLoginMap[collab.login]) {
+            //if the organization member has repo permission via both direct assignment and some team membership(s),
+            //where the permissions for the repo are different between the direct assignment and team(s) assignments,
+            //GitHub has already taken that into account and returned the best applicable permissions for this collaborator
+            userEntity = memberByLoginMap[collab.login];
+          } else {
+            //retrieve or create outside collaborator entity
+            if (await jobState.hasKey(collab.id)) {
+              userEntity = outsideCollaboratorsByLoginMap[collab.login];
+            } else {
+              userEntity = (await jobState.addEntity(
+                toOrganizationCollaboratorEntity(collab),
+              )) as UserEntity;
+              outsideCollaboratorsByLoginMap[collab.login] = userEntity;
+              outsideCollaboratorsArray.push(userEntity);
+            }
+          }
+          const repoId = collab.repository;
+          if (repoId && userEntity && (await jobState.hasKey(repoId))) {
+            const repoUserRelationship = createRepoAllowsUserRelationship(
+              repoId,
+              userEntity,
+              collab.permission,
+            );
+            await jobState.addRelationship(repoUserRelationship);
+          } else {
+            logger.warn(
+              { collab: collab, repoId: repoId },
+              `Could not build relationship between collaborator and repo`,
+            );
+          }
+        }),
+    );
   }
 
   //pullrequests.ts will want the outside collaborator info later

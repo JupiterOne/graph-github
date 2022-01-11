@@ -32,7 +32,8 @@
     "@octokit/plugin-throttling": "^3.5.2",
     "@octokit/request": "^5.6.1",
     "@octokit/rest": "^18.11.4",
-    "graphql.js": "^0.6.7"
+    "graphql.js": "^0.6.7",
+    "p-queue": "^6.6.2"
   },
   "peerDependencies": {
     "@jupiterone/integration-sdk-core": "^8.1.2"

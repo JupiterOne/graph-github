@@ -283,6 +283,7 @@ export default class OrganizationAccountClient {
     repo: RepoEntity,
     lastExecutionTime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<PullRequest>,
+    privateRepoContentsAllowed: boolean,
   ): Promise<QueryResponse> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
@@ -290,9 +291,10 @@ export default class OrganizationAccountClient {
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
 
-    const prGraphQLQueryString = repo.public
-      ? PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING
-      : PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING;
+    const prGraphQLQueryString =
+      repo.public || privateRepoContentsAllowed
+        ? PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING
+        : PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING;
     const issuesSearchQuery = `is:pr repo:${repo.fullName} updated:>=${lastExecutionTime}`;
     return await this.v4.iteratePullRequests(
       prGraphQLQueryString,

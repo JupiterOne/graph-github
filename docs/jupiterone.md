@@ -54,6 +54,7 @@ read-only permissions to support ingestion of
 - Metadata: Read-only
 - Pull requests: Read-only
 - Issues: Read-only (enables both Issues and private-repo PRs)
+- Contents: Read-only (enables analyzing commits for private-repo PRs)
 - [Secrets](#secrets-caveat): Read-only
 
 #### Organization Permissions

@@ -53,6 +53,7 @@ export class APIClient {
     repoSecrets: boolean;
     repoEnvironments: boolean;
     repoIssues: boolean;
+    repoContents: boolean;
   };
   constructor(
     readonly config: IntegrationConfig,
@@ -310,6 +311,7 @@ export class APIClient {
         repo,
         lastSuccessfulExecution,
         iteratee,
+        this.scopes.repoContents,
       );
     logger.info(
       { rateLimitConsumed },
@@ -435,6 +437,7 @@ export class APIClient {
         repoSecrets: false,
         repoEnvironments: false,
         repoIssues: false,
+        repoContents: false,
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');
@@ -506,7 +509,7 @@ export class APIClient {
       this.scopes.repoEnvironments = true;
     }
 
-    //ingesting repo issues requires scope issues:read
+    //ingesting repo issues or PRs from private repos requires scope issues:read
     if (!(perms.issues === 'read' || perms.issues === 'write')) {
       this.scopes.repoIssues = false;
       this.logger.info(
@@ -516,6 +519,18 @@ export class APIClient {
     } else {
       this.scopes.repoIssues = true;
     }
+
+    //ingesting private repo commits requires scope contents:read
+    if (!(perms.contents === 'read' || perms.contents === 'write')) {
+      this.scopes.repoContents = false;
+      this.logger.info(
+        {},
+        "Token does not have 'contents' scope. Private repo commits cannot be ingested.",
+      );
+    } else {
+      this.scopes.repoContents = true;
+    }
+
     //scopes check done
   }
 }

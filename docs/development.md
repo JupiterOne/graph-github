@@ -120,3 +120,23 @@ Also note that enabled Pull Request scope for the app grants access to
 public-repo Pull Requests, but not private repo ones. The Issues scope grants
 access to private-repo Pull Requests, as well as all Issues on public and
 private repos.
+
+Also note that private-repo commits cannot be fetched without the Repo Contents
+scope, even if private-repo PRs can be fetched. Therefore, there are two
+possible GraphQL queries (with or without requesting commits) for private-repo
+PRs, depending on whether Repo Contents scope is enabled.
+
+## Scope enabled in the GitHub App
+
+Users of the GitHub App do not have fine-grain control over the App permissions.
+They simply install the App, and it gets all the permissions that the App has
+requested.
+
+However, users might install the App, and then additional permissions requests
+are added to the App later. In that case, the user is given a notification with
+the option to accept the new permissions. If they ignore that notification, the
+App keeps working with the existing permissions.
+
+In this way, it is possible for different installations of the App to be
+operating under different permission levels, and so development must take this
+into consideration.

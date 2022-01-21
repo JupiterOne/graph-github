@@ -751,7 +751,11 @@ describe('toIssue', () => {
       _rawData: [
         {
           name: 'default',
-          rawData: apiResponse,
+          rawData: {
+            ...apiResponse,
+            body: undefined,
+            bodyText: undefined
+          }
         },
       ],
     });

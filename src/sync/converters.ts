@@ -5,6 +5,7 @@ import {
   createIntegrationEntity,
   MappedRelationship,
   RelationshipDirection,
+  truncateEntityPropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -376,6 +377,8 @@ export function toOrganizationCollaboratorEntity(
 export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
   const issueName = repoName + '/' + String(data.number); //format matches name of PRs
   const labels = data.labels?.map((l) => l.name);
+  const truncatedIssueBody = truncateEntityPropertyValue(data.body);
+
   const issueEntity: IssueEntity = {
     _class: GITHUB_ISSUE_ENTITY_CLASS,
     _type: GITHUB_ISSUE_ENTITY_TYPE,
@@ -384,7 +387,7 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
     url: data.url,
     name: issueName,
     displayName: issueName,
-    description: data.body,
+    description: truncatedIssueBody,
     number: data.number,
     databaseId: data.databaseId,
     title: data.title,
@@ -396,7 +399,7 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
     closedOn: parseTimePropertyValue(data.closedAt),
     authorAssociation: data.authorAssociation,
     activeLockReason: data.activeLockReason,
-    body: data.body,
+    body: truncatedIssueBody,
     createdViaEmail: data.createdViaEmail,
     pinned: data.isPinned,
     lastEditedOn: parseTimePropertyValue(data.lastEditedAt),
@@ -404,10 +407,19 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
     resourcePath: data.resourcePath,
     labels: labels,
   };
+
   setRawData(issueEntity, {
     name: 'default',
-    rawData: data,
+    rawData: {
+      ...data,
+      // Explicitly remove these from raw data because these property values
+      // can be large, and there is no reason to copy the values into the raw
+      // data.
+      body: undefined,
+      bodyText: undefined,
+    },
   });
+
   return issueEntity;
 }
 

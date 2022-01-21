@@ -8,15 +8,20 @@ and this project adheres to
 
 ## [Unreleased]
 
-### Changed
-
-- Added logging of token scopes for troubleshooting purposes
-- Updated documentation with notes on GitHub App scope details
+### 1.9.0 2021-1-20
 
 ### Added
 
 - `github_user` property `active` added, a boolean which is always true in the
   case of GitHub Users, to conform with new SDK standards for User entities
+
+### Changed
+
+- Added logging of token scopes for troubleshooting purposes
+- Updated documentation with notes on GitHub App scope details
+- Truncate potentially large `body` and `bodyText` property values from
+  `github_issue`
+- Remove `body` and `bodyText` property values from `github_issue` raw data
 
 ### 1.8.18 2021-1-04
 

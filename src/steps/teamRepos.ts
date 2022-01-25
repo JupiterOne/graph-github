@@ -13,7 +13,6 @@ import {
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
 import { TeamEntity } from '../types';
-import { isTeamSlugShadowed } from '../util/isTeamSlugShadowed';
 
 export async function fetchTeamRepos({
   instance,
@@ -28,8 +27,10 @@ export async function fetchTeamRepos({
   await jobState.iterateEntities(
     { _type: GITHUB_TEAM_ENTITY_TYPE },
     async (teamEntity: TeamEntity) => {
-      if (!isTeamSlugShadowed(teamEntity.name, allTeamNames)) {
-        await apiClient.iterateTeamRepos(teamEntity, async (teamRepo) => {
+      await apiClient.iterateTeamRepos(
+        allTeamNames,
+        teamEntity,
+        async (teamRepo) => {
           //teamRepo.id is the repo id
           //teamRepo.teams is the team id
           if (
@@ -62,13 +63,8 @@ export async function fetchTeamRepos({
               `Could not build relationship between team and repo.`,
             );
           }
-        });
-      } else {
-        logger.warn(
-          { teamName: teamEntity.name },
-          'Cannot ingest team-repo relationships for this team.',
-        );
-      }
+        },
+      );
     },
   );
 }

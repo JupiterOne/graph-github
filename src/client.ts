@@ -114,6 +114,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamRepos(
+    allTeamNames: string[],
     team: TeamEntity,
     iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
   ): Promise<void> {
@@ -121,7 +122,11 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const teamRepos: OrgTeamRepoQueryResponse[] =
-      await this.accountClient.getTeamRepositories(team.name, team._key);
+      await this.accountClient.getTeamRepositories(
+        team.name,
+        team._key,
+        allTeamNames,
+      );
     for (const teamRepoAssociation of teamRepos) {
       await iteratee(teamRepoAssociation);
     }

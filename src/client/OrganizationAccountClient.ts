@@ -48,6 +48,7 @@ import {
   PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING,
 } from './GraphQLClient/queries';
 import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
+import { tuneTeamQuery } from '../util/tuneTeamQueries';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -225,12 +226,18 @@ export default class OrganizationAccountClient {
   async getTeamRepositories(
     teamSlug: string,
     teamKey: string,
+    allTeamNames: string[],
   ): Promise<OrgTeamRepoQueryResponse[]> {
     let response: OrgTeamRepoQueryResponse[] = [];
+    const teamRepoQuery = tuneTeamQuery(
+      teamSlug,
+      allTeamNames,
+      SINGLE_TEAM_REPOS_QUERY_STRING,
+    );
     await this.queryGraphQL('team repositories', async () => {
       const { teamRepositories, teams, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
-          SINGLE_TEAM_REPOS_QUERY_STRING,
+          teamRepoQuery,
           GithubResource.Organization,
           [GithubResource.TeamRepositories],
           {
@@ -245,13 +252,19 @@ export default class OrganizationAccountClient {
         );
       }
 
-      if (!teams?.every((t) => t.id === teamKey)) {
-        this.logger.warn(
+      if (!teams) {
+        this.logger.info(
           { teamSlug, teamKey, teams },
-          'Teams contained more than the one expected team',
+          'Found no repos for team',
         );
+      } else {
+        if (!teams?.every((t) => t.id === teamKey)) {
+          this.logger.warn(
+            { teamSlug, teamKey, teams },
+            'Teams contained more than the one expected team',
+          );
+        }
       }
-
       return rateLimitConsumed;
     });
     return response.filter((t) => t.teams === teamKey);

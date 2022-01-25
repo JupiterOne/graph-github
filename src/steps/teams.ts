@@ -16,7 +16,6 @@ import {
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_TEAM_ENTITY_CLASS,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
-  GITHUB_ALL_TEAM_NAMES,
 } from '../constants';
 
 export async function fetchTeams({
@@ -36,14 +35,10 @@ export async function fetchTeams({
     );
   }
 
-  const allTeamNames: string[] = [];
-
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
       toTeamEntity(team),
     )) as TeamEntity;
-
-    allTeamNames.push(teamEntity.name);
 
     await jobState.addRelationship(
       createDirectRelationship({
@@ -53,7 +48,6 @@ export async function fetchTeams({
       }),
     );
   });
-  await jobState.setData(GITHUB_ALL_TEAM_NAMES, allTeamNames);
 }
 
 export const teamSteps: IntegrationStep<IntegrationConfig>[] = [

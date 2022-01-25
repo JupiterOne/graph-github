@@ -48,7 +48,6 @@ import {
   PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING,
 } from './GraphQLClient/queries';
 import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
-import { tuneTeamQuery } from '../util/tuneTeamQueries';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -167,10 +166,8 @@ export default class OrganizationAccountClient {
   async getTeamMembers(
     teamSlug: string,
     teamKey: string,
-    allTeamNames: string[],
   ): Promise<OrgTeamMemberQueryResponse[]> {
     let response: OrgTeamMemberQueryResponse[] = [];
-    const { first, direction } = tuneTeamQuery(teamSlug, allTeamNames);
     await this.queryGraphQL('team members', async () => {
       const { members, teams, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
@@ -180,8 +177,6 @@ export default class OrganizationAccountClient {
           {
             login: this.login,
             slug: teamSlug,
-            first,
-            direction,
           },
         );
 
@@ -229,10 +224,8 @@ export default class OrganizationAccountClient {
   async getTeamRepositories(
     teamSlug: string,
     teamKey: string,
-    allTeamNames: string[],
   ): Promise<OrgTeamRepoQueryResponse[]> {
     let response: OrgTeamRepoQueryResponse[] = [];
-    const { first, direction } = tuneTeamQuery(teamSlug, allTeamNames);
     await this.queryGraphQL('team repositories', async () => {
       const { teamRepositories, teams, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
@@ -242,8 +235,6 @@ export default class OrganizationAccountClient {
           {
             login: this.login,
             slug: teamSlug,
-            first,
-            direction,
           },
         );
 

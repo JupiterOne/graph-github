@@ -333,12 +333,10 @@ export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!
  * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
  */
 
-export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String, $first: Int!, $direction: String!) {
+export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String) {
   organization(login: $login) {
     id
-    teams(first: $first, query: $slug, orderBy: {field: NAME, direction: $direction}) {
-    edges {
-      node {
+    team(slug: $slug) {
         id
         name
         repositories(first: ${MAX_REQUESTS_NUM}, after: $teamRepositories) {
@@ -353,11 +351,6 @@ endCursor
 hasNextPage
 }
   }
-      }
-    }
-    pageInfo {
-endCursor
-}
   }
   }
 ...rateLimit
@@ -367,12 +360,10 @@ endCursor
  * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
  */
 
-export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String, $members: String, $first: Int!, $direction: String!) {
+export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String!, $members: String) {
   organization(login: $login) {
       id
-      teams(first: $first, query: $slug, orderBy: {field: NAME, direction: $direction}) {
-      edges {
-        node {
+      team(slug: $slug) {
           id
           name
           members(first: ${MAX_REQUESTS_NUM}, after: $members) {
@@ -390,11 +381,6 @@ hasNextPage
     }
         }
       }
-      pageInfo {
-endCursor
-}
-    }
-    }
 ...rateLimit
 }`;
 

@@ -13,6 +13,7 @@ import {
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
 import { TeamEntity } from '../types';
+import { isTeamSlugShadowed } from '../util/isTeamSlugShadowed';
 
 export async function fetchTeamRepos({
   instance,
@@ -22,43 +23,52 @@ export async function fetchTeamRepos({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
+  const allTeamNames = (await jobState.getData('ALL_TEAM_NAMES')) as string[];
+
   await jobState.iterateEntities(
     { _type: GITHUB_TEAM_ENTITY_TYPE },
     async (teamEntity: TeamEntity) => {
-      await apiClient.iterateTeamRepos(teamEntity, async (teamRepo) => {
-        //teamRepo.id is the repo id
-        //teamRepo.teams is the team id
-        if (
-          (await jobState.hasKey(teamRepo.id)) &&
-          (await jobState.hasKey(teamRepo.teams))
-        ) {
-          const repoTeamRelationship = createRepoAllowsTeamRelationship(
-            teamRepo.id,
-            teamEntity._key,
-            teamRepo.permission,
-          );
-          if (jobState.hasKey(repoTeamRelationship._key)) {
-            logger.warn(
-              {
-                teamId: teamEntity.id,
-                teamKey: teamEntity._key,
-                teamName: teamEntity.name,
-                teamRepoTeamKey: teamRepo.teams,
-                teamRepoId: teamRepo.id,
-                relationshipKey: repoTeamRelationship._key,
-              },
-              'Repo-team relationship was already ingested: Skipping.',
+      if (!isTeamSlugShadowed(teamEntity.name, allTeamNames)) {
+        await apiClient.iterateTeamRepos(teamEntity, async (teamRepo) => {
+          //teamRepo.id is the repo id
+          //teamRepo.teams is the team id
+          if (
+            (await jobState.hasKey(teamRepo.id)) &&
+            (await jobState.hasKey(teamRepo.teams))
+          ) {
+            const repoTeamRelationship = createRepoAllowsTeamRelationship(
+              teamRepo.id,
+              teamEntity._key,
+              teamRepo.permission,
             );
+            if (jobState.hasKey(repoTeamRelationship._key)) {
+              logger.warn(
+                {
+                  teamId: teamEntity.id,
+                  teamKey: teamEntity._key,
+                  teamName: teamEntity.name,
+                  teamRepoTeamKey: teamRepo.teams,
+                  teamRepoId: teamRepo.id,
+                  relationshipKey: repoTeamRelationship._key,
+                },
+                'Repo-team relationship was already ingested: Skipping.',
+              );
+            } else {
+              await jobState.addRelationship(repoTeamRelationship);
+            }
           } else {
-            await jobState.addRelationship(repoTeamRelationship);
+            logger.warn(
+              { repoId: teamRepo.id, teamId: teamRepo.teams },
+              `Could not build relationship between team and repo.`,
+            );
           }
-        } else {
-          logger.warn(
-            { repoId: teamRepo.id, teamId: teamRepo.teams },
-            `Could not build relationship between team and repo.`,
-          );
-        }
-      });
+        });
+      } else {
+        logger.warn(
+          { teamName: teamEntity.name },
+          'Cannot ingest team-repo relationships for this team.',
+        );
+      }
     },
   );
 }

@@ -35,10 +35,14 @@ export async function fetchTeams({
     );
   }
 
+  const allTeamNames: string[] = [];
+
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
       toTeamEntity(team),
     )) as TeamEntity;
+
+    allTeamNames.push(teamEntity.name);
 
     await jobState.addRelationship(
       createDirectRelationship({
@@ -48,6 +52,7 @@ export async function fetchTeams({
       }),
     );
   });
+  await jobState.setData('ALL_TEAM_NAMES', allTeamNames);
 }
 
 export const teamSteps: IntegrationStep<IntegrationConfig>[] = [

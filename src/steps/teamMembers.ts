@@ -3,6 +3,7 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   createDirectRelationship,
+  IntegrationMissingKeyError,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
@@ -14,6 +15,7 @@ import {
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_ALL_TEAM_NAMES,
 } from '../constants';
 import { TeamEntity } from '../types';
 
@@ -25,52 +27,39 @@ export async function fetchTeamMembers({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
+  const allTeamNames = (await jobState.getData(
+    GITHUB_ALL_TEAM_NAMES,
+  )) as string[];
+  if (!allTeamNames) {
+    throw new IntegrationMissingKeyError(
+      `Expected teams.ts to have set ${GITHUB_ALL_TEAM_NAMES} in jobState.`,
+    );
+  }
+
   await jobState.iterateEntities(
     { _type: GITHUB_TEAM_ENTITY_TYPE },
     async (teamEntity: TeamEntity) => {
-      await apiClient.iterateTeamMembers(teamEntity, async (user) => {
-        if (!(await jobState.hasKey(user.id))) {
-          //somehow this team has a user we didn't know about
-          //shouldn't happen, except through weird timing, but we'll make an entry
-          await jobState.addEntity(
-            toOrganizationMemberEntityFromTeamMember(user),
-          );
-        }
+      await apiClient.iterateTeamMembers(
+        allTeamNames,
+        teamEntity,
+        async (user) => {
+          if (!(await jobState.hasKey(user.id))) {
+            //somehow this team has a user we didn't know about
+            //shouldn't happen, except through weird timing, but we'll make an entry
+            await jobState.addEntity(
+              toOrganizationMemberEntityFromTeamMember(user),
+            );
+          }
 
-        const teamMemberRelationship = createDirectRelationship({
-          _class: RelationshipClass.HAS,
-          fromType: GITHUB_TEAM_ENTITY_TYPE,
-          toType: GITHUB_MEMBER_ENTITY_TYPE,
-          fromKey: user.teams, //a single team key
-          toKey: user.id,
-        });
-
-        if (jobState.hasKey(teamMemberRelationship._key)) {
-          logger.warn(
-            {
-              teamId: teamEntity.id,
-              teamKey: teamEntity._key,
-              teamName: teamEntity.name,
-              teamRepoTeamKey: user.teams,
-              teamRepoId: user.id,
-              relationshipKey: teamMemberRelationship._key,
-            },
-            'Member-team relationship was already ingested: Skipping.',
-          );
-        } else {
-          await jobState.addRelationship(teamMemberRelationship);
-        }
-
-        if (user.role === TeamMemberRole.Maintainer) {
-          const maintainerTeamRelationship = createDirectRelationship({
-            _class: RelationshipClass.MANAGES,
-            fromType: GITHUB_MEMBER_ENTITY_TYPE,
-            toType: GITHUB_TEAM_ENTITY_TYPE,
-            fromKey: user.id,
-            toKey: user.teams,
+          const teamMemberRelationship = createDirectRelationship({
+            _class: RelationshipClass.HAS,
+            fromType: GITHUB_TEAM_ENTITY_TYPE,
+            toType: GITHUB_MEMBER_ENTITY_TYPE,
+            fromKey: user.teams, //a single team key
+            toKey: user.id,
           });
 
-          if (jobState.hasKey(maintainerTeamRelationship._key)) {
+          if (jobState.hasKey(teamMemberRelationship._key)) {
             logger.warn(
               {
                 teamId: teamEntity.id,
@@ -78,15 +67,41 @@ export async function fetchTeamMembers({
                 teamName: teamEntity.name,
                 teamRepoTeamKey: user.teams,
                 teamRepoId: user.id,
-                relationshipKey: maintainerTeamRelationship._key,
+                relationshipKey: teamMemberRelationship._key,
               },
-              'Maintainer-team relationship was already ingested: Skipping.',
+              'Member-team relationship was already ingested: Skipping.',
             );
           } else {
-            await jobState.addRelationship(maintainerTeamRelationship);
+            await jobState.addRelationship(teamMemberRelationship);
           }
-        }
-      });
+
+          if (user.role === TeamMemberRole.Maintainer) {
+            const maintainerTeamRelationship = createDirectRelationship({
+              _class: RelationshipClass.MANAGES,
+              fromType: GITHUB_MEMBER_ENTITY_TYPE,
+              toType: GITHUB_TEAM_ENTITY_TYPE,
+              fromKey: user.id,
+              toKey: user.teams,
+            });
+
+            if (jobState.hasKey(maintainerTeamRelationship._key)) {
+              logger.warn(
+                {
+                  teamId: teamEntity.id,
+                  teamKey: teamEntity._key,
+                  teamName: teamEntity.name,
+                  teamRepoTeamKey: user.teams,
+                  teamRepoId: user.id,
+                  relationshipKey: maintainerTeamRelationship._key,
+                },
+                'Maintainer-team relationship was already ingested: Skipping.',
+              );
+            } else {
+              await jobState.addRelationship(maintainerTeamRelationship);
+            }
+          }
+        },
+      );
     },
   );
 }

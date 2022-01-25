@@ -2,6 +2,7 @@ import {
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
+  IntegrationMissingKeyError,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAPIClient } from '../client';
@@ -11,6 +12,7 @@ import {
   GITHUB_REPO_ENTITY_TYPE,
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_ALL_TEAM_NAMES,
 } from '../constants';
 import { TeamEntity } from '../types';
 
@@ -22,7 +24,14 @@ export async function fetchTeamRepos({
   const config = instance.config;
   const apiClient = createAPIClient(config, logger);
 
-  const allTeamNames = (await jobState.getData('ALL_TEAM_NAMES')) as string[];
+  const allTeamNames = (await jobState.getData(
+    GITHUB_ALL_TEAM_NAMES,
+  )) as string[];
+  if (!allTeamNames) {
+    throw new IntegrationMissingKeyError(
+      `Expected teams.ts to have set ${GITHUB_ALL_TEAM_NAMES} in jobState.`,
+    );
+  }
 
   await jobState.iterateEntities(
     { _type: GITHUB_TEAM_ENTITY_TYPE },

@@ -16,6 +16,7 @@ import {
   GITHUB_TEAM_ENTITY_TYPE,
   GITHUB_TEAM_ENTITY_CLASS,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
+  GITHUB_ALL_TEAM_NAMES,
 } from '../constants';
 
 export async function fetchTeams({
@@ -52,7 +53,7 @@ export async function fetchTeams({
       }),
     );
   });
-  await jobState.setData('ALL_TEAM_NAMES', allTeamNames);
+  await jobState.setData(GITHUB_ALL_TEAM_NAMES, allTeamNames);
 }
 
 export const teamSteps: IntegrationStep<IntegrationConfig>[] = [

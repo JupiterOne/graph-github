@@ -167,13 +167,18 @@ export default class OrganizationAccountClient {
   async getTeamMembers(
     teamSlug: string,
     teamKey: string,
+    allTeamNames: string[],
   ): Promise<OrgTeamMemberQueryResponse[]> {
     let response: OrgTeamMemberQueryResponse[] = [];
-
+    const teamMemberQuery = tuneTeamQuery(
+      teamSlug,
+      allTeamNames,
+      SINGLE_TEAM_MEMBERS_QUERY_STRING,
+    );
     await this.queryGraphQL('team members', async () => {
       const { members, teams, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
-          SINGLE_TEAM_MEMBERS_QUERY_STRING,
+          teamMemberQuery,
           GithubResource.Organization,
           [GithubResource.TeamMembers],
           {

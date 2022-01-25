@@ -333,10 +333,10 @@ export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!
  * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
  */
 
-export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String) {
+export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String, $first: Int!, $direction: String!) {
   organization(login: $login) {
     id
-    teams(first: 1, query: $slug, orderBy: {field: NAME, direction: ASC}) {
+    teams(first: $first, query: $slug, orderBy: {field: NAME, direction: $direction}) {
     edges {
       node {
         id
@@ -367,10 +367,10 @@ endCursor
  * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
  */
 
-export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String, $members: String) {
+export const SINGLE_TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $slug: String, $members: String, $first: Int!, $direction: String!) {
   organization(login: $login) {
       id
-      teams(first: 1, query: $slug, orderBy: {field: NAME, direction: ASC}) {
+      teams(first: $first, query: $slug, orderBy: {field: NAME, direction: $direction}) {
       edges {
         node {
           id

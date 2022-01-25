@@ -25,8 +25,10 @@ export function calculateDesQueryPosition(
 export function tuneTeamQuery(
   slug: string,
   teamNames: string[],
-  query: string,
-): string {
+): {
+  first: number;
+  direction: string;
+} {
   const ascSortPosition = findTeamSlugPositionInAscQuery(slug, teamNames);
   const desSortPosition = calculateDesQueryPosition(
     teamNames.length,
@@ -34,10 +36,8 @@ export function tuneTeamQuery(
   );
   if (ascSortPosition <= desSortPosition) {
     // the comma in the substitution is important to not change the subquery
-    return query.replace('first: 1,', `first: ${ascSortPosition},`);
+    return { first: ascSortPosition, direction: 'ASC' };
   } else {
-    return query
-      .replace('first: 1,', `first: ${desSortPosition},`)
-      .replace('direction: ASC', 'direction: DESC');
+    return { first: desSortPosition, direction: 'DESC' };
   }
 }

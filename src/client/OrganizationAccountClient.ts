@@ -170,20 +170,18 @@ export default class OrganizationAccountClient {
     allTeamNames: string[],
   ): Promise<OrgTeamMemberQueryResponse[]> {
     let response: OrgTeamMemberQueryResponse[] = [];
-    const teamMemberQuery = tuneTeamQuery(
-      teamSlug,
-      allTeamNames,
-      SINGLE_TEAM_MEMBERS_QUERY_STRING,
-    );
+    const { first, direction } = tuneTeamQuery(teamSlug, allTeamNames);
     await this.queryGraphQL('team members', async () => {
       const { members, teams, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
-          teamMemberQuery,
+          SINGLE_TEAM_MEMBERS_QUERY_STRING,
           GithubResource.Organization,
           [GithubResource.TeamMembers],
           {
             login: this.login,
             slug: teamSlug,
+            first,
+            direction,
           },
         );
 
@@ -234,20 +232,18 @@ export default class OrganizationAccountClient {
     allTeamNames: string[],
   ): Promise<OrgTeamRepoQueryResponse[]> {
     let response: OrgTeamRepoQueryResponse[] = [];
-    const teamRepoQuery = tuneTeamQuery(
-      teamSlug,
-      allTeamNames,
-      SINGLE_TEAM_REPOS_QUERY_STRING,
-    );
+    const { first, direction } = tuneTeamQuery(teamSlug, allTeamNames);
     await this.queryGraphQL('team repositories', async () => {
       const { teamRepositories, teams, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
-          teamRepoQuery,
+          SINGLE_TEAM_REPOS_QUERY_STRING,
           GithubResource.Organization,
           [GithubResource.TeamRepositories],
           {
             login: this.login,
             slug: teamSlug,
+            first,
+            direction,
           },
         );
 

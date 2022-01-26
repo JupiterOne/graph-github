@@ -167,7 +167,7 @@ function extractSelectedResourceFromData(
             node: {
               id: data.team.id,
               name: data.team.name,
-              repositories: data.team.members,
+              members: data.team.members,
             },
           },
         ],

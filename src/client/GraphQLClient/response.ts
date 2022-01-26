@@ -140,6 +140,46 @@ function extractSelectedResourceFromData(
 } {
   const node: { [key: string]: any } = { ...edge };
 
+  if (data.team) {
+    // mutate data to fit expectations
+    // this is a hack that allows us to use a new query format, before we rewrite the cursor handlers
+    if (data.team.repositories) {
+      data.teams = {
+        edges: [
+          {
+            node: {
+              id: data.team.id,
+              name: data.team.name,
+              repositories: data.team.repositories,
+            },
+          },
+        ],
+        pageInfo: {
+          endCursor: 'ZZZ==',
+          hasNextPage: false,
+        },
+      };
+    }
+    if (data.team.members) {
+      data.teams = {
+        edges: [
+          {
+            node: {
+              id: data.team.id,
+              name: data.team.name,
+              repositories: data.team.members,
+            },
+          },
+        ],
+        pageInfo: {
+          endCursor: 'ZZZ==',
+          hasNextPage: false,
+        },
+      };
+    }
+    delete data.team;
+  }
+
   if (data) {
     for (const [key, value] of Object.entries(data)) {
       if (value && typeof value === 'object' && value.edges) {

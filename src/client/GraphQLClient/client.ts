@@ -188,7 +188,7 @@ export class GitHubGraphQLClient {
       }
       pullRequestsQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = pullRequestResponse.rateLimit;
-      this.logger.info({ rateLimit }, 'Rate limit response for iteration');
+      this.logger.info({ rateLimit }, 'Rate limit info for iteration');
       rateLimitConsumed += rateLimit.cost;
       await sleepIfApproachingRateLimit(
         pullRequestResponse.rateLimit,
@@ -366,7 +366,7 @@ export class GitHubGraphQLClient {
       }
       issuesQueried += LIMITED_REQUESTS_NUM;
       const rateLimit = issueResponse.rateLimit;
-      this.logger.info({ rateLimit }, 'Rate limit response for iteration');
+      this.logger.info({ rateLimit }, 'Rate limit info for iteration');
       rateLimitConsumed += rateLimit.cost;
       await sleepIfApproachingRateLimit(issueResponse.rateLimit, this.logger);
 
@@ -510,7 +510,7 @@ export class GitHubGraphQLClient {
           resourceNums,
           hasMoreResources,
         },
-        `Rate limit response for iteration`,
+        `Rate limit info for iteration`,
       );
     } while (hasMoreResources);
 

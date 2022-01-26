@@ -168,7 +168,6 @@ export default class OrganizationAccountClient {
     teamKey: string,
   ): Promise<OrgTeamMemberQueryResponse[]> {
     let response: OrgTeamMemberQueryResponse[] = [];
-
     await this.queryGraphQL('team members', async () => {
       const { members, teams, rateLimitConsumed } =
         await this.v4.fetchFromSingle(
@@ -245,13 +244,19 @@ export default class OrganizationAccountClient {
         );
       }
 
-      if (!teams?.every((t) => t.id === teamKey)) {
-        this.logger.warn(
+      if (!teams) {
+        this.logger.info(
           { teamSlug, teamKey, teams },
-          'Teams contained more than the one expected team',
+          'Found no repos for team',
         );
+      } else {
+        if (!teams?.every((t) => t.id === teamKey)) {
+          this.logger.warn(
+            { teamSlug, teamKey, teams },
+            'Teams contained more than the one expected team',
+          );
+        }
       }
-
       return rateLimitConsumed;
     });
     return response.filter((t) => t.teams === teamKey);

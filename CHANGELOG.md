@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Optimized queries in `fetch-team-members` and `fetch-team-repos` to fetch the
+  ideal number of teams necessary to reach desired data.
+
 ### 1.9.0 2021-1-20
 
 ### Added

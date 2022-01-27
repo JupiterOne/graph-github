@@ -19,8 +19,10 @@ and this project adheres to
 
 ### Added
 
-- `github_user` property `active` added, a boolean which is always true in the
-  case of GitHub Users, to conform with new SDK standards for User entities
+- Added `github_user` property `active` added, a boolean which is always true in
+  the case of GitHub Users, to conform with new SDK standards for User entities
+- Added support for the "Contents" scope in "Repository permissions", which
+  enables ingestion of private repo PR commits.
 
 ### Changed
 

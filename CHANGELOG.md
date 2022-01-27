@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+### 1.9.1 - 2021-01-26
+
 ### Changed
 
 - Optimized queries in `fetch-team-members` and `fetch-team-repos` to fetch the

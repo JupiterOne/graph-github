@@ -3,33 +3,40 @@ import {
   Recording,
 } from '@jupiterone/integration-sdk-testing';
 import { IntegrationConfig, sanitizeConfig } from '../config';
-import { DATA_ACCOUNT_ENTITY, fetchAccountDetails } from './account';
+import { fetchApps } from './apps';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
+import { DATA_ACCOUNT_ENTITY } from './account';
+import { createMockAccountEntity } from '../../test/mockEntities';
+import { GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE } from '../constants';
 
 let recording: Recording;
 afterEach(async () => {
   await recording.stop();
 });
 
-describe('fetchAccountDetails exec handler', () => {
-  let accounts;
+describe('fetchApps exec handler', () => {
+  let apps;
   let context;
 
   test('execution and snapshot', async () => {
     recording = setupGithubRecording({
       directory: __dirname,
-      name: 'account', //redaction of headers is in setupGithubRecording
+      name: 'apps', //redaction of headers is in setupGithubRecording
     });
     sanitizeConfig(integrationConfig);
     integrationConfig.installationId = 17214088; //this is the id the recordings are under
+    const accountEntity = createMockAccountEntity();
     context = createMockStepExecutionContext<IntegrationConfig>({
       instanceConfig: integrationConfig,
+      setData: {
+        [DATA_ACCOUNT_ENTITY]: accountEntity,
+      },
     });
 
     // Simulates dependency graph execution.
     // See https://github.com/JupiterOne/sdk/issues/262.
-    await fetchAccountDetails(context);
+    await fetchApps(context);
 
     // Review snapshot, failure is a regression
     expect({
@@ -40,36 +47,34 @@ describe('fetchAccountDetails exec handler', () => {
       encounteredTypes: context.jobState.encounteredTypes,
     }).toMatchSnapshot();
 
-    accounts = context.jobState.collectedEntities.filter((e) =>
-      e._class.includes('Account'),
+    apps = context.jobState.collectedEntities.filter((e) =>
+      e._class.includes('Application'),
     );
+    expect(apps.length).toBeGreaterThan(0);
+
+    const relationships = context.jobState.collectedRelationships.filter((e) =>
+      e._type.includes(GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE),
+    );
+    expect(relationships.length).toBeGreaterThan(0);
   });
 
   test('schema match', () => {
-    expect(accounts.length).toEqual(1);
-    expect(accounts).toMatchGraphObjectSchema({
-      _class: ['Account'],
+    expect(apps).toMatchGraphObjectSchema({
+      _class: ['Application'],
       schema: {
         additionalProperties: true,
         properties: {
-          _type: { const: 'github_account' },
-          accountType: { type: 'string' },
-          accountId: { type: 'string' },
-          login: { type: 'string' },
+          _type: { const: 'github_app' },
+          name: { type: 'string' },
+          displayName: { type: 'string' },
+          webLink: { type: 'string' },
           _rawData: {
             type: 'array',
             items: { type: 'object' },
           },
         },
-        required: ['accountId'],
+        required: ['name', 'displayName', 'webLink', 'createdOn'],
       },
     });
-  });
-
-  test('jobState includes DATA_ACCOUNT_ENTITY', async () => {
-    const entityFromConstant = await context.jobState.getData(
-      DATA_ACCOUNT_ENTITY,
-    );
-    expect(entityFromConstant).toEqual(accounts[0]);
   });
 });

@@ -110,27 +110,6 @@ test('should collect data', async () => {
     },
   });
 
-  const prs = context.jobState.collectedEntities.filter((e) =>
-    e._class.includes('PR'),
-  );
-  expect(prs.length).toBeGreaterThan(0);
-  expect(prs).toMatchGraphObjectSchema({
-    _class: ['PR'],
-    schema: {
-      additionalProperties: true,
-      properties: {
-        _type: { const: 'github_pullrequest' },
-        webLink: { type: 'string' },
-        displayName: { type: 'string' },
-        _rawData: {
-          type: 'array',
-          items: { type: 'object' },
-        },
-      },
-      required: ['webLink', 'displayName'],
-    },
-  });
-
   const repoSecrets = context.jobState.collectedEntities.filter(
     (e) =>
       e._class.includes('Secret') && e._type.includes('github_repo_secret'),

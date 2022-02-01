@@ -71,27 +71,6 @@ test('should collect data', async () => {
     encounteredTypes: context.jobState.encounteredTypes,
   }).toMatchSnapshot();
 
-  const users = context.jobState.collectedEntities.filter((e) =>
-    e._class.includes('User'),
-  );
-  expect(users.length).toBeGreaterThan(0);
-  expect(users).toMatchGraphObjectSchema({
-    _class: ['User'],
-    schema: {
-      additionalProperties: true,
-      properties: {
-        _type: { const: 'github_user' },
-        username: { type: 'string' },
-        displayName: { type: 'string' },
-        _rawData: {
-          type: 'array',
-          items: { type: 'object' },
-        },
-      },
-      required: ['username', 'displayName'],
-    },
-  });
-
   const userGroups = context.jobState.collectedEntities.filter((e) =>
     e._class.includes('UserGroup'),
   );
@@ -212,26 +191,4 @@ test('should collect data', async () => {
       (r) => r._type === GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
     );
   expect(secretRepoOrgOverrideRelationships.length).toBeGreaterThan(0);
-
-  const envs = context.jobState.collectedEntities.filter((e) =>
-    e._class.includes('Configuration'),
-  );
-  expect(envs.length).toBeGreaterThan(0);
-  expect(envs).toMatchGraphObjectSchema({
-    _class: ['Configuration'],
-    schema: {
-      additionalProperties: true,
-      properties: {
-        _type: { const: 'github_environment' },
-        name: { type: 'string' },
-        displayName: { type: 'string' },
-        webLink: { type: 'string' },
-        _rawData: {
-          type: 'array',
-          items: { type: 'object' },
-        },
-      },
-      required: ['name', 'displayName', 'webLink', 'createdOn'],
-    },
-  });
 });

@@ -10,12 +10,7 @@ import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { EnvironmentEntity, SecretEntity, IdEntityMap } from '../types';
 import {
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_REPO_SECRET_ENTITY_TYPE,
-  GITHUB_ORG_SECRET_ENTITY_TYPE,
-  GITHUB_ENV_SECRET_ENTITY_TYPE,
-  GITHUB_SECRET_ENTITY_CLASS,
-  GITHUB_ENVIRONMENT_ENTITY_TYPE,
+  GithubEntities,
   GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE,
   GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
@@ -43,7 +38,7 @@ export async function fetchEnvSecrets({
   }
 
   await jobState.iterateEntities<EnvironmentEntity>(
-    { _type: GITHUB_ENVIRONMENT_ENTITY_TYPE },
+    { _type: GithubEntities.GITHUB_ENVIRONMENT._type },
     async (envEntity) => {
       await apiClient.iterateEnvSecrets(envEntity, async (envSecret) => {
         const secretEntity = (await jobState.addEntity(
@@ -65,8 +60,8 @@ export async function fetchEnvSecrets({
         await jobState.addRelationship(
           createDirectRelationship({
             _class: RelationshipClass.USES,
-            fromType: GITHUB_REPO_ENTITY_TYPE,
-            toType: GITHUB_ENV_SECRET_ENTITY_TYPE,
+            fromType: GithubEntities.GITHUB_REPO._type,
+            toType: GithubEntities.GITHUB_ENV_SECRET._type,
             fromKey: envEntity.parentRepoKey,
             toKey: secretEntity._key,
           }),
@@ -81,8 +76,8 @@ export async function fetchEnvSecrets({
           await jobState.addRelationship(
             createDirectRelationship({
               _class: RelationshipClass.OVERRIDES,
-              fromType: GITHUB_ENV_SECRET_ENTITY_TYPE,
-              toType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+              fromType: GithubEntities.GITHUB_ENV_SECRET._type,
+              toType: GithubEntities.GITHUB_ORG_SECRET._type,
               fromKey: secretEntity._key,
               toKey: keyOfHypotheticalOrgSecretOfSameName,
             }),
@@ -112,34 +107,34 @@ export const envSecretSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Env Secret',
-        _type: GITHUB_ENV_SECRET_ENTITY_TYPE,
-        _class: GITHUB_SECRET_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_ENV_SECRET._type,
+        _class: GithubEntities.GITHUB_ENV_SECRET._class,
       },
     ],
     relationships: [
       {
         _type: GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: GITHUB_ENVIRONMENT_ENTITY_TYPE,
-        targetType: GITHUB_ENV_SECRET_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_ENVIRONMENT._type,
+        targetType: GithubEntities.GITHUB_ENV_SECRET._type,
       },
       {
         _type: GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.USES,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_ENV_SECRET_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_ENV_SECRET._type,
       },
       {
         _type: GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.OVERRIDES,
-        sourceType: GITHUB_ENV_SECRET_ENTITY_TYPE,
-        targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_ENV_SECRET._type,
+        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
       },
       {
         _type: GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.OVERRIDES,
-        sourceType: GITHUB_ENV_SECRET_ENTITY_TYPE,
-        targetType: GITHUB_REPO_SECRET_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_ENV_SECRET._type,
+        targetType: GithubEntities.GITHUB_REPO_SECRET._type,
       },
     ],
     dependsOn: [

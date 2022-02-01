@@ -10,10 +10,7 @@ import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { RepoKeyAndName, SecretEntity } from '../types';
 import {
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_REPO_SECRET_ENTITY_TYPE,
-  GITHUB_ORG_SECRET_ENTITY_TYPE,
-  GITHUB_SECRET_ENTITY_CLASS,
+  GithubEntities,
   GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
@@ -54,8 +51,8 @@ export async function fetchRepoSecrets({
       await jobState.addRelationship(
         createDirectRelationship({
           _class: RelationshipClass.HAS,
-          fromType: GITHUB_REPO_ENTITY_TYPE,
-          toType: GITHUB_REPO_SECRET_ENTITY_TYPE,
+          fromType: GithubEntities.GITHUB_REPO._type,
+          toType: GithubEntities.GITHUB_REPO_SECRET._type,
           fromKey: repoTag._key,
           toKey: secretEntity._key,
         }),
@@ -64,8 +61,8 @@ export async function fetchRepoSecrets({
       await jobState.addRelationship(
         createDirectRelationship({
           _class: RelationshipClass.USES,
-          fromType: GITHUB_REPO_ENTITY_TYPE,
-          toType: GITHUB_REPO_SECRET_ENTITY_TYPE,
+          fromType: GithubEntities.GITHUB_REPO._type,
+          toType: GithubEntities.GITHUB_REPO_SECRET._type,
           fromKey: repoTag._key,
           toKey: secretEntity._key,
         }),
@@ -80,8 +77,8 @@ export async function fetchRepoSecrets({
         await jobState.addRelationship(
           createDirectRelationship({
             _class: RelationshipClass.OVERRIDES,
-            fromType: GITHUB_REPO_SECRET_ENTITY_TYPE,
-            toType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+            fromType: GithubEntities.GITHUB_REPO_SECRET._type,
+            toType: GithubEntities.GITHUB_ORG_SECRET._type,
             fromKey: secretEntity._key,
             toKey: keyOfHypotheticalOrgSecretOfSameName,
           }),
@@ -103,28 +100,28 @@ export const repoSecretSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Repo Secret',
-        _type: GITHUB_REPO_SECRET_ENTITY_TYPE,
-        _class: GITHUB_SECRET_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_REPO_SECRET._type,
+        _class: GithubEntities.GITHUB_REPO_SECRET._class,
       },
     ],
     relationships: [
       {
         _type: GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_REPO_SECRET_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_REPO_SECRET._type,
       },
       {
         _type: GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.USES,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_REPO_SECRET_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_REPO_SECRET._type,
       },
       {
         _type: GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.OVERRIDES,
-        sourceType: GITHUB_REPO_SECRET_ENTITY_TYPE,
-        targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO_SECRET._type,
+        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
       },
     ],
     dependsOn: ['fetch-org-secrets', 'fetch-repos'],

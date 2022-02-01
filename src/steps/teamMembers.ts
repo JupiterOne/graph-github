@@ -10,8 +10,7 @@ import { IntegrationConfig } from '../config';
 import { toOrganizationMemberEntityFromTeamMember } from '../sync/converters';
 import { TeamMemberRole } from '../client/GraphQLClient';
 import {
-  GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_TEAM_ENTITY_TYPE,
+  GithubEntities,
   GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
@@ -26,7 +25,7 @@ export async function fetchTeamMembers({
   const apiClient = createAPIClient(config, logger);
 
   await jobState.iterateEntities(
-    { _type: GITHUB_TEAM_ENTITY_TYPE },
+    { _type: GithubEntities.GITHUB_TEAM._type },
     async (teamEntity: TeamEntity) => {
       await apiClient.iterateTeamMembers(teamEntity, async (user) => {
         if (!(await jobState.hasKey(user.id))) {
@@ -39,8 +38,8 @@ export async function fetchTeamMembers({
 
         const teamMemberRelationship = createDirectRelationship({
           _class: RelationshipClass.HAS,
-          fromType: GITHUB_TEAM_ENTITY_TYPE,
-          toType: GITHUB_MEMBER_ENTITY_TYPE,
+          fromType: GithubEntities.GITHUB_TEAM._type,
+          toType: GithubEntities.GITHUB_MEMBER._type,
           fromKey: user.teams, //a single team key
           toKey: user.id,
         });
@@ -64,8 +63,8 @@ export async function fetchTeamMembers({
         if (user.role === TeamMemberRole.Maintainer) {
           const maintainerTeamRelationship = createDirectRelationship({
             _class: RelationshipClass.MANAGES,
-            fromType: GITHUB_MEMBER_ENTITY_TYPE,
-            toType: GITHUB_TEAM_ENTITY_TYPE,
+            fromType: GithubEntities.GITHUB_MEMBER._type,
+            toType: GithubEntities.GITHUB_TEAM._type,
             fromKey: user.id,
             toKey: user.teams,
           });
@@ -100,14 +99,14 @@ export const teamMemberSteps: IntegrationStep<IntegrationConfig>[] = [
       {
         _type: GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: GITHUB_TEAM_ENTITY_TYPE,
-        targetType: GITHUB_MEMBER_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_TEAM._type,
+        targetType: GithubEntities.GITHUB_MEMBER._type,
       },
       {
         _type: GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.MANAGES,
-        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
-        targetType: GITHUB_TEAM_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_MEMBER._type,
+        targetType: GithubEntities.GITHUB_TEAM._type,
       },
     ],
     dependsOn: ['fetch-teams', 'fetch-users'],

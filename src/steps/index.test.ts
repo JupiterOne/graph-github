@@ -12,11 +12,11 @@ import { fetchPrs } from './pullrequests';
 import { fetchAccountDetails } from './account';
 import { fetchApps } from './apps';
 import {
-  GITHUB_COLLABORATOR_ENTITY_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
+  GithubEntities,
 } from '../constants';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
@@ -208,7 +208,9 @@ test('should collect data', async () => {
   expect(repoUserRelationships.length).toBeGreaterThan(0);
 
   const outsideCollaboratorEntities = context.jobState.collectedEntities.filter(
-    (e) => e._type === GITHUB_COLLABORATOR_ENTITY_TYPE && e.role === 'OUTSIDE',
+    (e) =>
+      e._type === GithubEntities.GITHUB_COLLABORATOR._type &&
+      e.role === 'OUTSIDE',
   );
   expect(outsideCollaboratorEntities.length).toBeGreaterThan(0);
 

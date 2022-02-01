@@ -6,10 +6,7 @@ import {
 import { IntegrationConfig } from '../config';
 import { createAPIClient } from '../client';
 import { toAccountEntity } from '../sync/converters';
-import {
-  GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_ACCOUNT_ENTITY_CLASS,
-} from '../constants';
+import { GithubEntities } from '../constants';
 
 export const DATA_ACCOUNT_ENTITY = 'DATA_ACCOUNT_ENTITY';
 
@@ -33,8 +30,8 @@ export const accountSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'Account',
-        _type: GITHUB_ACCOUNT_ENTITY_TYPE,
-        _class: GITHUB_ACCOUNT_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_ACCOUNT._type,
+        _class: GithubEntities.GITHUB_ACCOUNT._class,
       },
     ],
     relationships: [],

@@ -9,30 +9,9 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import {
+  GithubEntities,
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-  GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_ACCOUNT_ENTITY_CLASS,
-  GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_MEMBER_ENTITY_CLASS,
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_REPO_ENTITY_CLASS,
-  GITHUB_PR_ENTITY_TYPE,
-  GITHUB_PR_ENTITY_CLASS,
-  GITHUB_TEAM_ENTITY_TYPE,
-  GITHUB_TEAM_ENTITY_CLASS,
-  GITHUB_COLLABORATOR_ENTITY_CLASS,
-  GITHUB_COLLABORATOR_ENTITY_TYPE,
-  GITHUB_APP_ENTITY_CLASS,
-  GITHUB_APP_ENTITY_TYPE,
-  GITHUB_SECRET_ENTITY_CLASS,
-  GITHUB_ORG_SECRET_ENTITY_TYPE,
-  GITHUB_REPO_SECRET_ENTITY_TYPE,
-  GITHUB_ENVIRONMENT_ENTITY_CLASS,
-  GITHUB_ENVIRONMENT_ENTITY_TYPE,
-  GITHUB_ENV_SECRET_ENTITY_TYPE,
-  GITHUB_ISSUE_ENTITY_TYPE,
-  GITHUB_ISSUE_ENTITY_CLASS,
 } from '../constants';
 
 import {
@@ -78,8 +57,8 @@ import getCommitsToDestination from '../util/getCommitsToDestination';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
-    _class: GITHUB_ACCOUNT_ENTITY_CLASS,
-    _type: GITHUB_ACCOUNT_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_ACCOUNT._class,
+    _type: GithubEntities.GITHUB_ACCOUNT._type,
     _key: data.id,
     accountType: AccountType.Org,
     accountId: data.login,
@@ -103,8 +82,8 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
 
 export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   const appEntity: AppEntity = {
-    _class: GITHUB_APP_ENTITY_CLASS,
-    _type: GITHUB_APP_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_APP._class,
+    _type: GithubEntities.GITHUB_APP._type,
     _key: getAppEntityKey(data.id),
     name: data.app_slug,
     displayName: data.app_slug,
@@ -134,8 +113,8 @@ export function toOrgSecretEntity(
   orgLogin: string,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
-    _class: GITHUB_SECRET_ENTITY_CLASS,
-    _type: GITHUB_ORG_SECRET_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_ORG_SECRET._class,
+    _type: GithubEntities.GITHUB_ORG_SECRET._type,
     _key: getSecretEntityKey({
       name: data.name,
       secretOwnerType: 'Org',
@@ -159,8 +138,8 @@ export function toRepoSecretEntity(
   repoName: string,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
-    _class: GITHUB_SECRET_ENTITY_CLASS,
-    _type: GITHUB_REPO_SECRET_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_REPO_SECRET._class,
+    _type: GithubEntities.GITHUB_REPO_SECRET._type,
     _key: getSecretEntityKey({
       name: data.name,
       secretOwnerType: 'Repo',
@@ -187,8 +166,8 @@ export function toEnvironmentEntity(
     protRulesExist = true;
   }
   const envEntity: EnvironmentEntity = {
-    _class: GITHUB_ENVIRONMENT_ENTITY_CLASS,
-    _type: GITHUB_ENVIRONMENT_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_ENVIRONMENT._class,
+    _type: GithubEntities.GITHUB_ENVIRONMENT._type,
     _key: data.node_id,
     name: data.name,
     displayName: data.name,
@@ -215,8 +194,8 @@ export function toEnvSecretEntity(
   env: EnvironmentEntity,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
-    _class: GITHUB_SECRET_ENTITY_CLASS,
-    _type: GITHUB_ENV_SECRET_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_ENV_SECRET._class,
+    _type: GithubEntities.GITHUB_ENV_SECRET._type,
     _key: getSecretEntityKey({
       name: data.name,
       secretOwnerType: 'Env',
@@ -235,8 +214,8 @@ export function toEnvSecretEntity(
 
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {
-    _class: GITHUB_TEAM_ENTITY_CLASS,
-    _type: GITHUB_TEAM_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_TEAM._class,
+    _type: GithubEntities.GITHUB_TEAM._type,
     _key: data.id,
     webLink: data.url,
     name: data.slug,
@@ -258,8 +237,8 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
   const repoEntity: RepoEntity = {
-    _class: GITHUB_REPO_ENTITY_CLASS,
-    _type: GITHUB_REPO_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_REPO._class,
+    _type: GithubEntities.GITHUB_REPO._type,
     _key: data.id,
     webLink: data.url,
     name: data.name,
@@ -300,8 +279,8 @@ export function toOrganizationMemberEntity(
   data: OrgMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: GITHUB_MEMBER_ENTITY_CLASS,
-    _type: GITHUB_MEMBER_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_MEMBER._class,
+    _type: GithubEntities.GITHUB_MEMBER._type,
     _key: data.id,
     login: data.login,
     username: data.login,
@@ -333,8 +312,8 @@ export function toOrganizationMemberEntityFromTeamMember(
   data: OrgTeamMemberQueryResponse,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: GITHUB_MEMBER_ENTITY_CLASS,
-    _type: GITHUB_MEMBER_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_MEMBER._class,
+    _type: GithubEntities.GITHUB_MEMBER._type,
     _key: data.id,
     login: data.login,
     username: data.login,
@@ -355,8 +334,8 @@ export function toOrganizationCollaboratorEntity(
   data: Collaborator,
 ): UserEntity {
   const userEntity: UserEntity = {
-    _class: GITHUB_COLLABORATOR_ENTITY_CLASS,
-    _type: GITHUB_COLLABORATOR_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_COLLABORATOR._class,
+    _type: GithubEntities.GITHUB_COLLABORATOR._type,
     _key: data.id,
     login: data.login,
     username: data.login,
@@ -380,8 +359,8 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
   const truncatedIssueBody = truncateEntityPropertyValue(data.body);
 
   const issueEntity: IssueEntity = {
-    _class: GITHUB_ISSUE_ENTITY_CLASS,
-    _type: GITHUB_ISSUE_ENTITY_TYPE,
+    _class: GithubEntities.GITHUB_ISSUE._class,
+    _type: GithubEntities.GITHUB_ISSUE._type,
     _key: data.id,
     webLink: data.url,
     url: data.url,
@@ -512,7 +491,7 @@ export function createUnknownUserIssueRelationship(
       targetFilterKeys: [['_type', 'login']],
       targetEntity: {
         _class: 'User',
-        _type: GITHUB_MEMBER_ENTITY_TYPE,
+        _type: GithubEntities.GITHUB_MEMBER._type,
         login: unknownLogin,
       },
       skipTargetCreation: false,
@@ -570,8 +549,8 @@ export function toPullRequestEntity(
     entityData: {
       source: pullRequest,
       assign: {
-        _type: GITHUB_PR_ENTITY_TYPE,
-        _class: GITHUB_PR_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_PR._type,
+        _class: GithubEntities.GITHUB_PR._class,
         _key: `${pullRequest.baseRepository.owner.login}/${pullRequest.baseRepository.name}/pull-requests/${pullRequest.number}`,
         displayName: `${pullRequest.baseRepository.name}/${pullRequest.number}`,
         accountLogin: pullRequest.baseRepository.owner.login,

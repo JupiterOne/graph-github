@@ -1,15 +1,225 @@
-//core entities
-export const GITHUB_ACCOUNT_ENTITY_TYPE = 'github_account';
-export const GITHUB_ACCOUNT_ENTITY_CLASS = ['Account'];
+export const GithubEntities = {
+  GITHUB_ACCOUNT: {
+    _type: 'github_account',
+    _class: ['Account'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_account' },
+        accountType: { type: 'string' },
+        accountId: { type: 'string' },
+        login: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['accountId'],
+    },
+  },
+  GITHUB_APP: {
+    _type: 'github_app',
+    _class: ['Application'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_app' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        webLink: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['name', 'displayName', 'webLink', 'createdOn'],
+    },
+  },
+  GITHUB_COLLABORATOR: {
+    _type: 'github_user',
+    _class: ['User'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_user' },
+        username: { type: 'string' },
+        displayName: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['username', 'displayName'],
+    },
+  },
+  GITHUB_ENV_SECRET: {
+    _type: 'github_env_secret',
+    _class: ['Secret'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_env_secret' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        name: { type: 'string' },
+        createdOn: { type: 'number' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName', 'name', 'createdOn'],
+    },
+  },
+  GITHUB_ENVIRONMENT: {
+    _type: 'github_environment',
+    _class: ['Configuration'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_environment' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        webLink: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['name', 'displayName', 'webLink', 'createdOn'],
+    },
+  },
+  GITHUB_ISSUE: {
+    _type: 'github_issue',
+    _class: ['Issue'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_issue' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        name: { type: 'string' },
+        createdOn: { type: 'number' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName', 'name', 'createdOn'],
+    },
+  },
+  GITHUB_MEMBER: {
+    _type: 'github_user',
+    _class: ['User'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_user' },
+        username: { type: 'string' },
+        displayName: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['username', 'displayName'],
+    },
+  },
+  GITHUB_ORG_SECRET: {
+    _type: 'github_org_secret',
+    _class: ['Secret'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_org_secret' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        name: { type: 'string' },
+        createdOn: { type: 'number' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName', 'name', 'createdOn'],
+    },
+  },
+  GITHUB_PR: {
+    _type: 'github_pullrequest',
+    _class: ['PR'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_pullrequest' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName'],
+    },
+  },
+  GITHUB_REPO: {
+    _type: 'github_repo',
+    _class: ['CodeRepo'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_repo' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName'],
+    },
+  },
+  GITHUB_REPO_SECRET: {
+    _type: 'github_repo_secret',
+    _class: ['Secret'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_repo_secret' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        name: { type: 'string' },
+        createdOn: { type: 'number' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName', 'name', 'createdOn'],
+    },
+  },
+  GITHUB_TEAM: {
+    _type: 'github_team',
+    _class: ['UserGroup'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_team' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName'],
+    },
+  },
+};
+
 export const GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE =
   'github_account_has_user';
 export const GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE = 'github_account_has_team';
 export const GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE = 'github_account_owns_repo';
-
-export const GITHUB_MEMBER_ENTITY_TYPE = 'github_user';
-export const GITHUB_MEMBER_ENTITY_CLASS = ['User'];
-export const GITHUB_COLLABORATOR_ENTITY_TYPE = 'github_user';
-export const GITHUB_COLLABORATOR_ENTITY_CLASS = ['User'];
 export const GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE =
   'github_user_manages_account';
 export const GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE = 'github_user_manages_team';
@@ -19,33 +229,13 @@ export const GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE =
   'github_user_approved_pullrequest';
 export const GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE =
   'github_user_opened_pullrequest';
-
-export const GITHUB_REPO_ENTITY_TYPE = 'github_repo';
-export const GITHUB_REPO_ENTITY_CLASS = ['CodeRepo'];
 export const GITHUB_REPO_PR_RELATIONSHIP_TYPE = 'github_repo_has_pullrequest';
-
-export const GITHUB_PR_ENTITY_TYPE = 'github_pullrequest';
-export const GITHUB_PR_ENTITY_CLASS = ['PR'];
-
-export const GITHUB_TEAM_ENTITY_TYPE = 'github_team';
-export const GITHUB_TEAM_ENTITY_CLASS = ['UserGroup'];
 export const GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE = 'github_team_has_user';
 export const GITHUB_REPO_TEAM_RELATIONSHIP_TYPE = 'github_repo_allows_team';
 export const GITHUB_REPO_USER_RELATIONSHIP_TYPE = 'github_repo_allows_user';
-
-//apps
-export const GITHUB_APP_ENTITY_TYPE = 'github_app';
-export const GITHUB_APP_ENTITY_CLASS = ['Application'];
 export const GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE =
   'github_account_installed_app';
 
-//secrets and environments
-export const GITHUB_ORG_SECRET_ENTITY_TYPE = 'github_org_secret';
-export const GITHUB_REPO_SECRET_ENTITY_TYPE = 'github_repo_secret';
-export const GITHUB_ENV_SECRET_ENTITY_TYPE = 'github_env_secret';
-export const GITHUB_SECRET_ENTITY_CLASS = ['Secret'];
-export const GITHUB_ENVIRONMENT_ENTITY_TYPE = 'github_environment';
-export const GITHUB_ENVIRONMENT_ENTITY_CLASS = ['Configuration'];
 //org secrets
 export const GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE =
   'github_account_has_org_secret';
@@ -70,8 +260,6 @@ export const GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE =
   'github_env_secret_overrides_repo_secret';
 
 //issues
-export const GITHUB_ISSUE_ENTITY_TYPE = 'github_issue';
-export const GITHUB_ISSUE_ENTITY_CLASS = ['Issue'];
 export const GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE = 'github_repo_has_issue';
 export const GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE =
   'github_user_created_issue';

@@ -18,10 +18,7 @@ import {
   IdEntityMap,
 } from '../types';
 import {
-  GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_PR_ENTITY_TYPE,
-  GITHUB_PR_ENTITY_CLASS,
+  GithubEntities,
   GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
@@ -85,7 +82,7 @@ export async function fetchPrs(
   }
 
   await jobState.iterateEntities<RepoEntity>(
-    { _type: GITHUB_REPO_ENTITY_TYPE },
+    { _type: GithubEntities.GITHUB_REPO._type },
     async (repoEntity) => {
       try {
         await apiClient.iteratePullRequests(
@@ -222,8 +219,8 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Pull Request',
-        _type: GITHUB_PR_ENTITY_TYPE,
-        _class: GITHUB_PR_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_PR._type,
+        _class: GithubEntities.GITHUB_PR._class,
         partial: true,
       },
     ],
@@ -231,29 +228,29 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
       {
         _type: GITHUB_REPO_PR_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_PR_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_PR._type,
         partial: true,
       },
       {
         _type: GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
         _class: RelationshipClass.APPROVED,
-        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
-        targetType: GITHUB_PR_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_MEMBER._type,
+        targetType: GithubEntities.GITHUB_PR._type,
         partial: true,
       },
       {
         _type: GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
         _class: RelationshipClass.OPENED,
-        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
-        targetType: GITHUB_PR_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_MEMBER._type,
+        targetType: GithubEntities.GITHUB_PR._type,
         partial: true,
       },
       {
         _type: GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
         _class: RelationshipClass.REVIEWED,
-        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
-        targetType: GITHUB_PR_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_MEMBER._type,
+        targetType: GithubEntities.GITHUB_PR._type,
         partial: true,
       },
     ],

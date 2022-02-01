@@ -8,8 +8,7 @@ import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { createRepoAllowsTeamRelationship } from '../sync/converters';
 import {
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_TEAM_ENTITY_TYPE,
+  GithubEntities,
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
 import { TeamEntity } from '../types';
@@ -23,7 +22,7 @@ export async function fetchTeamRepos({
   const apiClient = createAPIClient(config, logger);
 
   await jobState.iterateEntities(
-    { _type: GITHUB_TEAM_ENTITY_TYPE },
+    { _type: GithubEntities.GITHUB_TEAM._type },
     async (teamEntity: TeamEntity) => {
       await apiClient.iterateTeamRepos(teamEntity, async (teamRepo) => {
         //teamRepo.id is the repo id
@@ -72,8 +71,8 @@ export const teamRepoSteps: IntegrationStep<IntegrationConfig>[] = [
       {
         _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.ALLOWS,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_TEAM_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_TEAM._type,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-teams'],

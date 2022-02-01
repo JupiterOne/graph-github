@@ -7,6 +7,7 @@ import {
   GithubEntities,
   GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_BY_LOGIN_MAP,
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
@@ -26,12 +27,16 @@ test('fetchMembers exec handler', async () => {
   sanitizeConfig(integrationConfig);
   integrationConfig.installationId = 17214088; //this is the id the recordings are under
 
-  const { collectedEntities, collectedRelationships, encounteredTypes } =
-    await executeStepWithDependencies({
-      stepId: memberSteps[0].id,
-      invocationConfig: invocationConfig as any,
-      instanceConfig: integrationConfig,
-    });
+  const {
+    collectedEntities,
+    collectedRelationships,
+    encounteredTypes,
+    jobState,
+  } = await executeStepWithDependencies({
+    stepId: memberSteps[0].id,
+    invocationConfig: invocationConfig as any,
+    instanceConfig: integrationConfig,
+  });
 
   expect({
     numCollectedEntities: collectedEntities.length,
@@ -57,4 +62,8 @@ test('fetchMembers exec handler', async () => {
     (e) => e._type === GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
   );
   expect(userManagesAccountRels.length).toBeGreaterThan(0);
+
+  // ensure that we are setting the GITHUB_MEMBER_BY_LOGIN_MAP in the jobState as expected
+  const memberByLoginMap = await jobState.getData(GITHUB_MEMBER_BY_LOGIN_MAP);
+  expect(memberByLoginMap).toBeTruthy();
 });

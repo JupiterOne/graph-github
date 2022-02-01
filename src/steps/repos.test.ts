@@ -1,12 +1,12 @@
 import { Recording } from '@jupiterone/integration-sdk-testing';
 import { sanitizeConfig } from '../config';
-import { collaboratorSteps } from './collaborators';
+import { repoSteps } from './repos';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import {
   GithubEntities,
-  GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-  GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
+  GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
@@ -18,10 +18,10 @@ afterEach(async () => {
   await recording.stop();
 });
 
-test('fetchCollaborators exec handler', async () => {
+test('fetchRepos exec handler', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
-    name: 'collaborators',
+    name: 'repos',
   });
   sanitizeConfig(integrationConfig);
   integrationConfig.installationId = 17214088; //this is the id the recordings are under
@@ -32,7 +32,7 @@ test('fetchCollaborators exec handler', async () => {
     encounteredTypes,
     jobState,
   } = await executeStepWithDependencies({
-    stepId: collaboratorSteps[0].id,
+    stepId: repoSteps[0].id,
     invocationConfig: invocationConfig as any,
     instanceConfig: integrationConfig,
   });
@@ -44,25 +44,20 @@ test('fetchCollaborators exec handler', async () => {
     collectedRelationships: collectedRelationships,
     encounteredTypes: encounteredTypes,
   }).toMatchSnapshot();
-  // _type is the same for GITHUB_COLLABORATOR and GITHUB_MEMBER, so filter on `role` also
-  const outsideCollabs = collectedEntities.filter(
-    (e) =>
-      e._type === GithubEntities.GITHUB_COLLABORATOR._type &&
-      e.role === 'OUTSIDE',
-  );
-  expect(outsideCollabs.length).toBeGreaterThan(0);
-  expect(outsideCollabs).toMatchGraphObjectSchema(
-    GithubEntities.GITHUB_COLLABORATOR,
-  );
-  // relationships
-  const relationships = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-  );
-  expect(relationships.length).toBeGreaterThan(0);
 
-  // ensure that we are setting the GITHUB_OUTSIDE_COLLABORATOR_ARRAY in the jobState as expected
-  const outsideCollaboratorArray = await jobState.getData(
-    GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  const repos = collectedEntities.filter(
+    (e) => e._type === GithubEntities.GITHUB_REPO._type,
   );
-  expect(outsideCollaboratorArray).toBeTruthy();
+  expect(repos.length).toBeGreaterThan(0);
+  expect(repos).toMatchGraphObjectSchema(GithubEntities.GITHUB_REPO);
+
+  // relationships
+  const accountHasRepoRels = collectedRelationships.filter(
+    (e) => e._type === GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
+  );
+  expect(accountHasRepoRels.length).toBeGreaterThan(0);
+
+  // ensure that we are setting the REPO_TAGS_ARRAY in the jobState as expected
+  const repoTags = await jobState.getData(GITHUB_REPO_TAGS_ARRAY);
+  expect(repoTags).toBeTruthy();
 });

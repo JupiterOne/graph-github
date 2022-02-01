@@ -89,27 +89,6 @@ test('should collect data', async () => {
     },
   });
 
-  const repos = context.jobState.collectedEntities.filter((e) =>
-    e._class.includes('CodeRepo'),
-  );
-  expect(repos.length).toBeGreaterThan(0);
-  expect(repos).toMatchGraphObjectSchema({
-    _class: ['CodeRepo'],
-    schema: {
-      additionalProperties: true,
-      properties: {
-        _type: { const: 'github_repo' },
-        webLink: { type: 'string' },
-        displayName: { type: 'string' },
-        _rawData: {
-          type: 'array',
-          items: { type: 'object' },
-        },
-      },
-      required: ['webLink', 'displayName'],
-    },
-  });
-
   const repoSecrets = context.jobState.collectedEntities.filter(
     (e) =>
       e._class.includes('Secret') && e._type.includes('github_repo_secret'),

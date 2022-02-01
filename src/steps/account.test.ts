@@ -38,14 +38,12 @@ test('fetchAccountDetails exec handler', async () => {
     collectedRelationships: collectedRelationships,
     encounteredTypes: encounteredTypes,
   }).toMatchSnapshot();
-
-  const accounts = collectedEntities.filter((e) =>
-    e._type.includes('github_account'),
+  expect(collectedEntities.length).toEqual(1);
+  expect(collectedEntities).toMatchGraphObjectSchema(
+    GithubEntities.GITHUB_ACCOUNT,
   );
 
-  expect(accounts.length).toEqual(1);
-  expect(accounts).toMatchGraphObjectSchema(GithubEntities.GITHUB_ACCOUNT);
-
+  // ensure that we are setting the account entity in the jobState as expected
   const entityFromConstant = await jobState.getData(DATA_ACCOUNT_ENTITY);
-  expect(entityFromConstant).toEqual(accounts[0]);
+  expect(entityFromConstant).toEqual(collectedEntities[0]);
 });

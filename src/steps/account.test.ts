@@ -15,7 +15,7 @@ afterEach(async () => {
 test('fetchAccountDetails exec handler', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
-    name: 'account', //redaction of headers is in setupGithubRecording
+    name: 'account',
   });
   sanitizeConfig(integrationConfig);
   integrationConfig.installationId = 17214088; //this is the id the recordings are under

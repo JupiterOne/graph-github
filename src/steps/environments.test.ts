@@ -1,31 +1,33 @@
 import { Recording } from '@jupiterone/integration-sdk-testing';
 import { sanitizeConfig } from '../config';
-import { appSteps } from './apps';
+import { environmentSteps } from './environments';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import {
   GithubEntities,
-  GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
+  GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
+
+jest.setTimeout(20000);
 
 let recording: Recording;
 afterEach(async () => {
   await recording.stop();
 });
 
-test('fetchApps exec handler', async () => {
+test('fetchCollaborators exec handler', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
-    name: 'apps',
+    name: 'environments',
   });
   sanitizeConfig(integrationConfig);
   integrationConfig.installationId = 17214088; //this is the id the recordings are under
 
   const { collectedEntities, collectedRelationships, encounteredTypes } =
     await executeStepWithDependencies({
-      stepId: appSteps[0].id,
+      stepId: environmentSteps[0].id,
       invocationConfig: invocationConfig as any,
       instanceConfig: integrationConfig,
     });
@@ -37,15 +39,18 @@ test('fetchApps exec handler', async () => {
     collectedRelationships: collectedRelationships,
     encounteredTypes: encounteredTypes,
   }).toMatchSnapshot();
-  const apps = collectedEntities.filter(
-    (e) => e._type === GithubEntities.GITHUB_APP._type,
+
+  const environments = collectedEntities.filter(
+    (e) => e._type === GithubEntities.GITHUB_ENVIRONMENT._type,
   );
-  expect(apps.length).toBeGreaterThan(0);
+  expect(environments.length).toBeGreaterThan(0);
 
   const relationships = collectedRelationships.filter(
-    (e) => e._type === GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
+    (e) => e._type === GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
   );
   expect(relationships.length).toBeGreaterThan(0);
 
-  expect(apps).toMatchGraphObjectSchema(GithubEntities.GITHUB_APP);
+  expect(environments).toMatchGraphObjectSchema(
+    GithubEntities.GITHUB_ENVIRONMENT,
+  );
 });

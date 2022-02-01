@@ -20,7 +20,7 @@ afterEach(async () => {
 test('fetchCollaborators exec handler', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
-    name: 'collaborators', //redaction of headers is in setupGithubRecording
+    name: 'collaborators',
   });
   sanitizeConfig(integrationConfig);
   integrationConfig.installationId = 17214088; //this is the id the recordings are under
@@ -47,8 +47,8 @@ test('fetchCollaborators exec handler', async () => {
   );
   expect(outsideCollabs.length).toBeGreaterThan(0);
 
-  const relationships = collectedRelationships.filter((e) =>
-    e._type.includes(GITHUB_REPO_USER_RELATIONSHIP_TYPE),
+  const relationships = collectedRelationships.filter(
+    (e) => e._type === GITHUB_REPO_USER_RELATIONSHIP_TYPE,
   );
   expect(relationships.length).toBeGreaterThan(0);
 

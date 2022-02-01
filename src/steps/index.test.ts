@@ -14,9 +14,6 @@ import { fetchApps } from './apps';
 import {
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
-  GithubEntities,
 } from '../constants';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
@@ -73,50 +70,6 @@ test('should collect data', async () => {
     collectedRelationships: context.jobState.collectedRelationships,
     encounteredTypes: context.jobState.encounteredTypes,
   }).toMatchSnapshot();
-
-  const accounts = context.jobState.collectedEntities.filter((e) =>
-    e._class.includes('Account'),
-  );
-  expect(accounts.length).toBeGreaterThan(0);
-  expect(accounts).toMatchGraphObjectSchema({
-    _class: ['Account'],
-    schema: {
-      additionalProperties: true,
-      properties: {
-        _type: { const: 'github_account' },
-        accountType: { type: 'string' },
-        accountId: { type: 'string' },
-        login: { type: 'string' },
-        _rawData: {
-          type: 'array',
-          items: { type: 'object' },
-        },
-      },
-      required: ['accountId'],
-    },
-  });
-
-  const apps = context.jobState.collectedEntities.filter((e) =>
-    e._class.includes('Application'),
-  );
-  expect(apps.length).toBeGreaterThan(0);
-  expect(apps).toMatchGraphObjectSchema({
-    _class: ['Application'],
-    schema: {
-      additionalProperties: true,
-      properties: {
-        _type: { const: 'github_app' },
-        name: { type: 'string' },
-        displayName: { type: 'string' },
-        webLink: { type: 'string' },
-        _rawData: {
-          type: 'array',
-          items: { type: 'object' },
-        },
-      },
-      required: ['name', 'displayName', 'webLink', 'createdOn'],
-    },
-  });
 
   const users = context.jobState.collectedEntities.filter((e) =>
     e._class.includes('User'),
@@ -207,13 +160,6 @@ test('should collect data', async () => {
   );
   expect(repoUserRelationships.length).toBeGreaterThan(0);
 
-  const outsideCollaboratorEntities = context.jobState.collectedEntities.filter(
-    (e) =>
-      e._type === GithubEntities.GITHUB_COLLABORATOR._type &&
-      e.role === 'OUTSIDE',
-  );
-  expect(outsideCollaboratorEntities.length).toBeGreaterThan(0);
-
   const orgSecrets = context.jobState.collectedEntities.filter(
     (e) => e._class.includes('Secret') && e._type.includes('github_org_secret'),
   );
@@ -286,64 +232,6 @@ test('should collect data', async () => {
         },
       },
       required: ['name', 'displayName', 'webLink', 'createdOn'],
-    },
-  });
-
-  const envSecrets = context.jobState.collectedEntities.filter(
-    (e) => e._class.includes('Secret') && e._type.includes('github_env_secret'),
-  );
-  expect(envSecrets.length).toBeGreaterThan(0);
-  expect(envSecrets).toMatchGraphObjectSchema({
-    _class: ['Secret'],
-    schema: {
-      additionalProperties: true,
-      properties: {
-        _type: { const: 'github_env_secret' },
-        webLink: { type: 'string' },
-        displayName: { type: 'string' },
-        name: { type: 'string' },
-        createdOn: { type: 'number' },
-        _rawData: {
-          type: 'array',
-          items: { type: 'object' },
-        },
-      },
-      required: ['webLink', 'displayName', 'name', 'createdOn'],
-    },
-  });
-
-  const secretEnvOrgOverrideRelationships =
-    context.jobState.collectedRelationships.filter(
-      (r) => r._type === GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-    );
-  expect(secretEnvOrgOverrideRelationships.length).toBeGreaterThan(0);
-
-  const secretEnvRepoOverrideRelationships =
-    context.jobState.collectedRelationships.filter(
-      (r) => r._type === GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
-    );
-  expect(secretEnvRepoOverrideRelationships.length).toBeGreaterThan(0);
-
-  const issues = context.jobState.collectedEntities.filter(
-    (e) => e._class.includes('Issue') && e._type.includes('github_issue'),
-  );
-  expect(issues.length).toBeGreaterThan(0);
-  expect(issues).toMatchGraphObjectSchema({
-    _class: ['Issue'],
-    schema: {
-      additionalProperties: true,
-      properties: {
-        _type: { const: 'github_issue' },
-        webLink: { type: 'string' },
-        displayName: { type: 'string' },
-        name: { type: 'string' },
-        createdOn: { type: 'number' },
-        _rawData: {
-          type: 'array',
-          items: { type: 'object' },
-        },
-      },
-      required: ['webLink', 'displayName', 'name', 'createdOn'],
     },
   });
 });

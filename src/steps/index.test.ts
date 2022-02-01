@@ -11,10 +11,7 @@ import { fetchCollaborators } from './collaborators';
 import { fetchPrs } from './pullRequests';
 import { fetchAccountDetails } from './account';
 import { fetchApps } from './apps';
-import {
-  GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-  GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-} from '../constants';
+import { GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE } from '../constants';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import { fetchOrgSecrets } from './orgSecrets';
@@ -131,34 +128,6 @@ test('should collect data', async () => {
         },
       },
       required: ['webLink', 'displayName'],
-    },
-  });
-
-  const repoUserRelationships = context.jobState.collectedRelationships.filter(
-    (r) => r._type === GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-  );
-  expect(repoUserRelationships.length).toBeGreaterThan(0);
-
-  const orgSecrets = context.jobState.collectedEntities.filter(
-    (e) => e._class.includes('Secret') && e._type.includes('github_org_secret'),
-  );
-  expect(orgSecrets.length).toBeGreaterThan(0);
-  expect(orgSecrets).toMatchGraphObjectSchema({
-    _class: ['Secret'],
-    schema: {
-      additionalProperties: true,
-      properties: {
-        _type: { const: 'github_org_secret' },
-        webLink: { type: 'string' },
-        displayName: { type: 'string' },
-        name: { type: 'string' },
-        createdOn: { type: 'number' },
-        _rawData: {
-          type: 'array',
-          items: { type: 'object' },
-        },
-      },
-      required: ['webLink', 'displayName', 'name', 'createdOn'],
     },
   });
 

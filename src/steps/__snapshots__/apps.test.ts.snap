@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`fetchApps exec handler execution and snapshot 1`] = `
+exports[`fetchApps exec handler 1`] = `
 Object {
   "collectedEntities": Array [
     Object {
@@ -385,6 +385,7 @@ Object {
     },
   ],
   "encounteredTypes": Array [
+    "github_account",
     "github_app",
     "github_account_installed_app",
   ],

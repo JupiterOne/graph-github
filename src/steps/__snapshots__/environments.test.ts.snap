@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`fetchCollaborators exec handler 1`] = `
+exports[`fetchEnvironments exec handler 1`] = `
 Object {
   "collectedEntities": Array [
     Object {

@@ -46,13 +46,12 @@ test('fetchCollaborators exec handler', async () => {
       e.role === 'OUTSIDE',
   );
   expect(outsideCollabs.length).toBeGreaterThan(0);
-
+  expect(outsideCollabs).toMatchGraphObjectSchema(
+    GithubEntities.GITHUB_COLLABORATOR,
+  );
+  // relationships
   const relationships = collectedRelationships.filter(
     (e) => e._type === GITHUB_REPO_USER_RELATIONSHIP_TYPE,
   );
   expect(relationships.length).toBeGreaterThan(0);
-
-  expect(outsideCollabs).toMatchGraphObjectSchema(
-    GithubEntities.GITHUB_COLLABORATOR,
-  );
 });

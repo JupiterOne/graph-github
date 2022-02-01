@@ -17,7 +17,7 @@ afterEach(async () => {
   await recording.stop();
 });
 
-test('fetchCollaborators exec handler', async () => {
+test('fetchEnvironments exec handler', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
     name: 'environments',
@@ -44,13 +44,12 @@ test('fetchCollaborators exec handler', async () => {
     (e) => e._type === GithubEntities.GITHUB_ENVIRONMENT._type,
   );
   expect(environments.length).toBeGreaterThan(0);
-
+  expect(environments).toMatchGraphObjectSchema(
+    GithubEntities.GITHUB_ENVIRONMENT,
+  );
+  // relationships
   const relationships = collectedRelationships.filter(
     (e) => e._type === GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
   );
   expect(relationships.length).toBeGreaterThan(0);
-
-  expect(environments).toMatchGraphObjectSchema(
-    GithubEntities.GITHUB_ENVIRONMENT,
-  );
 });

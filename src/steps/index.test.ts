@@ -8,7 +8,7 @@ import { fetchMembers } from './members';
 import { fetchRepos } from './repos';
 import { fetchTeams } from './teams';
 import { fetchCollaborators } from './collaborators';
-import { fetchPrs } from './pullrequests';
+import { fetchPrs } from './pullRequests';
 import { fetchAccountDetails } from './account';
 import { fetchApps } from './apps';
 import {
@@ -20,11 +20,11 @@ import {
 } from '../constants';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import { fetchOrgSecrets } from './orgsecrets';
-import { fetchRepoSecrets } from './reposecrets';
+import { fetchOrgSecrets } from './orgSecrets';
+import { fetchRepoSecrets } from './repoSecrets';
 import { fetchEnvironments } from './environments';
 import { fetchIssues } from './issues';
-import { fetchEnvSecrets } from './envsecrets';
+import { fetchEnvSecrets } from './envSecrets';
 import { fetchTeamRepos } from './teamRepos';
 import { fetchTeamMembers } from './teamMembers';
 

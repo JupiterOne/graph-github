@@ -41,11 +41,10 @@ test('fetchApps exec handler', async () => {
     (e) => e._type === GithubEntities.GITHUB_APP._type,
   );
   expect(apps.length).toBeGreaterThan(0);
+  expect(apps).toMatchGraphObjectSchema(GithubEntities.GITHUB_APP);
 
   const relationships = collectedRelationships.filter(
     (e) => e._type === GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
   );
   expect(relationships.length).toBeGreaterThan(0);
-
-  expect(apps).toMatchGraphObjectSchema(GithubEntities.GITHUB_APP);
 });

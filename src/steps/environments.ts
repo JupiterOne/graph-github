@@ -10,9 +10,7 @@ import { createAPIClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { RepoKeyAndName, EnvironmentEntity } from '../types';
 import {
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_ENVIRONMENT_ENTITY_TYPE,
-  GITHUB_ENVIRONMENT_ENTITY_CLASS,
+  GithubEntities,
   GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
@@ -43,8 +41,8 @@ export async function fetchEnvironments({
       await jobState.addRelationship(
         createDirectRelationship({
           _class: RelationshipClass.HAS,
-          fromType: GITHUB_REPO_ENTITY_TYPE,
-          toType: GITHUB_ENVIRONMENT_ENTITY_TYPE,
+          fromType: GithubEntities.GITHUB_REPO._type,
+          toType: GithubEntities.GITHUB_ENVIRONMENT._type,
           fromKey: repoTag._key,
           toKey: envEntity._key,
         }),
@@ -60,16 +58,16 @@ export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Environment',
-        _type: GITHUB_ENVIRONMENT_ENTITY_TYPE,
-        _class: GITHUB_ENVIRONMENT_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_ENVIRONMENT._type,
+        _class: GithubEntities.GITHUB_ENVIRONMENT._class,
       },
     ],
     relationships: [
       {
         _type: GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_ENVIRONMENT_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_ENVIRONMENT._type,
       },
     ],
     dependsOn: ['fetch-repos'],

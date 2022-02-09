@@ -13,10 +13,7 @@ import {
 } from '../sync/converters';
 import { UserEntity, IdEntityMap, RepoEntity, IssueEntity } from '../types';
 import {
-  GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_ISSUE_ENTITY_TYPE,
-  GITHUB_ISSUE_ENTITY_CLASS,
-  GITHUB_REPO_ENTITY_TYPE,
+  GithubEntities,
   GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
@@ -64,7 +61,7 @@ export async function fetchIssues(
   }
 
   await jobState.iterateEntities<RepoEntity>(
-    { _type: GITHUB_REPO_ENTITY_TYPE },
+    { _type: GithubEntities.GITHUB_REPO._type },
     async (repoEntity) => {
       try {
         await apiClient.iterateIssues(
@@ -147,28 +144,28 @@ export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Issue',
-        _type: GITHUB_ISSUE_ENTITY_TYPE,
-        _class: GITHUB_ISSUE_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_ISSUE._type,
+        _class: GithubEntities.GITHUB_ISSUE._class,
       },
     ],
     relationships: [
       {
         _type: GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_ISSUE_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_ISSUE._type,
       },
       {
         _type: GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
         _class: RelationshipClass.CREATED,
-        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
-        targetType: GITHUB_ISSUE_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_MEMBER._type,
+        targetType: GithubEntities.GITHUB_ISSUE._type,
       },
       {
         _type: GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
         _class: RelationshipClass.ASSIGNED,
-        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
-        targetType: GITHUB_ISSUE_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_MEMBER._type,
+        targetType: GithubEntities.GITHUB_ISSUE._type,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-users', 'fetch-collaborators'],

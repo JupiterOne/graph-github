@@ -12,9 +12,7 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import { toTeamEntity } from '../sync/converters';
 import { AccountEntity, TeamEntity } from '../types';
 import {
-  GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_TEAM_ENTITY_TYPE,
-  GITHUB_TEAM_ENTITY_CLASS,
+  GithubEntities,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
 } from '../constants';
 
@@ -57,16 +55,16 @@ export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Team',
-        _type: GITHUB_TEAM_ENTITY_TYPE,
-        _class: GITHUB_TEAM_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_TEAM._type,
+        _class: GithubEntities.GITHUB_TEAM._class,
       },
     ],
     relationships: [
       {
         _type: GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
-        targetType: GITHUB_TEAM_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_ACCOUNT._type,
+        targetType: GithubEntities.GITHUB_TEAM._type,
       },
     ],
     dependsOn: ['fetch-account'],

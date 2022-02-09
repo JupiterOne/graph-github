@@ -13,10 +13,7 @@ import {
 } from '../sync/converters';
 import { UserEntity, IdEntityMap, RepoKeyAndName } from '../types';
 import {
-  GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_COLLABORATOR_ENTITY_TYPE,
-  GITHUB_COLLABORATOR_ENTITY_CLASS,
-  GITHUB_REPO_ENTITY_TYPE,
+  GithubEntities,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
@@ -105,22 +102,22 @@ export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Outside Collaborator',
-        _type: GITHUB_COLLABORATOR_ENTITY_TYPE,
-        _class: GITHUB_COLLABORATOR_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_COLLABORATOR._type,
+        _class: GithubEntities.GITHUB_COLLABORATOR._class,
       },
     ],
     relationships: [
       {
         _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
         _class: RelationshipClass.ALLOWS,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_MEMBER_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_MEMBER._type,
       },
       {
         _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
         _class: RelationshipClass.ALLOWS,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_COLLABORATOR_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_COLLABORATOR._type,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-users'],

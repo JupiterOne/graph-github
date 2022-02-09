@@ -12,9 +12,7 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import { toAppEntity } from '../sync/converters';
 import { AccountEntity, AppEntity } from '../types';
 import {
-  GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_APP_ENTITY_TYPE,
-  GITHUB_APP_ENTITY_CLASS,
+  GithubEntities,
   GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
 } from '../constants';
 
@@ -55,16 +53,16 @@ export const appSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'Github App',
-        _type: GITHUB_APP_ENTITY_TYPE,
-        _class: GITHUB_APP_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_APP._type,
+        _class: GithubEntities.GITHUB_APP._class,
       },
     ],
     relationships: [
       {
         _type: GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
         _class: RelationshipClass.INSTALLED,
-        sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
-        targetType: GITHUB_APP_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_ACCOUNT._type,
+        targetType: GithubEntities.GITHUB_APP._type,
       },
     ],
     dependsOn: ['fetch-account'],

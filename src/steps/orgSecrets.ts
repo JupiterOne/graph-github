@@ -11,10 +11,7 @@ import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { AccountEntity, RepoKeyAndName, SecretEntity } from '../types';
 import {
-  GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_REPO_ENTITY_TYPE,
-  GITHUB_ORG_SECRET_ENTITY_TYPE,
-  GITHUB_SECRET_ENTITY_CLASS,
+  GithubEntities,
   GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
@@ -65,8 +62,8 @@ export async function fetchOrgSecrets({
         await jobState.addRelationship(
           createDirectRelationship({
             _class: RelationshipClass.USES,
-            fromType: GITHUB_REPO_ENTITY_TYPE,
-            toType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+            fromType: GithubEntities.GITHUB_REPO._type,
+            toType: GithubEntities.GITHUB_ORG_SECRET._type,
             fromKey: repoTag._key,
             toKey: secretEntity._key,
           }),
@@ -83,22 +80,22 @@ export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'GitHub Org Secret',
-        _type: GITHUB_ORG_SECRET_ENTITY_TYPE,
-        _class: GITHUB_SECRET_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_ORG_SECRET._type,
+        _class: GithubEntities.GITHUB_ORG_SECRET._class,
       },
     ],
     relationships: [
       {
         _type: GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
-        targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_ACCOUNT._type,
+        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
       },
       {
         _type: GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
         _class: RelationshipClass.USES,
-        sourceType: GITHUB_REPO_ENTITY_TYPE,
-        targetType: GITHUB_ORG_SECRET_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_REPO._type,
+        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
       },
     ],
     dependsOn: ['fetch-account', 'fetch-repos'],

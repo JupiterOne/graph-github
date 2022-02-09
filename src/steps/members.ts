@@ -13,9 +13,7 @@ import { toOrganizationMemberEntity } from '../sync/converters';
 import { AccountEntity, UserEntity, IdEntityMap } from '../types';
 import { OrgMemberRole } from '../client/GraphQLClient';
 import {
-  GITHUB_ACCOUNT_ENTITY_TYPE,
-  GITHUB_MEMBER_ENTITY_TYPE,
-  GITHUB_MEMBER_ENTITY_CLASS,
+  GithubEntities,
   GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
   GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
@@ -77,22 +75,22 @@ export const memberSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [
       {
         resourceName: 'Github User',
-        _type: GITHUB_MEMBER_ENTITY_TYPE,
-        _class: GITHUB_MEMBER_ENTITY_CLASS,
+        _type: GithubEntities.GITHUB_MEMBER._type,
+        _class: GithubEntities.GITHUB_MEMBER._class,
       },
     ],
     relationships: [
       {
         _type: GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
         _class: RelationshipClass.HAS,
-        sourceType: GITHUB_ACCOUNT_ENTITY_TYPE,
-        targetType: GITHUB_MEMBER_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_ACCOUNT._type,
+        targetType: GithubEntities.GITHUB_MEMBER._type,
       },
       {
         _type: GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
         _class: RelationshipClass.MANAGES,
-        sourceType: GITHUB_MEMBER_ENTITY_TYPE,
-        targetType: GITHUB_ACCOUNT_ENTITY_TYPE,
+        sourceType: GithubEntities.GITHUB_MEMBER._type,
+        targetType: GithubEntities.GITHUB_ACCOUNT._type,
       },
     ],
     dependsOn: ['fetch-account'],

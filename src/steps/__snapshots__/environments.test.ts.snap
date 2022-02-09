@@ -1,0 +1,63 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`fetchEnvironments exec handler 1`] = `
+Object {
+  "collectedEntities": Array [
+    Object {
+      "_class": Array [
+        "Configuration",
+      ],
+      "_key": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw",
+      "_rawData": Array [
+        Object {
+          "name": "default",
+          "rawData": Object {
+            "created_at": "2021-08-23T23:53:20Z",
+            "deployment_branch_policy": null,
+            "html_url": "https://github.com/Kei-Institute/Test-repo/deployments/activity_log?environments_filter=Ambiente",
+            "id": 288429400,
+            "name": "Ambiente",
+            "node_id": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw",
+            "protection_rules": Array [],
+            "updated_at": "2021-08-23T23:53:20Z",
+            "url": "https://api.github.com/repos/Kei-Institute/Test-repo/environments/Ambiente",
+          },
+        },
+      ],
+      "_type": "github_environment",
+      "createdOn": 1629762800000,
+      "displayName": "Ambiente",
+      "htmlUrl": "https://github.com/Kei-Institute/Test-repo/deployments/activity_log?environments_filter=Ambiente",
+      "id": "288429400",
+      "name": "Ambiente",
+      "nodeId": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw",
+      "parentRepoDatabaseId": 371419598,
+      "parentRepoKey": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=",
+      "parentRepoName": "Test-repo",
+      "protectionRulesExist": false,
+      "updatedOn": 1629762800000,
+      "url": "https://api.github.com/repos/Kei-Institute/Test-repo/environments/Ambiente",
+      "webLink": "https://github.com/Kei-Institute/Test-repo/settings/environments/288429400/edit",
+    },
+  ],
+  "collectedRelationships": Array [
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=",
+      "_key": "MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=|has|MDExOkVudmlyb25tZW50Mjg4NDI5NDAw",
+      "_toEntityKey": "MDExOkVudmlyb25tZW50Mjg4NDI5NDAw",
+      "_type": "github_repo_has_environment",
+      "displayName": "HAS",
+    },
+  ],
+  "encounteredTypes": Array [
+    "github_account",
+    "github_repo",
+    "github_account_owns_repo",
+    "github_environment",
+    "github_repo_has_environment",
+  ],
+  "numCollectedEntities": 1,
+  "numCollectedRelationships": 1,
+}
+`;

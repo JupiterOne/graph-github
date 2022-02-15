@@ -125,6 +125,7 @@ export function processGraphQlPageResult(
   // here will be the new way to do it
   // we will let this bake in the real world and log any discrepancies
   // if all is well, we can delete the old way above and just use the new way
+  // some function here that parses response and returns resources and cursors:
   const { newResources, newCursors } = {
     newResources: 'temp',
     newCursors: 'temp',

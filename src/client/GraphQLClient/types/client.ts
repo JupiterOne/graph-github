@@ -86,6 +86,7 @@ export interface OrgMemberQueryResponse extends Node, Actor {
   updatedAt: string;
   url: string;
   websiteUrl: string;
+  organization: string; // the id of the org
 }
 
 export interface OrgTeamQueryResponse extends Node {

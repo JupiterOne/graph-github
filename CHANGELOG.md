@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Added property `organizationId` to `github_user` Entity, to make it more
+  convenient to track users from multiple organizations.
+
 ### 1.9.1 - 2021-01-26
 
 ### Changed

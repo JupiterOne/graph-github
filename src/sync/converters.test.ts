@@ -210,6 +210,7 @@ describe('toOrganizationMemberEntity', () => {
     url: 'https://github.com/user-login',
     websiteUrl: 'https://about.me/user-login',
     active: true,
+    organization: 'my-org',
   };
 
   test('properties transferred', () => {
@@ -243,6 +244,7 @@ describe('toOrganizationMemberEntity', () => {
       location: 'Best place ever',
       websiteUrl: 'https://about.me/user-login',
       active: true,
+      organizationId: 'my-org',
     });
   });
 
@@ -754,8 +756,8 @@ describe('toIssue', () => {
           rawData: {
             ...apiResponse,
             body: undefined,
-            bodyText: undefined
-          }
+            bodyText: undefined,
+          },
         },
       ],
     });

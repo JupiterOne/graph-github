@@ -300,6 +300,7 @@ export function toOrganizationMemberEntity(
     location: data.location || '',
     websiteUrl: data.websiteUrl || '',
     active: true,
+    organizationId: data.organization,
   };
   if (data.email) {
     userEntity.email = data.email;

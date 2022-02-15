@@ -210,6 +210,7 @@ export class GitHubGraphQLClient {
             this.resourceMetadataMap,
             pullRequestQueryData.node,
             GithubResource.PullRequests,
+            this.logger,
           );
 
         // Construct the pull request
@@ -385,6 +386,7 @@ export class GitHubGraphQLClient {
           this.resourceMetadataMap,
           issueQueryData.node,
           GithubResource.Issues,
+          this.logger,
         );
 
         // Construct the issue
@@ -486,6 +488,7 @@ export class GitHubGraphQLClient {
           this.resourceMetadataMap,
           data,
           baseResource,
+          this.logger,
         );
 
       resources = this.extractPageResources(pageResources, resources);

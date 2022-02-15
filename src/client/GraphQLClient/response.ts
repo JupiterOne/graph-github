@@ -1,3 +1,4 @@
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import {
   ResourceMetadata,
   ResourceMap,
@@ -106,10 +107,12 @@ export function processGraphQlPageResult(
   resourceMetadataMap: ResourceMap<ResourceMetadata>,
   data: any,
   base: GithubResource,
+  logger: IntegrationLogger,
 ): {
   resources: ResourceMap<any>;
   cursors: ResourceMap<CursorHierarchy>;
 } {
+  // this is the old way to do it
   const { resources, cursors } = extractSelectedResourceFromData(
     data,
     resourceMetadataMap,
@@ -118,6 +121,28 @@ export function processGraphQlPageResult(
     selectedResources,
     base,
   );
+
+  // here will be the new way to do it
+  // we will let this bake in the real world and log any discrepancies
+  // if all is well, we can delete the old way above and just use the new way
+  const { newResources, newCursors } = {
+    newResources: 'temp',
+    newCursors: 'temp',
+  };
+
+  // compare old way and new way
+  if (JSON.stringify(cursors) !== JSON.stringify(newCursors)) {
+    logger.warn(
+      { selectedResources, cursors, newCursors },
+      "GraphQl page processor: Cursors don't match between current and experimental codepath",
+    );
+  }
+  if (JSON.stringify(resources) !== JSON.stringify(newResources)) {
+    logger.warn(
+      { selectedResources },
+      "GraphQl page processor: Resources don't match between current and experimental codepath",
+    );
+  }
 
   return {
     resources,

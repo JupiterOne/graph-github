@@ -11,10 +11,10 @@ describe('displayNamesFromLogin', () => {
     expect(
       displayNamesFromLogins(['username1', 'username2'], {
         username1: {
-          displayName: 'User Name 1'
+          displayName: 'User Name 1',
         } as any,
-        username2: {} as any
-      })
+        username2: {} as any,
+      }),
     ).toEqual(['User Name 1', 'Unknown User']);
   });
 
@@ -22,9 +22,9 @@ describe('displayNamesFromLogin', () => {
     expect(
       displayNamesFromLogins(['username1', 'username2'], {
         username1: {
-          displayName: 'User Name 1'
-        } as any
-      })
+          displayName: 'User Name 1',
+        } as any,
+      }),
     ).toEqual(['User Name 1', 'Unknown User']);
   });
 });

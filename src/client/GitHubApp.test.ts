@@ -29,6 +29,6 @@ test('getInstallation throws IntegrationValidationError', async () => {
     throw new Error('404');
   });
   await expect(app.getInstallation(123)).rejects.toThrow(
-    IntegrationValidationError
+    IntegrationValidationError,
   );
 });

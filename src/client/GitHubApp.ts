@@ -9,14 +9,14 @@ export default class GitHubApp {
      * A GitHub API v3 client associated with the GitHub App access token, used
      * for accessing endpoints listed at https://developer.github.com/v3/apps/.
      */
-    readonly v3: Octokit
+    readonly v3: Octokit,
   ) {}
 
   /**
    * Get data for an installation of the GitHub App.
    */
   async getInstallation(
-    installationId: number
+    installationId: number,
   ): Promise<AppsGetInstallationResponse> {
     let installation;
 
@@ -26,7 +26,7 @@ export default class GitHubApp {
       });
     } catch (err) {
       throw new IntegrationValidationError(
-        'GitHub App installation associated with this integration instance no longer exists'
+        'GitHub App installation associated with this integration instance no longer exists',
       );
     }
 

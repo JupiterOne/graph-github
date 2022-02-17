@@ -1,21 +1,21 @@
 import { PullRequest, PullRequestUser } from '../../client/GraphQLClient/types';
 import { UserEntity } from '../../types';
 
-export const fixtureUser: UserEntity = ({
+export const fixtureUser: UserEntity = {
   displayName: 'Some Body',
   name: 'Some Body',
   login: 'somebody',
-} as unknown) as UserEntity;
+} as unknown as UserEntity;
 export const pullRequestUser: PullRequestUser = {
   login: fixtureUser.login,
   name: fixtureUser.name as string,
   isSiteAdmin: true,
 };
-export const fixtureReviewerUser: UserEntity = ({
+export const fixtureReviewerUser: UserEntity = {
   displayName: 'Reviewer User',
   name: 'Reviewer User',
   login: 'reviewer-user',
-} as unknown) as UserEntity;
+} as unknown as UserEntity;
 export const pullRequestReviewer: PullRequestUser = {
   login: fixtureReviewerUser.login,
   name: fixtureReviewerUser.name as string,
@@ -62,8 +62,7 @@ export const fixturePullRequest: PullRequest = {
   lastEditedAt: undefined,
   locked: false,
   mergeCommit: {
-    id:
-      'MDY6Q29tbWl0Mzg4ODgwNzEwOjM5NDgzYWY4YTM1NmI1Njg0NTEzYmY1NmMwNDRkYWIwZWQ0YzBjN2E=',
+    id: 'MDY6Q29tbWl0Mzg4ODgwNzEwOjM5NDgzYWY4YTM1NmI1Njg0NTEzYmY1NmMwNDRkYWIwZWQ0YzBjN2E=',
     message: 'Merge pull request #45 from JupiterOne/autoscaling-policies',
     authoredDate: '2021-09-01T01:53:35Z',
     changedFiles: 7,
@@ -89,8 +88,7 @@ export const fixturePullRequest: PullRequest = {
   url: 'https://github.com/JupiterOne/jupiter-integration-aws/pull/45',
   commits: [
     {
-      id:
-        'MDY6Q29tbWl0Mzg4ODgwNzEwOjg5MGFmMjRkOTEzMTA3MTk0ZTljZTk0MzliN2U3MWVhMmIxYjE3YzQ=',
+      id: 'MDY6Q29tbWl0Mzg4ODgwNzEwOjg5MGFmMjRkOTEzMTA3MTk0ZTljZTk0MzliN2U3MWVhMmIxYjE3YzQ=',
       message:
         'Ingest AutoScaling Policies and build `aws_autoscaling_group` `USES` `aws_autoscaling_policy` relationships',
       authoredDate: '2021-08-31T22:14:45Z',
@@ -104,8 +102,7 @@ export const fixturePullRequest: PullRequest = {
       },
     },
     {
-      id:
-        'MDY6Q29tbWl0Mzg4ODgwNzEwOjY5YjNkNTc3MWE1MDc1MmFjZjkzMTBmZDkzYjdhMTc2ZDZjZmZhYTI=',
+      id: 'MDY6Q29tbWl0Mzg4ODgwNzEwOjY5YjNkNTc3MWE1MDc1MmFjZjkzMTBmZDkzYjdhMTc2ZDZjZmZhYTI=',
       message:
         "Merge branch 'main' of github.com:jupiterone/jupiter-integration-aws into autoscaling-policies",
       authoredDate: '2021-08-31T22:17:46Z',
@@ -119,8 +116,7 @@ export const fixturePullRequest: PullRequest = {
       },
     },
     {
-      id:
-        'MDY6Q29tbWl0Mzg4ODgwNzEwOjExMDNhN2EyZTk3NjQzOWNhMTg0Zjc3NTE5Njc1OTA4NGYxNmU0MmY=',
+      id: 'MDY6Q29tbWl0Mzg4ODgwNzEwOjExMDNhN2EyZTk3NjQzOWNhMTg0Zjc3NTE5Njc1OTA4NGYxNmU0MmY=',
       message: 'fix _type and _class',
       authoredDate: '2021-08-31T22:19:39Z',
       changedFiles: 2,
@@ -143,8 +139,7 @@ export const fixturePullRequest: PullRequest = {
       state: 'APPROVED',
       submittedAt: '2021-09-01T00:19:38Z',
       updatedAt: '2021-09-01T00:19:38Z',
-      url:
-        'https://github.com/JupiterOne/jupiter-integration-aws/pull/45#pullrequestreview-743294691',
+      url: 'https://github.com/JupiterOne/jupiter-integration-aws/pull/45#pullrequestreview-743294691',
     },
   ],
   labels: [],

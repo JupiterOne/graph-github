@@ -51,11 +51,9 @@ you'll need to do the following:
     your data):
 
     ```env
-    GITHUB_APP_ID=19645
-    GITHUB_APP_LOCAL_PRIVATE_KEY_PATH=/Users/aiwilliams/jupiterone-aiwilliams.2018-10-24.private-key.pem
-    GITHUB_APP_LOCAL_CALLBACK_URL=https://smee.io/{thingy-you-copied}
-    ANALYZE_COMMIT_APPROVAL=true
-    USE_REST_FOR_TEAM_REPOS=false
+    GITHUB_APP_ID=1234
+    GITHUB_APP_LOCAL_PRIVATE_KEY_PATH={YOURPATH}/{YOURFILENAME}.private-key.pem
+    INSTALLATION_ID=5678
     ```
 
 6.  To install the App, visit the

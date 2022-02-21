@@ -111,6 +111,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
 export function toOrgSecretEntity(
   data: SecretQueryResponse,
   orgLogin: string,
+  baseUrl: string,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
     _class: GithubEntities.GITHUB_ORG_SECRET._class,
@@ -122,7 +123,7 @@ export function toOrgSecretEntity(
     }),
     name: data.name,
     displayName: data.name,
-    webLink: `https://github.com/organizations/${orgLogin}/settings/secrets/actions/${data.name}`,
+    webLink: `${baseUrl}/organizations/${orgLogin}/settings/secrets/actions/${data.name}`,
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: data.visibility,
@@ -135,6 +136,7 @@ export function toOrgSecretEntity(
 export function toRepoSecretEntity(
   data: SecretQueryResponse,
   orgLogin: string,
+  baseUrl: string,
   repoName: string,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
@@ -147,7 +149,7 @@ export function toRepoSecretEntity(
     }),
     name: data.name,
     displayName: data.name,
-    webLink: `https://github.com/${orgLogin}/${repoName}/settings/secrets/actions/${data.name}`,
+    webLink: `${baseUrl}/${orgLogin}/${repoName}/settings/secrets/actions/${data.name}`,
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: 'selected',
@@ -159,6 +161,7 @@ export function toRepoSecretEntity(
 export function toEnvironmentEntity(
   data: RepoEnvironmentQueryResponse,
   orgLogin: string,
+  baseUrl: string,
   repoTag: RepoKeyAndName,
 ): EnvironmentEntity {
   let protRulesExist = false;
@@ -171,7 +174,7 @@ export function toEnvironmentEntity(
     _key: data.node_id,
     name: data.name,
     displayName: data.name,
-    webLink: `https://github.com/${orgLogin}/${repoTag.name}/settings/environments/${data.id}/edit`,
+    webLink: `${baseUrl}/${orgLogin}/${repoTag.name}/settings/environments/${data.id}/edit`,
     id: String(data.id), //force to string to pass SDK validation
     nodeId: data.node_id,
     url: data.url,
@@ -191,6 +194,7 @@ export function toEnvironmentEntity(
 export function toEnvSecretEntity(
   data: SecretQueryResponse,
   orgLogin: string,
+  baseUrl: string,
   env: EnvironmentEntity,
 ): SecretEntity {
   const secretEntity: SecretEntity = {
@@ -203,7 +207,7 @@ export function toEnvSecretEntity(
     }),
     name: data.name,
     displayName: data.name,
-    webLink: `https://github.com/${orgLogin}/${env.parentRepoName}/settings/environments/${env.id}/edit`,
+    webLink: `${baseUrl}/${orgLogin}/${env.parentRepoName}/settings/environments/${env.id}/edit`,
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: 'selected',
@@ -311,6 +315,7 @@ export function toOrganizationMemberEntity(
 
 export function toOrganizationMemberEntityFromTeamMember(
   data: OrgTeamMemberQueryResponse,
+  baseUrl: string,
 ): UserEntity {
   const userEntity: UserEntity = {
     _class: GithubEntities.GITHUB_MEMBER._class,
@@ -322,7 +327,7 @@ export function toOrganizationMemberEntityFromTeamMember(
     name: data.login,
     mfaEnabled: undefined,
     role: data.role,
-    webLink: 'https://github.com/' + data.login,
+    webLink: `${baseUrl}/${data.login}`,
     node: data.id,
     id: data.id,
     active: true,
@@ -333,6 +338,7 @@ export function toOrganizationMemberEntityFromTeamMember(
 
 export function toOrganizationCollaboratorEntity(
   data: Collaborator,
+  baseUrl: string,
 ): UserEntity {
   const userEntity: UserEntity = {
     _class: GithubEntities.GITHUB_COLLABORATOR._class,
@@ -345,7 +351,7 @@ export function toOrganizationCollaboratorEntity(
     mfaEnabled: undefined,
     role: 'OUTSIDE',
     siteAdmin: false,
-    webLink: 'https://github.com/' + data.login,
+    webLink: `${baseUrl}/${data.login}`,
     node: data.id,
     id: data.id,
     active: true,

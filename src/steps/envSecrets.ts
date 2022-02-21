@@ -45,6 +45,7 @@ export async function fetchEnvSecrets({
           toEnvSecretEntity(
             envSecret,
             apiClient.accountClient.login,
+            config.githubApiBaseUrl,
             envEntity,
           ),
         )) as SecretEntity;

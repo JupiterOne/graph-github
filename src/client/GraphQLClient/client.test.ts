@@ -31,6 +31,7 @@ async function getAccess() {
   config.installationId = 7498286;
 
   const appClient = createGitHubAppClient(
+    'https://api.github.com',
     config,
     createMockIntegrationLogger(),
   );
@@ -47,6 +48,7 @@ async function getAccess() {
 async function getClient() {
   const { token, tokenExpires, appClient } = await getAccess();
   return new GitHubGraphQLClient(
+    'https://api.github.com/graphql',
     token,
     tokenExpires,
     resourceMetadataMap(),

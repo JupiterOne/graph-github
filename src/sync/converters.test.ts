@@ -265,7 +265,10 @@ describe('toOrganizationCollaboratorEntity', () => {
   };
 
   test('properties transferred', () => {
-    const entity = toOrganizationCollaboratorEntity(apiResponse as any);
+    const entity = toOrganizationCollaboratorEntity(
+      apiResponse as any,
+      'https://github.com',
+    );
     expect(entity).toEqual({
       _key: 'member-node-id',
       _type: 'github_user',
@@ -402,7 +405,11 @@ describe('toOrgSecretEntity', () => {
   };
 
   test('properties transferred', () => {
-    const entity = toOrgSecretEntity(apiResponse as any, 'SomeOrg');
+    const entity = toOrgSecretEntity(
+      apiResponse as any,
+      'SomeOrg',
+      'https://github.com',
+    );
     expect(entity).toEqual({
       _class: ['Secret'],
       _type: 'github_org_secret',
@@ -437,6 +444,7 @@ describe('toRepoSecretEntity', () => {
     const entity = toRepoSecretEntity(
       apiResponse as any,
       'SomeOrg',
+      'https://github.com',
       'Test-repo',
     );
     expect(entity).toEqual({
@@ -539,11 +547,16 @@ describe('toEnvironmentEntity', () => {
   };
 
   test('properties transferred', () => {
-    const entity = toEnvironmentEntity(apiResponse as any, 'SomeOrg', {
-      name: 'SomeRepo',
-      _key: 'pretendKey',
-      databaseId: 'pretendId',
-    });
+    const entity = toEnvironmentEntity(
+      apiResponse as any,
+      'SomeOrg',
+      'https://github.com',
+      {
+        name: 'SomeRepo',
+        _key: 'pretendKey',
+        databaseId: 'pretendId',
+      },
+    );
     expect(entity).toEqual({
       _class: ['Configuration'],
       _type: 'github_environment',
@@ -574,11 +587,16 @@ describe('toEnvironmentEntity', () => {
 
   test('missing protection rules detected', () => {
     apiResponse.protection_rules = [];
-    const entity = toEnvironmentEntity(apiResponse as any, 'SomeOrg', {
-      name: 'SomeRepo',
-      _key: 'pretendKey',
-      databaseId: 'pretendId',
-    });
+    const entity = toEnvironmentEntity(
+      apiResponse as any,
+      'SomeOrg',
+      'https://github.com',
+      {
+        name: 'SomeRepo',
+        _key: 'pretendKey',
+        databaseId: 'pretendId',
+      },
+    );
     expect(entity).toEqual({
       _class: ['Configuration'],
       _type: 'github_environment',
@@ -645,6 +663,7 @@ describe('toEnvSecretEntity', () => {
     const entity = toEnvSecretEntity(
       apiResponse as any,
       'SomeOrg',
+      'https://github.com',
       environment,
     );
     expect(entity).toEqual({

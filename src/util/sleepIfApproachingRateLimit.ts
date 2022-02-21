@@ -49,8 +49,7 @@ export default async function sleepIfApproachingRateLimit(
     }
   } else {
     logger.warn(
-      {},
-      'GraphQL API Ratelimit details malformed in response, so could not calculate rate limit remaining',
+      'GraphQL API rate limit details malformed in response or not included. Could not calculate rate limit balance',
     );
   }
 }

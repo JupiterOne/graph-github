@@ -36,7 +36,12 @@ export async function fetchEnvironments({
   for (const repoTag of repoTags) {
     await apiClient.iterateEnvironments(repoTag.name, async (env) => {
       const envEntity = (await jobState.addEntity(
-        toEnvironmentEntity(env, apiClient.accountClient.login, repoTag),
+        toEnvironmentEntity(
+          env,
+          apiClient.accountClient.login,
+          config.githubApiBaseUrl,
+          repoTag,
+        ),
       )) as EnvironmentEntity;
       await jobState.addRelationship(
         createDirectRelationship({

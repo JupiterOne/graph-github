@@ -54,10 +54,23 @@ export class APIClient {
     repoEnvironments: boolean;
     repoIssues: boolean;
   };
+
+  readonly restApiUrl: string;
+  readonly graphqlUrl: string;
+
   constructor(
     readonly config: IntegrationConfig,
     readonly logger: IntegrationLogger,
-  ) {}
+  ) {
+    this.restApiUrl = config.githubApiBaseUrl.includes('api.github.com')
+      ? config.githubApiBaseUrl
+      : `${config.githubApiBaseUrl}/api/v3`;
+    this.graphqlUrl = config.githubApiBaseUrl.includes('api.github.com')
+      ? `${config.githubApiBaseUrl}/graphql`
+      : `${config.githubApiBaseUrl}/api/graphql`;
+
+    console.log('sjdp', this.restApiUrl, this.graphqlUrl);
+  }
 
   public async verifyAuthentication(): Promise<void> {
     // the most light-weight request possible to validate
@@ -371,7 +384,11 @@ export class APIClient {
       );
     }
     const installationId = Number(this.config.installationId);
-    const appClient = createGitHubAppClient(this.config, this.logger);
+    const appClient = createGitHubAppClient(
+      this.restApiUrl,
+      this.config,
+      this.logger,
+    );
     let tokenExpires: number;
     let myPermissions: TokenPermissions;
     try {
@@ -388,7 +405,7 @@ export class APIClient {
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: `https://api.github.com/app/installations/${this.config.installationId}/access_tokens`,
+        endpoint: `${this.restApiUrl}/app/installations/${this.config.installationId}/access_tokens`,
         status: err.status,
         statusText: err.statusText,
       });
@@ -415,8 +432,10 @@ export class APIClient {
 
     this.accountClient = new OrganizationAccountClient({
       login: login,
+      baseUrl: this.restApiUrl,
       restClient: appClient,
       graphqlClient: new GitHubGraphQLClient(
+        this.graphqlUrl,
         this.ghsToken,
         tokenExpires,
         resourceMetadataMap(),

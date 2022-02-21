@@ -6,6 +6,7 @@ import {
 } from '@jupiterone/integration-sdk-core';
 import { createAPIClient } from './client';
 const fs = require('fs');
+import { URL } from 'url';
 
 /**
  * A type describing the configuration fields required to execute the
@@ -36,6 +37,9 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   },
   installationId: {
     type: 'string', //should be a number, but that's not an option in the SDK
+  },
+  githubApiBaseUrl: {
+    type: 'string',
   },
 };
 
@@ -72,6 +76,13 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    * if this var is specified.
    */
   githubAppDefaultLogin: string;
+
+  /**
+   * Optional. Only set when ingesting data from a self-hosted
+   * GitHub Enterprise Server. Defaults to api.github.com
+   * when not supplied.
+   */
+  githubApiBaseUrl: string;
 }
 
 export async function validateInvocation(
@@ -86,6 +97,7 @@ export async function validateInvocation(
   const { config } = context.instance;
 
   sanitizeConfig(config); //mutate the config as needed
+
   const apiClient = createAPIClient(config, context.logger);
   await apiClient.verifyAuthentication();
   return apiClient.scopes;
@@ -118,4 +130,26 @@ export function sanitizeConfig(config: IntegrationConfig) {
       'Config requires all of {githubAppId, githubAppPrivateKey, installationId}',
     );
   }
+
+  config.githubApiBaseUrl = validateBaseUrl(
+    config.githubApiBaseUrl ?? 'https://api.github.com',
+  );
+}
+
+export function validateBaseUrl(baseUrl: string): string {
+  let validBaseUrl = baseUrl;
+  if (!baseUrl.startsWith('http')) {
+    validBaseUrl = `https://${baseUrl}`;
+  }
+
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(validBaseUrl);
+  } catch (e) {
+    throw new IntegrationValidationError(
+      'Config requires valid URL for githubApiBaseUrl. If no value is supplied api.github.com will be used.',
+    );
+  }
+
+  return `${parsedUrl.protocol}//${parsedUrl.host}`;
 }

@@ -56,6 +56,7 @@ export default class OrganizationAccountClient {
   v4RateLimitConsumed: number;
 
   readonly login: string;
+  readonly baseUrl: string;
   readonly v3: Octokit;
   readonly v4: GitHubGraphQLClient;
   readonly logger: IntegrationLogger;
@@ -65,6 +66,10 @@ export default class OrganizationAccountClient {
      * The login of the GitHub account, a required parameter of some endpoints.
      */
     login: string;
+    /**
+     * The base URL to make requests.
+     */
+    baseUrl: string;
     /**
      * A GitHub API v3 client configured with necessary authentication, binding it
      * to a specific GitHub account (organization or user), used for accessing
@@ -83,6 +88,7 @@ export default class OrganizationAccountClient {
     logger: IntegrationLogger;
   }) {
     this.login = options.login;
+    this.baseUrl = options.baseUrl;
     this.v3 = options.restClient;
     this.v4 = options.graphqlClient;
     this.logger = options.logger;
@@ -355,10 +361,7 @@ export default class OrganizationAccountClient {
       );
       return orgSecrets || [];
     } catch (err) {
-      this.logger.warn(
-        {},
-        'Error while attempting to ingest organization secrets',
-      );
+      this.logger.warn('Error while attempting to ingest organization secrets');
       throw new IntegrationError(err);
     }
   }
@@ -492,7 +495,7 @@ export default class OrganizationAccountClient {
         status: err.status,
         statusText: err.statusText,
         cause: err,
-        endpoint: `https://api.github.com/repositories/${repoDatabaseId}/environments/${envName}/secrets`,
+        endpoint: `${this.baseUrl}/repositories/${repoDatabaseId}/environments/${envName}/secrets`,
       });
     }
   }
@@ -521,6 +524,7 @@ export default class OrganizationAccountClient {
     //TODO: a more elegant solution. Possibly making our own pagination and rate-limit aware wrapper.
     try {
       const reply = await request(`GET /orgs/${this.login}/installations`, {
+        baseUrl: this.baseUrl,
         headers: {
           authorization: `Bearer ${ghsToken}`,
         },
@@ -533,7 +537,7 @@ export default class OrganizationAccountClient {
       return [];
     } catch (err) {
       this.logger.warn(
-        {},
+        { err },
         'Error while attempting to ingest to installed GitHub apps',
       );
       throw new IntegrationError(err);

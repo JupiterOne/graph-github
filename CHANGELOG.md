@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+### 1.10.0 - 2021-02-21
+
 ### Added
 
 - Added property `organizationId` to `github_user` Entity, to make it more

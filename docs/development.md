@@ -55,6 +55,7 @@ you'll need to do the following:
     GITHUB_APP_ID=1234
     GITHUB_APP_LOCAL_PRIVATE_KEY_PATH={YOURPATH}/{YOURFILENAME}.private-key.pem
     INSTALLATION_ID=5678
+    GITHUB_API_BASE_URL=https://api.github.com
     ```
 
 6.  To install the App, visit the

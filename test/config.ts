@@ -19,5 +19,6 @@ export const integrationConfig: IntegrationConfig = {
   installationId:
     Number(process.env.INSTALLATION_ID) || DEFAULT_INSTALLATION_ID,
   githubAppDefaultLogin: 'something', //can be set manually in tests
+  githubApiBaseUrl: 'https://api.github.com',
   // useRestForTeamRepos: false
 } as IntegrationConfig; // casting config instead of setting useRestForTeamRepos to imitate configs already in production

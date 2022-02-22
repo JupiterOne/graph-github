@@ -24,7 +24,7 @@ describe('#validateBaseUrl', () => {
   });
   it('throws error if invalid URL is supplied', () => {
     expect(() => validateBaseUrl('httpexample/test')).toThrowError(
-      'Config requires valid URL for githubApiBaseUrl. If no value is supplied api.github.com will be used.',
+      'Config requires valid URL for githubApiBaseUrl.',
     );
   });
 });

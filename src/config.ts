@@ -78,9 +78,9 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   githubAppDefaultLogin: string;
 
   /**
-   * Optional. Only set when ingesting data from a self-hosted
-   * GitHub Enterprise Server. Defaults to api.github.com
-   * when not supplied.
+   * Specifies the base URL to use when ingesting data.
+   * Allows for api.github.com or a self-hosted GitHub Enterprise
+   * Server to be used.
    */
   githubApiBaseUrl: string;
 }
@@ -147,7 +147,7 @@ export function validateBaseUrl(baseUrl: string): string {
     parsedUrl = new URL(validBaseUrl);
   } catch (e) {
     throw new IntegrationValidationError(
-      'Config requires valid URL for githubApiBaseUrl. If no value is supplied api.github.com will be used.',
+      'Config requires valid URL for githubApiBaseUrl.',
     );
   }
 

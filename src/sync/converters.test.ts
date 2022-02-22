@@ -267,7 +267,7 @@ describe('toOrganizationCollaboratorEntity', () => {
   test('properties transferred', () => {
     const entity = toOrganizationCollaboratorEntity(
       apiResponse as any,
-      'https://github.com',
+      'https://api.github.com',
     );
     expect(entity).toEqual({
       _key: 'member-node-id',
@@ -408,7 +408,7 @@ describe('toOrgSecretEntity', () => {
     const entity = toOrgSecretEntity(
       apiResponse as any,
       'SomeOrg',
-      'https://github.com',
+      'https://api.github.com',
     );
     expect(entity).toEqual({
       _class: ['Secret'],
@@ -431,6 +431,33 @@ describe('toOrgSecretEntity', () => {
         'https://api.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
     });
   });
+  test('properties transferred w/GHE server baseUrl', () => {
+    const entity = toOrgSecretEntity(
+      apiResponse as any,
+      'SomeOrg',
+      'https://my.github.com',
+    );
+    expect(entity).toEqual({
+      _class: ['Secret'],
+      _type: 'github_org_secret',
+      _key: 'GitHub_Org_SomeOrg_Secret_KINDA_SECRET',
+      _rawData: [
+        {
+          name: 'default',
+          rawData: apiResponse,
+        },
+      ],
+      name: 'KINDA_SECRET',
+      displayName: 'KINDA_SECRET',
+      webLink:
+        'https://my.github.com/organizations/SomeOrg/settings/secrets/actions/KINDA_SECRET',
+      createdOn: 1629762175000,
+      updatedOn: 1629762175000,
+      visibility: 'selected',
+      selectedRepositoriesLink:
+        'https://api.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
+    });
+  });
 });
 
 describe('toRepoSecretEntity', () => {
@@ -444,7 +471,7 @@ describe('toRepoSecretEntity', () => {
     const entity = toRepoSecretEntity(
       apiResponse as any,
       'SomeOrg',
-      'https://github.com',
+      'https://api.github.com',
       'Test-repo',
     );
     expect(entity).toEqual({
@@ -550,7 +577,7 @@ describe('toEnvironmentEntity', () => {
     const entity = toEnvironmentEntity(
       apiResponse as any,
       'SomeOrg',
-      'https://github.com',
+      'https://api.github.com',
       {
         name: 'SomeRepo',
         _key: 'pretendKey',
@@ -590,7 +617,7 @@ describe('toEnvironmentEntity', () => {
     const entity = toEnvironmentEntity(
       apiResponse as any,
       'SomeOrg',
-      'https://github.com',
+      'https://api.github.com',
       {
         name: 'SomeRepo',
         _key: 'pretendKey',
@@ -663,7 +690,7 @@ describe('toEnvSecretEntity', () => {
     const entity = toEnvSecretEntity(
       apiResponse as any,
       'SomeOrg',
-      'https://github.com',
+      'https://api.github.com',
       environment,
     );
     expect(entity).toEqual({

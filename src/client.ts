@@ -68,8 +68,6 @@ export class APIClient {
     this.graphqlUrl = config.githubApiBaseUrl.includes('api.github.com')
       ? `${config.githubApiBaseUrl}/graphql`
       : `${config.githubApiBaseUrl}/api/graphql`;
-
-    console.log('sjdp', this.restApiUrl, this.graphqlUrl);
   }
 
   public async verifyAuthentication(): Promise<void> {

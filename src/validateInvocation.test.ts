@@ -14,17 +14,6 @@ import {
 } from './config';
 
 describe('#validateBaseUrl', () => {
-  it('handles no value supplied', async () => {
-    const executionContext = createMockExecutionContext<IntegrationConfig>({
-      instanceConfig: {
-        githubAppId: 234,
-        githubAppPrivateKey: '123',
-        githubAppDefaultLogin: '534',
-        installationId: 432,
-      } as IntegrationConfig,
-    });
-    expect(validateInvocation(executionContext)).toBeDefined();
-  });
   it('handles no protocol', () => {
     expect(validateBaseUrl('api.test.com:3839/path/')).toBe(
       'https://api.test.com:3839',
@@ -41,17 +30,6 @@ describe('#validateBaseUrl', () => {
 });
 
 describe('#validateInvocation', () => {
-  it('handles no value supplied', async () => {
-    const executionContext = createMockExecutionContext<IntegrationConfig>({
-      instanceConfig: {
-        githubAppId: 234,
-        githubAppPrivateKey: '123',
-        githubAppDefaultLogin: '534',
-        installationId: 432,
-      } as IntegrationConfig,
-    });
-    expect(validateInvocation(executionContext)).toBeDefined();
-  });
   it('throws error if invalid url is supplied', async () => {
     const executionContext = createMockExecutionContext<IntegrationConfig>({
       instanceConfig: {

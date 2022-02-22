@@ -123,7 +123,10 @@ export function toOrgSecretEntity(
     }),
     name: data.name,
     displayName: data.name,
-    webLink: `${baseUrl}/organizations/${orgLogin}/settings/secrets/actions/${data.name}`,
+    webLink: apiUrlToWebLink(
+      baseUrl,
+      `/organizations/${orgLogin}/settings/secrets/actions/${data.name}`,
+    ),
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: data.visibility,
@@ -149,7 +152,10 @@ export function toRepoSecretEntity(
     }),
     name: data.name,
     displayName: data.name,
-    webLink: `${baseUrl}/${orgLogin}/${repoName}/settings/secrets/actions/${data.name}`,
+    webLink: apiUrlToWebLink(
+      baseUrl,
+      `/${orgLogin}/${repoName}/settings/secrets/actions/${data.name}`,
+    ),
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: 'selected',
@@ -174,7 +180,10 @@ export function toEnvironmentEntity(
     _key: data.node_id,
     name: data.name,
     displayName: data.name,
-    webLink: `${baseUrl}/${orgLogin}/${repoTag.name}/settings/environments/${data.id}/edit`,
+    webLink: apiUrlToWebLink(
+      baseUrl,
+      `/${orgLogin}/${repoTag.name}/settings/environments/${data.id}/edit`,
+    ),
     id: String(data.id), //force to string to pass SDK validation
     nodeId: data.node_id,
     url: data.url,
@@ -207,7 +216,10 @@ export function toEnvSecretEntity(
     }),
     name: data.name,
     displayName: data.name,
-    webLink: `${baseUrl}/${orgLogin}/${env.parentRepoName}/settings/environments/${env.id}/edit`,
+    webLink: apiUrlToWebLink(
+      baseUrl,
+      `/${orgLogin}/${env.parentRepoName}/settings/environments/${env.id}/edit`,
+    ),
     createdOn: parseTimePropertyValue(data.created_at),
     updatedOn: parseTimePropertyValue(data.updated_at),
     visibility: 'selected',
@@ -327,7 +339,7 @@ export function toOrganizationMemberEntityFromTeamMember(
     name: data.login,
     mfaEnabled: undefined,
     role: data.role,
-    webLink: `${baseUrl}/${data.login}`,
+    webLink: apiUrlToWebLink(baseUrl, `/${data.login}`),
     node: data.id,
     id: data.id,
     active: true,
@@ -351,7 +363,7 @@ export function toOrganizationCollaboratorEntity(
     mfaEnabled: undefined,
     role: 'OUTSIDE',
     siteAdmin: false,
-    webLink: `${baseUrl}/${data.login}`,
+    webLink: apiUrlToWebLink(baseUrl, `/${data.login}`),
     node: data.id,
     id: data.id,
     active: true,
@@ -695,5 +707,19 @@ function convertToApproval(approvals: Approval[], approvalReview: Review) {
       approverUsernames: [approvalReview.author.login],
     };
     return [...approvals, approval];
+  }
+}
+
+/**
+ * Converts the supplied api url to the appropriate web link.
+ * Weblinks have different paths for cloud vs self-hosted (GHE server).
+ * @param apiBaseUrl
+ * @param path
+ */
+function apiUrlToWebLink(apiBaseUrl: string, path: string): string {
+  if (apiBaseUrl.includes('api.github.com')) {
+    return 'https://github.com' + path;
+  } else {
+    return apiBaseUrl + path;
   }
 }

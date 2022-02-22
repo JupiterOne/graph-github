@@ -46,8 +46,8 @@ export async function fetchRepoSecrets({
       const secretEntity = (await jobState.addEntity(
         toRepoSecretEntity(
           secret,
-          config.githubApiBaseUrl,
           apiClient.accountClient.login,
+          config.githubApiBaseUrl,
           repoTag.name,
         ),
       )) as SecretEntity;

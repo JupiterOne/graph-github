@@ -40,6 +40,7 @@ async function getAccess() {
   config.installationId = 17214088; //this is the id the recordings are under
 
   const appClient = createGitHubAppClient(
+    'https://api.github.com',
     config,
     createMockIntegrationLogger(),
   );

@@ -65,7 +65,7 @@ export async function fetchCollaborators({
           userEntity = outsideCollaboratorsByLoginMap[collab.login];
         } else {
           userEntity = (await jobState.addEntity(
-            toOrganizationCollaboratorEntity(collab),
+            toOrganizationCollaboratorEntity(collab, config.githubApiBaseUrl),
           )) as UserEntity;
           outsideCollaboratorsByLoginMap[collab.login] = userEntity;
           outsideCollaboratorsArray.push(userEntity);

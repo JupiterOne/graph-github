@@ -401,8 +401,6 @@ export class APIClient {
       myPermissions = permissions;
       tokenExpires = parseTimePropertyValue(expiresAt) || 0;
     } catch (err) {
-      console.error(err);
-      console.log(this.restApiUrl);
       throw new IntegrationProviderAuthenticationError({
         cause: err,
         endpoint: `${this.restApiUrl}/app/installations/${this.config.installationId}/access_tokens`,

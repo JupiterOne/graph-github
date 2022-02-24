@@ -448,7 +448,7 @@ export default class OrganizationAccountClient {
         //you get 404 if you try to call the REST API for environments on a private repo otherwise
         //but we don't know whether the account is Enterprise level, so we have to try private repos
         //once we move getEnvironments to GraphQL, this won't be an issue - private repos will simply
-        //not be included in the API rely
+        //not be included in the API reply
         //403 can happen if the GitHub App is not permitted to access all repos
         return [];
       } else {

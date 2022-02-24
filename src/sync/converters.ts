@@ -522,7 +522,7 @@ export function createUnknownUserIssueRelationship(
 export function toPullRequestEntity(
   pullRequest: PullRequest,
   teamMembersByLoginMap: IdEntityMap<UserEntity>, //
-  allKnownUsersByLoginMap: IdEntityMap<UserEntity>, // Includes known colaborators
+  allKnownUsersByLoginMap: IdEntityMap<UserEntity>, // Includes known collaborators
 ): PullRequestEntity {
   const commits = pullRequest.commits;
   const reviews = pullRequest.reviews;

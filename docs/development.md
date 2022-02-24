@@ -40,10 +40,22 @@ you'll need to do the following:
     - Webhook secret: `development`
     - At the bottom, under `Where can this GitHub App be installed?`, select
       `Any account`.
-    - Set repo permissions. Beside the Metadata Permissions, the App needs
-      Read-only access for Repository Metadata, Repository Secrets, Repository
-      Environments, Repository Issues, Organization Members, Organization
-      Administration and Organization Secrets at this time.
+    - Set permissions as follows:
+
+      **Repository Permissions**
+
+      - Actions: Read-only
+      - Environments: Read-only
+      - Metadata: Read-only
+      - Pull requests: Read-only
+      - Issues: Read-only (enables both Issues and private-repo PRs)
+      - Secrets: Read-only (only name and creation date is collected)
+
+      **Organization Permissions**
+
+      - Members: Read-only
+      - Administration: Read-only
+      - Secrets: Read-only (only name and creation date is collected)
 
 4.  Note the App ID, and press the **Generate a private key** button. Move the
     `private-key.pem` file somewhere safe and note the complete path.

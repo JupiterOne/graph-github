@@ -186,7 +186,7 @@ export async function fetchPrs(
               repoName: repoEntity.name,
               repoKey: repoEntity._key,
             },
-            'Receved Not Found error(s) for pull requests for this repository. Skipping pull request ingestion for this repository.',
+            'Received Not Found error(s) for pull requests for this repository. Skipping pull request ingestion for this repository.',
           );
         } else {
           logger.error(

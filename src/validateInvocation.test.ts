@@ -28,18 +28,19 @@ describe('#validateBaseUrl', () => {
 
 describe('#validateInvocation', () => {
   test('throws error if invalid url is supplied', async () => {
+    process.env['GITHUB_API_BASE_URL'] = 'httpsdl;we';
     const executionContext = createMockExecutionContext<IntegrationConfig>({
       instanceConfig: {
         githubAppId: 234,
         githubAppPrivateKey: '123',
         githubAppDefaultLogin: '534',
         installationId: 432,
-        githubApiBaseUrl: 'http82/invalid',
       } as IntegrationConfig,
     });
     await expect(validateInvocation(executionContext)).rejects.toThrow(
       IntegrationValidationError,
     );
+    delete process.env['GITHUB_API_BASE_URL'];
   });
   test('requires valid config', async () => {
     const executionContext = createMockExecutionContext<IntegrationConfig>({

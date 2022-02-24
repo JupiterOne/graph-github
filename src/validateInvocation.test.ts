@@ -2,10 +2,7 @@ import {
   IntegrationProviderAuthenticationError,
   IntegrationValidationError,
 } from '@jupiterone/integration-sdk-core';
-import {
-  createMockExecutionContext,
-  setupRecording,
-} from '@jupiterone/integration-sdk-testing';
+import { createMockExecutionContext } from '@jupiterone/integration-sdk-testing';
 import { integrationConfig } from '../test/config';
 import {
   IntegrationConfig,
@@ -54,16 +51,7 @@ describe('#validateInvocation', () => {
     );
   });
 
-  it.skip('auth error', async () => {
-    const recording = setupRecording({
-      directory: '__recordings__',
-      name: 'client-auth-error',
-    });
-
-    recording.server.any().intercept((req, res) => {
-      res.status(401);
-    });
-
+  it('auth error', async () => {
     const config = integrationConfig;
     config.githubAppPrivateKey = 'Iwanttofailauthen';
     const executionContext = createMockExecutionContext({

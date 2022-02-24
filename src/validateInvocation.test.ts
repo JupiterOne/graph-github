@@ -54,7 +54,7 @@ describe('#validateInvocation', () => {
     );
   });
 
-  it('auth error', async () => {
+  it.skip('auth error', async () => {
     const recording = setupRecording({
       directory: '__recordings__',
       name: 'client-auth-error',

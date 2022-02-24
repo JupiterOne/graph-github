@@ -11,15 +11,15 @@ import {
 } from './config';
 
 describe('#validateBaseUrl', () => {
-  it('handles no protocol', () => {
+  test('handles no protocol', () => {
     expect(validateBaseUrl('api.test.com:3839/path/')).toBe(
       'https://api.test.com:3839',
     );
   });
-  it('handles complete url', () => {
+  test('handles complete url', () => {
     expect(validateBaseUrl('https://test.com/path/')).toBe('https://test.com');
   });
-  it('throws error if invalid URL is supplied', () => {
+  test('throws error if invalid URL is supplied', () => {
     expect(() => validateBaseUrl('httpexample/test')).toThrowError(
       'Config requires valid URL for githubApiBaseUrl.',
     );
@@ -27,7 +27,7 @@ describe('#validateBaseUrl', () => {
 });
 
 describe('#validateInvocation', () => {
-  it('throws error if invalid url is supplied', async () => {
+  test('throws error if invalid url is supplied', async () => {
     const executionContext = createMockExecutionContext<IntegrationConfig>({
       instanceConfig: {
         githubAppId: 234,
@@ -41,7 +41,7 @@ describe('#validateInvocation', () => {
       IntegrationValidationError,
     );
   });
-  it('requires valid config', async () => {
+  test('requires valid config', async () => {
     const executionContext = createMockExecutionContext<IntegrationConfig>({
       instanceConfig: {} as IntegrationConfig,
     });
@@ -51,7 +51,7 @@ describe('#validateInvocation', () => {
     );
   });
 
-  it('auth error', async () => {
+  test('auth error', async () => {
     const config = integrationConfig;
     config.githubAppPrivateKey = 'Iwanttofailauthen';
     const executionContext = createMockExecutionContext({

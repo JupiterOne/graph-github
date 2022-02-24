@@ -38,9 +38,6 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   installationId: {
     type: 'string', //should be a number, but that's not an option in the SDK
   },
-  githubApiBaseUrl: {
-    type: 'string',
-  },
 };
 
 /**
@@ -78,9 +75,13 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   githubAppDefaultLogin: string;
 
   /**
-   * Specifies the base URL to use when ingesting data.
-   * Allows for api.github.com or a self-hosted GitHub Enterprise
-   * Server to be used.
+   * Optional. Defaults to api.github.com.
+   * To only be used when ingesting data from a self-hosted
+   * GitHub Enterprise Server.
+   *
+   * Supported protocols include http & https.
+   * Url must include host. A provided path will be ignored.
+   * Valid example: my.github.com or https://my.git.org
    */
   githubApiBaseUrl: string;
 }
@@ -132,7 +133,7 @@ export function sanitizeConfig(config: IntegrationConfig) {
   }
 
   config.githubApiBaseUrl = validateBaseUrl(
-    config.githubApiBaseUrl ?? 'https://api.github.com',
+    process.env['GITHUB_API_BASE_URL'] ?? 'https://api.github.com',
   );
 }
 

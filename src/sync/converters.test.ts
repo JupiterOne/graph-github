@@ -433,7 +433,11 @@ describe('toOrgSecretEntity', () => {
   });
   test('properties transferred w/GHE server baseUrl', () => {
     const entity = toOrgSecretEntity(
-      apiResponse as any,
+      {
+        ...apiResponse,
+        selected_repositories_url:
+          'https://my.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
+      } as any,
       'SomeOrg',
       'https://my.github.com',
     );
@@ -444,7 +448,11 @@ describe('toOrgSecretEntity', () => {
       _rawData: [
         {
           name: 'default',
-          rawData: apiResponse,
+          rawData: {
+            ...apiResponse,
+            selected_repositories_url:
+              'https://my.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
+          },
         },
       ],
       name: 'KINDA_SECRET',
@@ -455,7 +463,7 @@ describe('toOrgSecretEntity', () => {
       updatedOn: 1629762175000,
       visibility: 'selected',
       selectedRepositoriesLink:
-        'https://api.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
+        'https://my.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
     });
   });
 });

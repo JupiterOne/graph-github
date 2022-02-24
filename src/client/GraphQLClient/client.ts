@@ -115,7 +115,7 @@ export class GitHubGraphQLClient {
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: `${this.graphqlUrl}app/installations/\${installationId}/access_tokens`,
+        endpoint: `${this.graphqlUrl}/app/installations/\${installationId}/access_tokens`,
         status: err.status,
         statusText: err.statusText,
       });

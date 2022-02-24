@@ -10,6 +10,7 @@ import { IntegrationConfig } from '../config';
 const MAX_RETRIES = 20;
 
 export default function createGitHubAppClient(
+  restApiBaseUrl: string,
   config: IntegrationConfig,
   logger: IntegrationLogger,
 ) {
@@ -35,6 +36,7 @@ export default function createGitHubAppClient(
    */
   const v3 = new OctokitThrottling({
     userAgent: 'jupiter-integration-github',
+    baseUrl: restApiBaseUrl,
     authStrategy: createAppAuth,
     // Options passed to authStrategy
     auth: {

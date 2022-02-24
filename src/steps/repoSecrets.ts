@@ -44,7 +44,12 @@ export async function fetchRepoSecrets({
     const repoSecretEntities = {};
     await apiClient.iterateRepoSecrets(repoTag.name, async (secret) => {
       const secretEntity = (await jobState.addEntity(
-        toRepoSecretEntity(secret, apiClient.accountClient.login, repoTag.name),
+        toRepoSecretEntity(
+          secret,
+          apiClient.accountClient.login,
+          config.githubApiBaseUrl,
+          repoTag.name,
+        ),
       )) as SecretEntity;
       repoSecretEntities[secret.name] = secretEntity;
 

@@ -32,7 +32,10 @@ export async function fetchTeamMembers({
           //somehow this team has a user we didn't know about
           //shouldn't happen, except through weird timing, but we'll make an entry
           await jobState.addEntity(
-            toOrganizationMemberEntityFromTeamMember(user),
+            toOrganizationMemberEntityFromTeamMember(
+              user,
+              config.githubApiBaseUrl,
+            ),
           );
         }
 

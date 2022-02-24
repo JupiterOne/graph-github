@@ -56,7 +56,7 @@ export default function validateGraphQLResponse(
     * the query structure found in queries.ts
     */
 
-  if (!response.rateLimit) {
+  if (response.rateLimit === undefined) {
     throw new IntegrationProviderAPIError({
       message: 'GraphQL reply not valid or in unexpected format',
       status: '200 error',

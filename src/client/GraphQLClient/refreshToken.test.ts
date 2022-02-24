@@ -40,6 +40,7 @@ async function getAccess() {
   config.installationId = 17214088; //this is the id the recordings are under
 
   const appClient = createGitHubAppClient(
+    'https://api.github.com',
     config,
     createMockIntegrationLogger(),
   );
@@ -56,6 +57,7 @@ async function getAccess() {
 async function getClient() {
   const { token, tokenExpires, appClient } = await getAccess();
   return new GitHubGraphQLClient(
+    'https://api.github.com/graphql',
     token,
     tokenExpires * 0, //making this be time zero simulates an expired token and forces a refresh
     resourceMetadataMap(),

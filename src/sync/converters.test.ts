@@ -265,7 +265,10 @@ describe('toOrganizationCollaboratorEntity', () => {
   };
 
   test('properties transferred', () => {
-    const entity = toOrganizationCollaboratorEntity(apiResponse as any);
+    const entity = toOrganizationCollaboratorEntity(
+      apiResponse as any,
+      'https://api.github.com',
+    );
     expect(entity).toEqual({
       _key: 'member-node-id',
       _type: 'github_user',
@@ -402,7 +405,11 @@ describe('toOrgSecretEntity', () => {
   };
 
   test('properties transferred', () => {
-    const entity = toOrgSecretEntity(apiResponse as any, 'SomeOrg');
+    const entity = toOrgSecretEntity(
+      apiResponse as any,
+      'SomeOrg',
+      'https://api.github.com',
+    );
     expect(entity).toEqual({
       _class: ['Secret'],
       _type: 'github_org_secret',
@@ -424,6 +431,41 @@ describe('toOrgSecretEntity', () => {
         'https://api.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
     });
   });
+  test('properties transferred w/GHE server baseUrl', () => {
+    const entity = toOrgSecretEntity(
+      {
+        ...apiResponse,
+        selected_repositories_url:
+          'https://my.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
+      } as any,
+      'SomeOrg',
+      'https://my.github.com',
+    );
+    expect(entity).toEqual({
+      _class: ['Secret'],
+      _type: 'github_org_secret',
+      _key: 'GitHub_Org_SomeOrg_Secret_KINDA_SECRET',
+      _rawData: [
+        {
+          name: 'default',
+          rawData: {
+            ...apiResponse,
+            selected_repositories_url:
+              'https://my.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
+          },
+        },
+      ],
+      name: 'KINDA_SECRET',
+      displayName: 'KINDA_SECRET',
+      webLink:
+        'https://my.github.com/organizations/SomeOrg/settings/secrets/actions/KINDA_SECRET',
+      createdOn: 1629762175000,
+      updatedOn: 1629762175000,
+      visibility: 'selected',
+      selectedRepositoriesLink:
+        'https://my.github.com/orgs/SomeOrg/actions/secrets/KINDA_SECRET/repositories',
+    });
+  });
 });
 
 describe('toRepoSecretEntity', () => {
@@ -437,6 +479,7 @@ describe('toRepoSecretEntity', () => {
     const entity = toRepoSecretEntity(
       apiResponse as any,
       'SomeOrg',
+      'https://api.github.com',
       'Test-repo',
     );
     expect(entity).toEqual({
@@ -539,11 +582,16 @@ describe('toEnvironmentEntity', () => {
   };
 
   test('properties transferred', () => {
-    const entity = toEnvironmentEntity(apiResponse as any, 'SomeOrg', {
-      name: 'SomeRepo',
-      _key: 'pretendKey',
-      databaseId: 'pretendId',
-    });
+    const entity = toEnvironmentEntity(
+      apiResponse as any,
+      'SomeOrg',
+      'https://api.github.com',
+      {
+        name: 'SomeRepo',
+        _key: 'pretendKey',
+        databaseId: 'pretendId',
+      },
+    );
     expect(entity).toEqual({
       _class: ['Configuration'],
       _type: 'github_environment',
@@ -574,11 +622,16 @@ describe('toEnvironmentEntity', () => {
 
   test('missing protection rules detected', () => {
     apiResponse.protection_rules = [];
-    const entity = toEnvironmentEntity(apiResponse as any, 'SomeOrg', {
-      name: 'SomeRepo',
-      _key: 'pretendKey',
-      databaseId: 'pretendId',
-    });
+    const entity = toEnvironmentEntity(
+      apiResponse as any,
+      'SomeOrg',
+      'https://api.github.com',
+      {
+        name: 'SomeRepo',
+        _key: 'pretendKey',
+        databaseId: 'pretendId',
+      },
+    );
     expect(entity).toEqual({
       _class: ['Configuration'],
       _type: 'github_environment',
@@ -645,6 +698,7 @@ describe('toEnvSecretEntity', () => {
     const entity = toEnvSecretEntity(
       apiResponse as any,
       'SomeOrg',
+      'https://api.github.com',
       environment,
     );
     expect(entity).toEqual({

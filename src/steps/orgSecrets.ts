@@ -45,7 +45,11 @@ export async function fetchOrgSecrets({
 
   await apiClient.iterateOrgSecrets(repoTags, async (secret) => {
     const secretEntity = (await jobState.addEntity(
-      toOrgSecretEntity(secret, apiClient.accountClient.login || ''),
+      toOrgSecretEntity(
+        secret,
+        apiClient.accountClient.login || '',
+        config.githubApiBaseUrl,
+      ),
     )) as SecretEntity;
 
     await jobState.addRelationship(

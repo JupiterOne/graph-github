@@ -2,6 +2,8 @@
 
 ## GitHub + JupiterOne Integration Benefits
 
+**GitHub Enterprise Server is now supported**
+
 - Visualize GitHub users, teams, code repositories, pull requests, issues,
   installed GitHub applications, organizational secrets, repo secrets, repo
   environments, and environmental secrets in the JupiterOne graph.
@@ -32,6 +34,8 @@ changing remain in the graph.
 - JupiterOne requires the JupiterOne GitHub app with read-only permissions be
   installed in your Github Organization account.
 - You must have permission in JupiterOne to install new integrations.
+- If setting up for GitHub Enterprise Server, the URL to your instance is
+  required.
 
 ## Support
 

@@ -8,21 +8,28 @@ and this project adheres to
 
 ## [Unreleased]
 
-### 1.10.0 - 2021-02-21
+### 1.11.0 - 2022-02-24
+
+### Added
+
+- Added support for a self-hosted GitHub Enterprise Server. Supply the URL to
+  the instance via GITHUB_API_BASE_URL environment variable.
+
+### 1.10.0 - 2022-02-21
 
 ### Added
 
 - Added property `organizationId` to `github_user` Entity, to make it more
   convenient to track users from multiple organizations.
 
-### 1.9.1 - 2021-01-26
+### 1.9.1 - 2022-01-26
 
 ### Changed
 
 - Optimized queries in `fetch-team-members` and `fetch-team-repos` to fetch the
   ideal number of teams necessary to reach desired data.
 
-### 1.9.0 2021-1-20
+### 1.9.0 2022-01-20
 
 ### Added
 
@@ -37,7 +44,7 @@ and this project adheres to
   `github_issue`
 - Remove `body` and `bodyText` property values from `github_issue` raw data
 
-### 1.8.18 2021-1-04
+### 1.8.18 2022-01-04
 
 ### Changed
 

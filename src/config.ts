@@ -46,13 +46,18 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
  */
 export interface IntegrationConfig extends IntegrationInstanceConfig {
   /**
-   * The GitHub App ID of the application at https://github.com/settings/apps
+   * The GitHub App ID of the application at https://github.com/settings/apps.
+   * In the managed environment for GitHub Cloud, this field is set by the environment.
+   * In the managed environment for GitHub Enterprise Server, this field is filled in
+   * by the user.
    */
   githubAppId: number;
 
   /**
    * The private key to authenticate the GitHub App.
-   * In the managed environment, this field will be passed in.
+   * In the managed environment for GitHub Cloud, this field will be passed in.
+   * In the managed environment for GitHub Enterprise Server, this field is filled in
+   * by the user.
    *
    * Since the key is typically a long RSA hash, it is more convenient in
    * the local environment to store that value in a file than to put it directly
@@ -64,6 +69,10 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
 
   /**
    * The ID number assigned to the installation.
+   * In the managed environment for GitHub Cloud, the authentication flow automatically
+   * populates this field.
+   * In the managed environment for GitHub Enterprise Server, this value is not used.
+   * Instead the githubInstallationId is filled in by the user.
    */
   installationId: number;
 
@@ -75,15 +84,26 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   githubAppDefaultLogin: string;
 
   /**
-   * Optional. Defaults to api.github.com.
-   * To only be used when ingesting data from a self-hosted
-   * GitHub Enterprise Server.
+   * Indicates if the integration is being configured
+   * for a GitHub Enterprise Server.
+   */
+  configureGitHubEnterpriseServer: boolean;
+
+  /**
+   * Used during GitHub Enterprise Server Configuration. Defaults to api.github.com.
    *
    * Supported protocols include http & https.
    * Url must include host. A provided path will be ignored.
    * Valid example: my.github.com or https://my.git.org
    */
   githubApiBaseUrl: string;
+
+  /**
+   * Used during GitHub Enterprise Server configuration.
+   * Same value as installationId but this value is
+   * populated by the user.
+   */
+  githubInstallationId: string;
 }
 
 export async function validateInvocation(
@@ -104,6 +124,10 @@ export async function validateInvocation(
   return apiClient.scopes;
 }
 
+/**
+ * Modifies config based on auth approach: local, cloud, GHE
+ * @param config
+ */
 export function sanitizeConfig(config: IntegrationConfig) {
   const localPath = process.env['GITHUB_APP_LOCAL_PRIVATE_KEY_PATH'];
   if (localPath) {
@@ -122,19 +146,25 @@ export function sanitizeConfig(config: IntegrationConfig) {
     }
   }
 
+  // First use env var (local dev), next config for managed env, and then default to api.github.com
+  config.githubApiBaseUrl = validateBaseUrl(
+    process.env['GITHUB_API_BASE_URL'] ??
+      config.githubApiBaseUrl ??
+      'https://api.github.com',
+  );
+
+  config.installationId = config.installationId ?? config.githubInstallationId;
+
   if (
     !config.githubAppId ||
     !config.githubAppPrivateKey ||
-    !config.installationId
+    !config.installationId ||
+    !config.githubApiBaseUrl
   ) {
     throw new IntegrationValidationError(
-      'Config requires all of {githubAppId, githubAppPrivateKey, installationId}',
+      'Config requires all of {githubAppId, githubAppPrivateKey, installationId, githubApiBaseUrl}',
     );
   }
-
-  config.githubApiBaseUrl = validateBaseUrl(
-    process.env['GITHUB_API_BASE_URL'] ?? 'https://api.github.com',
-  );
 }
 
 export function validateBaseUrl(baseUrl: string): string {

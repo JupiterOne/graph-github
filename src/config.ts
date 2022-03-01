@@ -48,7 +48,7 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   /**
    * The GitHub App ID of the application at https://github.com/settings/apps.
    * In the managed environment for GitHub Cloud, this field is set by the environment.
-   * In the managed environment for GitHub Enterprise Server, this field is filled
+   * In the managed environment for GitHub Enterprise Server, this field is filled in
    * by the user.
    */
   githubAppId: number;
@@ -56,7 +56,7 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   /**
    * The private key to authenticate the GitHub App.
    * In the managed environment for GitHub Cloud, this field will be passed in.
-   * In the managed environment for GitHub Enterprise Server, this field is filled
+   * In the managed environment for GitHub Enterprise Server, this field is filled in
    * by the user.
    *
    * Since the key is typically a long RSA hash, it is more convenient in

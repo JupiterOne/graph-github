@@ -146,6 +146,7 @@ export function sanitizeConfig(config: IntegrationConfig) {
     }
   }
 
+  // First use env var (local dev), next config for managed env, and then default to api.github.com
   config.githubApiBaseUrl = validateBaseUrl(
     process.env['GITHUB_API_BASE_URL'] ??
       config.githubApiBaseUrl ??

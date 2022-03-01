@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Updated support for GitHub Enterprise Server within a managed environment.
+  Allowing users to specify config for their instance.
+
 ### 1.11.0 - 2022-02-24
 
 ### Added

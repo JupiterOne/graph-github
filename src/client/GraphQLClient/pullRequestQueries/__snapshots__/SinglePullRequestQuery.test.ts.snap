@@ -1,0 +1,244 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SinglePullRequestQuery #buildQuery first query - no cursors 1`] = `
+Object {
+  "query": "
+      query (
+        $pullRequestNumber: Int!
+        $repoName: String!
+        $repoOwner: String!
+        $maxCount: Int!
+        $commitsCursor: String
+        $reviewsCursor: String
+        $labelsCursor: String
+      ) {
+          repository(name: $repoName, owner: $repoOwner) {
+            pullRequest(number: $pullRequestNumber) {
+              ...pullRequestFields
+              
+    commits(first: $maxCount, after: $commitsCursor) {
+      totalCount
+      nodes {
+        commit {
+          ...commitFields
+        }
+      }
+      
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+              
+    reviews(first: $maxCount, after: $reviewsCursor) {
+      totalCount
+      nodes {
+        ...reviewFields
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+              
+    labels(first: $maxCount, after: $labelsCursor) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    } 
+            }
+          }
+          ...rateLimit
+      }",
+  "queryVariables": Object {
+    "maxCount": 100,
+    "pullRequestNumber": 5,
+    "repoName": "musical-palm-tree",
+    "repoOwner": "J1-Test",
+  },
+}
+`;
+
+exports[`SinglePullRequestQuery #buildQuery followup query with cursors 1`] = `
+Object {
+  "query": "
+      query (
+        $pullRequestNumber: Int!
+        $repoName: String!
+        $repoOwner: String!
+        $maxCount: Int!
+        $commitsCursor: String
+        $reviewsCursor: String
+        $labelsCursor: String
+      ) {
+          repository(name: $repoName, owner: $repoOwner) {
+            pullRequest(number: $pullRequestNumber) {
+              ...pullRequestFields
+              
+              
+              
+    labels(first: $maxCount, after: $labelsCursor) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    } 
+            }
+          }
+          ...rateLimit
+      }",
+  "queryVariables": Object {
+    "labelsCursor": "labelsEndCursor",
+    "maxCount": 100,
+    "pullRequestNumber": 5,
+    "repoName": "musical-palm-tree",
+    "repoOwner": "J1-Test",
+  },
+}
+`;
+
+exports[`SinglePullRequestQuery #processResponseData Pulling all data out 1`] = `
+Object {
+  "queryState": Object {
+    "commits": Object {
+      "endCursor": "MQ",
+      "hasNextPage": false,
+    },
+    "labels": Object {
+      "endCursor": "Y3Vyc2==",
+      "hasNextPage": true,
+    },
+    "rateLimit": Object {
+      "cost": 1,
+      "limit": 5000,
+      "remaining": 4998,
+      "resetAt": "2022-03-07T22:04:07Z",
+    },
+    "reviews": Object {
+      "endCursor": "Y3Vyc29yOnYyOpO0M",
+      "hasNextPage": true,
+    },
+  },
+  "resource": Object {
+    "commits": Array [
+      Object {
+        "id": "commit1",
+      },
+    ],
+    "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
+    "labels": Array [
+      Object {
+        "id": "label1=",
+        "name": "bug",
+      },
+      Object {
+        "id": "label2=",
+        "name": "documentation",
+      },
+    ],
+    "reviews": Array [
+      Object {
+        "id": "review1",
+      },
+      Object {
+        "id": "review2",
+      },
+    ],
+    "title": "Update CHANGELOG.md",
+  },
+}
+`;
+
+exports[`SinglePullRequestQuery #processResponseData Pulls partial data 1`] = `
+Object {
+  "queryState": Object {
+    "commits": Object {
+      "endCursor": "MQ",
+      "hasNextPage": false,
+    },
+    "labels": Object {
+      "endCursor": "Y3Vyc2==",
+      "hasNextPage": true,
+    },
+    "rateLimit": Object {
+      "cost": 1,
+      "limit": 5000,
+      "remaining": 4998,
+      "resetAt": "2022-03-07T22:04:07Z",
+    },
+    "reviews": undefined,
+  },
+  "resource": Object {
+    "commits": Array [
+      Object {
+        "id": "MDY6",
+      },
+    ],
+    "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
+    "labels": Array [
+      Object {
+        "id": "MDU6TGFiZWwxODE=",
+        "name": "bug",
+      },
+      Object {
+        "id": "MDU6TGFiZWwxODI=",
+        "name": "documentation",
+      },
+    ],
+    "reviews": Array [],
+    "title": "Update CHANGELOG.md",
+  },
+}
+`;
+
+exports[`SinglePullRequestQuery #query successfully paginates 1`] = `
+Object {
+  "commits": Array [
+    Object {
+      "id": "commit1",
+    },
+  ],
+  "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
+  "labels": Array [
+    Object {
+      "id": "label1=",
+      "name": "bug",
+    },
+    Object {
+      "id": "label2=",
+      "name": "documentation",
+    },
+    Object {
+      "id": "label3=",
+      "name": "first-task",
+    },
+    Object {
+      "id": "label4=",
+      "name": "feature",
+    },
+  ],
+  "reviews": Array [
+    Object {
+      "id": "review1",
+    },
+    Object {
+      "id": "review2",
+    },
+    Object {
+      "id": "review3==",
+    },
+  ],
+  "title": "Update CHANGELOG.md",
+}
+`;

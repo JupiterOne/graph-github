@@ -305,6 +305,9 @@ export class APIClient {
   /**
    * Iterates each pull request (PR) resource in the provider.
    *
+   * @param repo repo entity
+   * @param logger logger
+   * @param lastSuccessfulExecution date string
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iteratePullRequests(

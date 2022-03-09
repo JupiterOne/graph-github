@@ -1,0 +1,645 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PullRequestsQuery #buildQuery first query - no query state 1`] = `
+Object {
+  "query": "
+      query (
+        $issueQuery: String!, 
+        $maxSearchLimit: Int!,
+        $maxLimit: Int!,
+        $pullRequestsCursor: String
+      ) {
+        search(first: $maxSearchLimit, after: $pullRequestsCursor, type: ISSUE, query: $issueQuery) {
+          issueCount
+          edges {
+            node {
+              ...pullRequestFields
+              
+      ... on PullRequest {
+        commits(first: $maxLimit) {
+          totalCount
+          nodes {
+            commit {
+              ...commitFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+      ... on PullRequest {
+        reviews(first: $maxLimit) {
+          totalCount
+          nodes {
+            ...reviewFields
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+    ... on PullRequest {
+      labels(first: $maxLimit) {
+        totalCount
+        nodes {
+          id
+          name
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    } 
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        ...rateLimit
+      }",
+  "queryVariables": Object {
+    "issueQuery": "is:pr repo:J1-Test/musical-palm-tree updated:>=2011-10-05T14:48:00.000Z",
+    "maxLimit": 100,
+    "maxSearchLimit": 25,
+  },
+}
+`;
+
+exports[`PullRequestsQuery #buildQuery query with query state 1`] = `
+Object {
+  "query": "
+      query (
+        $issueQuery: String!, 
+        $maxSearchLimit: Int!,
+        $maxLimit: Int!,
+        $pullRequestsCursor: String
+      ) {
+        search(first: $maxSearchLimit, after: $pullRequestsCursor, type: ISSUE, query: $issueQuery) {
+          issueCount
+          edges {
+            node {
+              ...pullRequestFields
+              
+      ... on PullRequest {
+        commits(first: $maxLimit) {
+          totalCount
+          nodes {
+            commit {
+              ...commitFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+      ... on PullRequest {
+        reviews(first: $maxLimit) {
+          totalCount
+          nodes {
+            ...reviewFields
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+    ... on PullRequest {
+      labels(first: $maxLimit) {
+        totalCount
+        nodes {
+          id
+          name
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    } 
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        ...rateLimit
+      }",
+  "queryVariables": Object {
+    "issueQuery": "is:pr repo:J1-Test/musical-palm-tree updated:>=2011-10-05T14:48:00.000Z",
+    "maxLimit": 100,
+    "maxSearchLimit": 25,
+    "pullRequestsCursor": "endCursor",
+  },
+}
+`;
+
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out with inner resource pagination 1`] = `
+Object {
+  "commits": Array [
+    Object {
+      "id": "commit1",
+    },
+  ],
+  "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
+  "labels": Array [
+    Object {
+      "id": "label1=",
+      "name": "bug",
+    },
+    Object {
+      "id": "label2=",
+      "name": "documentation",
+    },
+    Object {
+      "id": "label3=",
+      "name": "first-task",
+    },
+    Object {
+      "id": "label4=",
+      "name": "feature",
+    },
+  ],
+  "reviews": Array [
+    Object {
+      "id": "review1",
+    },
+    Object {
+      "id": "review2",
+    },
+    Object {
+      "id": "review3==",
+    },
+  ],
+  "title": "Update CHANGELOG.md",
+}
+`;
+
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out with inner resource pagination 2`] = `
+Object {
+  "query": "
+      query (
+        $issueQuery: String!, 
+        $maxSearchLimit: Int!,
+        $maxLimit: Int!,
+        $pullRequestsCursor: String
+      ) {
+        search(first: $maxSearchLimit, after: $pullRequestsCursor, type: ISSUE, query: $issueQuery) {
+          issueCount
+          edges {
+            node {
+              ...pullRequestFields
+              
+      ... on PullRequest {
+        commits(first: $maxLimit) {
+          totalCount
+          nodes {
+            commit {
+              ...commitFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+      ... on PullRequest {
+        reviews(first: $maxLimit) {
+          totalCount
+          nodes {
+            ...reviewFields
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+    ... on PullRequest {
+      labels(first: $maxLimit) {
+        totalCount
+        nodes {
+          id
+          name
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    } 
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        ...rateLimit
+      }",
+  "queryVariables": Object {
+    "issueQuery": "is:pr repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
+    "maxLimit": 100,
+    "maxSearchLimit": 25,
+  },
+}
+`;
+
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out with inner resource pagination 3`] = `
+Object {
+  "query": "
+      query (
+        $pullRequestNumber: Int!
+        $repoName: String!
+        $repoOwner: String!
+        $maxCount: Int!
+        $commitsCursor: String
+        $reviewsCursor: String
+        $labelsCursor: String
+      ) {
+          repository(name: $repoName, owner: $repoOwner) {
+            pullRequest(number: $pullRequestNumber) {
+              ...pullRequestFields
+              
+    commits(first: $maxCount, after: $commitsCursor) {
+      totalCount
+      nodes {
+        commit {
+          ...commitFields
+        }
+      }
+      
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+              
+    reviews(first: $maxCount, after: $reviewsCursor) {
+      totalCount
+      nodes {
+        ...reviewFields
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+              
+    labels(first: $maxCount, after: $labelsCursor) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    } 
+            }
+          }
+          ...rateLimit
+      }",
+  "queryVariables": Object {
+    "maxCount": 100,
+    "pullRequestNumber": undefined,
+    "repoName": "musical-palm-tree",
+    "repoOwner": "J1-Test",
+  },
+}
+`;
+
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out with inner resource pagination 4`] = `
+Object {
+  "query": "
+      query (
+        $pullRequestNumber: Int!
+        $repoName: String!
+        $repoOwner: String!
+        $maxCount: Int!
+        
+        $reviewsCursor: String
+        $labelsCursor: String
+      ) {
+          repository(name: $repoName, owner: $repoOwner) {
+            pullRequest(number: $pullRequestNumber) {
+              ...pullRequestFields
+              
+              
+    reviews(first: $maxCount, after: $reviewsCursor) {
+      totalCount
+      nodes {
+        ...reviewFields
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+              
+    labels(first: $maxCount, after: $labelsCursor) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    } 
+            }
+          }
+          ...rateLimit
+      }",
+  "queryVariables": Object {
+    "labelsCursor": "Y3Vyc2==",
+    "maxCount": 100,
+    "pullRequestNumber": undefined,
+    "repoName": "musical-palm-tree",
+    "repoOwner": "J1-Test",
+    "reviewsCursor": "Y3Vyc29yOnYyOpO0M",
+  },
+}
+`;
+
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out with no inner resource pagination 1`] = `
+Object {
+  "closed": false,
+  "commits": Array [
+    Object {
+      "id": "MDY6Q29tbWl0MjE6YmVkZDliNDIzNmY3NzNlMTAxNDIwYzVjNzU3OWIyMDNmODVkNmVkNw==",
+    },
+  ],
+  "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
+  "labels": Array [
+    Object {
+      "id": "MDU6TGFiZWwxODE=",
+      "name": "bug",
+    },
+    Object {
+      "id": "MDU6TGFiZWwxODI=",
+      "name": "documentation",
+    },
+    Object {
+      "id": "MDU6TGFiZWwxODM=",
+      "name": "duplicate",
+    },
+    Object {
+      "id": "MDU6TGFiZWwxODU=",
+      "name": "good first issue",
+    },
+  ],
+  "reviews": Array [
+    Object {
+      "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mg==",
+    },
+    Object {
+      "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mw==",
+    },
+  ],
+  "title": "Update CHANGELOG.md",
+}
+`;
+
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out with no inner resource pagination 2`] = `
+Object {
+  "query": "
+      query (
+        $issueQuery: String!, 
+        $maxSearchLimit: Int!,
+        $maxLimit: Int!,
+        $pullRequestsCursor: String
+      ) {
+        search(first: $maxSearchLimit, after: $pullRequestsCursor, type: ISSUE, query: $issueQuery) {
+          issueCount
+          edges {
+            node {
+              ...pullRequestFields
+              
+      ... on PullRequest {
+        commits(first: $maxLimit) {
+          totalCount
+          nodes {
+            commit {
+              ...commitFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+      ... on PullRequest {
+        reviews(first: $maxLimit) {
+          totalCount
+          nodes {
+            ...reviewFields
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+    ... on PullRequest {
+      labels(first: $maxLimit) {
+        totalCount
+        nodes {
+          id
+          name
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    } 
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        ...rateLimit
+      }",
+  "queryVariables": Object {
+    "issueQuery": "is:pr repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
+    "maxLimit": 100,
+    "maxSearchLimit": 25,
+  },
+}
+`;
+
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out with no inner resource pagination 3`] = `
+Object {
+  "query": "
+      query (
+        $issueQuery: String!, 
+        $maxSearchLimit: Int!,
+        $maxLimit: Int!,
+        $pullRequestsCursor: String
+      ) {
+        search(first: $maxSearchLimit, after: $pullRequestsCursor, type: ISSUE, query: $issueQuery) {
+          issueCount
+          edges {
+            node {
+              ...pullRequestFields
+              
+      ... on PullRequest {
+        commits(first: $maxLimit) {
+          totalCount
+          nodes {
+            commit {
+              ...commitFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+      ... on PullRequest {
+        reviews(first: $maxLimit) {
+          totalCount
+          nodes {
+            ...reviewFields
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+              
+    ... on PullRequest {
+      labels(first: $maxLimit) {
+        totalCount
+        nodes {
+          id
+          name
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    } 
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        ...rateLimit
+      }",
+  "queryVariables": Object {
+    "issueQuery": "is:pr repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
+    "maxLimit": 100,
+    "maxSearchLimit": 25,
+    "pullRequestsCursor": "Y3Vyc29yOjI=",
+  },
+}
+`;
+
+exports[`PullRequestsQuery #processResponseData Pulling data out with no inner resource pagination 1`] = `
+Object {
+  "pullRequests": Object {
+    "endCursor": "Y3Vyc29yOjI=",
+    "hasNextPage": true,
+  },
+  "rateLimit": Object {
+    "cost": 2,
+  },
+}
+`;
+
+exports[`PullRequestsQuery #processResponseData Pulling data out with no inner resource pagination 2`] = `
+Object {
+  "closed": false,
+  "commits": Array [
+    Object {
+      "id": "MDY6Q29tbWl0MjE6YmVkZDliNDIzNmY3NzNlMTAxNDIwYzVjNzU3OWIyMDNmODVkNmVkNw==",
+    },
+  ],
+  "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
+  "labels": Array [
+    Object {
+      "id": "MDU6TGFiZWwxODE=",
+      "name": "bug",
+    },
+    Object {
+      "id": "MDU6TGFiZWwxODI=",
+      "name": "documentation",
+    },
+    Object {
+      "id": "MDU6TGFiZWwxODM=",
+      "name": "duplicate",
+    },
+    Object {
+      "id": "MDU6TGFiZWwxODU=",
+      "name": "good first issue",
+    },
+  ],
+  "reviews": Array [
+    Object {
+      "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mg==",
+    },
+    Object {
+      "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mw==",
+    },
+  ],
+  "title": "Update CHANGELOG.md",
+}
+`;
+
+exports[`PullRequestsQuery #processResponseData Pulling data out with no inner resource pagination 3`] = `
+Object {
+  "closed": false,
+  "commits": Array [
+    Object {
+      "id": "MDY6Q29tbWl0MjE6Y2FmNWNjYzA2MjYyMzAxYzFiNjg4NWJkYjc2NzllNTQ0NjVkZmQ5ZA==",
+    },
+  ],
+  "id": "MDExOlB1bGxSZXF1ZXN0OQ==",
+  "labels": Array [],
+  "reviews": Array [],
+  "title": "Create CHANGELOG.md #2",
+}
+`;
+
+exports[`PullRequestsQuery #processResponseData Skips resources with inner resource pagination 1`] = `
+Object {
+  "pullRequests": Object {
+    "endCursor": "Y3Vyc29yOjI=",
+    "hasNextPage": false,
+  },
+  "rateLimit": Object {
+    "cost": 1,
+  },
+}
+`;

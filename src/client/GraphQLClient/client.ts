@@ -34,6 +34,10 @@ import {
   ResourceMap,
   ResourceMetadata,
 } from './types';
+import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
+import { createQueryExecutor } from './CreateQueryExecutor';
+
+const FIVE_MINUTES_IN_SECS = 300000;
 
 export class GitHubGraphQLClient {
   private readonly graphqlUrl: string;
@@ -122,7 +126,42 @@ export class GitHubGraphQLClient {
     }
   }
 
+  public async iteratePullRequestsV2(
+    repository: { fullName: string; public: boolean },
+    lastExecutionTime: string,
+    iteratee: ResourceIteratee<PullRequest>,
+  ): Promise<QueryResponse> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
+      repository,
+      lastExecutionTime,
+      iteratee,
+      executor,
+    );
+
+    return {
+      rateLimitConsumed,
+    };
+  }
+
   /**
+   * Performs GraphQl request.
+   * Handles:
+   *    - token management (refreshes 5 minutes before expiring)
+   *    - rate limit management
+   * @param queryString
+   * @param queryVariables
+   */
+  public async query(queryString: string, queryVariables) {
+    if (this.tokenExpires - FIVE_MINUTES_IN_SECS < Date.now()) {
+      await this.refreshToken();
+    }
+    return await this.retryGraphQLV2(queryString, queryVariables);
+  }
+
+  /**
+   * @Deprecated use iteratePullRequestsV2
    * Iterates through a search request for Pull Requests while handling
    * pagination of both the pull requests and their inner resources.
    *
@@ -607,6 +646,110 @@ export class GitHubGraphQLClient {
       }
     }
     return aggregatedResources;
+  }
+
+  /**
+   *
+   * @param queryString
+   * @param queryVariables
+   * @private
+   */
+  private async retryGraphQLV2(queryString: string, queryVariables) {
+    const { logger } = this;
+
+    //queryWithRateLimitCatch will be passed to the retry function below
+    const queryWithRateLimitCatch = async () => {
+      let response;
+      try {
+        response = await this.graph(queryString)(queryVariables);
+      } catch (err) {
+        // Process errors thrown by `this.graph` generated functions
+        let message;
+
+        // Extract message from first GraphQL response (reject(response),
+        // unknown response code in graphql.js)
+        if (err.errors?.length > 0 && err.errors[0].message) {
+          message = `GraphQL errors (${
+            err.errors.length
+          }), first: ${JSON.stringify(err.errors[0])}`;
+        }
+
+        // Catch all, we could get an Array from graphql.js (reject(response.errors))
+        if (!message) {
+          message = JSON.stringify(err).substring(0, 200);
+        }
+
+        //just wrapping the original error so we can be more specific about the string that caused it
+        throw new IntegrationProviderAPIError({
+          message,
+          status: 'None',
+          statusText: `GraphQL query error: ${queryString}`,
+          cause: err,
+          endpoint: `retryGraphQL`,
+        });
+      }
+      validateGraphQLResponse(response, logger, queryString);
+      return response;
+    };
+
+    // Check https://github.com/lifeomic/attempt for options on retry
+    return await retry(queryWithRateLimitCatch, {
+      maxAttempts: 3,
+      delay: 30_000, // 30 seconds to start
+      timeout: 180_000, // 3 min timeout. We need this in case Node hangs with ETIMEDOUT
+      factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min
+      handleError: async (err, attemptContext) => {
+        /* retry will keep trying to the limits of retryOptions
+         * but it lets you intervene in this function - if you throw an error from in here,
+         * it stops retrying. Otherwise you can just log the attempts.
+         *
+         * Github has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
+         * GitHub guidance is to "wait a few minutes" when we get one of these errors.
+         * https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
+         * this link is REST specific - however, the limits might apply to GraphQL as well,
+         * and our GraphQL client is not using the @octokit throttling and retry plugins like our REST client
+         * therefore some retry logic is appropriate here
+         */
+
+        if (err.status === 401) {
+          logger.warn(
+            { attemptContext, err },
+            `Hit 401, attempting to refresh the token and try again.`,
+          );
+          await this.refreshToken();
+          return;
+        }
+
+        // don't keep trying if it's not going to get better
+        if (err.retryable === false || err.status === 403) {
+          logger.warn(
+            { attemptContext, err },
+            `Hit an unrecoverable error when attempting to query GraphQL. Aborting.`,
+          );
+          attemptContext.abort();
+        }
+
+        if (err.message?.includes('exceeded a secondary rate limit')) {
+          logger.info(
+            { attemptContext, err },
+            '"Secondary Rate Limit" message received.',
+          );
+        }
+
+        if (err.message?.includes('Resource not accessible by integration')) {
+          logger.info(
+            { attemptContext, err },
+            'Resource not accessible by integration: Aborting attempt',
+          );
+          attemptContext.abort();
+        }
+
+        logger.warn(
+          { attemptContext, err },
+          `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
+        );
+      },
+    });
   }
 
   /**

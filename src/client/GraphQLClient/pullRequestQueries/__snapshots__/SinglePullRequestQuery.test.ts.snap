@@ -73,8 +73,8 @@ Object {
         $repoName: String!
         $repoOwner: String!
         $maxCount: Int!
-        $commitsCursor: String
-        $reviewsCursor: String
+        
+        
         $labelsCursor: String
       ) {
           repository(name: $repoName, owner: $repoOwner) {
@@ -197,7 +197,7 @@ Object {
       },
     ],
     "reviews": Array [],
-    "title": "Update CHANGELOG.md",
+    "title": "singleQueryWithPartialInnerResources",
   },
 }
 `;

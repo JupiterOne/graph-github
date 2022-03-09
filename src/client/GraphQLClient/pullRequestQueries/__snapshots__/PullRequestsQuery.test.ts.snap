@@ -377,6 +377,12 @@ Object {
     "repoOwner": "J1-Test",
     "reviewsCursor": "Y3Vyc29yOnYyOpO0M",
   },
+  "rateLimit": Object {
+    "cost": 1,
+    "limit": 5000,
+    "remaining": 4998,
+    "resetAt": "2022-03-07T22:04:07Z",
+  },
 }
 `;
 
@@ -562,6 +568,9 @@ Object {
     "maxLimit": 100,
     "maxSearchLimit": 25,
     "pullRequestsCursor": "Y3Vyc29yOjI=",
+  },
+  "rateLimit": Object {
+    "cost": 2,
   },
 }
 `;

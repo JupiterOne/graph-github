@@ -169,6 +169,11 @@ class PullRequestsQuery {
 
     for (const edge of pullRequestEdges) {
       const pullRequest = edge.node;
+      if (Object.keys(pullRequest).length === 0) {
+        // If there's no data, pass - possible if permissions aren't correct in GHE
+        continue;
+      }
+
       if (
         utils.innerResourcePaginationRequired(pullRequest) &&
         utils.hasRepoOwnerAndName(pullRequest)

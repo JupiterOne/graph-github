@@ -79,7 +79,7 @@ describe('SinglePullRequestQuery', () => {
       expect(executor).toHaveBeenCalledTimes(2);
       expect(executor.mock.calls[0][0].queryVariables).toEqual({
         // no cursors are include on initial call
-        maxCount: 100,
+        maxLimit: 100,
         pullRequestNumber: 4,
         repoName: 'musical-palm-tree',
         repoOwner: 'J1-Test',
@@ -88,7 +88,7 @@ describe('SinglePullRequestQuery', () => {
         // commitsCursor is not included
         labelsCursor: 'Y3Vyc2==',
         reviewsCursor: 'Y3Vyc29yOnYyOpO0M',
-        maxCount: 100,
+        maxLimit: 100,
         pullRequestNumber: 4,
         repoName: 'musical-palm-tree',
         repoOwner: 'J1-Test',

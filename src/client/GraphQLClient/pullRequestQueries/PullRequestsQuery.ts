@@ -176,7 +176,7 @@ class PullRequestsQuery {
           repoOwner: repoOwnerAndName.repoOwner!,
         });
       } else {
-        await iteratee(utils.responseToResource(edge.node));
+        await iteratee(utils.responseToResource(pullRequest));
       }
     }
 

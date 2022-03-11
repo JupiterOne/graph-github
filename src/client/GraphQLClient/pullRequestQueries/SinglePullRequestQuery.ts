@@ -1,31 +1,20 @@
 import utils from './utils';
 import { ResourceIteratee } from '../../../client';
-import { PullRequest } from '../types';
+import {
+  BaseQueryState,
+  CursorState,
+  ProcessedData,
+  PullRequest,
+} from '../types';
 import { ExecutableQuery, QueryExecutor } from '../CreateQueryExecutor';
 
-type QueryState = {
+interface QueryState extends BaseQueryState {
   commits: CursorState;
   reviews: CursorState;
   labels: CursorState;
-  rateLimit?: {
-    limit: number;
-    cost: number;
-    remaining: number;
-    resetAt: string;
-  };
-};
+}
 
-type CursorState = {
-  hasNextPage?: boolean;
-  endCursor?: string;
-};
-
-type ProcessedData = {
-  resource;
-  queryState: QueryState;
-};
-
-const MAX_REQUESTS_NUM = 100;
+const MAX_REQUESTS_LIMIT = 100;
 
 class SinglePullRequestQuery {
   /**
@@ -48,7 +37,7 @@ class SinglePullRequestQuery {
         $pullRequestNumber: Int!
         $repoName: String!
         $repoOwner: String!
-        $maxCount: Int!
+        $maxLimit: Int!
         ${
           queryState?.commits.hasNextPage !== false
             ? '$commitsCursor: String'
@@ -95,22 +84,22 @@ class SinglePullRequestQuery {
         pullRequestNumber,
         repoName,
         repoOwner,
-        maxCount: MAX_REQUESTS_NUM,
+        maxLimit: MAX_REQUESTS_LIMIT,
         ...(queryState?.commits?.hasNextPage && {
-          commitsCursor: queryState?.commits.endCursor,
+          commitsCursor: queryState.commits.endCursor,
         }),
         ...(queryState?.reviews?.hasNextPage && {
-          reviewsCursor: queryState?.reviews.endCursor,
+          reviewsCursor: queryState.reviews.endCursor,
         }),
         ...(queryState?.labels?.hasNextPage && {
-          labelsCursor: queryState?.labels.endCursor,
+          labelsCursor: queryState.labels.endCursor,
         }),
       },
     };
   }
 
   private static commitsQuery = `
-    commits(first: $maxCount, after: $commitsCursor) {
+    commits(first: $maxLimit, after: $commitsCursor) {
       totalCount
       nodes {
         commit {
@@ -125,7 +114,7 @@ class SinglePullRequestQuery {
     }`;
 
   private static reviewsQuery = `
-    reviews(first: $maxCount, after: $reviewsCursor) {
+    reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
         ...reviewFields
@@ -137,7 +126,7 @@ class SinglePullRequestQuery {
     }`;
 
   private static labelsQuery = `
-    labels(first: $maxCount, after: $labelsCursor) {
+    labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
         id
@@ -149,7 +138,7 @@ class SinglePullRequestQuery {
       }
     }`;
 
-  public static processResponseData(responseData): ProcessedData {
+  public static processResponseData(responseData): ProcessedData<QueryState> {
     const rateLimit = responseData.rateLimit;
     const pullRequest = responseData.repository.pullRequest;
     const { commits, reviews, labels } = pullRequest;

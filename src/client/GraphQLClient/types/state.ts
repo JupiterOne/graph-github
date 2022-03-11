@@ -89,3 +89,8 @@ export interface BaseQueryState {
     resetAt: string;
   };
 }
+
+export type ProcessedData<T extends BaseQueryState> = {
+  resource;
+  queryState: T;
+};

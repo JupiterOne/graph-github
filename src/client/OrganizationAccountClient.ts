@@ -199,6 +199,10 @@ export default class OrganizationAccountClient {
     return response.filter((t) => t.teams === teamKey);
   }
 
+  /**
+   * @Deprecated
+   * @param slugs
+   */
   async getRepositories(slugs?: string[]): Promise<OrgRepoQueryResponse[]> {
     let response: OrgRepoQueryResponse[] = [];
 
@@ -222,6 +226,12 @@ export default class OrganizationAccountClient {
     } else {
       return response;
     }
+  }
+
+  async iterateOrgRepositories(
+    iteratee: ResourceIteratee<OrgRepoQueryResponse>,
+  ): Promise<QueryResponse> {
+    return await this.v4.iterateOrgRepositories(this.login, iteratee);
   }
 
   async getTeamRepositories(
@@ -287,6 +297,12 @@ export default class OrganizationAccountClient {
     return response;
   }
 
+  /**
+   * Calls the GraphQL client to iterate over pull request entities.
+   * @param repo
+   * @param lastExecutionTime
+   * @param iteratee
+   */
   async iteratePullRequestEntities(
     repo: RepoEntity,
     lastExecutionTime: string, //expect Date.toISOString format
@@ -308,6 +324,12 @@ export default class OrganizationAccountClient {
     );
   }
 
+  /**
+   * Calls the GraphQL client to iterate over issue entities.
+   * @param repo
+   * @param lastExecutionTime
+   * @param iteratee
+   */
   async iterateIssueEntities(
     repo: RepoEntity,
     lastExecutionTime: string, //expect Date.toISOString format

@@ -30,6 +30,7 @@ import {
   GithubResource,
   Issue,
   Node,
+  OrgRepoQueryResponse,
   PullRequest,
   ResourceMap,
   ResourceMetadata,
@@ -37,6 +38,7 @@ import {
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
 import { createQueryExecutor } from './CreateQueryExecutor';
+import OrgRepositoryQuery from './repositoryQueries/OrgRepositoryQuery';
 
 const FIVE_MINUTES_IN_SECS = 300000;
 
@@ -163,6 +165,24 @@ export class GitHubGraphQLClient {
     return {
       rateLimitConsumed,
     };
+  }
+
+  /**
+   * Iterates over Organization repositories.
+   * @param login
+   * @param iteratee
+   */
+  public async iterateOrgRepositories(
+    login,
+    iteratee: ResourceIteratee<OrgRepoQueryResponse>,
+  ): Promise<QueryResponse> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return await OrgRepositoryQuery.iterateRepositories(
+      login,
+      iteratee,
+      executor,
+    );
   }
 
   /**

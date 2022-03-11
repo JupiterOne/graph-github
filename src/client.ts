@@ -295,11 +295,12 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const repos: OrgRepoQueryResponse[] =
-      await this.accountClient.getRepositories();
-    for (const repo of repos) {
-      await iteratee(repo);
-    }
+    const { rateLimitConsumed } =
+      await this.accountClient.iterateOrgRepositories(iteratee);
+    this.logger.info(
+      { rateLimitConsumed },
+      'Rate limit consumed while fetching Org Repositories.',
+    );
   }
 
   /**
@@ -374,6 +375,10 @@ export class APIClient {
       this.logger.info(
         { rateLimitConsumed },
         'Rate limit consumed while fetching Issues.',
+      );
+    } else {
+      this.logger.info(
+        'Repo issues scope was not provided, skipping Issue ingestion.',
       );
     }
   }

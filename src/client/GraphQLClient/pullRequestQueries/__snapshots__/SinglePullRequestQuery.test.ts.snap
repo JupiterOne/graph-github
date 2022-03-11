@@ -7,7 +7,7 @@ Object {
         $pullRequestNumber: Int!
         $repoName: String!
         $repoOwner: String!
-        $maxCount: Int!
+        $maxLimit: Int!
         $commitsCursor: String
         $reviewsCursor: String
         $labelsCursor: String
@@ -16,7 +16,7 @@ Object {
             pullRequest(number: $pullRequestNumber) {
               ...pullRequestFields
               
-    commits(first: $maxCount, after: $commitsCursor) {
+    commits(first: $maxLimit, after: $commitsCursor) {
       totalCount
       nodes {
         commit {
@@ -30,7 +30,7 @@ Object {
       }
     }
               
-    reviews(first: $maxCount, after: $reviewsCursor) {
+    reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
         ...reviewFields
@@ -41,7 +41,7 @@ Object {
       }
     }
               
-    labels(first: $maxCount, after: $labelsCursor) {
+    labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
         id
@@ -57,7 +57,7 @@ Object {
           ...rateLimit
       }",
   "queryVariables": Object {
-    "maxCount": 100,
+    "maxLimit": 100,
     "pullRequestNumber": 5,
     "repoName": "musical-palm-tree",
     "repoOwner": "J1-Test",
@@ -72,7 +72,7 @@ Object {
         $pullRequestNumber: Int!
         $repoName: String!
         $repoOwner: String!
-        $maxCount: Int!
+        $maxLimit: Int!
         
         
         $labelsCursor: String
@@ -83,7 +83,7 @@ Object {
               
               
               
-    labels(first: $maxCount, after: $labelsCursor) {
+    labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
         id
@@ -100,7 +100,7 @@ Object {
       }",
   "queryVariables": Object {
     "labelsCursor": "labelsEndCursor",
-    "maxCount": 100,
+    "maxLimit": 100,
     "pullRequestNumber": 5,
     "repoName": "musical-palm-tree",
     "repoOwner": "J1-Test",

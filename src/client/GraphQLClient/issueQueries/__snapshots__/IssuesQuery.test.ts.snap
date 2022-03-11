@@ -1,0 +1,203 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IssuesQuery #iterateIssues Pulling data out 1`] = `
+Object {
+  "assignees": Array [
+    Object {
+      "login": "spoultonV2",
+      "name": null,
+    },
+  ],
+  "id": "111",
+  "labels": Array [
+    Object {
+      "id": "LA_kwDOG5ypUc7mjrvd",
+      "name": "bug",
+    },
+    Object {
+      "id": "LA_kwDOG5ypUc7mjrvi",
+      "name": "feature",
+    },
+  ],
+  "title": "Need to add code part 1",
+}
+`;
+
+exports[`IssuesQuery #iterateIssues Pulling data out 2`] = `
+Object {
+  "assignees": Array [
+    Object {
+      "login": "maxmin",
+      "name": null,
+    },
+  ],
+  "id": "2222",
+  "labels": Array [
+    Object {
+      "id": "LA_kwDOG5ypUc7mjrvd",
+      "name": "bug",
+    },
+    Object {
+      "id": "LA_kwDOG5ypUc7mjrvi",
+      "name": "critical",
+    },
+  ],
+  "title": "Need to add code part 2",
+}
+`;
+
+exports[`IssuesQuery #iterateIssues Pulling data out 3`] = `
+Object {
+  "assignees": Array [
+    Object {
+      "login": "chris3",
+      "name": null,
+    },
+  ],
+  "id": "333",
+  "labels": Array [
+    Object {
+      "id": "LA_kwDOG5ypUc7mjrvd",
+      "name": "defect",
+    },
+    Object {
+      "id": "LA_kwDOG5ypUc7mjrvi",
+      "name": "easy",
+    },
+  ],
+  "title": "Need to add code part 3",
+}
+`;
+
+exports[`IssuesQuery #iterateIssues Pulling data out 4`] = `
+Object {
+  "query": "
+      query(
+        $issueQuery: String!, 
+        $maxSearchLimit: Int!, 
+        $maxInnerLimit: Int!,
+        $issuesCursor: String
+      ) {
+        search(
+          first: $maxSearchLimit, 
+          after: $issuesCursor, 
+          type: ISSUE, 
+          query: $issueQuery
+          ) {
+            issueCount
+            edges {
+              node {
+              ...issueFields
+              
+              ... on Issue {
+                  assignees(first: $maxInnerLimit) {
+                    totalCount
+                    nodes {
+                      name
+                      login
+                    }
+                    pageInfo {
+                      endCursor
+                      hasNextPage
+                    }
+                  }
+                }
+                
+              ... on Issue {
+                  labels(first: $maxInnerLimit) {
+                    totalCount
+                    nodes {
+                      id
+                      name
+                    }
+                    pageInfo {
+                      endCursor
+                      hasNextPage
+                    }
+                  }
+                }
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+          ...rateLimit
+      }",
+  "queryVariables": Object {
+    "issueQuery": "is:issue repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
+    "maxInnerLimit": 100,
+    "maxSearchLimit": 25,
+  },
+}
+`;
+
+exports[`IssuesQuery #iterateIssues Pulling data out 5`] = `
+Object {
+  "query": "
+      query(
+        $issueQuery: String!, 
+        $maxSearchLimit: Int!, 
+        $maxInnerLimit: Int!,
+        $issuesCursor: String
+      ) {
+        search(
+          first: $maxSearchLimit, 
+          after: $issuesCursor, 
+          type: ISSUE, 
+          query: $issueQuery
+          ) {
+            issueCount
+            edges {
+              node {
+              ...issueFields
+              
+              ... on Issue {
+                  assignees(first: $maxInnerLimit) {
+                    totalCount
+                    nodes {
+                      name
+                      login
+                    }
+                    pageInfo {
+                      endCursor
+                      hasNextPage
+                    }
+                  }
+                }
+                
+              ... on Issue {
+                  labels(first: $maxInnerLimit) {
+                    totalCount
+                    nodes {
+                      id
+                      name
+                    }
+                    pageInfo {
+                      endCursor
+                      hasNextPage
+                    }
+                  }
+                }
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+          ...rateLimit
+      }",
+  "queryVariables": Object {
+    "issueQuery": "is:issue repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
+    "issuesCursor": "Y3Vyc29yOjE=",
+    "maxInnerLimit": 100,
+    "maxSearchLimit": 25,
+  },
+  "rateLimit": Object {
+    "cost": 5,
+    "remaining": 4983,
+  },
+}
+`;

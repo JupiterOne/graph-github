@@ -92,44 +92,44 @@ export const ISSUES_QUERY_STRING = `query ($query: String!, $issues: String, $as
           node {
             ...issueFields
             ... on Issue {
-          assignees(first: ${MAX_REQUESTS_NUM}, after: $assignees) {
-          totalCount
-          edges {
-            node {
-              name
-              login
+              assignees(first: ${MAX_REQUESTS_NUM}, after: $assignees) {
+                totalCount
+                edges {
+                  node {
+                    name
+                    login
+                  }
+                }
+                pageInfo {
+                  endCursor
+                  hasNextPage
+                }
+              }
             }
-          }
-          pageInfo {
-  endCursor
-  hasNextPage
-}
-        }
-      }
-... on Issue {
-          labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
-          totalCount
-          edges {
-            node {
-              id
-              name
+            ... on Issue {
+              labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
+                totalCount
+                edges {
+                  node {
+                    id
+                    name
+                  }
+                }
+                pageInfo {
+                  endCursor
+                  hasNextPage
+                }
+              }
             }
-          }
-          pageInfo {
-  endCursor
-  hasNextPage
-}
-        }
-      }
           }
         }
         pageInfo {
-  endCursor
-  hasNextPage
-}
+          endCursor
+          hasNextPage
+        }
       }
-...rateLimit
-  }`;
+      ...rateLimit
+    }`;
 
 // TODO: Should this argument be using `last` instead of `first` to get the most
 // recent? Would that require changing `after` to `before` so that we can walk back?

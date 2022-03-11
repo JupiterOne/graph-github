@@ -35,6 +35,7 @@ import {
   ResourceMetadata,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
+import IssuesQuery from './issueQueries/IssuesQuery';
 import { createQueryExecutor } from './CreateQueryExecutor';
 
 const FIVE_MINUTES_IN_SECS = 300000;
@@ -135,6 +136,25 @@ export class GitHubGraphQLClient {
 
     const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
       repository,
+      lastExecutionTime,
+      iteratee,
+      executor,
+    );
+
+    return {
+      rateLimitConsumed,
+    };
+  }
+
+  public async iterateIssuesV2(
+    repoFullName: string,
+    lastExecutionTime: string,
+    iteratee: ResourceIteratee<Issue>,
+  ): Promise<QueryResponse> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    const { rateLimitConsumed } = await IssuesQuery.iterateIssues(
+      repoFullName,
       lastExecutionTime,
       iteratee,
       executor,

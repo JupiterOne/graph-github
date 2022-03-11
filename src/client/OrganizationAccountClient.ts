@@ -39,7 +39,6 @@ import {
   ACCOUNT_QUERY_STRING,
   REPOS_QUERY_STRING,
   SINGLE_TEAM_MEMBERS_QUERY_STRING,
-  ISSUES_QUERY_STRING,
   TEAMS_QUERY_STRING,
   USERS_QUERY_STRING,
   SINGLE_REPO_COLLABORATORS_QUERY_STRING,
@@ -322,13 +321,19 @@ export default class OrganizationAccountClient {
       return { rateLimitConsumed: 0 };
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
-    const query = `is:issue repo:${repo.fullName} updated:>=${lastExecutionTime}`;
-    return await this.v4.iterateIssues(
-      ISSUES_QUERY_STRING,
-      query,
-      [GithubResource.Assignees, GithubResource.LabelsOnIssues],
+
+    return await this.v4.iterateIssuesV2(
+      repo.fullName,
+      lastExecutionTime,
       iteratee,
     );
+    // const query = `is:issue repo:${repo.fullName} updated:>=${lastExecutionTime}`;
+    // return await this.v4.iterateIssues(
+    //   ISSUES_QUERY_STRING,
+    //   query,
+    //   [GithubResource.Assignees, GithubResource.LabelsOnIssues],
+    //   iteratee,
+    // );
   }
 
   /**

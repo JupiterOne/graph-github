@@ -1,23 +1,12 @@
 import { ResourceIteratee } from '../../../client';
-import { PullRequest } from '../types';
+import { BaseQueryState, CursorState, PullRequest } from '../types';
 import utils from './utils';
 import { ExecutableQuery, QueryExecutor } from '../CreateQueryExecutor';
 import SinglePullRequestQuery from './SinglePullRequestQuery';
 
-type QueryState = {
+interface QueryState extends BaseQueryState {
   pullRequests: CursorState;
-  rateLimit?: {
-    cost: number;
-    limit: number;
-    remaining: number;
-    resetAt: string;
-  };
-};
-
-type CursorState = {
-  hasNextPage?: boolean;
-  endCursor?: string;
-};
+}
 
 type InnerResourceQuery<T> = (each: T) => void;
 
@@ -35,7 +24,7 @@ class PullRequestsQuery {
   /**
    * Builds the leanest query possible
    * based on the provided queryState.
-   * Pagination for sub-resources (commits, reviews, labels)
+   * Pagination for inner resources (commits, reviews, labels)
    * is performed separately.
    * @param repoFullName
    * @param repoIsPublic

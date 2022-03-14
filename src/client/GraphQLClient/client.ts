@@ -31,6 +31,7 @@ import {
   Issue,
   Node,
   OrgRepoQueryResponse,
+  OrgTeamRepoQueryResponse,
   PullRequest,
   ResourceMap,
   ResourceMetadata,
@@ -38,7 +39,8 @@ import {
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
 import { createQueryExecutor } from './CreateQueryExecutor';
-import OrgRepositoryQuery from './repositoryQueries/OrgRepositoryQuery';
+import OrgRepositoriesQuery from './repositoryQueries/OrgRepositoriesQuery';
+import TeamRepositoriesQuery from './repositoryQueries/TeamRepositoriesQuery';
 
 const FIVE_MINUTES_IN_SECS = 300000;
 
@@ -178,8 +180,23 @@ export class GitHubGraphQLClient {
   ): Promise<QueryResponse> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return await OrgRepositoryQuery.iterateRepositories(
+    return await OrgRepositoriesQuery.iterateRepositories(
       login,
+      iteratee,
+      executor,
+    );
+  }
+
+  public async iterateTeamRepositories(
+    login: string,
+    teamSlug: string,
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<QueryResponse> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return await TeamRepositoriesQuery.iterateRepositories(
+      login,
+      teamSlug,
       iteratee,
       executor,
     );

@@ -8,7 +8,7 @@ interface QueryState extends BaseQueryState {
 
 const MAX_REQUESTS_LIMIT = 100;
 
-class OrgRepositoryQuery {
+class OrgRepositoriesQuery {
   public static buildQuery(
     login: string,
     queryState?: QueryState,
@@ -86,7 +86,7 @@ class OrgRepositoryQuery {
 
       queryCost += queryState.rateLimit?.cost ?? 0;
 
-      paginationComplete = !queryState.repos.hasNextPage;
+      paginationComplete = !queryState.repos?.hasNextPage ?? true;
     }
 
     return {
@@ -95,4 +95,4 @@ class OrgRepositoryQuery {
   }
 }
 
-export default OrgRepositoryQuery;
+export default OrgRepositoriesQuery;

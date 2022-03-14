@@ -42,7 +42,6 @@ import {
   TEAMS_QUERY_STRING,
   USERS_QUERY_STRING,
   SINGLE_REPO_COLLABORATORS_QUERY_STRING,
-  SINGLE_TEAM_REPOS_QUERY_STRING,
 } from './GraphQLClient/queries';
 import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
 
@@ -228,51 +227,25 @@ export default class OrganizationAccountClient {
     }
   }
 
+  /**
+   * Iterate Organization owned Repos.
+   * @param iteratee
+   */
   async iterateOrgRepositories(
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
   ): Promise<QueryResponse> {
     return await this.v4.iterateOrgRepositories(this.login, iteratee);
   }
 
-  async getTeamRepositories(
+  async iterateTeamRepositories(
     teamSlug: string,
-    teamKey: string,
-  ): Promise<OrgTeamRepoQueryResponse[]> {
-    let response: OrgTeamRepoQueryResponse[] = [];
-    await this.queryGraphQL('team repositories', async () => {
-      const { teamRepositories, teams, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          SINGLE_TEAM_REPOS_QUERY_STRING,
-          GithubResource.Organization,
-          [GithubResource.TeamRepositories],
-          {
-            login: this.login,
-            slug: teamSlug,
-          },
-        );
-
-      if (teamRepositories) {
-        response = response.concat(
-          teamRepositories as OrgTeamRepoQueryResponse[],
-        );
-      }
-
-      if (!teams) {
-        this.logger.info(
-          { teamSlug, teamKey, teams },
-          'Found no repos for team',
-        );
-      } else {
-        if (!teams?.every((t) => t.id === teamKey)) {
-          this.logger.warn(
-            { teamSlug, teamKey, teams },
-            'Teams contained more than the one expected team',
-          );
-        }
-      }
-      return rateLimitConsumed;
-    });
-    return response.filter((t) => t.teams === teamKey);
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<QueryResponse> {
+    return await this.v4.iterateTeamRepositories(
+      this.login,
+      teamSlug,
+      iteratee,
+    );
   }
 
   async getRepoCollaborators(repoName: string): Promise<Collaborator[]> {

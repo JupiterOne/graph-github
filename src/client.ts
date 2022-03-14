@@ -122,6 +122,7 @@ export class APIClient {
   /**
    * Iterates each team-repo association from the provider.
    *
+   * @param team
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamRepos(
@@ -131,16 +132,19 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const teamRepos: OrgTeamRepoQueryResponse[] =
-      await this.accountClient.getTeamRepositories(team.name, team._key);
-    for (const teamRepoAssociation of teamRepos) {
-      await iteratee(teamRepoAssociation);
-    }
+
+    const { rateLimitConsumed } =
+      await this.accountClient.iterateTeamRepositories(team.name, iteratee);
+    this.logger.info(
+      { rateLimitConsumed },
+      'Rate limit consumed while fetching Team Repositories.',
+    );
   }
 
   /**
    * Iterates each team-member association for a single team.
    *
+   * @param team
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamMembers(

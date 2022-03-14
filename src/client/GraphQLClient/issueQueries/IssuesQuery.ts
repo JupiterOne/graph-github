@@ -158,7 +158,7 @@ class IssuesQuery {
       queryCost += queryState.rateLimit?.cost ?? 0;
 
       paginationComplete =
-        !queryState.issues.hasNextPage ||
+        !queryState.issues?.hasNextPage ||
         issuesFetched >= MAX_FETCHES_PER_EXECUTION;
     }
 

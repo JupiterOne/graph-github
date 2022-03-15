@@ -1,4 +1,7 @@
-import SinglePullRequestQuery from './SinglePullRequestQuery';
+import SinglePullRequestQuery, {
+  buildQuery,
+  processResponseData,
+} from './SinglePullRequestQuery';
 import {
   singleQueryFullResponse,
   singleQueryInnerResourcePaginationComplete,
@@ -8,11 +11,11 @@ import {
 describe('SinglePullRequestQuery', () => {
   describe('#buildQuery', () => {
     test('first query - no cursors', () => {
-      const executableQuery = SinglePullRequestQuery.buildQuery(
-        5,
-        'musical-palm-tree',
-        'J1-Test',
-      );
+      const executableQuery = buildQuery({
+        pullRequestNumber: 5,
+        repoName: 'musical-palm-tree',
+        repoOwner: 'J1-Test',
+      });
 
       expect(executableQuery).toMatchSnapshot();
     });
@@ -24,10 +27,12 @@ describe('SinglePullRequestQuery', () => {
         labels: { hasNextPage: true, endCursor: 'labelsEndCursor' },
       };
 
-      const executableQuery = SinglePullRequestQuery.buildQuery(
-        5,
-        'musical-palm-tree',
-        'J1-Test',
+      const executableQuery = buildQuery(
+        {
+          pullRequestNumber: 5,
+          repoName: 'musical-palm-tree',
+          repoOwner: 'J1-Test',
+        },
         queryState,
       );
 
@@ -37,22 +42,18 @@ describe('SinglePullRequestQuery', () => {
 
   describe('#processResponseData', () => {
     test('Pulling all data out', () => {
-      const result = SinglePullRequestQuery.processResponseData(
-        singleQueryFullResponse,
-      );
+      const result = processResponseData(singleQueryFullResponse);
 
       expect(result).toMatchSnapshot();
     });
     test('Pulls partial data', () => {
-      const result = SinglePullRequestQuery.processResponseData(
-        singleQueryWithPartialInnerResources,
-      );
+      const result = processResponseData(singleQueryWithPartialInnerResources);
 
       expect(result).toMatchSnapshot();
     });
   });
 
-  describe('#query', () => {
+  describe('#iteratePullRequest', () => {
     test('successfully paginates', async () => {
       // Arrange
       const repo = {
@@ -68,11 +69,12 @@ describe('SinglePullRequestQuery', () => {
       const iteratee = jest.fn();
 
       // Act
-      const { rateLimitConsumed } = await SinglePullRequestQuery.query(
-        repo,
-        iteratee,
-        executor,
-      );
+      const { rateLimitConsumed } =
+        await SinglePullRequestQuery.iteratePullRequest(
+          repo,
+          iteratee,
+          executor,
+        );
 
       // Assert
       expect(rateLimitConsumed).toBe(2);

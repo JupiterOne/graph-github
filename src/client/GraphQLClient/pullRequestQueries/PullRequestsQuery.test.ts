@@ -1,5 +1,9 @@
-import PullRequestsQuery from './PullRequestsQuery';
+import PullRequestsQuery, {
+  buildQuery,
+  processResponseData,
+} from './PullRequestsQuery';
 import {
+  emptyPullRequest,
   pullRequestsPublic,
   pullRequestsPublicInnerPagination,
   singleQueryFullResponse,
@@ -10,11 +14,11 @@ describe('PullRequestsQuery', () => {
   describe('#buildQuery', () => {
     test('first query - no query state', () => {
       // Act
-      const executableQuery = PullRequestsQuery.buildQuery(
-        'J1-Test/musical-palm-tree',
-        true,
-        '2011-10-05T14:48:00.000Z',
-      );
+      const executableQuery = buildQuery({
+        fullName: 'J1-Test/musical-palm-tree',
+        public: true,
+        lastExecutionTime: '2011-10-05T14:48:00.000Z',
+      });
 
       // Assert
       expect(executableQuery).toMatchSnapshot();
@@ -27,10 +31,12 @@ describe('PullRequestsQuery', () => {
       };
 
       // Act
-      const executableQuery = PullRequestsQuery.buildQuery(
-        'J1-Test/musical-palm-tree',
-        true,
-        '2011-10-05T14:48:00.000Z',
+      const executableQuery = buildQuery(
+        {
+          fullName: 'J1-Test/musical-palm-tree',
+          public: true,
+          lastExecutionTime: '2011-10-05T14:48:00.000Z',
+        },
         queryState,
       );
 
@@ -46,7 +52,7 @@ describe('PullRequestsQuery', () => {
       const addToQueue = jest.fn();
 
       // Act
-      const result = await PullRequestsQuery.processResponseData(
+      const result = await processResponseData(
         pullRequestsPublic[0],
         iteratee,
         addToQueue,
@@ -65,7 +71,7 @@ describe('PullRequestsQuery', () => {
       const addToQueue = jest.fn();
 
       // Act
-      const result = await PullRequestsQuery.processResponseData(
+      const result = await processResponseData(
         pullRequestsPublicInnerPagination,
         iteratee,
         addToQueue,
@@ -89,8 +95,11 @@ describe('PullRequestsQuery', () => {
 
       // Act
       const result = await PullRequestsQuery.iteratePullRequests(
-        { fullName: 'J1-Test/happy-sunshine', public: true },
-        '2011-10-05T14:48:00.000Z',
+        {
+          fullName: 'J1-Test/happy-sunshine',
+          public: true,
+          lastExecutionTime: '2011-10-05T14:48:00.000Z',
+        },
         iteratee,
         execute,
       );
@@ -115,8 +124,11 @@ describe('PullRequestsQuery', () => {
 
       // Act
       const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
-        { fullName: 'J1-Test/happy-sunshine', public: true },
-        '2011-10-05T14:48:00.000Z',
+        {
+          fullName: 'J1-Test/happy-sunshine',
+          public: true,
+          lastExecutionTime: '2011-10-05T14:48:00.000Z',
+        },
         iteratee,
         execute,
       );
@@ -129,6 +141,28 @@ describe('PullRequestsQuery', () => {
       expect(execute.mock.calls[0][0]).toMatchSnapshot();
       expect(execute.mock.calls[1][0]).toMatchSnapshot();
       expect(execute.mock.calls[2][0]).toMatchSnapshot();
+    });
+
+    test('handle empty/partial responses', async () => {
+      // Arrange
+      const iteratee = jest.fn();
+      const execute = jest.fn().mockResolvedValueOnce(emptyPullRequest[0]);
+
+      // Act
+      const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
+        {
+          fullName: 'J1-Test/happy-sunshine',
+          public: true,
+          lastExecutionTime: '2011-10-05T14:48:00.000Z',
+        },
+        iteratee,
+        execute,
+      );
+
+      // Assert
+      expect(rateLimitConsumed).toBe(1);
+      expect(iteratee).not.toHaveBeenCalled();
+      expect(execute).toHaveBeenCalledTimes(1);
     });
   });
 });

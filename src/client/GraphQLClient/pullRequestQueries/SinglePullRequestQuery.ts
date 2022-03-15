@@ -1,12 +1,14 @@
 import utils from './utils';
-import { ResourceIteratee } from '../../../client';
 import {
   BaseQueryState,
+  BuildQuery,
   CursorState,
+  GithubQueryResponse,
+  IteratePagination,
   ProcessedData,
   PullRequest,
 } from '../types';
-import { ExecutableQuery, QueryExecutor } from '../CreateQueryExecutor';
+import { ExecutableQuery } from '../CreateQueryExecutor';
 
 interface QueryState extends BaseQueryState {
   commits: CursorState;
@@ -14,30 +16,31 @@ interface QueryState extends BaseQueryState {
   labels: CursorState;
 }
 
-const MAX_REQUESTS_LIMIT = 100;
+type QueryParams = {
+  pullRequestNumber: number;
+  repoName: string;
+  repoOwner: string;
+};
 
-class SinglePullRequestQuery {
-  /**
-   * Builds the leanest query possible
-   * based on the provided queryState.
-   *
-   * @param pullRequestNumber
-   * @param repoName
-   * @param repoOwner
-   * @param queryState
-   */
-  public static buildQuery(
-    pullRequestNumber: number,
-    repoName: string,
-    repoOwner: string,
-    queryState?: QueryState,
-  ): ExecutableQuery {
-    const query = `
+const MAX_REQUESTS_NUM = 100;
+
+/**
+ * Builds the leanest query possible
+ * based on the provided queryState.
+ *
+ * @param queryParams
+ * @param queryState
+ */
+export const buildQuery: BuildQuery<QueryParams, QueryState> = (
+  queryParams,
+  queryState,
+): ExecutableQuery => {
+  const query = `
       query (
         $pullRequestNumber: Int!
         $repoName: String!
         $repoOwner: String!
-        $maxLimit: Int!
+        $maxCount: Int!
         ${
           queryState?.commits.hasNextPage !== false
             ? '$commitsCursor: String'
@@ -57,49 +60,39 @@ class SinglePullRequestQuery {
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
               ...pullRequestFields
-              ${
-                queryState?.commits.hasNextPage !== false
-                  ? this.commitsQuery
-                  : ''
-              }
-              ${
-                queryState?.reviews.hasNextPage !== false
-                  ? this.reviewsQuery
-                  : ''
-              }
-              ${
-                queryState?.labels.hasNextPage !== false ? this.labelsQuery : ''
-              } 
+              ${queryState?.commits.hasNextPage !== false ? commitsQuery : ''}
+              ${queryState?.reviews.hasNextPage !== false ? reviewsQuery : ''}
+              ${queryState?.labels.hasNextPage !== false ? labelsQuery : ''} 
             }
           }
           ...rateLimit
       }`;
 
-    return {
-      query,
-      ...(queryState?.rateLimit && {
-        rateLimit: queryState.rateLimit,
+  return {
+    query,
+    ...(queryState?.rateLimit && {
+      rateLimit: queryState.rateLimit,
+    }),
+    queryVariables: {
+      pullRequestNumber: queryParams.pullRequestNumber,
+      repoName: queryParams.repoName,
+      repoOwner: queryParams.repoOwner,
+      maxCount: MAX_REQUESTS_NUM,
+      ...(queryState?.commits?.hasNextPage && {
+        commitsCursor: queryState?.commits.endCursor,
       }),
-      queryVariables: {
-        pullRequestNumber,
-        repoName,
-        repoOwner,
-        maxLimit: MAX_REQUESTS_LIMIT,
-        ...(queryState?.commits?.hasNextPage && {
-          commitsCursor: queryState.commits.endCursor,
-        }),
-        ...(queryState?.reviews?.hasNextPage && {
-          reviewsCursor: queryState.reviews.endCursor,
-        }),
-        ...(queryState?.labels?.hasNextPage && {
-          labelsCursor: queryState.labels.endCursor,
-        }),
-      },
-    };
-  }
+      ...(queryState?.reviews?.hasNextPage && {
+        reviewsCursor: queryState?.reviews.endCursor,
+      }),
+      ...(queryState?.labels?.hasNextPage && {
+        labelsCursor: queryState?.labels.endCursor,
+      }),
+    },
+  };
+};
 
-  private static commitsQuery = `
-    commits(first: $maxLimit, after: $commitsCursor) {
+const commitsQuery = `
+    commits(first: $maxCount, after: $commitsCursor) {
       totalCount
       nodes {
         commit {
@@ -113,8 +106,8 @@ class SinglePullRequestQuery {
       }
     }`;
 
-  private static reviewsQuery = `
-    reviews(first: $maxLimit, after: $reviewsCursor) {
+const reviewsQuery = `
+    reviews(first: $maxCount, after: $reviewsCursor) {
       totalCount
       nodes {
         ...reviewFields
@@ -125,8 +118,8 @@ class SinglePullRequestQuery {
       }
     }`;
 
-  private static labelsQuery = `
-    labels(first: $maxLimit, after: $labelsCursor) {
+const labelsQuery = `
+    labels(first: $maxCount, after: $labelsCursor) {
       totalCount
       nodes {
         id
@@ -138,108 +131,100 @@ class SinglePullRequestQuery {
       }
     }`;
 
-  public static processResponseData(responseData): ProcessedData<QueryState> {
-    const rateLimit = responseData.rateLimit;
-    const pullRequest = responseData.repository.pullRequest;
-    const { commits, reviews, labels } = pullRequest;
+export const processResponseData = (
+  responseData,
+): ProcessedData<QueryState> => {
+  const rateLimit = responseData.rateLimit;
+  const pullRequest = responseData.repository.pullRequest;
+  const { commits, reviews, labels } = pullRequest;
 
-    return {
-      resource: utils.responseToResource(pullRequest),
-      queryState: {
-        rateLimit: rateLimit,
-        commits: commits?.pageInfo,
-        reviews: reviews?.pageInfo,
-        labels: labels?.pageInfo,
-      },
-    };
-  }
-
-  /**
-   * Handles query pagination for inner resources.
-   * Builds final resource while calculating the total cost
-   * of the queries.
-   * @param repository
-   * @param iteratee
-   * @param execute
-   */
-  public static async query(
-    repository: {
-      pullRequestNumber: number;
-      repoName: string;
-      repoOwner: string;
+  return {
+    resource: utils.responseToResource(pullRequest),
+    queryState: {
+      rateLimit: rateLimit,
+      commits: commits?.pageInfo,
+      reviews: reviews?.pageInfo,
+      labels: labels?.pageInfo,
     },
-    iteratee: ResourceIteratee<PullRequest>,
-    execute: QueryExecutor,
-  ): Promise<{ rateLimitConsumed: number }> {
-    let finalResource: PullRequest | undefined = undefined;
-    let queryCost = 0;
-    let queryState: QueryState | undefined = undefined;
-    let paginationComplete = false;
+  };
+};
 
-    while (!paginationComplete) {
-      const executable = this.buildQuery(
-        repository.pullRequestNumber,
-        repository.repoName,
-        repository.repoOwner,
-        queryState,
-      );
+/**
+ * Handles query pagination for inner resources.
+ * Builds final resource while calculating the total cost
+ * of the queries.
+ * @param queryParams
+ * @param iteratee
+ * @param execute
+ */
+const iteratePullRequest: IteratePagination<QueryParams, PullRequest> = async (
+  queryParams,
+  iteratee,
+  execute,
+): Promise<GithubQueryResponse> => {
+  let finalResource: PullRequest | undefined = undefined;
+  let queryCost = 0;
+  let queryState: QueryState | undefined = undefined;
+  let paginationComplete = false;
 
-      const response = await execute(executable);
+  while (!paginationComplete) {
+    const executable = buildQuery(queryParams, queryState);
 
-      const { resource: processedResource, queryState: processedQueryState } =
-        this.processResponseData(response);
+    const response = await execute(executable);
 
-      finalResource = this.concatResources(processedResource, finalResource);
-      queryCost += processedQueryState.rateLimit?.cost ?? 0;
-      queryState = processedQueryState;
-      paginationComplete = this.isPaginationComplete(processedQueryState);
-    }
+    const { resource: processedResource, queryState: processedQueryState } =
+      processResponseData(response);
 
-    if (finalResource) {
-      await iteratee(finalResource);
-    }
-
-    return {
-      rateLimitConsumed: queryCost,
-    };
+    finalResource = joinInnerResources(processedResource, finalResource);
+    queryCost += processedQueryState.rateLimit?.cost ?? 0;
+    queryState = processedQueryState;
+    paginationComplete = isPaginationComplete(processedQueryState);
   }
 
-  /**
-   * Combines the Pull Request resource as
-   * pagination occurs.
-   * @param newResource
-   * @param existingResource
-   * @private
-   */
-  private static concatResources(
-    newResource: PullRequest,
-    existingResource?: PullRequest,
-  ): PullRequest {
-    if (!existingResource) {
-      return newResource;
-    }
-
-    return {
-      ...existingResource,
-      commits: existingResource.commits!.concat(newResource?.commits ?? []),
-      reviews: existingResource.reviews!.concat(newResource?.reviews ?? []),
-      labels: existingResource.labels!.concat(newResource?.labels ?? []),
-    };
+  if (finalResource) {
+    await iteratee(finalResource);
   }
 
-  /**
-   * Determines if all inner resources have
-   * completed pagination.
-   * @param queryState
-   * @private
-   */
-  private static isPaginationComplete(queryState: QueryState): boolean {
-    return (
-      !queryState.commits?.hasNextPage &&
-      !queryState.labels?.hasNextPage &&
-      !queryState.reviews?.hasNextPage
-    );
-  }
-}
+  return {
+    rateLimitConsumed: queryCost,
+  };
+};
 
-export default SinglePullRequestQuery;
+/**
+ * Combines the Pull Request resource as
+ * pagination occurs.
+ * @param newResource
+ * @param existingResource
+ * @private
+ */
+const joinInnerResources = (
+  newResource: PullRequest,
+  existingResource?: PullRequest,
+): PullRequest => {
+  if (!existingResource) {
+    return newResource;
+  }
+
+  return {
+    ...existingResource,
+    commits: existingResource.commits!.concat(newResource?.commits ?? []),
+    reviews: existingResource.reviews!.concat(newResource?.reviews ?? []),
+    labels: existingResource.labels!.concat(newResource?.labels ?? []),
+  };
+};
+
+/**
+ * Determines if all inner resources have
+ * completed pagination.
+ * @param queryState
+ * @private
+ */
+const isPaginationComplete = (queryState: QueryState): boolean => {
+  return (
+    !queryState.commits?.hasNextPage &&
+    !queryState.labels?.hasNextPage &&
+    !queryState.reviews?.hasNextPage
+  );
+};
+
+export default { iteratePullRequest };

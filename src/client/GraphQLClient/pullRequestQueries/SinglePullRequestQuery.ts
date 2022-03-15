@@ -22,7 +22,7 @@ type QueryParams = {
   repoOwner: string;
 };
 
-const MAX_REQUESTS_NUM = 100;
+const MAX_REQUESTS_LIMIT = 100;
 
 /**
  * Builds the leanest query possible
@@ -40,7 +40,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
         $pullRequestNumber: Int!
         $repoName: String!
         $repoOwner: String!
-        $maxCount: Int!
+        $maxLimit: Int!
         ${
           queryState?.commits.hasNextPage !== false
             ? '$commitsCursor: String'
@@ -77,7 +77,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
       pullRequestNumber: queryParams.pullRequestNumber,
       repoName: queryParams.repoName,
       repoOwner: queryParams.repoOwner,
-      maxCount: MAX_REQUESTS_NUM,
+      maxLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.commits?.hasNextPage && {
         commitsCursor: queryState?.commits.endCursor,
       }),
@@ -92,7 +92,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
 };
 
 const commitsQuery = `
-    commits(first: $maxCount, after: $commitsCursor) {
+    commits(first: $maxLimit, after: $commitsCursor) {
       totalCount
       nodes {
         commit {
@@ -107,7 +107,7 @@ const commitsQuery = `
     }`;
 
 const reviewsQuery = `
-    reviews(first: $maxCount, after: $reviewsCursor) {
+    reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
         ...reviewFields
@@ -119,7 +119,7 @@ const reviewsQuery = `
     }`;
 
 const labelsQuery = `
-    labels(first: $maxCount, after: $labelsCursor) {
+    labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
         id

@@ -20,9 +20,9 @@ export type BuildQuery<P, S extends BaseQueryState> = (
   queryState?: S,
 ) => ExecutableQuery;
 
-export type ProcessedData<Q> = {
+export type ProcessedData<S extends BaseQueryState> = {
   resource;
-  queryState: Q;
+  queryState: S;
 };
 
 export interface BaseQueryState {

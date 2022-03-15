@@ -1,7 +1,9 @@
-import { ExecutableQuery, QueryExecutor } from '../CreateQueryExecutor';
+import { ExecutableQuery } from '../CreateQueryExecutor';
 import {
   BaseQueryState,
+  BuildQuery,
   CursorState,
+  IteratePagination,
   OrgTeamRepoQueryResponse,
 } from '../types';
 import { MAX_REQUESTS_NUM } from '../queries';
@@ -10,14 +12,21 @@ import { ResourceIteratee } from '../../../client';
 interface QueryState extends BaseQueryState {
   teamRepos?: CursorState;
 }
+type QueryParams = {
+  login: string;
+  teamSlug: string;
+};
 
-class TeamRepositoriesQuery {
-  private static buildQuery(
-    login: string,
-    teamSlug: string,
-    queryState?: QueryState,
-  ): ExecutableQuery {
-    const query = `
+/**
+ * Builds query based on params and queryState.
+ * @param queryParams
+ * @param queryState
+ */
+const buildQuery: BuildQuery<QueryParams, QueryState> = (
+  queryParams,
+  queryState,
+): ExecutableQuery => {
+  const query = `
       query (
         $login: String!
         $teamSlug: String!
@@ -46,82 +55,84 @@ class TeamRepositoriesQuery {
           ...rateLimit
         }`;
 
-    return {
-      query,
-      ...(queryState?.rateLimit && {
-        rateLimit: queryState.rateLimit,
+  return {
+    query,
+    ...(queryState?.rateLimit && {
+      rateLimit: queryState.rateLimit,
+    }),
+    queryVariables: {
+      login: queryParams.login,
+      teamSlug: queryParams.teamSlug,
+      maxLimit: MAX_REQUESTS_NUM,
+      ...(queryState?.teamRepos?.hasNextPage && {
+        teamRepoCursor: queryState.teamRepos.endCursor,
       }),
-      queryVariables: {
-        login,
-        teamSlug,
-        maxLimit: MAX_REQUESTS_NUM,
-        ...(queryState?.teamRepos?.hasNextPage && {
-          teamRepoCursor: queryState.teamRepos.endCursor,
-        }),
-      },
-    };
-  }
+    },
+  };
+};
 
-  private static async processResponseData(
-    responseData,
-    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
-  ): Promise<QueryState> {
-    const rateLimit = responseData.rateLimit;
-    const edges = responseData.organization?.team?.repositories?.edges ?? [];
+/**
+ * Processed response data and converting to
+ * object format ready for iterator.
+ * @param responseData
+ * @param iteratee
+ */
+const processResponseData = async (
+  responseData,
+  iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+): Promise<QueryState> => {
+  const rateLimit = responseData.rateLimit;
+  const edges = responseData.organization?.team?.repositories?.edges ?? [];
 
-    for (const edge of edges) {
-      if (Object.keys(edge).length === 0) {
-        // If there's no data, pass - possible if permissions aren't correct in GHE
-        continue;
-      }
-
-      const repo = {
-        id: edge.node.id,
-        permission: edge.permission,
-      };
-
-      await iteratee(repo);
+  for (const edge of edges) {
+    if (Object.keys(edge).length === 0) {
+      // If there's no data, pass - possible if permissions aren't correct in GHE
+      continue;
     }
 
-    return {
-      rateLimit,
-      teamRepos: responseData.organization?.team?.repositories?.pageInfo,
+    const repo = {
+      id: edge.node.id,
+      permission: edge.permission,
     };
+
+    await iteratee(repo);
   }
 
-  /**
-   * Iterate over repositories assigned to a team.
-   * @param login
-   * @param teamSlug
-   * @param iteratee
-   * @param execute
-   */
-  public static async iterateRepositories(
-    login: string,
-    teamSlug: string,
-    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
-    execute: QueryExecutor,
-  ) {
-    let queryCost = 0;
-    let queryState: QueryState | undefined = undefined;
-    let paginationComplete = false;
+  return {
+    rateLimit,
+    teamRepos: responseData.organization?.team?.repositories?.pageInfo,
+  };
+};
 
-    while (!paginationComplete) {
-      const executable = this.buildQuery(login, teamSlug, queryState);
+/**
+ * Iterate over repositories assigned to a team.
+ * @param queryParams
+ * @param iteratee
+ * @param execute
+ */
+const iterateRepositories: IteratePagination<
+  QueryParams,
+  OrgTeamRepoQueryResponse
+> = async (queryParams, iteratee, execute) => {
+  let queryCost = 0;
+  let queryState: QueryState | undefined = undefined;
+  let paginationComplete = false;
 
-      const response = await execute(executable);
+  while (!paginationComplete) {
+    const executable = buildQuery(queryParams, queryState);
 
-      queryState = await this.processResponseData(response, iteratee);
+    const response = await execute(executable);
 
-      queryCost += queryState.rateLimit?.cost ?? 0;
+    queryState = await processResponseData(response, iteratee);
 
-      paginationComplete = !queryState.teamRepos?.hasNextPage ?? true;
-    }
+    queryCost += queryState.rateLimit?.cost ?? 0;
 
-    return {
-      rateLimitConsumed: queryCost,
-    };
+    paginationComplete = !queryState.teamRepos?.hasNextPage ?? true;
   }
-}
 
-export default TeamRepositoriesQuery;
+  return {
+    rateLimitConsumed: queryCost,
+  };
+};
+
+export default { iterateRepositories };

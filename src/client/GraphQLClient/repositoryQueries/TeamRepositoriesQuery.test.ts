@@ -15,8 +15,10 @@ describe('TeamRepositoriesQuery', () => {
     // Act
     const { rateLimitConsumed } =
       await TeamRepositoriesQuery.iterateRepositories(
-        login,
-        teamSlug,
+        {
+          login: 'J1-Test',
+          teamSlug: 'eng',
+        },
         iteratee,
         executor,
       );
@@ -49,8 +51,10 @@ describe('TeamRepositoriesQuery', () => {
     // Act
     const { rateLimitConsumed } =
       await TeamRepositoriesQuery.iterateRepositories(
-        'J1-Test',
-        'eng',
+        {
+          login: 'J1-Test',
+          teamSlug: 'eng',
+        },
         iteratee,
         executor,
       );

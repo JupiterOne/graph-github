@@ -72,59 +72,59 @@ Object {
 exports[`IssuesQuery #iterateIssues Pulling data out 4`] = `
 Object {
   "query": "
-      query(
-        $issueQuery: String!, 
-        $maxSearchLimit: Int!, 
-        $maxInnerLimit: Int!,
-        $issuesCursor: String
-      ) {
-        search(
-          first: $maxSearchLimit, 
-          after: $issuesCursor, 
-          type: ISSUE, 
-          query: $issueQuery
-          ) {
-            issueCount
-            edges {
-              node {
-              ...issueFields
-              
-              ... on Issue {
-                  assignees(first: $maxInnerLimit) {
-                    totalCount
-                    nodes {
-                      name
-                      login
-                    }
-                    pageInfo {
-                      endCursor
-                      hasNextPage
-                    }
+    query(
+      $issueQuery: String!, 
+      $maxSearchLimit: Int!, 
+      $maxInnerLimit: Int!,
+      $issuesCursor: String
+    ) {
+      search(
+        first: $maxSearchLimit, 
+        after: $issuesCursor, 
+        type: ISSUE, 
+        query: $issueQuery
+        ) {
+          issueCount
+          edges {
+            node {
+            ...issueFields
+            
+            ... on Issue {
+                assignees(first: $maxInnerLimit) {
+                  totalCount
+                  nodes {
+                    name
+                    login
+                  }
+                  pageInfo {
+                    endCursor
+                    hasNextPage
                   }
                 }
-                
-              ... on Issue {
-                  labels(first: $maxInnerLimit) {
-                    totalCount
-                    nodes {
-                      id
-                      name
-                    }
-                    pageInfo {
-                      endCursor
-                      hasNextPage
-                    }
+              }
+              
+            ... on Issue {
+                labels(first: $maxInnerLimit) {
+                  totalCount
+                  nodes {
+                    id
+                    name
+                  }
+                  pageInfo {
+                    endCursor
+                    hasNextPage
                   }
                 }
               }
             }
-            pageInfo {
-              endCursor
-              hasNextPage
-            }
           }
-          ...rateLimit
-      }",
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        ...rateLimit
+    }",
   "queryVariables": Object {
     "issueQuery": "is:issue repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
     "maxInnerLimit": 100,
@@ -136,59 +136,59 @@ Object {
 exports[`IssuesQuery #iterateIssues Pulling data out 5`] = `
 Object {
   "query": "
-      query(
-        $issueQuery: String!, 
-        $maxSearchLimit: Int!, 
-        $maxInnerLimit: Int!,
-        $issuesCursor: String
-      ) {
-        search(
-          first: $maxSearchLimit, 
-          after: $issuesCursor, 
-          type: ISSUE, 
-          query: $issueQuery
-          ) {
-            issueCount
-            edges {
-              node {
-              ...issueFields
-              
-              ... on Issue {
-                  assignees(first: $maxInnerLimit) {
-                    totalCount
-                    nodes {
-                      name
-                      login
-                    }
-                    pageInfo {
-                      endCursor
-                      hasNextPage
-                    }
+    query(
+      $issueQuery: String!, 
+      $maxSearchLimit: Int!, 
+      $maxInnerLimit: Int!,
+      $issuesCursor: String
+    ) {
+      search(
+        first: $maxSearchLimit, 
+        after: $issuesCursor, 
+        type: ISSUE, 
+        query: $issueQuery
+        ) {
+          issueCount
+          edges {
+            node {
+            ...issueFields
+            
+            ... on Issue {
+                assignees(first: $maxInnerLimit) {
+                  totalCount
+                  nodes {
+                    name
+                    login
+                  }
+                  pageInfo {
+                    endCursor
+                    hasNextPage
                   }
                 }
-                
-              ... on Issue {
-                  labels(first: $maxInnerLimit) {
-                    totalCount
-                    nodes {
-                      id
-                      name
-                    }
-                    pageInfo {
-                      endCursor
-                      hasNextPage
-                    }
+              }
+              
+            ... on Issue {
+                labels(first: $maxInnerLimit) {
+                  totalCount
+                  nodes {
+                    id
+                    name
+                  }
+                  pageInfo {
+                    endCursor
+                    hasNextPage
                   }
                 }
               }
             }
-            pageInfo {
-              endCursor
-              hasNextPage
-            }
           }
-          ...rateLimit
-      }",
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        ...rateLimit
+    }",
   "queryVariables": Object {
     "issueQuery": "is:issue repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
     "issuesCursor": "Y3Vyc29yOjE=",

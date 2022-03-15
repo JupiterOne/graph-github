@@ -160,8 +160,7 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
 
     const { rateLimitConsumed } = await IssuesQuery.iterateIssues(
-      repoFullName,
-      lastExecutionTime,
+      { repoFullName, lastExecutionTime },
       iteratee,
       executor,
     );
@@ -197,8 +196,10 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
 
     return await TeamRepositoriesQuery.iterateRepositories(
-      login,
-      teamSlug,
+      {
+        login,
+        teamSlug,
+      },
       iteratee,
       executor,
     );
@@ -760,7 +761,7 @@ export class GitHubGraphQLClient {
       handleError: async (err, attemptContext) => {
         /* retry will keep trying to the limits of retryOptions
          * but it lets you intervene in this function - if you throw an error from in here,
-         * it stops retrying. Otherwise you can just log the attempts.
+         * it stops retrying. Otherwise, you can just log the attempts.
          *
          * Github has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
          * GitHub guidance is to "wait a few minutes" when we get one of these errors.

@@ -75,22 +75,3 @@ export interface CursorHierarchy {
   };
   hasNextPage?: boolean;
 }
-
-export type CursorState = {
-  hasNextPage?: boolean;
-  endCursor?: string;
-};
-
-export interface BaseQueryState {
-  rateLimit?: {
-    cost: number;
-    limit: number;
-    remaining: number;
-    resetAt: string;
-  };
-}
-
-export type ProcessedData<T extends BaseQueryState> = {
-  resource;
-  queryState: T;
-};

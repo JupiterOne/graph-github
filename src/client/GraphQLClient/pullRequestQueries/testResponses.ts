@@ -242,7 +242,27 @@ const pullRequestsPublicInnerPagination = {
   },
 };
 
-export { pullRequestsPublic, pullRequestsPublicInnerPagination };
+const emptyPullRequest = [
+  {
+    search: {
+      issueCount: 0,
+      edges: [],
+      pageInfo: {
+        endCursor: null,
+        hasNextPage: false,
+      },
+    },
+    rateLimit: {
+      cost: 1,
+    },
+  },
+];
+
+export {
+  pullRequestsPublic,
+  pullRequestsPublicInnerPagination,
+  emptyPullRequest,
+};
 
 /**
  * Single Query Responses

@@ -108,6 +108,47 @@ Object {
 }
 `;
 
+exports[`SinglePullRequestQuery #iteratePullRequest successfully paginates 1`] = `
+Object {
+  "commits": Array [
+    Object {
+      "id": "commit1",
+    },
+  ],
+  "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
+  "labels": Array [
+    Object {
+      "id": "label1=",
+      "name": "bug",
+    },
+    Object {
+      "id": "label2=",
+      "name": "documentation",
+    },
+    Object {
+      "id": "label3=",
+      "name": "first-task",
+    },
+    Object {
+      "id": "label4=",
+      "name": "feature",
+    },
+  ],
+  "reviews": Array [
+    Object {
+      "id": "review1",
+    },
+    Object {
+      "id": "review2",
+    },
+    Object {
+      "id": "review3==",
+    },
+  ],
+  "title": "Update CHANGELOG.md",
+}
+`;
+
 exports[`SinglePullRequestQuery #processResponseData Pulling all data out 1`] = `
 Object {
   "queryState": Object {
@@ -199,46 +240,5 @@ Object {
     "reviews": Array [],
     "title": "singleQueryWithPartialInnerResources",
   },
-}
-`;
-
-exports[`SinglePullRequestQuery #query successfully paginates 1`] = `
-Object {
-  "commits": Array [
-    Object {
-      "id": "commit1",
-    },
-  ],
-  "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
-  "labels": Array [
-    Object {
-      "id": "label1=",
-      "name": "bug",
-    },
-    Object {
-      "id": "label2=",
-      "name": "documentation",
-    },
-    Object {
-      "id": "label3=",
-      "name": "first-task",
-    },
-    Object {
-      "id": "label4=",
-      "name": "feature",
-    },
-  ],
-  "reviews": Array [
-    Object {
-      "id": "review1",
-    },
-    Object {
-      "id": "review2",
-    },
-    Object {
-      "id": "review3==",
-    },
-  ],
-  "title": "Update CHANGELOG.md",
 }
 `;

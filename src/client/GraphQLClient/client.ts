@@ -134,8 +134,10 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
 
     const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
-      repository,
-      lastExecutionTime,
+      {
+        ...repository,
+        lastExecutionTime,
+      },
       iteratee,
       executor,
     );

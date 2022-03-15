@@ -15,47 +15,47 @@ Object {
             node {
               ...pullRequestFields
               
-      ... on PullRequest {
-        commits(first: $maxLimit) {
-          totalCount
-          nodes {
-            commit {
-              ...commitFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
-      ... on PullRequest {
-        reviews(first: $maxLimit) {
-          totalCount
-          nodes {
-            ...reviewFields
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
     ... on PullRequest {
-      labels(first: $maxLimit) {
+      commits(first: $maxLimit) {
         totalCount
         nodes {
-          id
-          name
+          commit {
+            ...commitFields
+          }
         }
         pageInfo {
           endCursor
           hasNextPage
         }
       }
-    } 
+    }
+              
+    ... on PullRequest {
+      reviews(first: $maxLimit) {
+        totalCount
+        nodes {
+          ...reviewFields
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+              
+  ... on PullRequest {
+    labels(first: $maxLimit) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  } 
             }
           }
           pageInfo {
@@ -88,47 +88,47 @@ Object {
             node {
               ...pullRequestFields
               
-      ... on PullRequest {
-        commits(first: $maxLimit) {
-          totalCount
-          nodes {
-            commit {
-              ...commitFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
-      ... on PullRequest {
-        reviews(first: $maxLimit) {
-          totalCount
-          nodes {
-            ...reviewFields
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
     ... on PullRequest {
-      labels(first: $maxLimit) {
+      commits(first: $maxLimit) {
         totalCount
         nodes {
-          id
-          name
+          commit {
+            ...commitFields
+          }
         }
         pageInfo {
           endCursor
           hasNextPage
         }
       }
-    } 
+    }
+              
+    ... on PullRequest {
+      reviews(first: $maxLimit) {
+        totalCount
+        nodes {
+          ...reviewFields
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+              
+  ... on PullRequest {
+    labels(first: $maxLimit) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  } 
             }
           }
           pageInfo {
@@ -203,47 +203,47 @@ Object {
             node {
               ...pullRequestFields
               
-      ... on PullRequest {
-        commits(first: $maxLimit) {
-          totalCount
-          nodes {
-            commit {
-              ...commitFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
-      ... on PullRequest {
-        reviews(first: $maxLimit) {
-          totalCount
-          nodes {
-            ...reviewFields
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
     ... on PullRequest {
-      labels(first: $maxLimit) {
+      commits(first: $maxLimit) {
         totalCount
         nodes {
-          id
-          name
+          commit {
+            ...commitFields
+          }
         }
         pageInfo {
           endCursor
           hasNextPage
         }
       }
-    } 
+    }
+              
+    ... on PullRequest {
+      reviews(first: $maxLimit) {
+        totalCount
+        nodes {
+          ...reviewFields
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+              
+  ... on PullRequest {
+    labels(first: $maxLimit) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  } 
             }
           }
           pageInfo {
@@ -440,47 +440,47 @@ Object {
             node {
               ...pullRequestFields
               
-      ... on PullRequest {
-        commits(first: $maxLimit) {
-          totalCount
-          nodes {
-            commit {
-              ...commitFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
-      ... on PullRequest {
-        reviews(first: $maxLimit) {
-          totalCount
-          nodes {
-            ...reviewFields
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
     ... on PullRequest {
-      labels(first: $maxLimit) {
+      commits(first: $maxLimit) {
         totalCount
         nodes {
-          id
-          name
+          commit {
+            ...commitFields
+          }
         }
         pageInfo {
           endCursor
           hasNextPage
         }
       }
-    } 
+    }
+              
+    ... on PullRequest {
+      reviews(first: $maxLimit) {
+        totalCount
+        nodes {
+          ...reviewFields
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+              
+  ... on PullRequest {
+    labels(first: $maxLimit) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  } 
             }
           }
           pageInfo {
@@ -513,47 +513,47 @@ Object {
             node {
               ...pullRequestFields
               
-      ... on PullRequest {
-        commits(first: $maxLimit) {
-          totalCount
-          nodes {
-            commit {
-              ...commitFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
-      ... on PullRequest {
-        reviews(first: $maxLimit) {
-          totalCount
-          nodes {
-            ...reviewFields
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-      }
-              
     ... on PullRequest {
-      labels(first: $maxLimit) {
+      commits(first: $maxLimit) {
         totalCount
         nodes {
-          id
-          name
+          commit {
+            ...commitFields
+          }
         }
         pageInfo {
           endCursor
           hasNextPage
         }
       }
-    } 
+    }
+              
+    ... on PullRequest {
+      reviews(first: $maxLimit) {
+        totalCount
+        nodes {
+          ...reviewFields
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+              
+  ... on PullRequest {
+    labels(first: $maxLimit) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  } 
             }
           }
           pageInfo {

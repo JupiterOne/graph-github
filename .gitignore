@@ -7,3 +7,4 @@ dist
 tsconfig.tsbuildinfo
 .gitignore
 *.pem
+.DS_STORE

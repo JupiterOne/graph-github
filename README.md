@@ -60,7 +60,7 @@ following (where `major.minor.patch` is the version you expect to move to):
 git checkout -b release-<major>.<minor>.<patch>
 vim CHANGELOG.md # remember to update CHANGELOG.md with version & date!
 git add CHANGELOG.md
-yarn version <major>.<minor>.<patch>
+yarn version
 git push --follow-tags -u origin release-<major>.<minor>.<patch>
 ```
 

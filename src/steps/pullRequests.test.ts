@@ -26,7 +26,7 @@ test('fetchPrs exec handler', async () => {
     name: 'pullRequests',
   });
   sanitizeConfig(integrationConfig);
-  integrationConfig.installationId = 17214088; //this is the id the recordings are under
+  integrationConfig.installationId = 23522163; //this is the id the recordings are under
 
   const { collectedEntities, collectedRelationships, encounteredTypes } =
     await executeStepWithDependencies({

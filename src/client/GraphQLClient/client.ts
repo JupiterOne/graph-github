@@ -8,7 +8,7 @@ import {
   IntegrationProviderAuthenticationError,
   parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
-import { AttemptContext, retry } from '@lifeomic/attempt';
+import { retry } from '@lifeomic/attempt';
 import { Octokit } from '@octokit/rest';
 
 import { ResourceIteratee } from '../../client';
@@ -42,7 +42,7 @@ import { createQueryExecutor } from './CreateQueryExecutor';
 import OrgRepositoriesQuery from './repositoryQueries/OrgRepositoriesQuery';
 import TeamRepositoriesQuery from './repositoryQueries/TeamRepositoriesQuery';
 
-const FIVE_MINUTES_IN_SECS = 300000;
+const FIVE_MINUTES_IN_MILLIS = 300000;
 
 export class GitHubGraphQLClient {
   private readonly graphqlUrl: string;
@@ -214,10 +214,10 @@ export class GitHubGraphQLClient {
    * @param queryVariables
    */
   public async query(queryString: string, queryVariables) {
-    if (this.tokenExpires - FIVE_MINUTES_IN_SECS < Date.now()) {
+    if (this.tokenExpires - FIVE_MINUTES_IN_MILLIS < Date.now()) {
       await this.refreshToken();
     }
-    return await this.retryGraphQLV2(queryString, queryVariables);
+    return await this.retryGraphQL(queryString, queryVariables);
   }
 
   /**
@@ -242,14 +242,11 @@ export class GitHubGraphQLClient {
     let pullRequestsQueried = 0;
     let hasMorePullRequests = false;
 
-    let queryPullRequests = this.graph(prGraphQLQueryString);
-
     do {
       if (this.tokenExpires - 300000 < Date.now()) {
         //300000 msec = 5 min
         //token expires soon; we'd rather refresh proactively
         await this.refreshToken();
-        queryPullRequests = this.graph(prGraphQLQueryString);
       }
       this.logger.info(
         { issuesSearchQuery, queryCursors },
@@ -257,15 +254,10 @@ export class GitHubGraphQLClient {
       );
       let pullRequestResponse;
       try {
-        pullRequestResponse = await this.retryGraphQL(
-          prGraphQLQueryString,
-          async () => {
-            return await queryPullRequests({
-              query: issuesSearchQuery,
-              ...queryCursors,
-            });
-          },
-        );
+        pullRequestResponse = await this.retryGraphQL(prGraphQLQueryString, {
+          query: issuesSearchQuery,
+          ...queryCursors,
+        });
       } catch (err) {
         if (err.status === 401) {
           // why isn't this being handled inside of .retryGraphQL above?
@@ -275,16 +267,10 @@ export class GitHubGraphQLClient {
           // therefore, we can't change tokens without recreating the queryPullRequests function,
           // which means we have to re-invoke the retry function
           await this.refreshToken();
-          queryPullRequests = this.graph(prGraphQLQueryString);
-          pullRequestResponse = await this.retryGraphQL(
-            prGraphQLQueryString,
-            async () => {
-              return await queryPullRequests({
-                query: issuesSearchQuery,
-                ...queryCursors,
-              });
-            },
-          );
+          pullRequestResponse = await this.retryGraphQL(prGraphQLQueryString, {
+            query: issuesSearchQuery,
+            ...queryCursors,
+          });
         } else {
           throw err;
         }
@@ -422,14 +408,11 @@ export class GitHubGraphQLClient {
     let rateLimitConsumed = 0;
     let issuesQueried = 0;
 
-    let queryIssues = this.graph(issueQueryString);
-
     do {
       if (this.tokenExpires - 300000 < Date.now()) {
         //300000 msec = 5 min
         //token expires soon; we'd rather refresh it proactively
         await this.refreshToken();
-        queryIssues = this.graph(issueQueryString);
       }
       this.logger.info(
         { queryCursors },
@@ -438,11 +421,9 @@ export class GitHubGraphQLClient {
 
       let issueResponse;
       try {
-        issueResponse = await this.retryGraphQL(issueQueryString, async () => {
-          return await queryIssues({
-            query,
-            ...queryCursors,
-          });
+        issueResponse = await this.retryGraphQL(issueQueryString, {
+          query,
+          ...queryCursors,
         });
       } catch (err) {
         if (err.status === 401) {
@@ -453,16 +434,10 @@ export class GitHubGraphQLClient {
           // therefore, we can't change tokens without recreating the queryIssues function,
           // which means we have to re-invoke the retry function
           await this.refreshToken();
-          queryIssues = this.graph(issueQueryString);
-          issueResponse = await this.retryGraphQL(
-            issueQueryString,
-            async () => {
-              return await queryIssues({
-                query,
-                ...queryCursors,
-              });
-            },
-          );
+          issueResponse = await this.retryGraphQL(issueQueryString, {
+            query,
+            ...queryCursors,
+          });
         } else {
           throw err;
         }
@@ -538,22 +513,17 @@ export class GitHubGraphQLClient {
     let rateLimitConsumed = 0;
     let hasMoreResources = false;
 
-    let query = this.graph(queryString);
-
     do {
       if (this.tokenExpires - 300000 < Date.now()) {
         //300000 msec = 5 min
         //token expires soon - we'd rather refresh it proactively
         await this.refreshToken();
-        query = this.graph(queryString);
       }
       let response;
       try {
-        response = await this.retryGraphQL(queryString, async () => {
-          return await query({
-            ...extraQueryParams,
-            ...queryCursors,
-          });
+        response = await this.retryGraphQL(queryString, {
+          ...extraQueryParams,
+          ...queryCursors,
         });
       } catch (err) {
         if (err.status === 401) {
@@ -564,12 +534,9 @@ export class GitHubGraphQLClient {
           // therefore, we can't change tokens without recreating the 'query' function,
           // which means we have to re-invoke the retry function
           await this.refreshToken();
-          query = this.graph(queryString);
-          response = await this.retryGraphQL(queryString, async () => {
-            return await query({
-              ...extraQueryParams,
-              ...queryCursors,
-            });
+          response = await this.retryGraphQL(queryString, {
+            ...extraQueryParams,
+            ...queryCursors,
           });
         } else {
           throw err;
@@ -714,7 +681,7 @@ export class GitHubGraphQLClient {
    * @param queryVariables
    * @private
    */
-  private async retryGraphQLV2(queryString: string, queryVariables) {
+  private async retryGraphQL(queryString: string, queryVariables) {
     const { logger } = this;
 
     //queryWithRateLimitCatch will be passed to the retry function below
@@ -782,107 +749,6 @@ export class GitHubGraphQLClient {
 
         // don't keep trying if it's not going to get better
         if (err.retryable === false || err.status === 403) {
-          logger.warn(
-            { attemptContext, err },
-            `Hit an unrecoverable error when attempting to query GraphQL. Aborting.`,
-          );
-          attemptContext.abort();
-        }
-
-        if (err.message?.includes('exceeded a secondary rate limit')) {
-          logger.info(
-            { attemptContext, err },
-            '"Secondary Rate Limit" message received.',
-          );
-        }
-
-        if (err.message?.includes('Resource not accessible by integration')) {
-          logger.info(
-            { attemptContext, err },
-            'Resource not accessible by integration: Aborting attempt',
-          );
-          attemptContext.abort();
-        }
-
-        logger.warn(
-          { attemptContext, err },
-          `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
-        );
-      },
-    });
-  }
-
-  /**
-   *
-   */
-  private async retryGraphQL(queryString: string, query: () => Promise<any>) {
-    const { logger } = this;
-
-    //queryWithRateLimitCatch will be passed to the retry function below
-    const queryWithRateLimitCatch = async () => {
-      let response;
-      try {
-        response = await query();
-      } catch (err) {
-        // TODO: move all this work trying to handle graphql.js reject()
-        // all close as possible to the actual function generated by
-        // this.graph() function. That should lead to this err being a
-        // typical, well structured Error. But for tonight...
-
-        // Process errors thrown by `this.graph` generated functions
-        let message;
-
-        // Extract message from first GraphQL response (reject(response),
-        // unknown response code in graphql.js)
-        if (err.errors?.length > 0 && err.errors[0].message) {
-          message = `GraphQL errors (${
-            err.errors.length
-          }), first: ${JSON.stringify(err.errors[0])}`;
-        }
-
-        // Catch all, we could get an Array from graphql.js (reject(response.errors))
-        if (!message) {
-          message = JSON.stringify(err).substring(0, 200);
-        }
-
-        //just wrapping the original error so we can be more specific about the string that caused it
-        throw new IntegrationProviderAPIError({
-          message,
-          status: 'None',
-          statusText: `GraphQL query error: ${queryString}`,
-          cause: err,
-          endpoint: `retryGraphQL`,
-        });
-      }
-      validateGraphQLResponse(response, logger, queryString);
-      return response;
-    };
-
-    // Check https://github.com/lifeomic/attempt for options on retry
-    return await retry(queryWithRateLimitCatch, {
-      maxAttempts: 3,
-      delay: 30_000, // 30 seconds to start
-      timeout: 180_000, // 3 min timeout. We need this in case Node hangs with ETIMEDOUT
-      factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min
-      handleError(err: any, attemptContext: AttemptContext) {
-        /* retry will keep trying to the limits of retryOptions
-         * but it lets you intervene in this function - if you throw an error from in here,
-         * it stops retrying. Otherwise you can just log the attempts.
-         *
-         * Github has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
-         * GitHub guidance is to "wait a few minutes" when we get one of these errors.
-         * https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-         * this link is REST specific - however, the limits might apply to GraphQL as well,
-         * and our GraphQL client is not using the @octokit throttling and retry plugins like our REST client
-         * therefore some retry logic is appropriate here
-         */
-
-        // don't keep trying if it's not going to get better
-        if (
-          err.retryable === false ||
-          err.status === 401 ||
-          err.status === 403
-        ) {
           logger.warn(
             { attemptContext, err },
             `Hit an unrecoverable error when attempting to query GraphQL. Aborting.`,

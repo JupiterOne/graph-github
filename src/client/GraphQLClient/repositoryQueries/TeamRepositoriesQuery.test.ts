@@ -9,7 +9,13 @@ describe('TeamRepositoriesQuery', () => {
     const executor = jest
       .fn()
       .mockResolvedValueOnce(teamRepos[0])
-      .mockResolvedValueOnce(teamRepos[1]);
+      .mockResolvedValueOnce(teamRepos[1])
+      .mockRejectedValue(
+        new Error(
+          'Pagination failed to stop! This response should never be reached.',
+        ),
+      );
+
     const iteratee = jest.fn();
 
     // Act
@@ -19,8 +25,8 @@ describe('TeamRepositoriesQuery', () => {
           login: 'J1-Test',
           teamSlug: 'eng',
         },
-        iteratee,
         executor,
+        iteratee,
       );
 
     expect(rateLimitConsumed).toBe(2);
@@ -55,8 +61,8 @@ describe('TeamRepositoriesQuery', () => {
           login: 'J1-Test',
           teamSlug: 'eng',
         },
-        iteratee,
         executor,
+        iteratee,
       );
 
     // Assert

@@ -95,11 +95,15 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const members: OrgMemberQueryResponse[] =
-      await this.accountClient.getMembers();
-    for (const member of members) {
-      await iteratee(member);
-    }
+
+    const { rateLimitConsumed } = await this.accountClient.iterateOrgMembers(
+      iteratee,
+    );
+
+    this.logger.info(
+      { rateLimitConsumed },
+      'Rate limit consumed while fetching Org Members.',
+    );
   }
 
   /**
@@ -154,11 +158,14 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const teamMembers: OrgTeamMemberQueryResponse[] =
-      await this.accountClient.getTeamMembers(team.name, team._key);
-    for (const teamUserAssociation of teamMembers) {
-      await iteratee(teamUserAssociation);
-    }
+    const { rateLimitConsumed } = await this.accountClient.iterateTeamMembers(
+      team.name,
+      iteratee,
+    );
+    this.logger.info(
+      { rateLimitConsumed },
+      'Rate limit consumed while fetching Team Members.',
+    );
   }
 
   /**

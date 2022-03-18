@@ -5,9 +5,10 @@ import {
   CursorState,
   IteratePagination,
   OrgTeamRepoQueryResponse,
+  ProcessResponse,
 } from '../types';
 import { MAX_REQUESTS_NUM } from '../queries';
-import { ResourceIteratee } from '../../../client';
+import paginate from '../paginate';
 
 interface QueryState extends BaseQueryState {
   teamRepos?: CursorState;
@@ -77,10 +78,10 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
  * @param responseData
  * @param iteratee
  */
-const processResponseData = async (
-  responseData,
-  iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
-): Promise<QueryState> => {
+const processResponseData: ProcessResponse<
+  OrgTeamRepoQueryResponse,
+  QueryState
+> = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
   const edges = responseData.organization?.team?.repositories?.edges ?? [];
 
@@ -113,26 +114,15 @@ const processResponseData = async (
 const iterateRepositories: IteratePagination<
   QueryParams,
   OrgTeamRepoQueryResponse
-> = async (queryParams, iteratee, execute) => {
-  let queryCost = 0;
-  let queryState: QueryState | undefined = undefined;
-  let paginationComplete = false;
-
-  while (!paginationComplete) {
-    const executable = buildQuery(queryParams, queryState);
-
-    const response = await execute(executable);
-
-    queryState = await processResponseData(response, iteratee);
-
-    queryCost += queryState.rateLimit?.cost ?? 0;
-
-    paginationComplete = !queryState.teamRepos?.hasNextPage ?? true;
-  }
-
-  return {
-    rateLimitConsumed: queryCost,
-  };
+> = async (queryParams, execute, iteratee) => {
+  return paginate(
+    queryParams,
+    iteratee,
+    execute,
+    buildQuery,
+    processResponseData,
+    (queryState) => !queryState?.teamRepos?.hasNextPage ?? true,
+  );
 };
 
 export default { iterateRepositories };

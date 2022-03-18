@@ -11,14 +11,19 @@ export type InnerResourceQuery<T> = (each: T) => void;
 
 export type IteratePagination<P, I> = (
   queryParams: P,
-  iteratee: ResourceIteratee<I>,
   execute: QueryExecutor,
+  iteratee: ResourceIteratee<I>,
 ) => Promise<GithubQueryResponse>;
 
 export type BuildQuery<P, S extends BaseQueryState> = (
   queryParams: P,
   queryState?: S,
 ) => ExecutableQuery;
+
+export type ProcessResponse<I, Q> = (
+  data: any,
+  iteratee: ResourceIteratee<I>,
+) => Promise<Q>;
 
 export type ProcessedData<S extends BaseQueryState> = {
   resource;

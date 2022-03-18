@@ -318,7 +318,7 @@ Object {
           ...rateLimit
       }",
   "queryVariables": Object {
-    "maxCount": 100,
+    "maxLimit": 100,
     "pullRequestNumber": undefined,
     "repoName": "musical-palm-tree",
     "repoOwner": "J1-Test",
@@ -371,7 +371,7 @@ Object {
       }",
   "queryVariables": Object {
     "labelsCursor": "Y3Vyc2==",
-    "maxCount": 100,
+    "maxLimit": 100,
     "pullRequestNumber": undefined,
     "repoName": "musical-palm-tree",
     "repoOwner": "J1-Test",

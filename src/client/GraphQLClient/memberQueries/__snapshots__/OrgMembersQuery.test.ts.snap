@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OrgMemberQuery pagination of org members 1`] = `
+"
+    query ($login: String!, $maxLimit: Int!, $memberCursor: String) {
+      organization(login: $login) {
+        id
+        membersWithRole(first: $maxLimit, after: $memberCursor) {
+          edges {
+            node {
+              id
+              ...userFields
+            }
+            ...userEdgeFields
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+      ...rateLimit
+    }"
+`;

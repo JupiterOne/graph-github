@@ -105,7 +105,12 @@ export interface OrgTeamMemberQueryResponse extends Node {
   //id will be github User's id
   name?: string;
   login: string;
-  teams: string; // a single team id, even though it is listed as a plural
+  teamId: string;
+  /**
+   * @Deprecated
+   * A single team id, even though it is listed as a plural
+   */
+  teams: string;
   role: TeamMemberRole;
 }
 

@@ -65,15 +65,20 @@ describe('SinglePullRequestQuery', () => {
       const executor = jest
         .fn()
         .mockResolvedValueOnce(singleQueryFullResponse)
-        .mockResolvedValueOnce(singleQueryInnerResourcePaginationComplete);
+        .mockResolvedValueOnce(singleQueryInnerResourcePaginationComplete)
+        .mockRejectedValue(
+          new Error(
+            'Pagination failed to stop! This response should never be reached.',
+          ),
+        );
       const iteratee = jest.fn();
 
       // Act
       const { rateLimitConsumed } =
         await SinglePullRequestQuery.iteratePullRequest(
           repo,
-          iteratee,
           executor,
+          iteratee,
         );
 
       // Assert

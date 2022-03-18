@@ -4,9 +4,10 @@ import {
   CursorState,
   Issue,
   IteratePagination,
+  ProcessResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import { ResourceIteratee } from '../../../client';
+import paginate from '../paginate';
 
 interface QueryState extends BaseQueryState {
   issues: CursorState;
@@ -110,10 +111,10 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
  * @param responseData
  * @param iteratee
  */
-const processResponseData = async (
+const processResponseData: ProcessResponse<Issue, QueryState> = async (
   responseData,
-  iteratee: ResourceIteratee<Issue>,
-): Promise<QueryState> => {
+  iteratee,
+) => {
   if (!responseData) {
     throw new Error('responseData param is required');
   }
@@ -152,36 +153,19 @@ const processResponseData = async (
  */
 const iterateIssues: IteratePagination<QueryParams, Issue> = async (
   queryParams,
-  iteratee,
   execute,
+  iteratee,
 ) => {
-  let issuesFetched = 0;
-  let queryCost = 0;
-  let queryState: QueryState | undefined = undefined;
-  let paginationComplete = false;
-
-  const countIteratee = async (issue) => {
-    issuesFetched++;
-    await iteratee(issue);
-  };
-
-  while (!paginationComplete) {
-    const executable = buildQuery(queryParams, queryState);
-
-    const response = await execute(executable);
-
-    queryState = await processResponseData(response, countIteratee);
-
-    queryCost += queryState.rateLimit?.cost ?? 0;
-
-    paginationComplete =
-      !queryState.issues?.hasNextPage ||
-      issuesFetched >= MAX_FETCHES_PER_EXECUTION;
-  }
-
-  return {
-    rateLimitConsumed: queryCost,
-  };
+  return paginate(
+    queryParams,
+    iteratee,
+    execute,
+    buildQuery,
+    processResponseData,
+    (queryState, issuesFetched) =>
+      (!queryState?.issues?.hasNextPage ?? true) ||
+      issuesFetched >= MAX_FETCHES_PER_EXECUTION,
+  );
 };
 
 export default { iterateIssues };

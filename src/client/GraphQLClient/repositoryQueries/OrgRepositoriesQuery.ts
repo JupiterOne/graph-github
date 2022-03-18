@@ -1,12 +1,13 @@
-import { ExecutableQuery, QueryExecutor } from '../CreateQueryExecutor';
+import { ExecutableQuery } from '../CreateQueryExecutor';
 import {
   BaseQueryState,
   BuildQuery,
   CursorState,
   IteratePagination,
   OrgRepoQueryResponse,
+  ProcessResponse,
 } from '../types';
-import { ResourceIteratee } from '../../../client';
+import paginate from '../paginate';
 
 interface QueryState extends BaseQueryState {
   repos: CursorState;
@@ -63,27 +64,25 @@ const buildQuery: BuildQuery<string, QueryState> = (
  * @param responseData
  * @param iteratee
  */
-const processResponseData = async (
-  responseData,
-  iteratee: ResourceIteratee<OrgRepoQueryResponse>,
-): Promise<QueryState> => {
-  const rateLimit = responseData.rateLimit;
-  const repos = responseData.organization?.repositories?.nodes ?? [];
+const processResponseData: ProcessResponse<OrgRepoQueryResponse, QueryState> =
+  async (responseData, iteratee) => {
+    const rateLimit = responseData.rateLimit;
+    const repos = responseData.organization?.repositories?.nodes ?? [];
 
-  for (const repo of repos) {
-    if (Object.keys(repo).length === 0) {
-      // If there's no data, pass - possible if permissions aren't correct in GHE
-      continue;
+    for (const repo of repos) {
+      if (Object.keys(repo).length === 0) {
+        // If there's no data, pass - possible if permissions aren't correct in GHE
+        continue;
+      }
+
+      await iteratee(repo);
     }
 
-    await iteratee(repo);
-  }
-
-  return {
-    rateLimit,
-    repos: responseData.organization?.repositories?.pageInfo,
+    return {
+      rateLimit,
+      repos: responseData.organization?.repositories?.pageInfo,
+    };
   };
-};
 
 /**
  * Iterates, via pagination, over all Org Repositories.
@@ -92,30 +91,15 @@ const processResponseData = async (
  * @param execute
  */
 const iterateRepositories: IteratePagination<string, OrgRepoQueryResponse> =
-  async (
-    login: string,
-    iteratee: ResourceIteratee<OrgRepoQueryResponse>,
-    execute: QueryExecutor,
-  ) => {
-    let queryCost = 0;
-    let queryState: QueryState | undefined = undefined;
-    let paginationComplete = false;
-
-    while (!paginationComplete) {
-      const executable = buildQuery(login, queryState);
-
-      const response = await execute(executable);
-
-      queryState = await processResponseData(response, iteratee);
-
-      queryCost += queryState.rateLimit?.cost ?? 0;
-
-      paginationComplete = !queryState.repos?.hasNextPage ?? true;
-    }
-
-    return {
-      rateLimitConsumed: queryCost,
-    };
+  async (login, execute, iteratee) => {
+    return paginate(
+      login,
+      iteratee,
+      execute,
+      buildQuery,
+      processResponseData,
+      (queryState) => !queryState?.repos?.hasNextPage ?? true,
+    );
   };
 
 export default { iterateRepositories };

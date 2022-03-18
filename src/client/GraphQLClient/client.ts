@@ -30,7 +30,9 @@ import {
   GithubResource,
   Issue,
   Node,
+  OrgMemberQueryResponse,
   OrgRepoQueryResponse,
+  OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
   PullRequest,
   ResourceMap,
@@ -41,6 +43,8 @@ import IssuesQuery from './issueQueries/IssuesQuery';
 import { createQueryExecutor } from './CreateQueryExecutor';
 import OrgRepositoriesQuery from './repositoryQueries/OrgRepositoriesQuery';
 import TeamRepositoriesQuery from './repositoryQueries/TeamRepositoriesQuery';
+import OrgMembersQuery from './memberQueries/OrgMembersQuery';
+import TeamMembersQuery from './memberQueries/TeamMembersQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300000;
 
@@ -143,8 +147,8 @@ export class GitHubGraphQLClient {
         ...repository,
         lastExecutionTime,
       },
-      iteratee,
       executor,
+      iteratee,
     );
 
     return {
@@ -152,7 +156,7 @@ export class GitHubGraphQLClient {
     };
   }
 
-  public async iterateIssuesV2(
+  public async iterateIssues(
     repoFullName: string,
     lastExecutionTime: string,
     iteratee: ResourceIteratee<Issue>,
@@ -161,8 +165,8 @@ export class GitHubGraphQLClient {
 
     const { rateLimitConsumed } = await IssuesQuery.iterateIssues(
       { repoFullName, lastExecutionTime },
-      iteratee,
       executor,
+      iteratee,
     );
 
     return {
@@ -183,8 +187,8 @@ export class GitHubGraphQLClient {
 
     return await OrgRepositoriesQuery.iterateRepositories(
       login,
-      iteratee,
       executor,
+      iteratee,
     );
   }
 
@@ -200,8 +204,31 @@ export class GitHubGraphQLClient {
         login,
         teamSlug,
       },
-      iteratee,
       executor,
+      iteratee,
+    );
+  }
+
+  public async iterateOrgMembers(
+    login,
+    iteratee: ResourceIteratee<OrgMemberQueryResponse>,
+  ): Promise<QueryResponse> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return await OrgMembersQuery.iterateMembers(login, executor, iteratee);
+  }
+
+  public async iterateTeamMembers(
+    login: string,
+    teamSlug: string,
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<QueryResponse> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return await TeamMembersQuery.iterateMembers(
+      { login, teamSlug },
+      executor,
+      iteratee,
     );
   }
 
@@ -383,109 +410,6 @@ export class GitHubGraphQLClient {
           }
         : {};
     } while (hasMorePullRequests && pullRequestsQueried < limit);
-
-    return {
-      rateLimitConsumed,
-    };
-  }
-
-  /**
-   * Iterates through a search request for Issues while handling
-   * pagination of both the issues and their inner resources.
-   *
-   * @param query The Github Issue search query with syntax - https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests
-   * @param selectedResources - The sub-objects to additionally query for. Ex: [assignees]
-   * @param iteratee - a callback function for each Issue
-   */
-  public async iterateIssues(
-    issueQueryString: string,
-    query: string,
-    selectedResources: GithubResource[],
-    iteratee: ResourceIteratee<Issue>,
-    limit: number = 500, // requests issues since last execution time, or upto this limit, whichever is less
-  ): Promise<QueryResponse> {
-    let queryCursors: ResourceMap<string> = {};
-    let rateLimitConsumed = 0;
-    let issuesQueried = 0;
-
-    do {
-      if (this.tokenExpires - 300000 < Date.now()) {
-        //300000 msec = 5 min
-        //token expires soon; we'd rather refresh it proactively
-        await this.refreshToken();
-      }
-      this.logger.info(
-        { queryCursors },
-        'Fetching batch of issues from GraphQL',
-      );
-
-      let issueResponse;
-      try {
-        issueResponse = await this.retryGraphQL(issueQueryString, {
-          query,
-          ...queryCursors,
-        });
-      } catch (err) {
-        if (err.status === 401) {
-          // why isn't this being handled inside of .retryGraphQL above?
-          // because we need to generate the function queryIssues from the graph function
-          // of the GraphQL client, and the token in the GraphQL client at the time of
-          // invoking this.graph(queryString) gets embedded in the returned function
-          // therefore, we can't change tokens without recreating the queryIssues function,
-          // which means we have to re-invoke the retry function
-          await this.refreshToken();
-          issueResponse = await this.retryGraphQL(issueQueryString, {
-            query,
-            ...queryCursors,
-          });
-        } else {
-          throw err;
-        }
-      }
-      issuesQueried += LIMITED_REQUESTS_NUM;
-      const rateLimit = issueResponse.rateLimit;
-      this.logger.info({ rateLimit }, 'Rate limit info for iteration');
-      rateLimitConsumed += rateLimit?.cost ?? 0;
-      await sleepIfApproachingRateLimit(issueResponse.rateLimit, this.logger);
-
-      //hack to account for resourceMetadataMap on LabelsForIssues
-      selectedResources = selectedResources.map((e) => {
-        if (e === GithubResource.LabelsOnIssues) {
-          return GithubResource.Labels;
-        } else {
-          return e;
-        }
-      });
-
-      for (const issueQueryData of issueResponse.search.edges) {
-        const { resources: pageResources } = processGraphQlPageResult(
-          selectedResources,
-          this.resourceMetadataMap,
-          issueQueryData.node,
-          GithubResource.Issues,
-        );
-
-        // Construct the issue
-        const issueResponse: Issue = {
-          ...pageResources.issues[0], // There will only be one issue because of the for loop
-          assignees: pageResources.assignees ?? [],
-          labels: pageResources.labels ?? [],
-        };
-        await iteratee(issueResponse);
-      }
-
-      // Check to see if we have iterated through every issue yet. We do not need to care about inner resources at this point.
-      queryCursors =
-        issueResponse.search.pageInfo &&
-        issueResponse.search.pageInfo.hasNextPage
-          ? {
-              [GithubResource.Issues]: issueResponse.search.pageInfo.endCursor,
-            }
-          : {};
-    } while (
-      Object.values(queryCursors).some((c) => !!c) &&
-      issuesQueried < limit
-    );
 
     return {
       rateLimitConsumed,

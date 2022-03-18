@@ -159,8 +159,8 @@ export const processResponseData = (
  */
 const iteratePullRequest: IteratePagination<QueryParams, PullRequest> = async (
   queryParams,
-  iteratee,
   execute,
+  iteratee,
 ): Promise<GithubQueryResponse> => {
   let finalResource: PullRequest | undefined = undefined;
   let queryCost = 0;

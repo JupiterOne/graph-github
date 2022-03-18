@@ -100,8 +100,8 @@ describe('PullRequestsQuery', () => {
           public: true,
           lastExecutionTime: '2011-10-05T14:48:00.000Z',
         },
-        iteratee,
         execute,
+        iteratee,
       );
 
       // Assert
@@ -120,7 +120,12 @@ describe('PullRequestsQuery', () => {
         .fn()
         .mockResolvedValueOnce(pullRequestsPublicInnerPagination) // Entity is not used, but queued for single query
         .mockResolvedValueOnce(singleQueryFullResponse) // Part 1 of inner resources single query
-        .mockResolvedValueOnce(singleQueryInnerResourcePaginationComplete); // Part 2 of inner resources single query
+        .mockResolvedValueOnce(singleQueryInnerResourcePaginationComplete) // Part 2 of inner resources single query
+        .mockRejectedValue(
+          new Error(
+            'Pagination failed to stop! This response should never be reached.',
+          ),
+        );
 
       // Act
       const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
@@ -129,8 +134,8 @@ describe('PullRequestsQuery', () => {
           public: true,
           lastExecutionTime: '2011-10-05T14:48:00.000Z',
         },
-        iteratee,
         execute,
+        iteratee,
       );
 
       // Assert
@@ -155,8 +160,8 @@ describe('PullRequestsQuery', () => {
           public: true,
           lastExecutionTime: '2011-10-05T14:48:00.000Z',
         },
-        iteratee,
         execute,
+        iteratee,
       );
 
       // Assert

@@ -43,7 +43,7 @@ export async function fetchTeamMembers({
           _class: RelationshipClass.HAS,
           fromType: GithubEntities.GITHUB_TEAM._type,
           toType: GithubEntities.GITHUB_MEMBER._type,
-          fromKey: user.teams, //a single team key
+          fromKey: user.teamId,
           toKey: user.id,
         });
 
@@ -53,7 +53,7 @@ export async function fetchTeamMembers({
               teamId: teamEntity.id,
               teamKey: teamEntity._key,
               teamName: teamEntity.name,
-              teamRepoTeamKey: user.teams,
+              teamRepoTeamKey: user.teamId,
               teamRepoId: user.id,
               relationshipKey: teamMemberRelationship._key,
             },
@@ -69,7 +69,7 @@ export async function fetchTeamMembers({
             fromType: GithubEntities.GITHUB_MEMBER._type,
             toType: GithubEntities.GITHUB_TEAM._type,
             fromKey: user.id,
-            toKey: user.teams,
+            toKey: user.teamId,
           });
 
           if (jobState.hasKey(maintainerTeamRelationship._key)) {
@@ -78,7 +78,7 @@ export async function fetchTeamMembers({
                 teamId: teamEntity.id,
                 teamKey: teamEntity._key,
                 teamName: teamEntity.name,
-                teamRepoTeamKey: user.teams,
+                teamRepoTeamKey: user.teamId,
                 teamRepoId: user.id,
                 relationshipKey: maintainerTeamRelationship._key,
               },

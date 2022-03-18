@@ -16,8 +16,8 @@ describe('IssuesQuery', () => {
           repoFullName: 'J1-Test/happy-sunshine',
           lastExecutionTime: '2011-10-05T14:48:00.000Z',
         },
-        iteratee,
         execute,
+        iteratee,
       );
 
       // Assert

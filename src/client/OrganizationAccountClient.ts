@@ -37,10 +37,7 @@ import {
 } from './GraphQLClient/types';
 import {
   ACCOUNT_QUERY_STRING,
-  REPOS_QUERY_STRING,
-  SINGLE_TEAM_MEMBERS_QUERY_STRING,
   TEAMS_QUERY_STRING,
-  USERS_QUERY_STRING,
   SINGLE_REPO_COLLABORATORS_QUERY_STRING,
 } from './GraphQLClient/queries';
 import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
@@ -122,28 +119,6 @@ export default class OrganizationAccountClient {
     return response[0];
   }
 
-  async getMembers(): Promise<OrgMemberQueryResponse[]> {
-    let response: OrgMemberQueryResponse[] = [];
-
-    await this.queryGraphQL('members', async () => {
-      const { membersWithRole, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          USERS_QUERY_STRING,
-          GithubResource.Organization,
-          [GithubResource.OrganizationMembers],
-          { login: this.login },
-        );
-
-      if (membersWithRole) {
-        response = response.concat(membersWithRole);
-      }
-
-      return rateLimitConsumed;
-    });
-
-    return response;
-  }
-
   async getTeams(): Promise<OrgTeamQueryResponse[]> {
     let response: OrgTeamQueryResponse[] = [];
 
@@ -165,68 +140,6 @@ export default class OrganizationAccountClient {
     return response;
   }
 
-  async getTeamMembers(
-    teamSlug: string,
-    teamKey: string,
-  ): Promise<OrgTeamMemberQueryResponse[]> {
-    let response: OrgTeamMemberQueryResponse[] = [];
-    await this.queryGraphQL('team members', async () => {
-      const { members, teams, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          SINGLE_TEAM_MEMBERS_QUERY_STRING,
-          GithubResource.Organization,
-          [GithubResource.TeamMembers],
-          {
-            login: this.login,
-            slug: teamSlug,
-          },
-        );
-
-      if (members) {
-        response = response.concat(members as OrgTeamMemberQueryResponse[]);
-      }
-
-      if (!teams?.every((t) => t.id === teamKey)) {
-        this.logger.warn(
-          { teamSlug, teamKey, teams },
-          'Teams contained more than the one expected team',
-        );
-      }
-
-      return rateLimitConsumed;
-    });
-    return response.filter((t) => t.teams === teamKey);
-  }
-
-  /**
-   * @Deprecated
-   * @param slugs
-   */
-  async getRepositories(slugs?: string[]): Promise<OrgRepoQueryResponse[]> {
-    let response: OrgRepoQueryResponse[] = [];
-
-    await this.queryGraphQL('repositories', async () => {
-      const { repositories, rateLimitConsumed } = await this.v4.fetchFromSingle(
-        REPOS_QUERY_STRING,
-        GithubResource.Organization,
-        [GithubResource.Repositories],
-        { login: this.login },
-      );
-
-      if (repositories) {
-        response = response.concat(repositories as OrgRepoQueryResponse[]);
-      }
-
-      return rateLimitConsumed;
-    });
-
-    if (slugs) {
-      return response.filter((repo) => slugs.includes(repo.name));
-    } else {
-      return response;
-    }
-  }
-
   /**
    * Iterate Organization owned Repos.
    * @param iteratee
@@ -237,6 +150,11 @@ export default class OrganizationAccountClient {
     return await this.v4.iterateOrgRepositories(this.login, iteratee);
   }
 
+  /**
+   * Iterate over team repositories.
+   * @param teamSlug
+   * @param iteratee
+   */
   async iterateTeamRepositories(
     teamSlug: string,
     iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
@@ -246,6 +164,23 @@ export default class OrganizationAccountClient {
       teamSlug,
       iteratee,
     );
+  }
+
+  /**
+   * Iterate over Org Members.
+   * @param iteratee
+   */
+  async iterateOrgMembers(
+    iteratee: ResourceIteratee<OrgMemberQueryResponse>,
+  ): Promise<QueryResponse> {
+    return await this.v4.iterateOrgMembers(this.login, iteratee);
+  }
+
+  async iterateTeamMembers(
+    teamSlug: string,
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<QueryResponse> {
+    return await this.v4.iterateTeamMembers(this.login, teamSlug, iteratee);
   }
 
   async getRepoCollaborators(repoName: string): Promise<Collaborator[]> {
@@ -299,6 +234,7 @@ export default class OrganizationAccountClient {
 
   /**
    * Calls the GraphQL client to iterate over issue entities.
+   * Notes: issues and PRs are actually the same in the API
    * @param repo
    * @param lastExecutionTime
    * @param iteratee
@@ -311,24 +247,18 @@ export default class OrganizationAccountClient {
     //issues and PRs are actually the same in the API
     //we just filter for is:issue instead of is:pr
     //and remove pr-specific children from the request
+    // TODO: SP -> investigate removing pr-specific children
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting issues.');
       return { rateLimitConsumed: 0 };
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
 
-    return await this.v4.iterateIssuesV2(
+    return await this.v4.iterateIssues(
       repo.fullName,
       lastExecutionTime,
       iteratee,
     );
-    // const query = `is:issue repo:${repo.fullName} updated:>=${lastExecutionTime}`;
-    // return await this.v4.iterateIssues(
-    //   ISSUES_QUERY_STRING,
-    //   query,
-    //   [GithubResource.Assignees, GithubResource.LabelsOnIssues],
-    //   iteratee,
-    // );
   }
 
   /**

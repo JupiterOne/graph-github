@@ -8,12 +8,17 @@ describe('OrgRepositoriesQuery', () => {
     const executor = jest
       .fn()
       .mockResolvedValueOnce(orgRepos[0])
-      .mockResolvedValueOnce(orgRepos[1]);
+      .mockResolvedValueOnce(orgRepos[1])
+      .mockRejectedValue(
+        new Error(
+          'Pagination failed to stop! This response should never be reached.',
+        ),
+      );
     const iteratee = jest.fn();
 
     // Act
     const { rateLimitConsumed } =
-      await OrgRepositoriesQuery.iterateRepositories(login, iteratee, executor);
+      await OrgRepositoriesQuery.iterateRepositories(login, executor, iteratee);
 
     // Assert
     expect(rateLimitConsumed).toBe(6);
@@ -27,6 +32,7 @@ describe('OrgRepositoriesQuery', () => {
       repoCursor: 'orgRepoCursorEnd',
       login,
     });
+    expect(executor.mock.calls[1][0].query).toMatchSnapshot();
     expect(iteratee).toHaveBeenCalledTimes(5);
     expect(iteratee.mock.calls[4][0]).toEqual({
       id: 'R_5',
@@ -42,8 +48,8 @@ describe('OrgRepositoriesQuery', () => {
     const { rateLimitConsumed } =
       await OrgRepositoriesQuery.iterateRepositories(
         'J1-Test',
-        iteratee,
         executor,
+        iteratee,
       );
 
     // Assert

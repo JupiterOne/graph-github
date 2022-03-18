@@ -214,8 +214,8 @@ export const processResponseData = async (
  */
 const iteratePullRequests: IteratePagination<QueryParams, PullRequest> = async (
   queryParams,
-  iteratee,
   execute,
+  iteratee,
 ): Promise<GithubQueryResponse> => {
   let pullRequestFetched = 0;
   let queryCost = 0;
@@ -246,8 +246,8 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequest> = async (
       const { rateLimitConsumed } =
         await SinglePullRequestQuery.iteratePullRequest(
           pullRequestQuery,
-          countIteratee,
           execute,
+          countIteratee,
         );
 
       queryCost += rateLimitConsumed;

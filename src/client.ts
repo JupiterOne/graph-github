@@ -117,10 +117,8 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
-    for (const team of teams) {
-      await iteratee(team);
-    }
+
+    await this.accountClient.iterateTeams(iteratee);
   }
 
   /**
@@ -346,6 +344,7 @@ export class APIClient {
   /**
    * Iterates the collaborators for a single repo.
    *
+   * @param repoName name of the repository
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateRepoCollaborators(
@@ -355,17 +354,15 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const collaborators = await this.accountClient.getRepoCollaborators(
-      repoName,
-    );
-    for (const collab of collaborators) {
-      await iteratee(collab);
-    }
+
+    await this.accountClient.iterateRepoCollaborators(repoName, iteratee);
   }
 
   /**
    * Iterates the issues for a repo in the provider.
    *
+   * @param repo
+   * @param lastSuccessfulExecution
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateIssues(

@@ -71,17 +71,21 @@ export async function fetchCollaborators({
           outsideCollaboratorsArray.push(userEntity);
         }
       }
-      const repoId = collab.repository;
-      if (repoId && userEntity && (await jobState.hasKey(repoId))) {
+
+      if (
+        collab.repositoryId &&
+        userEntity &&
+        (await jobState.hasKey(collab.repositoryId))
+      ) {
         const repoUserRelationship = createRepoAllowsUserRelationship(
-          repoId,
+          collab.repositoryId,
           userEntity,
           collab.permission,
         );
         await jobState.addRelationship(repoUserRelationship);
       } else {
         logger.warn(
-          { collab: collab, repoId: repoId },
+          { collab: collab, repoId: collab.repositoryId },
           `Could not build relationship between collaborator and repo`,
         );
       }

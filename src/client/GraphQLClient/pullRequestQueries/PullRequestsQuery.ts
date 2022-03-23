@@ -30,7 +30,7 @@ type QueryParams = {
 
 const MAX_SEARCH_LIMIT = 25;
 const MAX_INNER_RESOURCE_LIMIT = 100;
-const MAX_FETCHES_PER_EXECUTION = 500;
+const MAX_RESOURCES_PER_EXECUTION = 500;
 
 /**
  * Builds the leanest query possible
@@ -255,7 +255,7 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequest> = async (
 
     paginationComplete =
       !queryState.pullRequests?.hasNextPage ||
-      pullRequestFetched >= MAX_FETCHES_PER_EXECUTION;
+      pullRequestFetched >= MAX_RESOURCES_PER_EXECUTION;
   }
 
   return {

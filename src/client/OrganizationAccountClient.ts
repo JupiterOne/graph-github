@@ -35,11 +35,7 @@ import {
   Collaborator,
   GithubQueryResponse as QueryResponse,
 } from './GraphQLClient/types';
-import {
-  ACCOUNT_QUERY_STRING,
-  TEAMS_QUERY_STRING,
-  SINGLE_REPO_COLLABORATORS_QUERY_STRING,
-} from './GraphQLClient/queries';
+import { ACCOUNT_QUERY_STRING } from './GraphQLClient/queries';
 import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
 
 export default class OrganizationAccountClient {
@@ -119,27 +115,6 @@ export default class OrganizationAccountClient {
     return response[0];
   }
 
-  async getTeams(): Promise<OrgTeamQueryResponse[]> {
-    let response: OrgTeamQueryResponse[] = [];
-
-    await this.queryGraphQL('teams', async () => {
-      const { teams, rateLimitConsumed } = await this.v4.fetchFromSingle(
-        TEAMS_QUERY_STRING,
-        GithubResource.Organization,
-        [GithubResource.Teams],
-        { login: this.login },
-      );
-
-      if (teams) {
-        response = response.concat(teams as OrgTeamQueryResponse[]);
-      }
-
-      return rateLimitConsumed;
-    });
-
-    return response;
-  }
-
   /**
    * Iterate Organization owned Repos.
    * @param iteratee
@@ -176,6 +151,12 @@ export default class OrganizationAccountClient {
     return await this.v4.iterateOrgMembers(this.login, iteratee);
   }
 
+  async iterateTeams(
+    iteratee: ResourceIteratee<OrgTeamQueryResponse>,
+  ): Promise<QueryResponse> {
+    return await this.v4.iterateTeams(this.login, iteratee);
+  }
+
   async iterateTeamMembers(
     teamSlug: string,
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
@@ -183,26 +164,15 @@ export default class OrganizationAccountClient {
     return await this.v4.iterateTeamMembers(this.login, teamSlug, iteratee);
   }
 
-  async getRepoCollaborators(repoName: string): Promise<Collaborator[]> {
-    let response: Collaborator[] = [];
-    await this.queryGraphQL('collaborators', async () => {
-      const { collaborators, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          SINGLE_REPO_COLLABORATORS_QUERY_STRING,
-          GithubResource.Repository,
-          [GithubResource.Collaborators],
-          {
-            repoName,
-            repoOwner: this.login,
-          },
-        );
-
-      if (collaborators) {
-        response = response.concat(collaborators as Collaborator[]);
-      }
-      return rateLimitConsumed;
-    });
-    return response;
+  async iterateRepoCollaborators(
+    repoName: string,
+    iteratee: ResourceIteratee<Collaborator>,
+  ): Promise<QueryResponse> {
+    return await this.v4.iterateRepoCollaborators(
+      this.login,
+      repoName,
+      iteratee,
+    );
   }
 
   /**
@@ -336,16 +306,19 @@ export default class OrganizationAccountClient {
       );
       return repoSecrets || [];
     } catch (err) {
-      this.logger.warn({}, 'Error while attempting to ingest repo secrets');
       if (err.status === 403) {
-        //this is caused by repos with more restrictive privacy settings
         this.logger.info(
           { repoName },
-          `Repo returned a 403 unauthorized when secrets requested.`,
+          `Repo returned a 403 unauthorized when secrets requested. This is caused by repos with more restrictive privacy settings`,
         );
         return [];
+      } else {
+        this.logger.warn(
+          { err },
+          'Error while attempting to ingest repo secrets. This was mostly like NOT caused by a restrictive privacy setting.',
+        );
+        throw new IntegrationError(err);
       }
-      throw new IntegrationError(err);
     }
   }
 

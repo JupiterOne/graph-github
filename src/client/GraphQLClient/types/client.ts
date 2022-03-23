@@ -306,7 +306,9 @@ export interface Collaborator extends Node {
   permission: string;
   login: string;
   name: string;
-  repository: string;
+  // @Deprecated - use repositoryId
+  repository?: string;
+  repositoryId: string;
 }
 
 export interface GithubSearchResources {

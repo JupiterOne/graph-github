@@ -1,0 +1,97 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RepoCollaboratorsQuery #iterateCollaborators Pulling data out 1`] = `
+Object {
+  "id": "MDQ6VXNlcjU5MjMwMDI=",
+  "login": "VDubber",
+  "name": "Samuel Poulton",
+  "permission": "ADMIN",
+  "repositoryId": "R_kgDOG_MJdQ",
+}
+`;
+
+exports[`RepoCollaboratorsQuery #iterateCollaborators Pulling data out 2`] = `
+Object {
+  "id": "U_kgDOBgq4WA",
+  "login": "spoultonV2",
+  "name": null,
+  "permission": "READ",
+  "repositoryId": "R_kgDOG_MJdQ",
+}
+`;
+
+exports[`RepoCollaboratorsQuery #iterateCollaborators Pulling data out 3`] = `
+Object {
+  "id": "MDQ6VXNlcjU5MjMwMDI=",
+  "login": "HSM",
+  "name": "Harper Smith",
+  "permission": "ADMIN",
+  "repositoryId": "R_kgDOG_MJdQ",
+}
+`;
+
+exports[`RepoCollaboratorsQuery #iterateCollaborators Pulling data out 4`] = `
+Object {
+  "query": "
+    query ($login: String!, $repoName: String!, $maxLimit: Int!, $collaboratorCursor: String) {
+      repository(name: $repoName, owner: $login) {
+        id
+        collaborators(first: $maxLimit, after: $collaboratorCursor) {
+          edges {
+            node {
+              id
+              name
+              login
+            }
+            permission
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+      ...rateLimit
+    }",
+  "queryVariables": Object {
+    "login": "J1-Test",
+    "maxLimit": 100,
+    "repoName": "happy-sunshine",
+  },
+}
+`;
+
+exports[`RepoCollaboratorsQuery #iterateCollaborators Pulling data out 5`] = `
+Object {
+  "query": "
+    query ($login: String!, $repoName: String!, $maxLimit: Int!, $collaboratorCursor: String) {
+      repository(name: $repoName, owner: $login) {
+        id
+        collaborators(first: $maxLimit, after: $collaboratorCursor) {
+          edges {
+            node {
+              id
+              name
+              login
+            }
+            permission
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+      ...rateLimit
+    }",
+  "queryVariables": Object {
+    "collaboratorCursor": "more2come==",
+    "login": "J1-Test",
+    "maxLimit": 100,
+    "repoName": "happy-sunshine",
+  },
+  "rateLimit": Object {
+    "cost": 2,
+  },
+}
+`;

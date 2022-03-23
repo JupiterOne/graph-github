@@ -25,6 +25,7 @@ import {
   mapResponseCursorsForQuery,
 } from './response';
 import {
+  Collaborator,
   CursorHierarchy,
   GithubQueryResponse as QueryResponse,
   GithubResource,
@@ -33,6 +34,7 @@ import {
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamMemberQueryResponse,
+  OrgTeamQueryResponse,
   OrgTeamRepoQueryResponse,
   PullRequest,
   ResourceMap,
@@ -45,6 +47,8 @@ import OrgRepositoriesQuery from './repositoryQueries/OrgRepositoriesQuery';
 import TeamRepositoriesQuery from './repositoryQueries/TeamRepositoriesQuery';
 import OrgMembersQuery from './memberQueries/OrgMembersQuery';
 import TeamMembersQuery from './memberQueries/TeamMembersQuery';
+import TeamsQuery from './teamQueries/TeamsQuery';
+import RepoCollaboratorsQuery from './collaboratorQueries/RepoCollaboratorsQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300000;
 
@@ -135,6 +139,22 @@ export class GitHubGraphQLClient {
     }
   }
 
+  /**
+   * Performs GraphQl request.
+   * Handles:
+   *    - token management (refreshes 5 minutes before expiring)
+   *    - rate limit management
+   * @param queryString
+   * @param queryVariables
+   */
+  public async query(queryString: string, queryVariables) {
+    if (this.tokenExpires - FIVE_MINUTES_IN_MILLIS < Date.now()) {
+      await this.refreshToken();
+    }
+
+    return await this.retryGraphQL(queryString, queryVariables);
+  }
+
   public async iteratePullRequestsV2(
     repository: { fullName: string; public: boolean },
     lastExecutionTime: string,
@@ -192,6 +212,43 @@ export class GitHubGraphQLClient {
     );
   }
 
+  /**
+   * Iterate teams found within an organization.
+   * @param login aka organization
+   * @param iteratee
+   */
+  public async iterateTeams(
+    login: string,
+    iteratee: ResourceIteratee<OrgTeamQueryResponse>,
+  ): Promise<QueryResponse> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return await TeamsQuery.iterateTeams(login, executor, iteratee);
+  }
+
+  /**
+   * Iterate repository collaborators within an organization.
+   * @param login aka organization
+   * @param repoName
+   * @param iteratee
+   */
+  public async iterateRepoCollaborators(
+    login,
+    repoName,
+    iteratee: ResourceIteratee<Collaborator>,
+  ): Promise<QueryResponse> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return RepoCollaboratorsQuery.iterateCollaborators(
+      {
+        login,
+        repoName,
+      },
+      executor,
+      iteratee,
+    );
+  }
+
   public async iterateTeamRepositories(
     login: string,
     teamSlug: string,
@@ -230,21 +287,6 @@ export class GitHubGraphQLClient {
       executor,
       iteratee,
     );
-  }
-
-  /**
-   * Performs GraphQl request.
-   * Handles:
-   *    - token management (refreshes 5 minutes before expiring)
-   *    - rate limit management
-   * @param queryString
-   * @param queryVariables
-   */
-  public async query(queryString: string, queryVariables) {
-    if (this.tokenExpires - FIVE_MINUTES_IN_MILLIS < Date.now()) {
-      await this.refreshToken();
-    }
-    return await this.retryGraphQL(queryString, queryVariables);
   }
 
   /**

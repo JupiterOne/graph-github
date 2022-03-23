@@ -66,79 +66,12 @@ export const USERS_QUERY_STRING = `query ($login: String!, $membersWithRole: Str
 ...rateLimit
   }`;
 
-export const TEAMS_QUERY_STRING = `query ($login: String!, $teams: String) {
-    organization(login: $login) {
-        id
-        teams(first: ${MAX_REQUESTS_NUM}, after: $teams) {
-        edges {
-          node {
-            id
-            ...teamFields
-          }
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
-      }
-      }
-...rateLimit
-  }`;
-
-export const ISSUES_QUERY_STRING = `query ($query: String!, $issues: String, $assignees: String, $labels: String) {
-    search(first: ${LIMITED_REQUESTS_NUM}, after: $issues, type: ISSUE, query: $query) {
-        issueCount
-        edges {
-          node {
-            ...issueFields
-            ... on Issue {
-              assignees(first: ${MAX_REQUESTS_NUM}, after: $assignees) {
-                totalCount
-                edges {
-                  node {
-                    name
-                    login
-                  }
-                }
-                pageInfo {
-                  endCursor
-                  hasNextPage
-                }
-              }
-            }
-            ... on Issue {
-              labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
-                totalCount
-                edges {
-                  node {
-                    id
-                    name
-                  }
-                }
-                pageInfo {
-                  endCursor
-                  hasNextPage
-                }
-              }
-            }
-          }
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
-      }
-      ...rateLimit
-    }`;
-
 // TODO: Should this argument be using `last` instead of `first` to get the most
 // recent? Would that require changing `after` to `before` so that we can walk back?
 // See https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#example-query
 /**
  * A GraphQL query for fetching public repository data. This fetches data
  * visible to everyone without requiring Repository Content permissions.
- *
- * @see PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING
  */
 export const PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING = `
   query ($query: String!, $pullRequests: String, $commits: String, $reviews: String, $labels: String) {
@@ -202,58 +135,6 @@ export const PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING = `
     ...rateLimit
   }`;
 
-/**
- * A GraphQL query for fetching private repository data. This does not fetch
- * data that would require Repository Content permissions.
- *
- * @see PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING
- */
-export const PRIVATE_REPO_PULL_REQUESTS_QUERY_STRING = `
-query ($query: String!, $pullRequests: String, $reviews: String, $labels: String) {
-  search(first: ${LIMITED_REQUESTS_NUM}, after: $pullRequests, type: ISSUE, query: $query) {
-    issueCount
-    edges {
-      node {
-        ...privateRepoPullRequestFields
-        ... on PullRequest {
-          reviews(first: ${MAX_REQUESTS_NUM}, after: $reviews) {
-            totalCount
-            edges {
-              node {
-                ...privateRepoPRReviewFields
-              }
-            }
-            pageInfo {
-              endCursor
-              hasNextPage
-            }
-          }
-        }
-        ... on PullRequest {
-          labels(first: ${MAX_REQUESTS_NUM}, after: $labels) {
-            totalCount
-            edges {
-              node {
-                id
-                name
-              }
-            }
-            pageInfo {
-              endCursor
-              hasNextPage
-            }
-          }
-        }
-      }
-    }
-    pageInfo {
-      endCursor
-      hasNextPage
-    }
-  }
-  ...rateLimit
-}`;
-
 export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!, $repoName: String!, $repoOwner: String!, $commits: String, $reviews: String, $labels: String) {
     repository(name: $repoName, owner: $repoOwner) {
           pullRequest(number: $pullRequestNumber) {
@@ -308,54 +189,6 @@ export const SINGLE_PULL_REQUEST_QUERY_STRING = `query ($pullRequestNumber: Int!
 ...rateLimit
   }`;
 
-export const SINGLE_REPO_COLLABORATORS_QUERY_STRING = `query ($repoName: String!, $repoOwner: String!, $collaborators: String) {
-  repository(name: $repoName, owner: $repoOwner) {
-    id
-    collaborators(first: ${MAX_REQUESTS_NUM}, after: $collaborators) {
-      edges {
-        node {
-          id
-          name
-          login
-        }
-        permission
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-  }
-  ...rateLimit
-}`;
-
-/**
- * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
- */
-
-export const SINGLE_TEAM_REPOS_QUERY_STRING = `query ($login: String!, $slug: String!, $teamRepositories: String) {
-  organization(login: $login) {
-    id
-    team(slug: $slug) {
-        id
-        name
-        repositories(first: ${MAX_REQUESTS_NUM}, after: $teamRepositories) {
-    edges {
-      node {
-        id
-      }
-      ...teamRepositoryEdgeFields
-    }
-    pageInfo {
-endCursor
-hasNextPage
-}
-  }
-  }
-  }
-...rateLimit
-}`;
-
 /**
  * Because teams are not top-level objects in GraphQL, we have to pull them using a slug under organization
  */
@@ -383,105 +216,3 @@ hasNextPage
       }
 ...rateLimit
 }`;
-
-/**
- * Queries not used anymore
- * Kept here for comparison in designing new queries
- */
-
-/*
-
-export const TEAM_MEMBERS_QUERY_STRING = `query ($login: String!, $teams: String, $members: String) {
-    organization(login: $login) {
-        id
-        teams(first: ${MAX_REQUESTS_NUM}, after: $teams) {
-        edges {
-          node {
-            id
-            members(first: ${MAX_REQUESTS_NUM}, after: $members) {
-        edges {
-          node {
-            id
-            ...teamMemberFields
-          }
-          ...teamMemberEdgeFields
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
-      }
-          }
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
-      }
-      }
-...rateLimit
-  }`;
-
-export const TEAM_REPOS_QUERY_STRING = `query ($login: String!, $teams: String, $teamRepositories: String) {
-    organization(login: $login) {
-        id
-        teams(first: ${LIMITED_REQUESTS_NUM}, after: $teams) {
-        edges {
-          node {
-            id
-            repositories(first: ${LIMITED_REQUESTS_NUM}, after: $teamRepositories) {
-        edges {
-          node {
-            id
-          }
-          ...teamRepositoryEdgeFields
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
-      }
-          }
-        }
-        pageInfo {
-  endCursor
-  hasNextPage
-}
-      }
-      }
-...rateLimit
-  }`;
-
-export const COLLABORATORS_QUERY_STRING = `query ($login: String!, $repositories: String, $collaborators: String) {
-  organization(login: $login) {
-      id
-      repositories(first: ${LIMITED_REQUESTS_NUM}, after: $repositories) {
-      edges {
-        node {
-          id
-          collaborators(first: ${LIMITED_REQUESTS_NUM}, after: $collaborators) {
-      edges {
-        node {
-          id
-          name
-          login
-        }
-        permission
-      }
-      pageInfo {
-endCursor
-hasNextPage
-}
-    }
-        }
-      }
-      pageInfo {
-endCursor
-hasNextPage
-}
-    }
-    }
-...rateLimit
-}`;
-
-*/

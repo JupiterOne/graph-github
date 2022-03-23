@@ -6,7 +6,7 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { createAPIClient } from '../client';
+import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { EnvironmentEntity, SecretEntity, IdEntityMap } from '../types';
 import {
@@ -26,7 +26,7 @@ export async function fetchEnvSecrets({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = createAPIClient(config, logger);
+  const apiClient = getOrCreateApiClient(config, logger);
 
   const repoSecretEntitiesByRepoNameMap = await jobState.getData<
     IdEntityMap<IdEntityMap<SecretEntity>>

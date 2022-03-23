@@ -5,7 +5,7 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { createAPIClient } from '../client';
+import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { toOrganizationMemberEntityFromTeamMember } from '../sync/converters';
 import { TeamMemberRole } from '../client/GraphQLClient';
@@ -22,7 +22,7 @@ export async function fetchTeamMembers({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = createAPIClient(config, logger);
+  const apiClient = getOrCreateApiClient(config, logger);
 
   await jobState.iterateEntities(
     { _type: GithubEntities.GITHUB_TEAM._type },

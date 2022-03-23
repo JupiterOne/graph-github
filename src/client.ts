@@ -397,7 +397,6 @@ export class APIClient {
         'Integration id should be a number.',
       );
     }
-    const installationId = Number(this.config.installationId);
     const appClient = createGitHubAppClient(
       this.restApiUrl,
       this.config,
@@ -419,9 +418,9 @@ export class APIClient {
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: `${this.restApiUrl}/app/installations/${this.config.installationId}/access_tokens`,
+        endpoint: err.response?.url,
         status: err.status,
-        statusText: err.statusText,
+        statusText: err.response?.data?.message,
       });
     }
 
@@ -433,19 +432,16 @@ export class APIClient {
       );
     }
 
-    let login: string = this.config.githubAppDefaultLogin;
+    const installationId = Number(this.config.installationId);
     const installation = await getInstallation(appClient, installationId);
     if (installation.target_type !== AccountType.Org) {
       throw new IntegrationValidationError(
         'Integration supports only GitHub Organization accounts.',
       );
     }
-    if (installation.account) {
-      login = installation.account.login || this.config.githubAppDefaultLogin;
-    }
 
     this.accountClient = new OrganizationAccountClient({
-      login: login,
+      login: installation?.account?.login ?? this.config.githubAppDefaultLogin,
       baseUrl: this.restApiUrl,
       restClient: appClient,
       graphqlClient: new GitHubGraphQLClient(
@@ -553,9 +549,19 @@ export class APIClient {
   }
 }
 
-export function createAPIClient(
+/**
+ * API Client is a singleton. New instances
+ * are not necessary. Prevents setupAccountClient()
+ * from being called repeatedly.
+ */
+let apiClientInstance;
+export function getOrCreateApiClient(
   config: IntegrationConfig,
   logger: IntegrationLogger,
 ): APIClient {
-  return new APIClient(config, logger);
+  if (!apiClientInstance) {
+    apiClientInstance = new APIClient(config, logger);
+  }
+
+  return apiClientInstance;
 }

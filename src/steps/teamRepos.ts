@@ -4,7 +4,7 @@ import {
   RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 
-import { createAPIClient } from '../client';
+import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { createRepoAllowsTeamRelationship } from '../sync/converters';
 import {
@@ -19,7 +19,7 @@ export async function fetchTeamRepos({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = createAPIClient(config, logger);
+  const apiClient = getOrCreateApiClient(config, logger);
 
   await jobState.iterateEntities(
     { _type: GithubEntities.GITHUB_TEAM._type },

@@ -5,7 +5,7 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { createAPIClient } from '../client';
+import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import {
   toIssueEntity,
@@ -32,7 +32,7 @@ export async function fetchIssues(
   const lastSuccessfulExecution = new Date(
     lastSuccessfulSyncTime,
   ).toISOString();
-  const apiClient = createAPIClient(config, logger);
+  const apiClient = getOrCreateApiClient(config, logger);
 
   let usersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,

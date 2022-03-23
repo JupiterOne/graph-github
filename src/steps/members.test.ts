@@ -25,7 +25,6 @@ test('fetchMembers exec handler', async () => {
     name: 'members',
   });
   sanitizeConfig(integrationConfig);
-  integrationConfig.installationId = 17214088; //this is the id the recordings are under
 
   const {
     collectedEntities,

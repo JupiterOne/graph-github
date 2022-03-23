@@ -12,13 +12,11 @@ import createGitHubAppClient from '../../util/createGitHubAppClient';
 import { GitHubGraphQLClient, GithubResource } from './';
 import {
   MAX_REQUESTS_NUM,
-  PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING,
   REPOS_QUERY_STRING,
   SINGLE_TEAM_MEMBERS_QUERY_STRING,
   USERS_QUERY_STRING,
 } from './queries';
 import resourceMetadataMap from './resourceMetadataMap';
-import { PullRequest } from './types';
 
 //tests in this file similar to those in client.test.ts, except
 //that they start with an expired token. You can see that refresh worked
@@ -36,8 +34,6 @@ async function getAccess() {
 
   const config = context.instance.config;
   sanitizeConfig(config);
-  //the installid in the recordings
-  config.installationId = 17214088; //this is the id the recordings are under
 
   const appClient = createGitHubAppClient(
     'https://api.github.com',
@@ -67,10 +63,6 @@ async function getClient() {
 }
 
 //reduce page limit size so we can test pagination
-const pullRequestsQueryString = PUBLIC_REPO_PULL_REQUESTS_QUERY_STRING.replace(
-  `first: ${MAX_REQUESTS_NUM}`,
-  'first: 2',
-);
 const reposQueryString = REPOS_QUERY_STRING.replace(
   `first: ${MAX_REQUESTS_NUM}`,
   'first: 2',
@@ -80,33 +72,43 @@ const usersQueryString = USERS_QUERY_STRING.replace(
   'first: 2',
 );
 
-describe('pull request resources', () => {
-  let p: Recording; //p for polly
+describe('GraphQLClient.query', () => {
+  let polly: Recording;
 
   afterEach(async () => {
-    await p.stop();
+    await polly.stop();
   });
 
-  test('pullRequest pagination only', async () => {
-    p = setupGithubRecording({
+  test('#query', async () => {
+    polly = setupGithubRecording({
       directory: __dirname,
-      name: 'GitHubGraphQLClient.refreshTokenInFetchPRs.singlePage',
+      name: 'GitHubGraphQLClient.refreshTokenQuery',
+      options: {
+        matchRequestsBy: {
+          headers: false, //must not set order:false
+        },
+      },
     });
     const client = await getClient();
 
-    const query = 'is:pr repo:Kei-Institute/Test-repo is:open';
-    const pullRequests: PullRequest[] = [];
-    const response = await client.iteratePullRequests(
-      pullRequestsQueryString,
-      query,
-      [GithubResource.Commits, GithubResource.Reviews, GithubResource.Labels],
-      (pr) => {
-        pullRequests.push(pr);
-      },
-    );
-    expect(response.rateLimitConsumed).toEqual(1);
-    expect(pullRequests.length).toEqual(2);
-    expect(pullRequests).toMatchSnapshot();
+    const query = `
+      query ($login: String!) {
+      organization(login: $login) {
+        id
+        name
+        description
+      }
+      rateLimit {
+        cost
+        remaining
+      }
+    }`;
+    const queryVariables = {
+      login: 'j1-ingest',
+    };
+
+    const response = await client.query(query, queryVariables);
+    expect(response).toBeDefined();
   });
 });
 
@@ -132,15 +134,15 @@ describe('organization resources', () => {
       reposQueryString,
       GithubResource.Organization,
       [GithubResource.Repositories],
-      { login: 'Kei-Institute' },
+      { login: 'j1-ingest' },
     );
 
     expect(data.organization).toBeDefined();
     expect(data.membersWithRole).toBeUndefined();
-    expect(data.repositories).toHaveLength(3);
+    expect(data.repositories).toHaveLength(6);
     expect(data.teams).toBeUndefined();
     expect(data.members).toBeUndefined();
-    expect(data.rateLimitConsumed).toBe(1);
+    expect(data.rateLimitConsumed).toBe(3);
   });
 
   test('multiple pages', async () => {
@@ -158,11 +160,11 @@ describe('organization resources', () => {
       usersQueryString,
       GithubResource.Organization,
       [GithubResource.OrganizationMembers],
-      { login: 'Kei-Institute' },
+      { login: 'j1-ingest' },
     );
 
     expect(data.organization).toBeDefined();
-    expect(data.membersWithRole).toHaveLength(3);
+    expect(data.membersWithRole).toHaveLength(2);
     expect(data.repositories).toBeUndefined();
     expect(data.teams).toBeUndefined();
     expect(data.members).toBeUndefined();
@@ -184,39 +186,14 @@ describe('organization resources', () => {
       SINGLE_TEAM_MEMBERS_QUERY_STRING,
       GithubResource.Organization,
       [GithubResource.TeamMembers],
-      { login: 'Kei-Institute', slug: 'betterteam' },
+      { login: 'j1-ingest', slug: 'j1-github-ingest' },
     );
 
     expect(data.organization).toHaveLength(1);
     expect(data.membersWithRole).toBeUndefined();
     expect(data.repositories).toBeUndefined();
-    expect(data.members).toHaveLength(3);
-    expect(data.members).toEqual([
-      {
-        id: 'MDQ6VXNlcjUxMzUyMw==',
-        login: 'erichs',
-        name: 'Erich Smith',
-        node: undefined,
-        teams: 'MDQ6VGVhbTQ4NTgxNjk=',
-        role: 'MEMBER',
-      },
-      {
-        id: 'MDQ6VXNlcjI1NDg5NDgy',
-        login: 'mknoedel',
-        name: 'Michael Knoedel',
-        node: undefined,
-        teams: 'MDQ6VGVhbTQ4NTgxNjk=',
-        role: 'MEMBER',
-      },
-      {
-        id: 'MDQ6VXNlcjYyNDkyMDk3',
-        login: 'kevincasey1222',
-        name: 'Kevin Casey',
-        node: undefined,
-        teams: 'MDQ6VGVhbTQ4NTgxNjk=',
-        role: 'MAINTAINER',
-      },
-    ]);
+    expect(data.members).toHaveLength(2);
+    expect(data.members).toMatchSnapshot();
     expect(data.rateLimitConsumed).toBe(1);
   });
 });

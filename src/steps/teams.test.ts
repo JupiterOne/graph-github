@@ -23,7 +23,6 @@ test('fetchTeams exec handler', async () => {
     name: 'teams',
   });
   sanitizeConfig(integrationConfig);
-  integrationConfig.installationId = 17214088; //this is the id the recordings are under
 
   const { collectedEntities, collectedRelationships, encounteredTypes } =
     await executeStepWithDependencies({

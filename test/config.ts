@@ -9,7 +9,7 @@ if (process.env.LOAD_ENV) {
   });
 }
 const DEFAULT_GITHUB_APP_ID = 999999;
-const DEFAULT_INSTALLATION_ID = 99999999;
+const DEFAULT_INSTALLATION_ID = 23522163;
 //@octokit client instantiation requires a private RSA Key
 const DEFAULT_APP_PRIVATE_KEY = getFakeRsaKey();
 

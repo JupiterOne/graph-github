@@ -21,7 +21,6 @@ test('fetchApps exec handler', async () => {
     name: 'apps',
   });
   sanitizeConfig(integrationConfig);
-  integrationConfig.installationId = 17214088; //this is the id the recordings are under
 
   const { collectedEntities, collectedRelationships, encounteredTypes } =
     await executeStepWithDependencies({

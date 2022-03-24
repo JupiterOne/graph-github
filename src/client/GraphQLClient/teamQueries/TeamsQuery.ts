@@ -22,7 +22,7 @@ const buildQuery: BuildQuery<string, QueryState> = (login, queryState) => {
           edges {
             node {
               id
-            ...teamFields
+              ...teamFields
             }
           }
           pageInfo {

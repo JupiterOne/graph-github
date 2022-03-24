@@ -19,17 +19,17 @@ describe('TeamRepositoriesQuery', () => {
     const iteratee = jest.fn();
 
     // Act
-    const { rateLimitConsumed } =
-      await TeamRepositoriesQuery.iterateRepositories(
-        {
-          login: 'J1-Test',
-          teamSlug: 'eng',
-        },
-        executor,
-        iteratee,
-      );
+    const { totalCost } = await TeamRepositoriesQuery.iterateRepositories(
+      {
+        login: 'J1-Test',
+        teamSlug: 'eng',
+      },
+      executor,
+      iteratee,
+    );
 
-    expect(rateLimitConsumed).toBe(2);
+    // Assert
+    expect(totalCost).toBe(2);
     expect(executor).toHaveBeenCalledTimes(2);
     expect(executor.mock.calls[0][0].queryVariables).toEqual({
       maxLimit: 100,
@@ -55,18 +55,17 @@ describe('TeamRepositoriesQuery', () => {
     [jest.fn(), jest.fn().mockResolvedValueOnce(emptyTeamRepos[2])],
   ])('team handling empty/partial responses', async (iteratee, executor) => {
     // Act
-    const { rateLimitConsumed } =
-      await TeamRepositoriesQuery.iterateRepositories(
-        {
-          login: 'J1-Test',
-          teamSlug: 'eng',
-        },
-        executor,
-        iteratee,
-      );
+    const { totalCost } = await TeamRepositoriesQuery.iterateRepositories(
+      {
+        login: 'J1-Test',
+        teamSlug: 'eng',
+      },
+      executor,
+      iteratee,
+    );
 
     // Assert
-    expect(rateLimitConsumed).toBe(1);
+    expect(totalCost).toBe(1);
     expect(iteratee).not.toHaveBeenCalled();
     expect(executor).toHaveBeenCalledTimes(1);
   });

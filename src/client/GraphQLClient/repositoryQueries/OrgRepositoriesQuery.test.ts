@@ -17,11 +17,14 @@ describe('OrgRepositoriesQuery', () => {
     const iteratee = jest.fn();
 
     // Act
-    const { rateLimitConsumed } =
-      await OrgRepositoriesQuery.iterateRepositories(login, executor, iteratee);
+    const { totalCost } = await OrgRepositoriesQuery.iterateRepositories(
+      login,
+      executor,
+      iteratee,
+    );
 
     // Assert
-    expect(rateLimitConsumed).toBe(6);
+    expect(totalCost).toBe(6);
     expect(executor).toHaveBeenCalledTimes(2);
     expect(executor.mock.calls[0][0].queryVariables).toEqual({
       maxLimit: 100,
@@ -45,15 +48,14 @@ describe('OrgRepositoriesQuery', () => {
     [jest.fn(), jest.fn().mockResolvedValueOnce(emptyOrgRepos[1])],
   ])('org handling empty/partial responses', async (iteratee, executor) => {
     // Act
-    const { rateLimitConsumed } =
-      await OrgRepositoriesQuery.iterateRepositories(
-        'J1-Test',
-        executor,
-        iteratee,
-      );
+    const { totalCost } = await OrgRepositoriesQuery.iterateRepositories(
+      'J1-Test',
+      executor,
+      iteratee,
+    );
 
     // Assert
-    expect(rateLimitConsumed).toBe(1);
+    expect(totalCost).toBe(1);
     expect(iteratee).not.toHaveBeenCalled();
     expect(executor).toHaveBeenCalledTimes(1);
   });

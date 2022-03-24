@@ -1,8 +1,8 @@
 import {
   BaseQueryState,
   BuildQuery,
-  GithubQueryResponse,
   ProcessResponse,
+  RateLimitStepSummary,
 } from './types';
 import { ResourceIteratee } from '../../client';
 import { QueryExecutor } from './CreateQueryExecutor';
@@ -17,7 +17,7 @@ async function paginate<P, Q extends BaseQueryState, I>(
     queryState: Q | null | undefined,
     resourceFetchCount: number,
   ) => boolean,
-): Promise<GithubQueryResponse> {
+): Promise<RateLimitStepSummary> {
   let resourceFetchCount = 0;
   let queryCost = 0;
   let queryState: Q | undefined = undefined;
@@ -41,7 +41,10 @@ async function paginate<P, Q extends BaseQueryState, I>(
   }
 
   return {
-    rateLimitConsumed: queryCost,
+    totalCost: queryCost,
+    limit: queryState?.rateLimit?.limit,
+    remaining: queryState?.rateLimit?.remaining,
+    resetAt: queryState?.rateLimit?.resetAt,
   };
 }
 

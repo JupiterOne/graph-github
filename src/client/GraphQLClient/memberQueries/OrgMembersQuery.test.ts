@@ -17,14 +17,14 @@ describe('OrgMemberQuery', () => {
     const iteratee = jest.fn();
 
     // Act
-    const { rateLimitConsumed } = await OrgMembersQuery.iterateMembers(
+    const { totalCost } = await OrgMembersQuery.iterateMembers(
       login,
       executor,
       iteratee,
     );
 
     // Assert
-    expect(rateLimitConsumed).toBe(10);
+    expect(totalCost).toBe(10);
     expect(executor).toHaveBeenCalledTimes(2);
     expect(executor.mock.calls[0][0].queryVariables).toEqual({
       maxLimit: 100,

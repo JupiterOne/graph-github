@@ -37,6 +37,7 @@ import {
   OrgTeamQueryResponse,
   OrgTeamRepoQueryResponse,
   PullRequest,
+  RateLimitStepSummary,
   ResourceMap,
   ResourceMetadata,
 } from './types';
@@ -159,10 +160,10 @@ export class GitHubGraphQLClient {
     repository: { fullName: string; public: boolean },
     lastExecutionTime: string,
     iteratee: ResourceIteratee<PullRequest>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
+    return await PullRequestsQuery.iteratePullRequests(
       {
         ...repository,
         lastExecutionTime,
@@ -170,28 +171,20 @@ export class GitHubGraphQLClient {
       executor,
       iteratee,
     );
-
-    return {
-      rateLimitConsumed,
-    };
   }
 
   public async iterateIssues(
     repoFullName: string,
     lastExecutionTime: string,
     iteratee: ResourceIteratee<Issue>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    const { rateLimitConsumed } = await IssuesQuery.iterateIssues(
+    return await IssuesQuery.iterateIssues(
       { repoFullName, lastExecutionTime },
       executor,
       iteratee,
     );
-
-    return {
-      rateLimitConsumed,
-    };
   }
 
   /**
@@ -202,7 +195,7 @@ export class GitHubGraphQLClient {
   public async iterateOrgRepositories(
     login,
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return await OrgRepositoriesQuery.iterateRepositories(
@@ -220,7 +213,7 @@ export class GitHubGraphQLClient {
   public async iterateTeams(
     login: string,
     iteratee: ResourceIteratee<OrgTeamQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return await TeamsQuery.iterateTeams(login, executor, iteratee);
@@ -236,7 +229,7 @@ export class GitHubGraphQLClient {
     login,
     repoName,
     iteratee: ResourceIteratee<Collaborator>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return RepoCollaboratorsQuery.iterateCollaborators(
@@ -253,7 +246,7 @@ export class GitHubGraphQLClient {
     login: string,
     teamSlug: string,
     iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return await TeamRepositoriesQuery.iterateRepositories(
@@ -269,7 +262,7 @@ export class GitHubGraphQLClient {
   public async iterateOrgMembers(
     login,
     iteratee: ResourceIteratee<OrgMemberQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return await OrgMembersQuery.iterateMembers(login, executor, iteratee);
@@ -279,7 +272,7 @@ export class GitHubGraphQLClient {
     login: string,
     teamSlug: string,
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return await TeamMembersQuery.iterateMembers(

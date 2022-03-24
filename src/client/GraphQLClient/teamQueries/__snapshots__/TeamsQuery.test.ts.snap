@@ -9,7 +9,7 @@ exports[`TeamMembersQuery pagination of teams 1`] = `
           edges {
             node {
               id
-            ...teamFields
+              ...teamFields
             }
           }
           pageInfo {

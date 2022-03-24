@@ -1,12 +1,12 @@
 import { ResourceIteratee } from '../../../client';
 import {
-  GithubQueryResponse,
   PullRequest,
   IteratePagination,
   CursorState,
   InnerResourceQuery,
   BaseQueryState,
   BuildQuery,
+  RateLimitStepSummary,
 } from '../types';
 import utils from './utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
@@ -216,7 +216,7 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequest> = async (
   queryParams,
   execute,
   iteratee,
-): Promise<GithubQueryResponse> => {
+): Promise<RateLimitStepSummary> => {
   let pullRequestFetched = 0;
   let queryCost = 0;
   let queryState: QueryState | undefined = undefined;
@@ -243,14 +243,13 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequest> = async (
     queryCost += queryState.rateLimit?.cost ?? 0;
 
     for (const pullRequestQuery of innerResourceQueries) {
-      const { rateLimitConsumed } =
-        await SinglePullRequestQuery.iteratePullRequest(
-          pullRequestQuery,
-          execute,
-          countIteratee,
-        );
+      const { totalCost } = await SinglePullRequestQuery.iteratePullRequest(
+        pullRequestQuery,
+        execute,
+        countIteratee,
+      );
 
-      queryCost += rateLimitConsumed;
+      queryCost += totalCost;
     }
 
     paginationComplete =
@@ -259,7 +258,10 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequest> = async (
   }
 
   return {
-    rateLimitConsumed: queryCost,
+    totalCost: queryCost,
+    limit: queryState?.rateLimit?.limit,
+    remaining: queryState?.rateLimit?.remaining,
+    resetAt: queryState?.rateLimit?.resetAt,
   };
 };
 

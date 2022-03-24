@@ -74,15 +74,14 @@ describe('SinglePullRequestQuery', () => {
       const iteratee = jest.fn();
 
       // Act
-      const { rateLimitConsumed } =
-        await SinglePullRequestQuery.iteratePullRequest(
-          repo,
-          executor,
-          iteratee,
-        );
+      const { totalCost } = await SinglePullRequestQuery.iteratePullRequest(
+        repo,
+        executor,
+        iteratee,
+      );
 
       // Assert
-      expect(rateLimitConsumed).toBe(2);
+      expect(totalCost).toBe(2);
       expect(executor).toHaveBeenCalledTimes(2);
       expect(executor.mock.calls[0][0].queryVariables).toEqual({
         // no cursors are include on initial call

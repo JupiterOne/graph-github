@@ -33,17 +33,29 @@ describe('paginate', () => {
         await iteratee();
         return null; // Malformed response
       })
+      .mockImplementationOnce(async (response, iteratee) => {
+        await iteratee();
+        await iteratee();
+        return {
+          rateLimit: { cost: 1, limit: 600, remaining: 499, resetAt: 'date' },
+        };
+      })
       .mockImplementation(async (response, iteratee) => {
         await iteratee();
         await iteratee();
         return {
-          rateLimit: { cost: 1 },
+          rateLimit: {
+            cost: 1,
+            limit: 600,
+            remaining: 399,
+            resetAt: 'date2',
+          },
         };
       });
     const maxFetches = 26;
 
     // Act
-    const { rateLimitConsumed } = await paginate<
+    const { totalCost, remaining, resetAt, limit } = await paginate<
       QueryParams,
       QueryState,
       Resource
@@ -57,7 +69,11 @@ describe('paginate', () => {
     );
 
     // Assert
-    expect(rateLimitConsumed).toBe(12);
+    expect(totalCost).toBe(12);
+    expect(remaining).toBe(399);
+    expect(limit).toBe(600);
+    expect(resetAt).toBe('date2');
+
     expect(iteratee).toHaveBeenCalledTimes(26);
     expect(execute).toHaveBeenCalledTimes(13);
   });

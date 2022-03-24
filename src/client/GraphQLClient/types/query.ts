@@ -1,6 +1,5 @@
 import { ResourceIteratee } from '../../../client';
 import { ExecutableQuery, QueryExecutor } from '../CreateQueryExecutor';
-import { GithubQueryResponse } from './client';
 
 export type CursorState = {
   hasNextPage?: boolean;
@@ -13,7 +12,14 @@ export type IteratePagination<P, I> = (
   queryParams: P,
   execute: QueryExecutor,
   iteratee: ResourceIteratee<I>,
-) => Promise<GithubQueryResponse>;
+) => Promise<RateLimitStepSummary>;
+
+export type RateLimitStepSummary = {
+  totalCost: number;
+  limit?: number;
+  remaining?: number;
+  resetAt?: string;
+};
 
 export type BuildQuery<P, S extends BaseQueryState> = (
   queryParams: P,

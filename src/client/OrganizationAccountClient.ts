@@ -33,7 +33,7 @@ import {
   PullRequest,
   Issue,
   Collaborator,
-  GithubQueryResponse as QueryResponse,
+  RateLimitStepSummary,
 } from './GraphQLClient/types';
 import { ACCOUNT_QUERY_STRING } from './GraphQLClient/queries';
 import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
@@ -121,7 +121,7 @@ export default class OrganizationAccountClient {
    */
   async iterateOrgRepositories(
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateOrgRepositories(this.login, iteratee);
   }
 
@@ -133,7 +133,7 @@ export default class OrganizationAccountClient {
   async iterateTeamRepositories(
     teamSlug: string,
     iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateTeamRepositories(
       this.login,
       teamSlug,
@@ -147,27 +147,27 @@ export default class OrganizationAccountClient {
    */
   async iterateOrgMembers(
     iteratee: ResourceIteratee<OrgMemberQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateOrgMembers(this.login, iteratee);
   }
 
   async iterateTeams(
     iteratee: ResourceIteratee<OrgTeamQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateTeams(this.login, iteratee);
   }
 
   async iterateTeamMembers(
     teamSlug: string,
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateTeamMembers(this.login, teamSlug, iteratee);
   }
 
   async iterateRepoCollaborators(
     repoName: string,
     iteratee: ResourceIteratee<Collaborator>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateRepoCollaborators(
       this.login,
       repoName,
@@ -185,10 +185,10 @@ export default class OrganizationAccountClient {
     repo: RepoEntity,
     lastExecutionTime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<PullRequest>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
-      return { rateLimitConsumed: 0 };
+      return { totalCost: 0 };
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
 
@@ -213,14 +213,14 @@ export default class OrganizationAccountClient {
     repo: RepoEntity,
     lastExecutionTime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<Issue>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     //issues and PRs are actually the same in the API
     //we just filter for is:issue instead of is:pr
     //and remove pr-specific children from the request
     // TODO: SP -> investigate removing pr-specific children
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting issues.');
-      return { rateLimitConsumed: 0 };
+      return { totalCost: 0 };
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
 

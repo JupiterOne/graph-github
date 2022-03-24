@@ -18,14 +18,14 @@ describe('TeamMembersQuery', () => {
     const iteratee = jest.fn();
 
     // Act
-    const { rateLimitConsumed } = await TeamsQuery.iterateTeams(
+    const { totalCost } = await TeamsQuery.iterateTeams(
       login,
       executor,
       iteratee,
     );
 
     // Assert
-    expect(rateLimitConsumed).toBe(3);
+    expect(totalCost).toBe(3);
     expect(executor).toHaveBeenCalledTimes(2);
     expect(executor.mock.calls[0][0].queryVariables).toEqual({
       maxLimit: 100,

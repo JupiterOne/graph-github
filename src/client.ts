@@ -96,12 +96,12 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    const { rateLimitConsumed } = await this.accountClient.iterateOrgMembers(
+    const rateLimitSummary = await this.accountClient.iterateOrgMembers(
       iteratee,
     );
 
     this.logger.info(
-      { rateLimitConsumed },
+      rateLimitSummary,
       'Rate limit consumed while fetching Org Members.',
     );
   }
@@ -135,10 +135,12 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    const { rateLimitConsumed } =
-      await this.accountClient.iterateTeamRepositories(team.name, iteratee);
+    const rateLimitSummary = await this.accountClient.iterateTeamRepositories(
+      team.name,
+      iteratee,
+    );
     this.logger.info(
-      { rateLimitConsumed },
+      rateLimitSummary,
       'Rate limit consumed while fetching Team Repositories.',
     );
   }
@@ -156,12 +158,12 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const { rateLimitConsumed } = await this.accountClient.iterateTeamMembers(
+    const rateLimitSummary = await this.accountClient.iterateTeamMembers(
       team.name,
       iteratee,
     );
     this.logger.info(
-      { rateLimitConsumed },
+      rateLimitSummary,
       'Rate limit consumed while fetching Team Members.',
     );
   }
@@ -189,6 +191,7 @@ export class APIClient {
   /**
    * Iterates each Github organization secret.
    *
+   * @param allRepos
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateOrgSecrets(
@@ -230,6 +233,7 @@ export class APIClient {
   /**
    * Iterates each Github repo secret.
    *
+   * @param repoName
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateRepoSecrets(
@@ -251,6 +255,7 @@ export class APIClient {
   /**
    * Iterates each Github environment.
    *
+   * @param repoName
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateEnvironments(
@@ -272,6 +277,7 @@ export class APIClient {
   /**
    * Iterates each Github environmental secret.
    *
+   * @param envEntity
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateEnvSecrets(
@@ -304,10 +310,11 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const { rateLimitConsumed } =
-      await this.accountClient.iterateOrgRepositories(iteratee);
+    const rateLimitSummary = await this.accountClient.iterateOrgRepositories(
+      iteratee,
+    );
     this.logger.info(
-      { rateLimitConsumed },
+      rateLimitSummary,
       'Rate limit consumed while fetching Org Repositories.',
     );
   }
@@ -329,14 +336,14 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const { rateLimitConsumed } =
+    const rateLimitSummary =
       await this.accountClient.iteratePullRequestEntities(
         repo,
         lastSuccessfulExecution,
         iteratee,
       );
     logger.info(
-      { rateLimitConsumed },
+      rateLimitSummary,
       'Rate limit consumed while fetching Pull Requests.',
     );
   }
@@ -374,14 +381,13 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.repoIssues) {
-      const { rateLimitConsumed } =
-        await this.accountClient.iterateIssueEntities(
-          repo,
-          lastSuccessfulExecution,
-          iteratee,
-        );
+      const rateLimitSummary = await this.accountClient.iterateIssueEntities(
+        repo,
+        lastSuccessfulExecution,
+        iteratee,
+      );
       this.logger.info(
-        { rateLimitConsumed },
+        rateLimitSummary,
         'Rate limit consumed while fetching Issues.',
       );
     } else {

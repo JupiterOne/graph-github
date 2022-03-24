@@ -105,7 +105,7 @@ describe('PullRequestsQuery', () => {
       );
 
       // Assert
-      expect(result.rateLimitConsumed).toBe(3);
+      expect(result.totalCost).toBe(3);
       expect(iteratee).toHaveBeenCalledTimes(3);
       expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
       expect(execute).toHaveBeenCalledTimes(2);
@@ -128,7 +128,7 @@ describe('PullRequestsQuery', () => {
         );
 
       // Act
-      const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
+      const { totalCost } = await PullRequestsQuery.iteratePullRequests(
         {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
@@ -139,7 +139,7 @@ describe('PullRequestsQuery', () => {
       );
 
       // Assert
-      expect(rateLimitConsumed).toBe(3);
+      expect(totalCost).toBe(3);
       expect(iteratee).toHaveBeenCalledTimes(1);
       expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
       expect(execute).toHaveBeenCalledTimes(3);
@@ -154,7 +154,7 @@ describe('PullRequestsQuery', () => {
       const execute = jest.fn().mockResolvedValueOnce(emptyPullRequest[0]);
 
       // Act
-      const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
+      const { totalCost } = await PullRequestsQuery.iteratePullRequests(
         {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
@@ -165,7 +165,7 @@ describe('PullRequestsQuery', () => {
       );
 
       // Assert
-      expect(rateLimitConsumed).toBe(1);
+      expect(totalCost).toBe(1);
       expect(iteratee).not.toHaveBeenCalled();
       expect(execute).toHaveBeenCalledTimes(1);
     });

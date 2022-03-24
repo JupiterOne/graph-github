@@ -3,7 +3,6 @@ import {
   BaseQueryState,
   BuildQuery,
   CursorState,
-  GithubQueryResponse,
   IteratePagination,
   ProcessedData,
   PullRequest,
@@ -161,7 +160,7 @@ const iteratePullRequest: IteratePagination<QueryParams, PullRequest> = async (
   queryParams,
   execute,
   iteratee,
-): Promise<GithubQueryResponse> => {
+) => {
   let finalResource: PullRequest | undefined = undefined;
   let queryCost = 0;
   let queryState: QueryState | undefined = undefined;
@@ -186,7 +185,10 @@ const iteratePullRequest: IteratePagination<QueryParams, PullRequest> = async (
   }
 
   return {
-    rateLimitConsumed: queryCost,
+    totalCost: queryCost,
+    limit: queryState?.rateLimit?.limit,
+    remaining: queryState?.rateLimit?.remaining,
+    resetAt: queryState?.rateLimit?.resetAt,
   };
 };
 

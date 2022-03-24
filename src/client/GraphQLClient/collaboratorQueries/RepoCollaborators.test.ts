@@ -21,7 +21,7 @@ describe('RepoCollaboratorsQuery', () => {
       );
 
       // Assert
-      expect(result.rateLimitConsumed).toBe(6);
+      expect(result.totalCost).toBe(6);
       expect(iteratee).toHaveBeenCalledTimes(4);
       expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
       expect(iteratee.mock.calls[1][0]).toMatchSnapshot();

@@ -86,7 +86,7 @@ export class APIClient {
       await this.accountClient.fetchOrganization();
 
     this.logger.info(
-      rateLimit,
+      { rateLimit },
       'Rate limit consumed while fetching Organization.',
     );
 
@@ -105,12 +105,10 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    const rateLimitSummary = await this.accountClient.iterateOrgMembers(
-      iteratee,
-    );
+    const rateLimit = await this.accountClient.iterateOrgMembers(iteratee);
 
     this.logger.info(
-      rateLimitSummary,
+      { rateLimit },
       'Rate limit consumed while fetching Org Members.',
     );
   }
@@ -144,12 +142,12 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    const rateLimitSummary = await this.accountClient.iterateTeamRepositories(
+    const rateLimit = await this.accountClient.iterateTeamRepositories(
       team.name,
       iteratee,
     );
     this.logger.info(
-      rateLimitSummary,
+      { rateLimit },
       'Rate limit consumed while fetching Team Repositories.',
     );
   }
@@ -167,12 +165,12 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const rateLimitSummary = await this.accountClient.iterateTeamMembers(
+    const rateLimit = await this.accountClient.iterateTeamMembers(
       team.name,
       iteratee,
     );
     this.logger.info(
-      rateLimitSummary,
+      { rateLimit },
       'Rate limit consumed while fetching Team Members.',
     );
   }
@@ -319,11 +317,9 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const rateLimitSummary = await this.accountClient.iterateOrgRepositories(
-      iteratee,
-    );
+    const rateLimit = await this.accountClient.iterateOrgRepositories(iteratee);
     this.logger.info(
-      rateLimitSummary,
+      { rateLimit },
       'Rate limit consumed while fetching Org Repositories.',
     );
   }
@@ -345,14 +341,13 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const rateLimitSummary =
-      await this.accountClient.iteratePullRequestEntities(
-        repo,
-        lastSuccessfulExecution,
-        iteratee,
-      );
+    const rateLimit = await this.accountClient.iteratePullRequestEntities(
+      repo,
+      lastSuccessfulExecution,
+      iteratee,
+    );
     logger.info(
-      rateLimitSummary,
+      { rateLimit },
       'Rate limit consumed while fetching Pull Requests.',
     );
   }
@@ -390,13 +385,13 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.repoIssues) {
-      const rateLimitSummary = await this.accountClient.iterateIssueEntities(
+      const rateLimit = await this.accountClient.iterateIssueEntities(
         repo,
         lastSuccessfulExecution,
         iteratee,
       );
       this.logger.info(
-        rateLimitSummary,
+        { rateLimit },
         'Rate limit consumed while fetching Issues.',
       );
     } else {

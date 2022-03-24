@@ -18,7 +18,7 @@ export async function fetchAccountDetails({
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
   const accountEntity = await jobState.addEntity(
-    toAccountEntity(await apiClient.getAccountDetails()),
+    toAccountEntity(await apiClient.fetchOrganization()),
   );
   await jobState.setData(DATA_ACCOUNT_ENTITY, accountEntity);
 }

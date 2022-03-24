@@ -6,7 +6,7 @@ import {
   IteratePagination,
   ProcessResponse,
 } from '../types';
-import { MAX_REQUESTS_NUM } from '../queries';
+import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 
 interface QueryState extends BaseQueryState {
@@ -51,7 +51,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     }),
     queryVariables: {
       ...queryParams,
-      maxLimit: MAX_REQUESTS_NUM,
+      maxLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.collaborators?.hasNextPage && {
         collaboratorCursor: queryState.collaborators.endCursor,
       }),

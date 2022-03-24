@@ -6,7 +6,7 @@ import {
   OrgTeamQueryResponse,
   ProcessResponse,
 } from '../types';
-import { MAX_REQUESTS_NUM } from '../queries';
+import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 
 interface QueryState extends BaseQueryState {
@@ -41,7 +41,7 @@ const buildQuery: BuildQuery<string, QueryState> = (login, queryState) => {
     }),
     queryVariables: {
       login,
-      maxLimit: MAX_REQUESTS_NUM,
+      maxLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.teams?.hasNextPage && {
         teamCursor: queryState.teams.endCursor,
       }),

@@ -7,6 +7,9 @@ import {
 import { ResourceIteratee } from '../../client';
 import { QueryExecutor } from './CreateQueryExecutor';
 
+export const MAX_REQUESTS_LIMIT = 100;
+export const MAX_SEARCH_LIMIT = 25;
+
 async function paginate<P, Q extends BaseQueryState, I>(
   queryParams: P,
   iteratee: ResourceIteratee<I>,

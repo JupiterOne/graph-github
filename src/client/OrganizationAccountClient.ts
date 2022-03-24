@@ -10,10 +10,8 @@ import {
   OrgMemberQueryResponse,
   OrgTeamQueryResponse,
   OrgRepoQueryResponse,
-  OrgQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
-  GithubResource,
 } from './GraphQLClient';
 import {
   OrgAppQueryResponse,
@@ -35,14 +33,11 @@ import {
   Collaborator,
   RateLimitStepSummary,
 } from './GraphQLClient/types';
-import { ACCOUNT_QUERY_STRING } from './GraphQLClient/queries';
-import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
 
   v3RateLimitConsumed: number;
-  v4RateLimitConsumed: number;
 
   readonly login: string;
   readonly baseUrl: string;
@@ -84,7 +79,6 @@ export default class OrganizationAccountClient {
 
     this.authorizedForPullRequests = true;
     this.v3RateLimitConsumed = 0;
-    this.v4RateLimitConsumed = 0;
   }
 
   /**
@@ -95,24 +89,14 @@ export default class OrganizationAccountClient {
    * However, to find a resource in GraphQL, one must know where in the hierarchy that resource
    * lives. Documentation at https://docs.github.com/en/graphql does not list all resources
    * that are available through the REST API (v3).
-   *
    */
 
-  async getAccount(): Promise<OrgQueryResponse> {
-    let response;
-    await this.queryGraphQL('account and related resources', async () => {
-      const { organization, rateLimitConsumed } = await this.v4.fetchFromSingle(
-        ACCOUNT_QUERY_STRING,
-        GithubResource.Organization,
-        [],
-        {
-          login: this.login,
-        },
-      );
-      response = organization;
-      return rateLimitConsumed;
-    });
-    return response[0];
+  /**
+   * Fetches the organization associated with `login`
+   * plus rate limit details.
+   */
+  async fetchOrganization() {
+    return await this.v4.fetchOrganization(this.login);
   }
 
   /**
@@ -192,7 +176,7 @@ export default class OrganizationAccountClient {
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
 
-    return await this.v4.iteratePullRequestsV2(
+    return await this.v4.iteratePullRequests(
       {
         fullName: repo.fullName,
         public: repo.public,
@@ -537,28 +521,6 @@ export default class OrganizationAccountClient {
 
   private sortFiles(files: DiffFiles[]): DiffFiles[] {
     return files.sort((x, y) => (x.sha > y.sha ? 1 : -1));
-  }
-
-  private async queryGraphQL(
-    name: string,
-    performQuery: () => Promise<number>,
-  ) {
-    try {
-      const rateLimitConsumed = await performQuery();
-      this.v4RateLimitConsumed += rateLimitConsumed;
-    } catch (err) {
-      if (err.message?.startsWith('Retry timeout')) {
-        try {
-          //one more time in case error was a transient ETIMEDOUT Node error
-          const rateLimitConsumed = await performQuery();
-          this.v4RateLimitConsumed += rateLimitConsumed;
-        } catch (err) {
-          formatAndThrowGraphQlError(err, name);
-        }
-      } else {
-        formatAndThrowGraphQlError(err, name);
-      }
-    }
   }
 
   private sanitizeLastExecutionTime(lastExecutionTime: string): string {

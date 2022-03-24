@@ -36,6 +36,7 @@ describe('TeamRepositoriesQuery', () => {
       login,
       teamSlug,
     });
+    expect(executor.mock.calls[1][0].query).toMatchSnapshot();
     expect(executor.mock.calls[1][0].queryVariables).toEqual({
       maxLimit: 100,
       teamRepoCursor: 'Y3Vyc29yOnYyOpHOG_MJdQ',

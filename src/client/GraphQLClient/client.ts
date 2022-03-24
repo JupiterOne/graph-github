@@ -1,6 +1,4 @@
 import graphql, { GraphQLClient } from 'graphql.js';
-import { get } from 'lodash';
-import { URL } from 'url';
 
 import {
   IntegrationLogger,
@@ -12,25 +10,12 @@ import { retry } from '@lifeomic/attempt';
 import { Octokit } from '@octokit/rest';
 
 import { ResourceIteratee } from '../../client';
-import sleepIfApproachingRateLimit from '../../util/sleepIfApproachingRateLimit';
 import validateGraphQLResponse from '../../util/validateGraphQLReponse';
 import fragments from './fragments';
-import {
-  LIMITED_REQUESTS_NUM,
-  SINGLE_PULL_REQUEST_QUERY_STRING,
-} from './queries';
-import {
-  responseHasNextPage,
-  processGraphQlPageResult,
-  mapResponseCursorsForQuery,
-} from './response';
+
 import {
   Collaborator,
-  CursorHierarchy,
-  GithubQueryResponse as QueryResponse,
-  GithubResource,
   Issue,
-  Node,
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamMemberQueryResponse,
@@ -38,8 +23,6 @@ import {
   OrgTeamRepoQueryResponse,
   PullRequest,
   RateLimitStepSummary,
-  ResourceMap,
-  ResourceMetadata,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
@@ -50,6 +33,9 @@ import OrgMembersQuery from './memberQueries/OrgMembersQuery';
 import TeamMembersQuery from './memberQueries/TeamMembersQuery';
 import TeamsQuery from './teamQueries/TeamsQuery';
 import RepoCollaboratorsQuery from './collaboratorQueries/RepoCollaboratorsQuery';
+import OrganizationQuery, {
+  OrganizationResults,
+} from './organizationQueries/OrganizationQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300000;
 
@@ -84,16 +70,19 @@ export class GitHubGraphQLClient {
    */
   private graph: GraphQLClient;
 
-  private resourceMetadataMap: ResourceMap<ResourceMetadata>;
   private logger: IntegrationLogger;
   private authClient: Octokit;
   private tokenExpires: number;
+  private rateLimitStatus: {
+    limit: number;
+    remaining: number;
+    resetAt: string;
+  };
 
   constructor(
     graphqlUrl: string,
     token: string,
     tokenExpires: number,
-    resourceMetadataMap: ResourceMap<ResourceMetadata>,
     logger: IntegrationLogger,
     authClient: Octokit,
   ) {
@@ -107,11 +96,30 @@ export class GitHubGraphQLClient {
     });
     this.graph.fragment(fragments);
     this.tokenExpires = tokenExpires;
-    this.resourceMetadataMap = resourceMetadataMap;
     this.logger = logger;
     this.authClient = authClient;
   }
 
+  private collectRateLimitStatus(results: RateLimitStepSummary) {
+    if (results.limit && results.remaining && results.resetAt) {
+      this.rateLimitStatus = {
+        limit: results.limit,
+        remaining: results.remaining,
+        resetAt: results.resetAt,
+      };
+    }
+
+    return results;
+  }
+
+  get rateLimit() {
+    return this.rateLimitStatus;
+  }
+
+  /**
+   * Refreshes the token and reinitialize the graphql client.
+   * @private
+   */
   private async refreshToken() {
     try {
       const { token, expiresAt } = (await this.authClient.auth({
@@ -133,9 +141,9 @@ export class GitHubGraphQLClient {
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: `${this.graphqlUrl}/app/installations/\${installationId}/access_tokens`,
+        endpoint: err.response?.url,
         status: err.status,
-        statusText: err.statusText,
+        statusText: err.response?.data?.message,
       });
     }
   }
@@ -156,23 +164,51 @@ export class GitHubGraphQLClient {
     return await this.retryGraphQL(queryString, queryVariables);
   }
 
-  public async iteratePullRequestsV2(
+  /**
+   * Fetches organization associated with the provided login.
+   * @param login
+   */
+  public async fetchOrganization(login: string): Promise<OrganizationResults> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    const results = await OrganizationQuery.fetchOrganization(login, executor);
+
+    this.collectRateLimitStatus(results.rateLimit);
+
+    return results;
+  }
+
+  /**
+   * Iterates over pull requests for the given repository.
+   * @param repository
+   * @param lastExecutionTime
+   * @param iteratee
+   */
+  public async iteratePullRequests(
     repository: { fullName: string; public: boolean },
     lastExecutionTime: string,
     iteratee: ResourceIteratee<PullRequest>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return await PullRequestsQuery.iteratePullRequests(
-      {
-        ...repository,
-        lastExecutionTime,
-      },
-      executor,
-      iteratee,
+    return this.collectRateLimitStatus(
+      await PullRequestsQuery.iteratePullRequests(
+        {
+          ...repository,
+          lastExecutionTime,
+        },
+        executor,
+        iteratee,
+      ),
     );
   }
 
+  /**
+   * Iterates over issues for the given repository.
+   * @param repoFullName
+   * @param lastExecutionTime
+   * @param iteratee
+   */
   public async iterateIssues(
     repoFullName: string,
     lastExecutionTime: string,
@@ -180,10 +216,12 @@ export class GitHubGraphQLClient {
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return await IssuesQuery.iterateIssues(
-      { repoFullName, lastExecutionTime },
-      executor,
-      iteratee,
+    return this.collectRateLimitStatus(
+      await IssuesQuery.iterateIssues(
+        { repoFullName, lastExecutionTime },
+        executor,
+        iteratee,
+      ),
     );
   }
 
@@ -198,10 +236,8 @@ export class GitHubGraphQLClient {
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return await OrgRepositoriesQuery.iterateRepositories(
-      login,
-      executor,
-      iteratee,
+    return this.collectRateLimitStatus(
+      await OrgRepositoriesQuery.iterateRepositories(login, executor, iteratee),
     );
   }
 
@@ -216,7 +252,9 @@ export class GitHubGraphQLClient {
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return await TeamsQuery.iterateTeams(login, executor, iteratee);
+    return this.collectRateLimitStatus(
+      await TeamsQuery.iterateTeams(login, executor, iteratee),
+    );
   }
 
   /**
@@ -232,16 +270,24 @@ export class GitHubGraphQLClient {
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return RepoCollaboratorsQuery.iterateCollaborators(
-      {
-        login,
-        repoName,
-      },
-      executor,
-      iteratee,
+    return this.collectRateLimitStatus(
+      await RepoCollaboratorsQuery.iterateCollaborators(
+        {
+          login,
+          repoName,
+        },
+        executor,
+        iteratee,
+      ),
     );
   }
 
+  /**
+   * Iterates over repositories for the given org & team.
+   * @param login - aka organization
+   * @param teamSlug
+   * @param iteratee
+   */
   public async iterateTeamRepositories(
     login: string,
     teamSlug: string,
@@ -249,25 +295,40 @@ export class GitHubGraphQLClient {
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return await TeamRepositoriesQuery.iterateRepositories(
-      {
-        login,
-        teamSlug,
-      },
-      executor,
-      iteratee,
+    return this.collectRateLimitStatus(
+      await TeamRepositoriesQuery.iterateRepositories(
+        {
+          login,
+          teamSlug,
+        },
+        executor,
+        iteratee,
+      ),
     );
   }
 
+  /**
+   * Iterates over members of the given org.
+   * @param login - aka organization
+   * @param iteratee
+   */
   public async iterateOrgMembers(
     login,
     iteratee: ResourceIteratee<OrgMemberQueryResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return await OrgMembersQuery.iterateMembers(login, executor, iteratee);
+    return this.collectRateLimitStatus(
+      await OrgMembersQuery.iterateMembers(login, executor, iteratee),
+    );
   }
 
+  /**
+   * Iterates over members of the given org & team.
+   * @param login
+   * @param teamSlug
+   * @param iteratee
+   */
   public async iterateTeamMembers(
     login: string,
     teamSlug: string,
@@ -275,363 +336,13 @@ export class GitHubGraphQLClient {
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return await TeamMembersQuery.iterateMembers(
-      { login, teamSlug },
-      executor,
-      iteratee,
+    return this.collectRateLimitStatus(
+      await TeamMembersQuery.iterateMembers(
+        { login, teamSlug },
+        executor,
+        iteratee,
+      ),
     );
-  }
-
-  /**
-   * @Deprecated use iteratePullRequestsV2
-   * Iterates through a search request for Pull Requests while handling
-   * pagination of both the pull requests and their inner resources.
-   *
-   * @param prGraphQLQueryString The pull requests GraphQL query string
-   * @param issuesSearchQuery The Github Issue search query with syntax - https://docs.github.com/en/github/searching-for-information-on-github/searching-on-github/searching-issues-and-pull-requests
-   * @param selectedResources - The sub-objects to additionally query for. Ex: [commits]
-   * @param iteratee - a callback function for each PullRequest
-   */
-  public async iteratePullRequests(
-    prGraphQLQueryString: string,
-    issuesSearchQuery: string,
-    selectedResources: GithubResource[],
-    iteratee: ResourceIteratee<PullRequest>,
-    limit: number = 500, // requests PRs since last execution time, or upto this limit, whichever is less
-  ): Promise<QueryResponse> {
-    let queryCursors: ResourceMap<CursorHierarchy> = {};
-    let rateLimitConsumed = 0;
-    let pullRequestsQueried = 0;
-    let hasMorePullRequests = false;
-
-    do {
-      if (this.tokenExpires - 300000 < Date.now()) {
-        //300000 msec = 5 min
-        //token expires soon; we'd rather refresh proactively
-        await this.refreshToken();
-      }
-      this.logger.info(
-        { issuesSearchQuery, queryCursors },
-        'Fetching batch of pull requests from GraphQL',
-      );
-      let pullRequestResponse;
-      try {
-        pullRequestResponse = await this.retryGraphQL(prGraphQLQueryString, {
-          query: issuesSearchQuery,
-          ...queryCursors,
-        });
-      } catch (err) {
-        if (err.status === 401) {
-          // why isn't this being handled inside of .retryGraphQL above?
-          // because we need to generate the function queryPullRequests from the graph function
-          // of the GraphQL client, and the token in the GraphQL client at the time of
-          // invoking this.graph(queryString) gets embedded in the returned function
-          // therefore, we can't change tokens without recreating the queryPullRequests function,
-          // which means we have to re-invoke the retry function
-          await this.refreshToken();
-          pullRequestResponse = await this.retryGraphQL(prGraphQLQueryString, {
-            query: issuesSearchQuery,
-            ...queryCursors,
-          });
-        } else {
-          throw err;
-        }
-      }
-      pullRequestsQueried += LIMITED_REQUESTS_NUM;
-      const rateLimit = pullRequestResponse.rateLimit;
-      this.logger.info({ rateLimit }, 'Rate limit info for iteration');
-      rateLimitConsumed += rateLimit?.cost ?? 0;
-      await sleepIfApproachingRateLimit(
-        pullRequestResponse.rateLimit,
-        this.logger,
-      );
-
-      this.logger.info(
-        {
-          issuesSearchQuery,
-          numPullRequests: pullRequestResponse.search.edges.length,
-        },
-        'Found pull requests for repo',
-      );
-
-      for (const pullRequestQueryData of pullRequestResponse.search.edges) {
-        const { resources: pageResources, cursors: innerResourceCursors } =
-          processGraphQlPageResult(
-            selectedResources,
-            this.resourceMetadataMap,
-            pullRequestQueryData.node,
-            GithubResource.PullRequests,
-          );
-
-        // Construct the pull request
-        const pullRequestResponse: PullRequest = {
-          ...pageResources.pullRequests[0], // There will only be one PR because of the for loop
-          commits: (pageResources.commits ?? []).map((c) => c.commit),
-          reviews: pageResources.reviews ?? [],
-          labels: pageResources.labels ?? [],
-        };
-
-        // This indicates that we were not able to fetch all commits, reviews, etc for this PR
-        // in the page of PRs, because some inner resource (eg. commit or review) had more than
-        // the limit number of entries (typically) 100. In that case, we have to go make a
-        // seperate API call for just that one PR so we can gather up all the inner resources
-        // before continuing on to process more PRs. This should be rare.
-        if (Object.values(innerResourceCursors).some((c) => c.hasNextPage)) {
-          this.logger.info(
-            {
-              pageCursors: innerResourceCursors,
-              pullRequest: pullRequestResponse.title,
-            },
-            'More inner resources than fit in one page. Attempting to fetch more. (This should be rare).',
-          );
-
-          const urlPath = pullRequestResponse.url // ex: https://github.com/JupiterOne/graph-github/pull/1
-            ? new URL(pullRequestResponse.url)?.pathname // ex: /JupiterOne/graph-github/pull/4"
-            : '';
-
-          // Attempt to pull repo name and owner from graphQL response. If not there, parse the pull request url.
-          const repoOwner =
-            pullRequestResponse.headRepository?.owner?.login ??
-            urlPath.split('/')[1]; // ex: JupiterOne
-          const repoName =
-            pullRequestResponse.headRepository?.name ?? urlPath.split('/')[2]; // ex: graph-github
-
-          if (!(repoOwner && repoName)) {
-            this.logger.warn(
-              { pullRequest: pullRequestResponse.title },
-              'Unable to fetch all inner resources for this pull request. The owner ' +
-                'and repo name could not be determined from the GraphQL response.',
-            );
-          } else {
-            // Fetch the remaining inner resources on this PR (this should be rare)
-            const innerResourceResponse = await this.fetchFromSingle(
-              SINGLE_PULL_REQUEST_QUERY_STRING,
-              GithubResource.PullRequest,
-              selectedResources,
-              {
-                pullRequestNumber: pullRequestResponse.number,
-                repoName,
-                repoOwner,
-              },
-              mapResponseCursorsForQuery(innerResourceCursors),
-            );
-
-            rateLimitConsumed += innerResourceResponse.rateLimitConsumed;
-
-            // Add the additional inner resources to the initial call
-            pullRequestResponse.commits = pullRequestResponse.commits!.concat(
-              (innerResourceResponse.commits ?? []).map((c) => c.commit),
-            );
-            pullRequestResponse.reviews = pullRequestResponse.reviews!.concat(
-              innerResourceResponse.reviews ?? [],
-            );
-            pullRequestResponse.labels = pullRequestResponse.labels!.concat(
-              innerResourceResponse.labels ?? [],
-            );
-          }
-        }
-        await iteratee(pullRequestResponse);
-      }
-
-      hasMorePullRequests =
-        pullRequestResponse.search.pageInfo &&
-        pullRequestResponse.search.pageInfo.hasNextPage;
-
-      // Check to see if we have iterated through every PR yet. We do not need to care about inner resources at this point.
-      queryCursors = hasMorePullRequests
-        ? {
-            [GithubResource.PullRequests]:
-              pullRequestResponse.search.pageInfo.endCursor,
-          }
-        : {};
-    } while (hasMorePullRequests && pullRequestsQueried < limit);
-
-    return {
-      rateLimitConsumed,
-    };
-  }
-
-  /**
-   * Handles GraphQL requests on single resources that may contain
-   * many nested resorces that each may need to be cursed through.
-   *
-   * @param baseResource - The first GraphQL resource to query for. Ex: pullRequests
-   * @param selectedResources - The sub-objects to additionally query for. Ex: [commits]
-   * @param extraQueryParams - Any additional params need to complete the GraphQL query. Ex: { login: 'coolGuy' }
-   * @param queryCursors - Any cursors you have from previous GraphQL searches. Ex: { pullRequests: ==abcdefg }
-   * @returns A destructured object that contains all resources that were queried for. Ex: { pullRequests: [{...}], commits: [{...}] }
-   */
-  public async fetchFromSingle<T extends GithubResource>(
-    queryString: string,
-    baseResource: T,
-    selectedResources: GithubResource[],
-    extraQueryParams?: { [k: string]: string | number },
-    queryCursors: ResourceMap<string> = {},
-  ): Promise<QueryResponse> {
-    let resources: ResourceMap<any> = {};
-    let rateLimitConsumed = 0;
-    let hasMoreResources = false;
-
-    do {
-      if (this.tokenExpires - 300000 < Date.now()) {
-        //300000 msec = 5 min
-        //token expires soon - we'd rather refresh it proactively
-        await this.refreshToken();
-      }
-      let response;
-      try {
-        response = await this.retryGraphQL(queryString, {
-          ...extraQueryParams,
-          ...queryCursors,
-        });
-      } catch (err) {
-        if (err.status === 401) {
-          // why isn't this being handled inside of .retryGraphQL above?
-          // because we need to generate the function 'query' from the graph function
-          // of the GraphQL client, and the token in the GraphQL client at the time of
-          // invoking this.graph(queryString) gets embedded in the returned function
-          // therefore, we can't change tokens without recreating the 'query' function,
-          // which means we have to re-invoke the retry function
-          await this.refreshToken();
-          response = await this.retryGraphQL(queryString, {
-            ...extraQueryParams,
-            ...queryCursors,
-          });
-        } else {
-          throw err;
-        }
-      }
-      const rateLimit = response.rateLimit;
-      rateLimitConsumed += rateLimit?.cost ?? 0;
-      await sleepIfApproachingRateLimit(response.rateLimit, this.logger);
-
-      const pathToData =
-        this.resourceMetadataMap[baseResource].pathToDataInGraphQlResponse;
-      const data = pathToData ? get(response, pathToData) : response;
-
-      const { resources: pageResources, cursors: pageCursors } =
-        processGraphQlPageResult(
-          selectedResources,
-          this.resourceMetadataMap,
-          data,
-          baseResource,
-        );
-
-      resources = this.extractPageResources(pageResources, resources);
-      const resourceNums: Record<string, number> = {};
-      for (const res of selectedResources) {
-        if (Array.isArray(resources[res])) {
-          resourceNums[res] = resources[res].length;
-        }
-      }
-
-      // Enrich the queryCursors with the pageCursors from the most recent query.
-      Object.assign(queryCursors, mapResponseCursorsForQuery(pageCursors));
-
-      // Check only the pageCursors (which are the cursors for the most recent query) for hasNextPage = true
-      hasMoreResources = responseHasNextPage(pageCursors);
-
-      this.logger.info(
-        {
-          rateLimit,
-          queryCursors,
-          pageCursors,
-          resourceNums,
-          hasMoreResources,
-        },
-        `Rate limit info for iteration`,
-      );
-    } while (hasMoreResources);
-
-    /*
-      * if all has gone well, the return statement below will return an object
-      * with a property for each GitHubResource requested (such as 'organization'
-      * or 'collaborators'). Each of those properties will be an array of
-      * the particular objects appropriate to that resource - generally a flat object
-      * with a list of resource-specific properties
-      *
-      * Here's a short example of the processed reply provided by all the above code,
-      * from our test account, where the requested GitHubResources are
-      * 'organization', 'teams', and 'teamRepositories':
-      *
-      {
-        teamRepositories: [
-          {
-            node: undefined,
-            permission: 'TRIAGE',
-            id: 'MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=',
-            teams: 'MDQ6VGVhbTQ4NTgxNjk='
-          },
-          {
-            node: undefined,
-            permission: 'TRIAGE',
-            id: 'MDEwOlJlcG9zaXRvcnkzNzE0MTk1OTg=',
-            teams: 'MDQ6VGVhbTQ4NTgxNzA='
-          }
-        ],
-        teams: [
-          {
-            node: undefined,
-            id: 'MDQ6VGVhbTQ4NTgxNjk=',
-            organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz'
-          },
-          {
-            node: undefined,
-            id: 'MDQ6VGVhbTQ4NTgxNzA=',
-            organization: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz'
-          },
-        ],
-        organization: [ { id: 'MDEyOk9yZ2FuaXphdGlvbjg0OTIzNTAz' } ],
-        rateLimitConsumed: 1
-      }
-      *
-      * It is possible that the object returned by this function may lack
-      * the expected GitHubResource property, leaving the calling function with
-      * an undefined response. This happens if there were no instances of that
-      * entity returned by the API, either because they don't exist in the
-      * account, or something went wrong in GitHub's API processing.
-      */
-
-    return {
-      ...resources,
-      rateLimitConsumed,
-    } as QueryResponse;
-  }
-
-  /**
-   * Adds the page resources to the aggregated resources map.
-   * Includes deduplication logic.
-   */
-  private extractPageResources<T extends Node>(
-    pageOfResources: ResourceMap<T[]>,
-    aggregatedResources: ResourceMap<T[]>,
-  ): ResourceMap<T[]> {
-    for (const [resourceName, resources] of Object.entries(pageOfResources)) {
-      if (!aggregatedResources[resourceName]) {
-        aggregatedResources[resourceName] = resources;
-        continue;
-      }
-      for (const resource of resources) {
-        if (
-          !aggregatedResources[resourceName].find((r: T) => {
-            // This dedups based on the id which we know will exist for all resources
-            const found = r.id === resource.id;
-
-            // This will handle resources with the same name, but came from different parents.
-            // Unfortunately, this will never happen because of the way we are structuring graphQL :)
-            const metadata = this.resourceMetadataMap[resourceName];
-            if (metadata && metadata.parent) {
-              return found && r[metadata.parent] === resource[metadata.parent];
-            } else {
-              return found;
-            }
-          })
-        ) {
-          aggregatedResources[resourceName].push(resource);
-        }
-      }
-    }
-    return aggregatedResources;
   }
 
   /**

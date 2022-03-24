@@ -17,12 +17,10 @@ import {
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
-import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
 import {
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamQueryResponse,
-  OrgQueryResponse,
   OrgTeamMemberQueryResponse,
   GitHubGraphQLClient,
   OrgTeamRepoQueryResponse,
@@ -77,11 +75,22 @@ export class APIClient {
     await this.setupAccountClient();
   }
 
-  public async getAccountDetails(): Promise<OrgQueryResponse> {
+  /**
+   * Fetch the organization.
+   */
+  public async fetchOrganization() {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    return await this.accountClient.getAccount();
+    const { rateLimit, organization } =
+      await this.accountClient.fetchOrganization();
+
+    this.logger.info(
+      rateLimit,
+      'Rate limit consumed while fetching Organization.',
+    );
+
+    return organization;
   }
 
   /**
@@ -454,7 +463,6 @@ export class APIClient {
         this.graphqlUrl,
         this.ghsToken,
         tokenExpires,
-        resourceMetadataMap(),
         this.logger,
         appClient,
       ),

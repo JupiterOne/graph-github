@@ -11,6 +11,7 @@ import {
 import utils from './utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import SinglePullRequestQuery from './SinglePullRequestQuery';
+import { MAX_SEARCH_LIMIT } from '../paginate';
 
 interface QueryState extends BaseQueryState {
   pullRequests: CursorState;
@@ -28,7 +29,6 @@ type QueryParams = {
   lastExecutionTime: string;
 };
 
-const MAX_SEARCH_LIMIT = 25;
 const MAX_INNER_RESOURCE_LIMIT = 100;
 const MAX_RESOURCES_PER_EXECUTION = 500;
 

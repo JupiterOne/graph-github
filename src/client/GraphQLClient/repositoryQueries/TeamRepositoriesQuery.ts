@@ -7,7 +7,7 @@ import {
   OrgTeamRepoQueryResponse,
   ProcessResponse,
 } from '../types';
-import { MAX_REQUESTS_NUM } from '../queries';
+import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 
 interface QueryState extends BaseQueryState {
@@ -44,7 +44,9 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
                   node {
                     id
                   }
-                  ...teamRepositoryEdgeFields
+                  ...on TeamRepositoryEdge {
+                    permission
+                  }
                 }
                 pageInfo {
                   endCursor
@@ -64,7 +66,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     queryVariables: {
       login: queryParams.login,
       teamSlug: queryParams.teamSlug,
-      maxLimit: MAX_REQUESTS_NUM,
+      maxLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.teamRepos?.hasNextPage && {
         teamRepoCursor: queryState.teamRepos.endCursor,
       }),

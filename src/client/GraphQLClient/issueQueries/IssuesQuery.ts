@@ -8,6 +8,7 @@ import {
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import paginate, { MAX_REQUESTS_LIMIT, MAX_SEARCH_LIMIT } from '../paginate';
+import utils from '../utils';
 
 interface QueryState extends BaseQueryState {
   issues: CursorState;
@@ -18,7 +19,7 @@ type QueryParams = {
   lastExecutionTime: string;
 };
 
-const MAX_FETCHES_PER_EXECUTION = 500;
+const MAX_RESOURCES_PER_EXECUTION = 500;
 
 /**
  * Builds query for searching for applicable Issues.
@@ -122,8 +123,7 @@ const processResponseData: ProcessResponse<Issue, QueryState> = async (
 
   for (const edge of issueEdges) {
     const issue = edge.node;
-    if (Object.keys(issue).length === 0) {
-      // If there's no data, pass - possible if permissions aren't correct in GHE
+    if (!utils.hasProperties(edge?.node)) {
       continue;
     }
 
@@ -162,7 +162,7 @@ const iterateIssues: IteratePagination<QueryParams, Issue> = async (
     processResponseData,
     (queryState, issuesFetched) =>
       (!queryState?.issues?.hasNextPage ?? true) ||
-      issuesFetched >= MAX_FETCHES_PER_EXECUTION,
+      issuesFetched >= MAX_RESOURCES_PER_EXECUTION,
   );
 };
 

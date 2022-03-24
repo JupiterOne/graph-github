@@ -8,6 +8,7 @@ import {
   ProcessResponse,
 } from '../types';
 import paginate from '../paginate';
+import utils from '../utils';
 
 interface QueryState extends BaseQueryState {
   members: CursorState;
@@ -71,9 +72,13 @@ const processResponseData: ProcessResponse<OrgMemberQueryResponse, QueryState> =
     const memberEdges = responseData.organization?.membersWithRole?.edges ?? [];
 
     for (const edge of memberEdges) {
+      if (!utils.hasProperties(edge?.node)) {
+        continue;
+      }
+
       const member = {
         ...edge.node,
-        organization: responseData.organization.id,
+        organization: responseData.organization?.id,
         hasTwoFactorEnabled: edge.hasTwoFactorEnabled,
         role: edge.role,
       };

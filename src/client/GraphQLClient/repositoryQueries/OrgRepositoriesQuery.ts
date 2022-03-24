@@ -8,6 +8,7 @@ import {
   ProcessResponse,
 } from '../types';
 import paginate from '../paginate';
+import utils from '../utils';
 
 interface QueryState extends BaseQueryState {
   repos: CursorState;
@@ -70,8 +71,7 @@ const processResponseData: ProcessResponse<OrgRepoQueryResponse, QueryState> =
     const repos = responseData.organization?.repositories?.nodes ?? [];
 
     for (const repo of repos) {
-      if (Object.keys(repo).length === 0) {
-        // If there's no data, pass - possible if permissions aren't correct in GHE
+      if (!utils.hasProperties(repo)) {
         continue;
       }
 

@@ -8,6 +8,7 @@ import {
 } from '../types';
 import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
+import utils from '../utils';
 
 interface QueryState extends BaseQueryState {
   teams: CursorState;
@@ -55,6 +56,10 @@ const processResponseData: ProcessResponse<OrgTeamQueryResponse, QueryState> =
     const teamEdges = responseData.organization?.teams?.edges ?? [];
 
     for (const edge of teamEdges) {
+      if (!utils.hasProperties(edge?.node)) {
+        continue;
+      }
+
       const team = edge.node;
 
       await iteratee(team);

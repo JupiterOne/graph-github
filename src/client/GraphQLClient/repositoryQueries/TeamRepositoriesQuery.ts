@@ -9,6 +9,7 @@ import {
 } from '../types';
 import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
+import utils from '../utils';
 
 interface QueryState extends BaseQueryState {
   teamRepos?: CursorState;
@@ -88,8 +89,7 @@ const processResponseData: ProcessResponse<
   const edges = responseData.organization?.team?.repositories?.edges ?? [];
 
   for (const edge of edges) {
-    if (Object.keys(edge).length === 0) {
-      // If there's no data, pass - possible if permissions aren't correct in GHE
+    if (!utils.hasProperties(edge?.node)) {
       continue;
     }
 

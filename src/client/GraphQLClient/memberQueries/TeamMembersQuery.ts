@@ -8,6 +8,7 @@ import {
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import paginate from '../paginate';
+import utils from '../utils';
 
 interface QueryState extends BaseQueryState {
   members: CursorState;
@@ -72,6 +73,10 @@ const processResponseData: ProcessResponse<
   const memberEdges = responseData.organization?.team?.members?.edges ?? [];
 
   for (const edge of memberEdges) {
+    if (!utils.hasProperties(edge?.node)) {
+      continue;
+    }
+
     const member = {
       ...edge.node,
       teamId: responseData.organization.team.id,

@@ -8,6 +8,7 @@ import {
 } from '../types';
 import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
+import utils from '../utils';
 
 interface QueryState extends BaseQueryState {
   collaborators: CursorState;
@@ -67,6 +68,9 @@ const processResponseData: ProcessResponse<Collaborator, QueryState> = async (
   const collaboratorEdges = responseData.repository?.collaborators?.edges ?? [];
 
   for (const edge of collaboratorEdges) {
+    if (!utils.hasProperties(edge?.node)) {
+      continue;
+    }
     const node = edge.node;
 
     const collaborator: Collaborator = {

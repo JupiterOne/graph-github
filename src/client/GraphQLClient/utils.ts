@@ -12,6 +12,10 @@ const innerResourcePaginationRequired = (pullRequest): boolean => {
 };
 
 const responseToResource = (node) => {
+  if (!hasProperties(node)) {
+    return null;
+  }
+
   return {
     ...node,
     commits: node.commits?.nodes?.map((node) => node.commit) ?? [],
@@ -42,7 +46,16 @@ const determineRepoOwnerAndName = (
   };
 };
 
+const hasProperties = (object: any) => {
+  try {
+    return Object.keys(object).length > 0;
+  } catch (error) {
+    return false;
+  }
+};
+
 export default {
+  hasProperties,
   innerResourcePaginationRequired,
   responseToResource,
   findRepoOwnerAndName: determineRepoOwnerAndName,

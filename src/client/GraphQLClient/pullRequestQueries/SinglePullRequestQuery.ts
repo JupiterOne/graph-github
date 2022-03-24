@@ -1,4 +1,4 @@
-import utils from './utils';
+import utils from '../utils';
 import {
   BaseQueryState,
   BuildQuery,
@@ -134,16 +134,15 @@ export const processResponseData = (
   responseData,
 ): ProcessedData<QueryState> => {
   const rateLimit = responseData.rateLimit;
-  const pullRequest = responseData.repository.pullRequest;
-  const { commits, reviews, labels } = pullRequest;
+  const pullRequest = responseData.repository?.pullRequest;
 
   return {
     resource: utils.responseToResource(pullRequest),
     queryState: {
       rateLimit: rateLimit,
-      commits: commits?.pageInfo,
-      reviews: reviews?.pageInfo,
-      labels: labels?.pageInfo,
+      commits: pullRequest?.commits?.pageInfo,
+      reviews: pullRequest?.reviews?.pageInfo,
+      labels: pullRequest?.labels?.pageInfo,
     },
   };
 };

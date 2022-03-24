@@ -104,4 +104,40 @@ describe('SinglePullRequestQuery', () => {
       expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
     });
   });
+
+  test('handle incomplete response data', async () => {
+    // Arrange
+    const repo = {
+      pullRequestNumber: 4,
+      repoName: 'musical-not-real',
+      repoOwner: 'J1-Test',
+    };
+
+    const executor = jest
+      .fn()
+      .mockResolvedValueOnce({
+        rateLimit: {
+          limit: 5000,
+          cost: 1,
+          remaining: 4998,
+          resetAt: '2022-03-07T22:04:07Z',
+        },
+      })
+      .mockRejectedValue(
+        new Error(
+          'Pagination failed to stop! This response should never be reached.',
+        ),
+      );
+    const iteratee = jest.fn();
+
+    // Act
+    const { totalCost } = await SinglePullRequestQuery.iteratePullRequest(
+      repo,
+      executor,
+      iteratee,
+    );
+    expect(totalCost).toBe(1);
+    expect(iteratee).not.toHaveBeenCalled();
+    expect(executor).toHaveBeenCalledTimes(1);
+  });
 });

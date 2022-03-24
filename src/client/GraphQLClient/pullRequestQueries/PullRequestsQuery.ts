@@ -8,7 +8,7 @@ import {
   BuildQuery,
   RateLimitStepSummary,
 } from '../types';
-import utils from './utils';
+import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import SinglePullRequestQuery from './SinglePullRequestQuery';
 import { MAX_SEARCH_LIMIT } from '../paginate';
@@ -173,7 +173,7 @@ export const processResponseData = async (
 
   for (const edge of pullRequestEdges) {
     const pullRequest = edge.node;
-    if (Object.keys(pullRequest).length === 0) {
+    if (!utils.hasProperties(pullRequest)) {
       // If there's no data, pass - possible if permissions aren't correct in GHE
       continue;
     }

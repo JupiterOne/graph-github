@@ -442,7 +442,7 @@ export class GitHubGraphQLClient {
         }
 
         logger.warn(
-          { attemptContext, err },
+          { attemptContext, err, queryString, queryVariables },
           `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
         );
       },

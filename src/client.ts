@@ -125,7 +125,12 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    await this.accountClient.iterateTeams(iteratee);
+    const rateLimit = await this.accountClient.iterateTeams(iteratee);
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Team Repositories.',
+    );
   }
 
   /**
@@ -146,6 +151,7 @@ export class APIClient {
       team.name,
       iteratee,
     );
+
     this.logger.info(
       { rateLimit },
       'Rate limit consumed while fetching Team Repositories.',
@@ -169,6 +175,7 @@ export class APIClient {
       team.name,
       iteratee,
     );
+
     this.logger.info(
       { rateLimit },
       'Rate limit consumed while fetching Team Members.',
@@ -366,7 +373,15 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    await this.accountClient.iterateRepoCollaborators(repoName, iteratee);
+    const rateLimit = await this.accountClient.iterateRepoCollaborators(
+      repoName,
+      iteratee,
+    );
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Issues.',
+    );
   }
 
   /**

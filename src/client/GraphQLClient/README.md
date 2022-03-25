@@ -2,7 +2,8 @@
 
 When creating a new query, consider the query as a new domain being added to the
 project. To prevent needing to setup a new GitHub organization that has test
-data, contact samuel.poulton@jupiterone.com to gain access to a test GitHub org.
+data, request access to the
+[j1-ingest organization](https://github.com/j1-ingest).
 
 Each query requires:
 

@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.12.0-beta.2 - 2022-03-25
+
+## Changed
+
+- Continued GraphQL pagination refactor for all queries.
+- Renamed `createApiClient()` to `getOrCreateApiClient()` and moved to a
+  singleton pattern to prevent unnecessary authentication requests.
+- `createQueryExecutor` now accepts a `rateLimit` object, as a starting point,
+  and the GraphQLClient keeps track of the `rateLimit` after each step.
+- Additional fixes
+
 ## 1.12.0-beta.1 - 2022-03-16
 
 ### Changed

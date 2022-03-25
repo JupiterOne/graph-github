@@ -24,7 +24,6 @@ test('fetchRepos exec handler', async () => {
     name: 'repos',
   });
   sanitizeConfig(integrationConfig);
-  integrationConfig.installationId = 17214088; //this is the id the recordings are under
 
   const {
     collectedEntities,

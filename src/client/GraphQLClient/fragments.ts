@@ -1,3 +1,10 @@
+// Note that the spread-like syntax below ultimately references fragments.ts via a function
+// built-in to graphql.js. (For another example of how that works, see
+// https://www.apollographql.com/docs/react/data/fragments/ ).
+//
+// The actual GraphQL query that hits the API will have substituted in the parameters
+// and expanded the fragments.
+
 export default {
   organizationFields: `on Organization {
     login

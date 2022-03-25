@@ -1,9 +1,8 @@
-import utils from './utils';
+import utils from '../utils';
 import {
   BaseQueryState,
   BuildQuery,
   CursorState,
-  GithubQueryResponse,
   IteratePagination,
   ProcessedData,
   PullRequest,
@@ -22,7 +21,7 @@ type QueryParams = {
   repoOwner: string;
 };
 
-const MAX_REQUESTS_NUM = 100;
+const MAX_REQUESTS_LIMIT = 100;
 
 /**
  * Builds the leanest query possible
@@ -40,7 +39,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
         $pullRequestNumber: Int!
         $repoName: String!
         $repoOwner: String!
-        $maxCount: Int!
+        $maxLimit: Int!
         ${
           queryState?.commits.hasNextPage !== false
             ? '$commitsCursor: String'
@@ -77,7 +76,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
       pullRequestNumber: queryParams.pullRequestNumber,
       repoName: queryParams.repoName,
       repoOwner: queryParams.repoOwner,
-      maxCount: MAX_REQUESTS_NUM,
+      maxLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.commits?.hasNextPage && {
         commitsCursor: queryState?.commits.endCursor,
       }),
@@ -92,7 +91,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
 };
 
 const commitsQuery = `
-    commits(first: $maxCount, after: $commitsCursor) {
+    commits(first: $maxLimit, after: $commitsCursor) {
       totalCount
       nodes {
         commit {
@@ -107,7 +106,7 @@ const commitsQuery = `
     }`;
 
 const reviewsQuery = `
-    reviews(first: $maxCount, after: $reviewsCursor) {
+    reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
         ...reviewFields
@@ -119,7 +118,7 @@ const reviewsQuery = `
     }`;
 
 const labelsQuery = `
-    labels(first: $maxCount, after: $labelsCursor) {
+    labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
         id
@@ -135,16 +134,15 @@ export const processResponseData = (
   responseData,
 ): ProcessedData<QueryState> => {
   const rateLimit = responseData.rateLimit;
-  const pullRequest = responseData.repository.pullRequest;
-  const { commits, reviews, labels } = pullRequest;
+  const pullRequest = responseData.repository?.pullRequest;
 
   return {
     resource: utils.responseToResource(pullRequest),
     queryState: {
       rateLimit: rateLimit,
-      commits: commits?.pageInfo,
-      reviews: reviews?.pageInfo,
-      labels: labels?.pageInfo,
+      commits: pullRequest?.commits?.pageInfo,
+      reviews: pullRequest?.reviews?.pageInfo,
+      labels: pullRequest?.labels?.pageInfo,
     },
   };
 };
@@ -159,9 +157,9 @@ export const processResponseData = (
  */
 const iteratePullRequest: IteratePagination<QueryParams, PullRequest> = async (
   queryParams,
-  iteratee,
   execute,
-): Promise<GithubQueryResponse> => {
+  iteratee,
+) => {
   let finalResource: PullRequest | undefined = undefined;
   let queryCost = 0;
   let queryState: QueryState | undefined = undefined;
@@ -186,7 +184,10 @@ const iteratePullRequest: IteratePagination<QueryParams, PullRequest> = async (
   }
 
   return {
-    rateLimitConsumed: queryCost,
+    totalCost: queryCost,
+    limit: queryState?.rateLimit?.limit,
+    remaining: queryState?.rateLimit?.remaining,
+    resetAt: queryState?.rateLimit?.resetAt,
   };
 };
 

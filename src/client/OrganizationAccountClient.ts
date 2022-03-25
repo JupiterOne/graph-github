@@ -10,10 +10,8 @@ import {
   OrgMemberQueryResponse,
   OrgTeamQueryResponse,
   OrgRepoQueryResponse,
-  OrgQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
-  GithubResource,
 } from './GraphQLClient';
 import {
   OrgAppQueryResponse,
@@ -33,25 +31,13 @@ import {
   PullRequest,
   Issue,
   Collaborator,
-  GithubQueryResponse as QueryResponse,
+  RateLimitStepSummary,
 } from './GraphQLClient/types';
-import {
-  ACCOUNT_QUERY_STRING,
-  REPOS_QUERY_STRING,
-  SINGLE_TEAM_MEMBERS_QUERY_STRING,
-  ISSUES_QUERY_STRING,
-  TEAMS_QUERY_STRING,
-  USERS_QUERY_STRING,
-  SINGLE_REPO_COLLABORATORS_QUERY_STRING,
-  SINGLE_TEAM_REPOS_QUERY_STRING,
-} from './GraphQLClient/queries';
-import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
 
   v3RateLimitConsumed: number;
-  v4RateLimitConsumed: number;
 
   readonly login: string;
   readonly baseUrl: string;
@@ -93,7 +79,6 @@ export default class OrganizationAccountClient {
 
     this.authorizedForPullRequests = true;
     this.v3RateLimitConsumed = 0;
-    this.v4RateLimitConsumed = 0;
   }
 
   /**
@@ -104,202 +89,94 @@ export default class OrganizationAccountClient {
    * However, to find a resource in GraphQL, one must know where in the hierarchy that resource
    * lives. Documentation at https://docs.github.com/en/graphql does not list all resources
    * that are available through the REST API (v3).
-   *
    */
 
-  async getAccount(): Promise<OrgQueryResponse> {
-    let response;
-    await this.queryGraphQL('account and related resources', async () => {
-      const { organization, rateLimitConsumed } = await this.v4.fetchFromSingle(
-        ACCOUNT_QUERY_STRING,
-        GithubResource.Organization,
-        [],
-        {
-          login: this.login,
-        },
-      );
-      response = organization;
-      return rateLimitConsumed;
-    });
-    return response[0];
+  /**
+   * Fetches the organization associated with `login`
+   * plus rate limit details.
+   */
+  async fetchOrganization() {
+    return await this.v4.fetchOrganization(this.login);
   }
 
-  async getMembers(): Promise<OrgMemberQueryResponse[]> {
-    let response: OrgMemberQueryResponse[] = [];
-
-    await this.queryGraphQL('members', async () => {
-      const { membersWithRole, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          USERS_QUERY_STRING,
-          GithubResource.Organization,
-          [GithubResource.OrganizationMembers],
-          { login: this.login },
-        );
-
-      if (membersWithRole) {
-        response = response.concat(membersWithRole);
-      }
-
-      return rateLimitConsumed;
-    });
-
-    return response;
+  /**
+   * Iterate Organization owned Repos.
+   * @param iteratee
+   */
+  async iterateOrgRepositories(
+    iteratee: ResourceIteratee<OrgRepoQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateOrgRepositories(this.login, iteratee);
   }
 
-  async getTeams(): Promise<OrgTeamQueryResponse[]> {
-    let response: OrgTeamQueryResponse[] = [];
-
-    await this.queryGraphQL('teams', async () => {
-      const { teams, rateLimitConsumed } = await this.v4.fetchFromSingle(
-        TEAMS_QUERY_STRING,
-        GithubResource.Organization,
-        [GithubResource.Teams],
-        { login: this.login },
-      );
-
-      if (teams) {
-        response = response.concat(teams as OrgTeamQueryResponse[]);
-      }
-
-      return rateLimitConsumed;
-    });
-
-    return response;
-  }
-
-  async getTeamMembers(
+  /**
+   * Iterate over team repositories.
+   * @param teamSlug
+   * @param iteratee
+   */
+  async iterateTeamRepositories(
     teamSlug: string,
-    teamKey: string,
-  ): Promise<OrgTeamMemberQueryResponse[]> {
-    let response: OrgTeamMemberQueryResponse[] = [];
-    await this.queryGraphQL('team members', async () => {
-      const { members, teams, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          SINGLE_TEAM_MEMBERS_QUERY_STRING,
-          GithubResource.Organization,
-          [GithubResource.TeamMembers],
-          {
-            login: this.login,
-            slug: teamSlug,
-          },
-        );
-
-      if (members) {
-        response = response.concat(members as OrgTeamMemberQueryResponse[]);
-      }
-
-      if (!teams?.every((t) => t.id === teamKey)) {
-        this.logger.warn(
-          { teamSlug, teamKey, teams },
-          'Teams contained more than the one expected team',
-        );
-      }
-
-      return rateLimitConsumed;
-    });
-    return response.filter((t) => t.teams === teamKey);
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateTeamRepositories(
+      this.login,
+      teamSlug,
+      iteratee,
+    );
   }
 
-  async getRepositories(slugs?: string[]): Promise<OrgRepoQueryResponse[]> {
-    let response: OrgRepoQueryResponse[] = [];
-
-    await this.queryGraphQL('repositories', async () => {
-      const { repositories, rateLimitConsumed } = await this.v4.fetchFromSingle(
-        REPOS_QUERY_STRING,
-        GithubResource.Organization,
-        [GithubResource.Repositories],
-        { login: this.login },
-      );
-
-      if (repositories) {
-        response = response.concat(repositories as OrgRepoQueryResponse[]);
-      }
-
-      return rateLimitConsumed;
-    });
-
-    if (slugs) {
-      return response.filter((repo) => slugs.includes(repo.name));
-    } else {
-      return response;
-    }
+  /**
+   * Iterate over Org Members.
+   * @param iteratee
+   */
+  async iterateOrgMembers(
+    iteratee: ResourceIteratee<OrgMemberQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateOrgMembers(this.login, iteratee);
   }
 
-  async getTeamRepositories(
+  async iterateTeams(
+    iteratee: ResourceIteratee<OrgTeamQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateTeams(this.login, iteratee);
+  }
+
+  async iterateTeamMembers(
     teamSlug: string,
-    teamKey: string,
-  ): Promise<OrgTeamRepoQueryResponse[]> {
-    let response: OrgTeamRepoQueryResponse[] = [];
-    await this.queryGraphQL('team repositories', async () => {
-      const { teamRepositories, teams, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          SINGLE_TEAM_REPOS_QUERY_STRING,
-          GithubResource.Organization,
-          [GithubResource.TeamRepositories],
-          {
-            login: this.login,
-            slug: teamSlug,
-          },
-        );
-
-      if (teamRepositories) {
-        response = response.concat(
-          teamRepositories as OrgTeamRepoQueryResponse[],
-        );
-      }
-
-      if (!teams) {
-        this.logger.info(
-          { teamSlug, teamKey, teams },
-          'Found no repos for team',
-        );
-      } else {
-        if (!teams?.every((t) => t.id === teamKey)) {
-          this.logger.warn(
-            { teamSlug, teamKey, teams },
-            'Teams contained more than the one expected team',
-          );
-        }
-      }
-      return rateLimitConsumed;
-    });
-    return response.filter((t) => t.teams === teamKey);
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateTeamMembers(this.login, teamSlug, iteratee);
   }
 
-  async getRepoCollaborators(repoName: string): Promise<Collaborator[]> {
-    let response: Collaborator[] = [];
-    await this.queryGraphQL('collaborators', async () => {
-      const { collaborators, rateLimitConsumed } =
-        await this.v4.fetchFromSingle(
-          SINGLE_REPO_COLLABORATORS_QUERY_STRING,
-          GithubResource.Repository,
-          [GithubResource.Collaborators],
-          {
-            repoName,
-            repoOwner: this.login,
-          },
-        );
-
-      if (collaborators) {
-        response = response.concat(collaborators as Collaborator[]);
-      }
-      return rateLimitConsumed;
-    });
-    return response;
+  async iterateRepoCollaborators(
+    repoName: string,
+    iteratee: ResourceIteratee<Collaborator>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateRepoCollaborators(
+      this.login,
+      repoName,
+      iteratee,
+    );
   }
 
+  /**
+   * Calls the GraphQL client to iterate over pull request entities.
+   * @param repo
+   * @param lastExecutionTime
+   * @param iteratee
+   */
   async iteratePullRequestEntities(
     repo: RepoEntity,
     lastExecutionTime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<PullRequest>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
-      return { rateLimitConsumed: 0 };
+      return { totalCost: 0 };
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
 
-    return await this.v4.iteratePullRequestsV2(
+    return await this.v4.iteratePullRequests(
       {
         fullName: repo.fullName,
         public: repo.public,
@@ -309,24 +186,31 @@ export default class OrganizationAccountClient {
     );
   }
 
+  /**
+   * Calls the GraphQL client to iterate over issue entities.
+   * Notes: issues and PRs are actually the same in the API
+   * @param repo
+   * @param lastExecutionTime
+   * @param iteratee
+   */
   async iterateIssueEntities(
     repo: RepoEntity,
     lastExecutionTime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<Issue>,
-  ): Promise<QueryResponse> {
+  ): Promise<RateLimitStepSummary> {
     //issues and PRs are actually the same in the API
     //we just filter for is:issue instead of is:pr
     //and remove pr-specific children from the request
+    // TODO: SP -> investigate removing pr-specific children
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting issues.');
-      return { rateLimitConsumed: 0 };
+      return { totalCost: 0 };
     }
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
-    const query = `is:issue repo:${repo.fullName} updated:>=${lastExecutionTime}`;
+
     return await this.v4.iterateIssues(
-      ISSUES_QUERY_STRING,
-      query,
-      [GithubResource.Assignees, GithubResource.LabelsOnIssues],
+      repo.fullName,
+      lastExecutionTime,
       iteratee,
     );
   }
@@ -406,16 +290,19 @@ export default class OrganizationAccountClient {
       );
       return repoSecrets || [];
     } catch (err) {
-      this.logger.warn({}, 'Error while attempting to ingest repo secrets');
       if (err.status === 403) {
-        //this is caused by repos with more restrictive privacy settings
         this.logger.info(
           { repoName },
-          `Repo returned a 403 unauthorized when secrets requested.`,
+          `Repo returned a 403 unauthorized when secrets requested. This is caused by repos with more restrictive privacy settings`,
         );
         return [];
+      } else {
+        this.logger.warn(
+          { err },
+          'Error while attempting to ingest repo secrets. This was mostly like NOT caused by a restrictive privacy setting.',
+        );
+        throw new IntegrationError(err);
       }
-      throw new IntegrationError(err);
     }
   }
 
@@ -634,28 +521,6 @@ export default class OrganizationAccountClient {
 
   private sortFiles(files: DiffFiles[]): DiffFiles[] {
     return files.sort((x, y) => (x.sha > y.sha ? 1 : -1));
-  }
-
-  private async queryGraphQL(
-    name: string,
-    performQuery: () => Promise<number>,
-  ) {
-    try {
-      const rateLimitConsumed = await performQuery();
-      this.v4RateLimitConsumed += rateLimitConsumed;
-    } catch (err) {
-      if (err.message?.startsWith('Retry timeout')) {
-        try {
-          //one more time in case error was a transient ETIMEDOUT Node error
-          const rateLimitConsumed = await performQuery();
-          this.v4RateLimitConsumed += rateLimitConsumed;
-        } catch (err) {
-          formatAndThrowGraphQlError(err, name);
-        }
-      } else {
-        formatAndThrowGraphQlError(err, name);
-      }
-    }
   }
 
   private sanitizeLastExecutionTime(lastExecutionTime: string): string {

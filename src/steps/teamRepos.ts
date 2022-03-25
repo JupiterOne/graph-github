@@ -4,7 +4,7 @@ import {
   RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 
-import { createAPIClient } from '../client';
+import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { createRepoAllowsTeamRelationship } from '../sync/converters';
 import {
@@ -19,44 +19,19 @@ export async function fetchTeamRepos({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = createAPIClient(config, logger);
+  const apiClient = getOrCreateApiClient(config, logger);
 
   await jobState.iterateEntities(
     { _type: GithubEntities.GITHUB_TEAM._type },
     async (teamEntity: TeamEntity) => {
       await apiClient.iterateTeamRepos(teamEntity, async (teamRepo) => {
-        //teamRepo.id is the repo id
-        //teamRepo.teams is the team id
-        if (
-          (await jobState.hasKey(teamRepo.id)) &&
-          (await jobState.hasKey(teamRepo.teams))
-        ) {
-          const repoTeamRelationship = createRepoAllowsTeamRelationship(
-            teamRepo.id,
-            teamEntity._key,
-            teamRepo.permission,
-          );
-          if (jobState.hasKey(repoTeamRelationship._key)) {
-            logger.warn(
-              {
-                teamId: teamEntity.id,
-                teamKey: teamEntity._key,
-                teamName: teamEntity.name,
-                teamRepoTeamKey: teamRepo.teams,
-                teamRepoId: teamRepo.id,
-                relationshipKey: repoTeamRelationship._key,
-              },
-              'Repo-team relationship was already ingested: Skipping.',
-            );
-          } else {
-            await jobState.addRelationship(repoTeamRelationship);
-          }
-        } else {
-          logger.warn(
-            { repoId: teamRepo.id, teamId: teamRepo.teams },
-            `Could not build relationship between team and repo.`,
-          );
-        }
+        const repoTeamRelationship = createRepoAllowsTeamRelationship(
+          teamRepo.id,
+          teamEntity._key,
+          teamRepo.permission,
+        );
+
+        await jobState.addRelationship(repoTeamRelationship);
       });
     },
   );

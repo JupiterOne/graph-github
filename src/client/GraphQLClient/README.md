@@ -1,7 +1,9 @@
 ## Creating GraphQL Queries
 
 When creating a new query, consider the query as a new domain being added to the
-project.
+project. To prevent needing to setup a new GitHub organization that has test
+data, request access to the
+[j1-ingest organization](https://github.com/j1-ingest).
 
 Each query requires:
 
@@ -45,3 +47,12 @@ Each query requires:
    - Keep track of the total cost during pagination.
 5. Add tests that validate pagination is working correctly.
 6. Add tests that validate partial responses are handled gracefully.
+
+### Best Practices
+
+- If a GraphQL query pulls too much data, it will throw an error. This is
+  especially likely in cases where there are many nested objects, such as the
+  TeamRepositoryQuery, where the query requests every repo assigned to every
+  team. In such cases, the pagination can be altered by changing the "first"
+  parameter. We have often done this from 100 to 25 in cases where we are
+  concerned about large data returns.

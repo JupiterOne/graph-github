@@ -4,7 +4,7 @@ import {
   IntegrationInstanceConfigFieldMap,
   IntegrationInstanceConfig,
 } from '@jupiterone/integration-sdk-core';
-import { createAPIClient } from './client';
+import { getOrCreateApiClient } from './client';
 const fs = require('fs');
 import { URL } from 'url';
 
@@ -119,7 +119,7 @@ export async function validateInvocation(
 
   sanitizeConfig(config); //mutate the config as needed
 
-  const apiClient = createAPIClient(config, context.logger);
+  const apiClient = getOrCreateApiClient(config, context.logger);
   await apiClient.verifyAuthentication();
   return apiClient.scopes;
 }
@@ -152,8 +152,6 @@ export function sanitizeConfig(config: IntegrationConfig) {
       config.githubApiBaseUrl ??
       'https://api.github.com',
   );
-
-  config.installationId = config.installationId ?? config.githubInstallationId;
 
   if (
     !config.githubAppId ||

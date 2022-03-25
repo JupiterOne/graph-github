@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TeamMemberQuery pagination of team members 1`] = `
+"query ($login: String!, $teamSlug: String!, $maxLimit: Int!, $memberCursor: String) {
+      organization(login: $login) {
+        id
+        team(slug: $teamSlug) {
+          id
+          name
+          members(first: $maxLimit, after: $memberCursor) {
+            edges {
+              node {
+                id
+              ...teamMemberFields
+              }
+            ...teamMemberEdgeFields
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      }
+    ...rateLimit
+    }"
+`;

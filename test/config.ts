@@ -9,7 +9,7 @@ if (process.env.LOAD_ENV) {
   });
 }
 const DEFAULT_GITHUB_APP_ID = 999999;
-const DEFAULT_INSTALLATION_ID = 99999999;
+const DEFAULT_INSTALLATION_ID = 23522163; // Ask for access to this Org
 //@octokit client instantiation requires a private RSA Key
 const DEFAULT_APP_PRIVATE_KEY = getFakeRsaKey();
 
@@ -20,5 +20,4 @@ export const integrationConfig: IntegrationConfig = {
     Number(process.env.INSTALLATION_ID) || DEFAULT_INSTALLATION_ID,
   githubAppDefaultLogin: 'something', //can be set manually in tests
   githubApiBaseUrl: 'https://api.github.com',
-  // useRestForTeamRepos: false
 } as IntegrationConfig; // casting config instead of setting useRestForTeamRepos to imitate configs already in production

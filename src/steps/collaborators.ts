@@ -5,7 +5,7 @@ import {
   IntegrationMissingKeyError,
 } from '@jupiterone/integration-sdk-core';
 
-import { createAPIClient } from '../client';
+import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import {
   createRepoAllowsUserRelationship,
@@ -26,7 +26,7 @@ export async function fetchCollaborators({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = createAPIClient(config, logger);
+  const apiClient = getOrCreateApiClient(config, logger);
 
   const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
@@ -71,17 +71,21 @@ export async function fetchCollaborators({
           outsideCollaboratorsArray.push(userEntity);
         }
       }
-      const repoId = collab.repository;
-      if (repoId && userEntity && (await jobState.hasKey(repoId))) {
+
+      if (
+        collab.repositoryId &&
+        userEntity &&
+        (await jobState.hasKey(collab.repositoryId))
+      ) {
         const repoUserRelationship = createRepoAllowsUserRelationship(
-          repoId,
+          collab.repositoryId,
           userEntity,
           collab.permission,
         );
         await jobState.addRelationship(repoUserRelationship);
       } else {
         logger.warn(
-          { collab: collab, repoId: repoId },
+          { collab: collab, repoId: collab.repositoryId },
           `Could not build relationship between collaborator and repo`,
         );
       }

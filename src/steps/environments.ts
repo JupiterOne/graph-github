@@ -6,7 +6,7 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { createAPIClient } from '../client';
+import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { RepoKeyAndName, EnvironmentEntity } from '../types';
 import {
@@ -22,7 +22,7 @@ export async function fetchEnvironments({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = createAPIClient(config, logger);
+  const apiClient = getOrCreateApiClient(config, logger);
 
   const repoTags = await jobState.getData<RepoKeyAndName[]>(
     GITHUB_REPO_TAGS_ARRAY,

@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`TeamRepositoriesQuery pagination of team repos 1`] = `
+"
+      query (
+        $login: String!
+        $teamSlug: String!
+        $maxLimit: Int!
+        $teamRepoCursor: String
+      ) {
+          organization(login: $login) {
+            id
+            team(slug: $teamSlug) {
+              id
+              name
+              repositories(first: $maxLimit, after: $teamRepoCursor) {
+                edges {
+                  node {
+                    id
+                  }
+                  ...on TeamRepositoryEdge {
+                    permission
+                  }
+                }
+                pageInfo {
+                  endCursor
+                  hasNextPage
+                }
+              }
+            }
+          }
+          ...rateLimit
+        }"
+`;

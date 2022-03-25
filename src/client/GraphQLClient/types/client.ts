@@ -105,7 +105,12 @@ export interface OrgTeamMemberQueryResponse extends Node {
   //id will be github User's id
   name?: string;
   login: string;
-  teams: string; // a single team id, even though it is listed as a plural
+  teamId: string;
+  /**
+   * @Deprecated
+   * A single team id, even though it is listed as a plural
+   */
+  teams: string;
   role: TeamMemberRole;
 }
 
@@ -140,10 +145,18 @@ export interface OrgRepoQueryResponse extends Node {
   rebaseMergeAllowed?: boolean;
 }
 
-//this is expressing the edge between a repo and a team that it allows
+/**
+ * Expresses the relationship between a repo and the team's permissions.
+ */
 export interface OrgTeamRepoQueryResponse extends Node {
-  //property id will be the repo id
-  teams: string; // a single team key, even though it sounds plural
+  /**
+   * The ID of the repository.
+   */
+  id: string;
+
+  /**
+   * The permission grant to the team for the repository.
+   */
   permission: TeamRepositoryPermission;
 }
 
@@ -293,7 +306,9 @@ export interface Collaborator extends Node {
   permission: string;
   login: string;
   name: string;
-  repository: string;
+  // @Deprecated - use repositoryId
+  repository?: string;
+  repositoryId: string;
 }
 
 export interface GithubSearchResources {

@@ -1,16 +1,17 @@
 import { ResourceIteratee } from '../../../client';
 import {
-  GithubQueryResponse,
   PullRequest,
   IteratePagination,
   CursorState,
   InnerResourceQuery,
   BaseQueryState,
   BuildQuery,
+  RateLimitStepSummary,
 } from '../types';
-import utils from './utils';
+import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import SinglePullRequestQuery from './SinglePullRequestQuery';
+import { MAX_SEARCH_LIMIT } from '../paginate';
 
 interface QueryState extends BaseQueryState {
   pullRequests: CursorState;
@@ -28,9 +29,8 @@ type QueryParams = {
   lastExecutionTime: string;
 };
 
-const MAX_SEARCH_LIMIT = 25;
 const MAX_INNER_RESOURCE_LIMIT = 100;
-const MAX_FETCHES_PER_EXECUTION = 500;
+const MAX_RESOURCES_PER_EXECUTION = 500;
 
 /**
  * Builds the leanest query possible
@@ -173,7 +173,7 @@ export const processResponseData = async (
 
   for (const edge of pullRequestEdges) {
     const pullRequest = edge.node;
-    if (Object.keys(pullRequest).length === 0) {
+    if (!utils.hasProperties(pullRequest)) {
       // If there's no data, pass - possible if permissions aren't correct in GHE
       continue;
     }
@@ -214,9 +214,9 @@ export const processResponseData = async (
  */
 const iteratePullRequests: IteratePagination<QueryParams, PullRequest> = async (
   queryParams,
-  iteratee,
   execute,
-): Promise<GithubQueryResponse> => {
+  iteratee,
+): Promise<RateLimitStepSummary> => {
   let pullRequestFetched = 0;
   let queryCost = 0;
   let queryState: QueryState | undefined = undefined;
@@ -243,23 +243,25 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequest> = async (
     queryCost += queryState.rateLimit?.cost ?? 0;
 
     for (const pullRequestQuery of innerResourceQueries) {
-      const { rateLimitConsumed } =
-        await SinglePullRequestQuery.iteratePullRequest(
-          pullRequestQuery,
-          countIteratee,
-          execute,
-        );
+      const { totalCost } = await SinglePullRequestQuery.iteratePullRequest(
+        pullRequestQuery,
+        execute,
+        countIteratee,
+      );
 
-      queryCost += rateLimitConsumed;
+      queryCost += totalCost;
     }
 
     paginationComplete =
       !queryState.pullRequests?.hasNextPage ||
-      pullRequestFetched >= MAX_FETCHES_PER_EXECUTION;
+      pullRequestFetched >= MAX_RESOURCES_PER_EXECUTION;
   }
 
   return {
-    rateLimitConsumed: queryCost,
+    totalCost: queryCost,
+    limit: queryState?.rateLimit?.limit,
+    remaining: queryState?.rateLimit?.remaining,
+    resetAt: queryState?.rateLimit?.resetAt,
   };
 };
 

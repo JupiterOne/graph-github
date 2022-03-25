@@ -17,12 +17,10 @@ import {
 import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
-import resourceMetadataMap from './client/GraphQLClient/resourceMetadataMap';
 import {
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamQueryResponse,
-  OrgQueryResponse,
   OrgTeamMemberQueryResponse,
   GitHubGraphQLClient,
   OrgTeamRepoQueryResponse,
@@ -77,11 +75,22 @@ export class APIClient {
     await this.setupAccountClient();
   }
 
-  public async getAccountDetails(): Promise<OrgQueryResponse> {
+  /**
+   * Fetch the organization.
+   */
+  public async fetchOrganization() {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    return await this.accountClient.getAccount();
+    const { rateLimit, organization } =
+      await this.accountClient.fetchOrganization();
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Organization.',
+    );
+
+    return organization;
   }
 
   /**
@@ -95,11 +104,13 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const members: OrgMemberQueryResponse[] =
-      await this.accountClient.getMembers();
-    for (const member of members) {
-      await iteratee(member);
-    }
+
+    const rateLimit = await this.accountClient.iterateOrgMembers(iteratee);
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Org Members.',
+    );
   }
 
   /**
@@ -113,15 +124,19 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const teams: OrgTeamQueryResponse[] = await this.accountClient.getTeams();
-    for (const team of teams) {
-      await iteratee(team);
-    }
+
+    const rateLimit = await this.accountClient.iterateTeams(iteratee);
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Team Repositories.',
+    );
   }
 
   /**
    * Iterates each team-repo association from the provider.
    *
+   * @param team
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamRepos(
@@ -131,16 +146,22 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const teamRepos: OrgTeamRepoQueryResponse[] =
-      await this.accountClient.getTeamRepositories(team.name, team._key);
-    for (const teamRepoAssociation of teamRepos) {
-      await iteratee(teamRepoAssociation);
-    }
+
+    const rateLimit = await this.accountClient.iterateTeamRepositories(
+      team.name,
+      iteratee,
+    );
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Team Repositories.',
+    );
   }
 
   /**
    * Iterates each team-member association for a single team.
    *
+   * @param team
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamMembers(
@@ -150,11 +171,15 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const teamMembers: OrgTeamMemberQueryResponse[] =
-      await this.accountClient.getTeamMembers(team.name, team._key);
-    for (const teamUserAssociation of teamMembers) {
-      await iteratee(teamUserAssociation);
-    }
+    const rateLimit = await this.accountClient.iterateTeamMembers(
+      team.name,
+      iteratee,
+    );
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Team Members.',
+    );
   }
 
   /**
@@ -180,6 +205,7 @@ export class APIClient {
   /**
    * Iterates each Github organization secret.
    *
+   * @param allRepos
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateOrgSecrets(
@@ -221,6 +247,7 @@ export class APIClient {
   /**
    * Iterates each Github repo secret.
    *
+   * @param repoName
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateRepoSecrets(
@@ -242,6 +269,7 @@ export class APIClient {
   /**
    * Iterates each Github environment.
    *
+   * @param repoName
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateEnvironments(
@@ -263,6 +291,7 @@ export class APIClient {
   /**
    * Iterates each Github environmental secret.
    *
+   * @param envEntity
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateEnvSecrets(
@@ -295,11 +324,11 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const repos: OrgRepoQueryResponse[] =
-      await this.accountClient.getRepositories();
-    for (const repo of repos) {
-      await iteratee(repo);
-    }
+    const rateLimit = await this.accountClient.iterateOrgRepositories(iteratee);
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Org Repositories.',
+    );
   }
 
   /**
@@ -319,14 +348,13 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const { rateLimitConsumed } =
-      await this.accountClient.iteratePullRequestEntities(
-        repo,
-        lastSuccessfulExecution,
-        iteratee,
-      );
+    const rateLimit = await this.accountClient.iteratePullRequestEntities(
+      repo,
+      lastSuccessfulExecution,
+      iteratee,
+    );
     logger.info(
-      { rateLimitConsumed },
+      { rateLimit },
       'Rate limit consumed while fetching Pull Requests.',
     );
   }
@@ -334,6 +362,7 @@ export class APIClient {
   /**
    * Iterates the collaborators for a single repo.
    *
+   * @param repoName name of the repository
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateRepoCollaborators(
@@ -343,17 +372,23 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    const collaborators = await this.accountClient.getRepoCollaborators(
+
+    const rateLimit = await this.accountClient.iterateRepoCollaborators(
       repoName,
+      iteratee,
     );
-    for (const collab of collaborators) {
-      await iteratee(collab);
-    }
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Issues.',
+    );
   }
 
   /**
    * Iterates the issues for a repo in the provider.
    *
+   * @param repo
+   * @param lastSuccessfulExecution
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateIssues(
@@ -365,15 +400,18 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.repoIssues) {
-      const { rateLimitConsumed } =
-        await this.accountClient.iterateIssueEntities(
-          repo,
-          lastSuccessfulExecution,
-          iteratee,
-        );
+      const rateLimit = await this.accountClient.iterateIssueEntities(
+        repo,
+        lastSuccessfulExecution,
+        iteratee,
+      );
       this.logger.info(
-        { rateLimitConsumed },
+        { rateLimit },
         'Rate limit consumed while fetching Issues.',
+      );
+    } else {
+      this.logger.info(
+        'Repo issues scope was not provided, skipping Issue ingestion.',
       );
     }
   }
@@ -384,7 +422,6 @@ export class APIClient {
         'Integration id should be a number.',
       );
     }
-    const installationId = Number(this.config.installationId);
     const appClient = createGitHubAppClient(
       this.restApiUrl,
       this.config,
@@ -406,9 +443,9 @@ export class APIClient {
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: `${this.restApiUrl}/app/installations/${this.config.installationId}/access_tokens`,
+        endpoint: err.response?.url,
         status: err.status,
-        statusText: err.statusText,
+        statusText: err.response?.data?.message,
       });
     }
 
@@ -420,26 +457,22 @@ export class APIClient {
       );
     }
 
-    let login: string = this.config.githubAppDefaultLogin;
+    const installationId = Number(this.config.installationId);
     const installation = await getInstallation(appClient, installationId);
     if (installation.target_type !== AccountType.Org) {
       throw new IntegrationValidationError(
         'Integration supports only GitHub Organization accounts.',
       );
     }
-    if (installation.account) {
-      login = installation.account.login || this.config.githubAppDefaultLogin;
-    }
 
     this.accountClient = new OrganizationAccountClient({
-      login: login,
+      login: installation?.account?.login ?? this.config.githubAppDefaultLogin,
       baseUrl: this.restApiUrl,
       restClient: appClient,
       graphqlClient: new GitHubGraphQLClient(
         this.graphqlUrl,
         this.ghsToken,
         tokenExpires,
-        resourceMetadataMap(),
         this.logger,
         appClient,
       ),
@@ -540,9 +573,19 @@ export class APIClient {
   }
 }
 
-export function createAPIClient(
+/**
+ * API Client is a singleton. New instances
+ * are not necessary. Prevents setupAccountClient()
+ * from being called repeatedly.
+ */
+let apiClientInstance;
+export function getOrCreateApiClient(
   config: IntegrationConfig,
   logger: IntegrationLogger,
 ): APIClient {
-  return new APIClient(config, logger);
+  if (!apiClientInstance) {
+    apiClientInstance = new APIClient(config, logger);
+  }
+
+  return apiClientInstance;
 }

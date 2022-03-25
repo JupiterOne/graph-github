@@ -26,8 +26,14 @@ export const createQueryExecutor = (
   logger,
 ): QueryExecutor => {
   return async (executable): Promise<any> => {
-    if (executable.rateLimit) {
-      await sleepIfApproachingRateLimit(executable.rateLimit, logger);
+    // client.rateLimit is the known rateLimit when this query executor was created.
+    // executable.rateLimit is the know rateLimit within the step, based on the most recent pagination result.
+    // Therefore, attempt to use executable.rateLimit first.
+    if (executable.rateLimit || client.rateLimit) {
+      await sleepIfApproachingRateLimit(
+        executable.rateLimit ?? client.rateLimit,
+        logger,
+      );
     }
 
     return client.query(executable.query, executable.queryVariables);

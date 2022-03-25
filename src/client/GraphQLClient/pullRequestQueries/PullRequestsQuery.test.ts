@@ -100,12 +100,12 @@ describe('PullRequestsQuery', () => {
           public: true,
           lastExecutionTime: '2011-10-05T14:48:00.000Z',
         },
-        iteratee,
         execute,
+        iteratee,
       );
 
       // Assert
-      expect(result.rateLimitConsumed).toBe(3);
+      expect(result.totalCost).toBe(3);
       expect(iteratee).toHaveBeenCalledTimes(3);
       expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
       expect(execute).toHaveBeenCalledTimes(2);
@@ -120,21 +120,26 @@ describe('PullRequestsQuery', () => {
         .fn()
         .mockResolvedValueOnce(pullRequestsPublicInnerPagination) // Entity is not used, but queued for single query
         .mockResolvedValueOnce(singleQueryFullResponse) // Part 1 of inner resources single query
-        .mockResolvedValueOnce(singleQueryInnerResourcePaginationComplete); // Part 2 of inner resources single query
+        .mockResolvedValueOnce(singleQueryInnerResourcePaginationComplete) // Part 2 of inner resources single query
+        .mockRejectedValue(
+          new Error(
+            'Pagination failed to stop! This response should never be reached.',
+          ),
+        );
 
       // Act
-      const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
+      const { totalCost } = await PullRequestsQuery.iteratePullRequests(
         {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
           lastExecutionTime: '2011-10-05T14:48:00.000Z',
         },
-        iteratee,
         execute,
+        iteratee,
       );
 
       // Assert
-      expect(rateLimitConsumed).toBe(3);
+      expect(totalCost).toBe(3);
       expect(iteratee).toHaveBeenCalledTimes(1);
       expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
       expect(execute).toHaveBeenCalledTimes(3);
@@ -149,18 +154,18 @@ describe('PullRequestsQuery', () => {
       const execute = jest.fn().mockResolvedValueOnce(emptyPullRequest[0]);
 
       // Act
-      const { rateLimitConsumed } = await PullRequestsQuery.iteratePullRequests(
+      const { totalCost } = await PullRequestsQuery.iteratePullRequests(
         {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
           lastExecutionTime: '2011-10-05T14:48:00.000Z',
         },
-        iteratee,
         execute,
+        iteratee,
       );
 
       // Assert
-      expect(rateLimitConsumed).toBe(1);
+      expect(totalCost).toBe(1);
       expect(iteratee).not.toHaveBeenCalled();
       expect(execute).toHaveBeenCalledTimes(1);
     });

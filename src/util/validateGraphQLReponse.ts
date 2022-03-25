@@ -53,7 +53,7 @@ export default function validateGraphQLResponse(
     * Or it might be 'search', because the GraphQL query was structured that way 
     * for pull-requests or issues. In some inner-resource fetches, it might be
     * the name of the inner resource. In general, the object structure will mirror
-    * the query structure found in queries.ts
+    * the query structure found in their respective query file.
     */
 
   if (response.rateLimit === undefined) {

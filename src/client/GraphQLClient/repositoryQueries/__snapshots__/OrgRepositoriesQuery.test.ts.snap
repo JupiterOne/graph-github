@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OrgRepositoriesQuery pagination of org repos 1`] = `
+"
+      query ($login: String!, $maxLimit: Int!, $repoCursor: String) {
+        organization(login: $login) {
+          id
+          repositories(first: $maxLimit, after: $repoCursor) {
+            nodes {
+              id
+					    ...repositoryFields
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+        ...rateLimit
+      }"
+`;

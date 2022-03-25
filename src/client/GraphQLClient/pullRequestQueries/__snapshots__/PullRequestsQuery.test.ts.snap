@@ -268,7 +268,7 @@ Object {
         $pullRequestNumber: Int!
         $repoName: String!
         $repoOwner: String!
-        $maxCount: Int!
+        $maxLimit: Int!
         $commitsCursor: String
         $reviewsCursor: String
         $labelsCursor: String
@@ -277,7 +277,7 @@ Object {
             pullRequest(number: $pullRequestNumber) {
               ...pullRequestFields
               
-    commits(first: $maxCount, after: $commitsCursor) {
+    commits(first: $maxLimit, after: $commitsCursor) {
       totalCount
       nodes {
         commit {
@@ -291,7 +291,7 @@ Object {
       }
     }
               
-    reviews(first: $maxCount, after: $reviewsCursor) {
+    reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
         ...reviewFields
@@ -302,7 +302,7 @@ Object {
       }
     }
               
-    labels(first: $maxCount, after: $labelsCursor) {
+    labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
         id
@@ -318,7 +318,7 @@ Object {
           ...rateLimit
       }",
   "queryVariables": Object {
-    "maxCount": 100,
+    "maxLimit": 100,
     "pullRequestNumber": undefined,
     "repoName": "musical-palm-tree",
     "repoOwner": "J1-Test",
@@ -333,7 +333,7 @@ Object {
         $pullRequestNumber: Int!
         $repoName: String!
         $repoOwner: String!
-        $maxCount: Int!
+        $maxLimit: Int!
         
         $reviewsCursor: String
         $labelsCursor: String
@@ -343,7 +343,7 @@ Object {
               ...pullRequestFields
               
               
-    reviews(first: $maxCount, after: $reviewsCursor) {
+    reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
         ...reviewFields
@@ -354,7 +354,7 @@ Object {
       }
     }
               
-    labels(first: $maxCount, after: $labelsCursor) {
+    labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
         id
@@ -371,7 +371,7 @@ Object {
       }",
   "queryVariables": Object {
     "labelsCursor": "Y3Vyc2==",
-    "maxCount": 100,
+    "maxLimit": 100,
     "pullRequestNumber": undefined,
     "repoName": "musical-palm-tree",
     "repoOwner": "J1-Test",

@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`OrganizationQuery #fetchOrganization 1`] = `
+Object {
+  "query": "
+    query ($login: String!) {
+      organization(login: $login) {
+        id
+        login
+        name
+        createdAt
+        updatedAt
+        description
+        email
+        databaseId
+        isVerified
+        location
+        websiteUrl
+        url
+      }
+      ...rateLimit
+    }",
+  "queryVariables": Object {
+    "login": "j1-test",
+  },
+}
+`;

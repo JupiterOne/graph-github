@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.12.0-beta.3 - 2022-03-29
+
+## Changed
+
+- Identified known GraphQL errors (see README.md)
+- Introduced clear error handling
+- Upgraded graphql.js package
+
 ## 1.12.0-beta.2 - 2022-03-25
 
 ## Changed

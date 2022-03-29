@@ -56,3 +56,163 @@ Each query requires:
   team. In such cases, the pagination can be altered by changing the "first"
   parameter. We have often done this from 100 to 25 in cases where we are
   concerned about large data returns.
+
+## Example GraphQL Errors
+
+1. Caused when querying for an org that doesn't exist\*\*
+   \*\*OrganizationQuery.ts Note: the "data" portion of the error/response is
+   not included. The GraphQL project must not include it. `error.errors` is what
+   is given to the catch statement
+
+```json
+{
+  "errors": [
+    {
+      "type": "NOT_FOUND",
+      "path": ["organization"],
+      "locations": [
+        {
+          "line": 2,
+          "column": 2
+        }
+      ],
+      "message": "Could not resolve to an Organization with the login of 'j1-ingesst'."
+    }
+  ]
+}
+```
+
+2. Caused by bad token or expired token
+
+```json
+{
+  "message": "Bad credentials",
+  "documentation_url": "https://docs.github.com/graphql"
+}
+```
+
+3. Caused by invalid field in query - no `type` is provided `error.errors` is
+   what is given to the catch statement
+
+```json5
+{
+  errors: [
+    {
+      path: [
+        'query',
+        'repository',
+        'pullRequest',
+        'commits',
+        'nodes',
+        'commit',
+        'asdf', // This caused 1st error
+      ],
+      extensions: {
+        code: 'undefinedField',
+        typeName: 'Commit',
+        fieldName: 'asdf',
+      },
+      locations: [
+        {
+          line: 19,
+          column: 7,
+        },
+      ],
+      message: "Field 'asdf' doesn't exist on type 'Commit'",
+    },
+    {
+      path: [
+        'query',
+        'repository',
+        'pullRequest',
+        'reviews',
+        'nodes',
+        'asdf', // This caused 2nd error
+      ],
+      extensions: {
+        code: 'undefinedField',
+        typeName: 'PullRequestReview',
+        fieldName: 'asdf',
+      },
+      locations: [
+        {
+          line: 33,
+          column: 6,
+        },
+      ],
+      message: "Field 'asdf' doesn't exist on type 'PullRequestReview'",
+    },
+  ],
+}
+```
+
+4. Caused by querying for a resource that doesn't exist. See message
+
+```
+    [
+  {
+    "type": "NOT_FOUND",
+    "path": [
+      "repository",
+      "pullRequest"
+    ],
+    "locations": [
+      {
+        "line": 12,
+        "column": 13
+      }
+    ],
+    "message": "Could not resolve to a PullRequest with the number of 67."
+  }
+]
+```
+
+5. Caused by not having access to a resource
+
+```
+[
+  {
+    "type": "FORBIDDEN",
+    "path": [
+      "repository",
+      "collaborators"
+    ],
+    "extensions": {
+      "saml_failure": false
+    },
+    "locations": [
+      {
+        "line": 4,
+        "column": 5
+      }
+    ],
+    "message": "Resource not accessible by integration"
+  }
+]
+```
+
+6. unknown cause
+
+```
+SyntaxError: Unexpected end of JSON input
+at JSON.parse (<anonymous>)
+at IncomingMessage.<anonymous> (/opt/jupiterone/app/node_modules/graphql.js/graphql.js:73:25)
+at IncomingMessage.emit (events.js:387:35)
+```
+
+7. Caused by the fetch-account failing
+
+```
+Error: Expected to find Account entity in jobState.
+at Object.fetchPrs [as executionHandler] (/opt/jupiterone/app/node_modules/@jupiterone/graph-github/dist/steps/pullRequests.js:21:15)
+at async executeStep (/opt/jupiterone/app/node_modules/@jupiterone/integration-sdk-runtime/dist/src/execution/dependencyGraph.js:212:21)
+at async timeOperation (/opt/jupiterone/app/node_modules/@jupiterone/integration-sdk-runtime/dist/src/metrics/index.js:6:12)
+at async run (/opt/jupiterone/app/node_modules/p-queue/dist/index.js:163:29)
+```
+
+8. Caused by the GitHub API running into an issue. Could be query is pulling
+   back too many nodes and timesout.
+
+```
+Error: iteratePullRequests: GraphQL errors (1), first: {"message":"Something went wrong while executing your query. This may be the result of a timeout, or it could be a GitHub bug. Please include `9E12:6C93:1987D3B:2F6FFCF:6238E3EE` when reporting this issue."}
+```

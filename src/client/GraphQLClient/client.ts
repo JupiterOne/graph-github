@@ -2,7 +2,6 @@ import graphql, { GraphQLClient } from 'graphql.js';
 
 import {
   IntegrationLogger,
-  IntegrationProviderAPIError,
   IntegrationProviderAuthenticationError,
   parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
@@ -10,7 +9,6 @@ import { retry } from '@lifeomic/attempt';
 import { Octokit } from '@octokit/rest';
 
 import { ResourceIteratee } from '../../client';
-import validateGraphQLResponse from '../../util/validateGraphQLReponse';
 import fragments from './fragments';
 
 import {
@@ -36,6 +34,11 @@ import RepoCollaboratorsQuery from './collaboratorQueries/RepoCollaboratorsQuery
 import OrganizationQuery, {
   OrganizationResults,
 } from './organizationQueries/OrganizationQuery';
+import {
+  handleForbiddenErrors,
+  handleNotFoundErrors,
+  retryErrorHandle,
+} from './errorHandlers';
 
 const FIVE_MINUTES_IN_MILLIS = 300000;
 
@@ -139,6 +142,7 @@ export class GitHubGraphQLClient {
       this.graph.fragment(fragments);
       this.tokenExpires = parseTimePropertyValue(expiresAt) || 0;
     } catch (err) {
+      this.logger.error(err);
       throw new IntegrationProviderAuthenticationError({
         cause: err,
         endpoint: err.response?.url,
@@ -354,97 +358,57 @@ export class GitHubGraphQLClient {
   private async retryGraphQL(queryString: string, queryVariables) {
     const { logger } = this;
 
-    //queryWithRateLimitCatch will be passed to the retry function below
-    const queryWithRateLimitCatch = async () => {
-      let response;
+    const queryWithPreRetryErrorHandling = async () => {
       try {
-        response = await this.graph(queryString)(queryVariables);
+        return await this.graph(queryString)(queryVariables);
       } catch (err) {
-        // Process errors thrown by `this.graph` generated functions
-        let message;
-
-        // Extract message from first GraphQL response (reject(response),
-        // unknown response code in graphql.js)
-        if (err.errors?.length > 0 && err.errors[0].message) {
-          message = `GraphQL errors (${
-            err.errors.length
-          }), first: ${JSON.stringify(err.errors[0])}`;
+        // Add queryString & queryVariables to error.
+        if (Array.isArray(err) && err.length > 0) {
+          err[0].queryString = queryString;
+          err[0].queryVariables = queryVariables;
+        } else {
+          err.queryString = queryString;
+          err.queryVariables = queryVariables;
         }
 
-        // Catch all, we could get an Array from graphql.js (reject(response.errors))
-        if (!message) {
-          message = JSON.stringify(err).substring(0, 200);
+        // Handle pre-retry logic
+        // If resource can't be found, or is not accessible,
+        // continue with processing.
+        if (
+          handleNotFoundErrors(err, logger) ||
+          handleForbiddenErrors(err, logger)
+        ) {
+          return {
+            rateLimit: {},
+          };
+        } else {
+          throw err;
         }
-
-        //just wrapping the original error so we can be more specific about the string that caused it
-        throw new IntegrationProviderAPIError({
-          message,
-          status: 'None',
-          statusText: `GraphQL query error: ${queryString}`,
-          cause: err,
-          endpoint: `retryGraphQL`,
-        });
       }
-      validateGraphQLResponse(response, logger, queryString);
-      return response;
     };
 
     // Check https://github.com/lifeomic/attempt for options on retry
-    return await retry(queryWithRateLimitCatch, {
+    return await retry(queryWithPreRetryErrorHandling, {
       maxAttempts: 3,
       delay: 30_000, // 30 seconds to start
       timeout: 180_000, // 3 min timeout. We need this in case Node hangs with ETIMEDOUT
       factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min
-      handleError: async (err, attemptContext) => {
-        /* retry will keep trying to the limits of retryOptions
-         * but it lets you intervene in this function - if you throw an error from in here,
-         * it stops retrying. Otherwise, you can just log the attempts.
-         *
-         * Github has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
-         * GitHub guidance is to "wait a few minutes" when we get one of these errors.
-         * https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-         * this link is REST specific - however, the limits might apply to GraphQL as well,
-         * and our GraphQL client is not using the @octokit throttling and retry plugins like our REST client
-         * therefore some retry logic is appropriate here
-         */
-
-        if (err.status === 401) {
-          logger.warn(
-            { attemptContext, err },
-            `Hit 401, attempting to refresh the token and try again.`,
-          );
-          await this.refreshToken();
-          return;
-        }
-
-        // don't keep trying if it's not going to get better
-        if (err.retryable === false || err.status === 403) {
-          logger.warn(
-            { attemptContext, err },
-            `Hit an unrecoverable error when attempting to query GraphQL. Aborting.`,
-          );
-          attemptContext.abort();
-        }
-
-        if (err.message?.includes('exceeded a secondary rate limit')) {
-          logger.info(
-            { attemptContext, err },
-            '"Secondary Rate Limit" message received.',
-          );
-        }
-
-        if (err.message?.includes('Resource not accessible by integration')) {
-          logger.info(
-            { attemptContext, err },
-            'Resource not accessible by integration: Aborting attempt',
-          );
-          attemptContext.abort();
-        }
-
-        logger.warn(
-          { attemptContext, err, queryString, queryVariables },
-          `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
+      handleError: async (error, attemptContext) => {
+        await retryErrorHandle(error, logger, attemptContext, () =>
+          this.refreshToken(),
         );
+
+        if (attemptContext.aborted) {
+          logger.warn(
+            { attemptContext, error, queryString, queryVariables },
+            'Hit an unrecoverable error when attempting to query GraphQL. Aborting.',
+          );
+        } else {
+          logger.warn(
+            { attemptContext, error, queryString, queryVariables },
+            `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
+          );
+        }
       },
     });
   }

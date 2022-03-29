@@ -2885,10 +2885,10 @@ graceful-fs@^4.2.9:
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.9.tgz#041b05df45755e587a24942279b9d113146e1c96"
   integrity sha512-NtNxqUcXgpW2iMrfqSfR73Glt39K+BLwWsPs94yR63v45T0Wbej7eRmL5cWfwEgqXnmjQp3zaJTshdRW/qC2ZQ==
 
-graphql.js@^0.6.7:
-  version "0.6.7"
-  resolved "https://registry.yarnpkg.com/graphql.js/-/graphql.js-0.6.7.tgz#e76e6fe36e1c2e1c01a1ff4ae0e690eb8ac3798c"
-  integrity sha512-pGODcTc9cED1XmJ5xbhBIFlq0tx4VFoiBQ+FmQNKm4iNpCKInCQIc1sYeQSC4Co+Da9pCoUmJK8bUXANBMLgKg==
+graphql.js@^0.6.8:
+  version "0.6.8"
+  resolved "https://registry.yarnpkg.com/graphql.js/-/graphql.js-0.6.8.tgz#5c2e57311b5e74c6665ff9394394bc76f273542f"
+  integrity sha512-y1OxsvPCfBell00yb2T1E+JQjFXzbmqDT3hsf7Ckof80DlRuQ3SrmLL7KC04Up81vlBj+l9opYJjDLf9OgMH3w==
 
 hammerjs@^2.0.8:
   version "2.0.8"

@@ -6,9 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.12.0-beta.4 - 2022-03-31
+
+### Changed
+
+- Marked GitHub Issues ingestion step as `partial` allowing existing issues to
+  remain in the graph.
+
 ## 1.12.0-beta.3 - 2022-03-29
 
-## Changed
+### Changed
 
 - Identified known GraphQL errors (see README.md)
 - Introduced clear error handling
@@ -16,7 +23,7 @@ and this project adheres to
 
 ## 1.12.0-beta.2 - 2022-03-25
 
-## Changed
+### Changed
 
 - Continued GraphQL pagination refactor for all queries.
 - Renamed `createApiClient()` to `getOrCreateApiClient()` and moved to a

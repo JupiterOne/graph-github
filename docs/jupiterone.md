@@ -18,16 +18,19 @@
 
 ## How it Works
 
-- JupiterOne periodically fetches installed GitHub apps, GitHub users, teams,
-  code repositories, issues, and recently created/changed pull requests in those
-  repositories to update the graph.
+- JupiterOne periodically fetches installed GitHub `apps`, `users`, `teams`,
+  `code repositories`, and recently created/changed `pull requests` and `issues`
+  in those repositories to update the graph.
 - Write JupiterOne queries to review and monitor updates to the graph.
 - Configure alerts to take action when the JupiterOne graph changes.
 
-!!! note The integration limits ingestion of pull requests during each execution
-to 500 of those most recently created/modified since the last execution. This is
-an accumulative process so that PRs which have been ingested but are not
-changing remain in the graph.
+### **Note on `issues` and `pull requests`:**
+
+The integration limits ingestion of `pull requests` and `issues` during each
+execution to 500 of the most recently created/modified _since the last
+execution_. This is an accumulative process resulting in existing `issues` and
+`pull requests` which have been ingested, but are not changing, remain in the
+graph.
 
 ## Requirements
 

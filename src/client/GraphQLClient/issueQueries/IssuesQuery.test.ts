@@ -21,7 +21,7 @@ describe('IssuesQuery', () => {
       );
 
       // Assert
-      expect(result.totalCost).toBe(6);
+      expect(result.totalCost).toBe(3);
       expect(iteratee).toHaveBeenCalledTimes(3);
       expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
       expect(iteratee.mock.calls[1][0]).toMatchSnapshot();

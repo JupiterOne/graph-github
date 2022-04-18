@@ -79,6 +79,11 @@ export default class OrganizationAccountClient {
 
     this.authorizedForPullRequests = true;
     this.v3RateLimitConsumed = 0;
+
+    this.logger.info(
+      { login: options.login, baseUrl: options.baseUrl },
+      'Constructing Organization Account client',
+    );
   }
 
   /**

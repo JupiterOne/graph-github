@@ -83,10 +83,6 @@ const issuesResponses = [
         hasNextPage: true,
       },
     },
-    rateLimit: {
-      cost: 5,
-      remaining: 4983,
-    },
   },
   // Send page
   {
@@ -137,7 +133,7 @@ const issuesResponses = [
       },
     },
     rateLimit: {
-      cost: 1,
+      cost: 3,
       remaining: 4983,
     },
   },

@@ -45,7 +45,7 @@ const processResponseData = (responseData): OrganizationResults => {
   return {
     rateLimit: {
       ...rateLimit,
-      totalCost: rateLimit.cost,
+      totalCost: rateLimit?.cost ?? 0,
     },
     organization,
   };

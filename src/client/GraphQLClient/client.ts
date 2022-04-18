@@ -104,7 +104,7 @@ export class GitHubGraphQLClient {
   }
 
   private collectRateLimitStatus(results: RateLimitStepSummary) {
-    if (results.limit && results.remaining && results.resetAt) {
+    if (results?.limit && results?.remaining && results?.resetAt) {
       this.rateLimitStatus = {
         limit: results.limit,
         remaining: results.remaining,

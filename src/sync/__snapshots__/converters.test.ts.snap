@@ -192,6 +192,8 @@ Object {
   "labels": Array [],
   "mergeCommitHash": "39483af8a356b5684513bf56c044dab0ed4c0c7a",
   "merged": true,
+  "mergedBy": "Some Body",
+  "mergedByLogin": "somebody",
   "mergedOn": 1630461214000,
   "name": "Ingest AutoScaling Policies and build relationships",
   "node": "MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1",

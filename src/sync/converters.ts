@@ -593,6 +593,8 @@ export function toPullRequestEntity(
         open: pullRequest.state === 'OPEN',
         mergeCommitHash: pullRequest.mergeCommit?.oid,
         merged: pullRequest.merged,
+        mergedBy: pullRequest.mergedBy?.name ?? pullRequest.mergedBy?.login,
+        mergedByLogin: pullRequest.mergedBy?.login,
         node: pullRequest.id,
         declined: pullRequest.state === 'CLOSED' && !pullRequest.merged,
         approved: pullRequest.reviewDecision === 'APPROVED',

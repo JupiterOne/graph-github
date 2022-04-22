@@ -8,6 +8,8 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.12.0-beta.6 - 2022-04-22
+
 ### Fixed
 
 - Fixed issue when a single PR was queried for multiple inner resources.

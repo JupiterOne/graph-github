@@ -108,6 +108,49 @@ Object {
 }
 `;
 
+exports[`SinglePullRequestQuery #buildQuery followup query with partial cursors 1`] = `
+Object {
+  "query": "
+      query (
+        $pullRequestNumber: Int!
+        $repoName: String!
+        $repoOwner: String!
+        $maxLimit: Int!
+        
+        
+        $labelsCursor: String
+      ) {
+          repository(name: $repoName, owner: $repoOwner) {
+            pullRequest(number: $pullRequestNumber) {
+              ...pullRequestFields
+              
+              
+              
+    labels(first: $maxLimit, after: $labelsCursor) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    } 
+            }
+          }
+          ...rateLimit
+      }",
+  "queryVariables": Object {
+    "labelsCursor": "Y3Vyc2==",
+    "maxLimit": 100,
+    "pullRequestNumber": 5,
+    "repoName": "musical-palm-tree",
+    "repoOwner": "J1-Test",
+  },
+}
+`;
+
 exports[`SinglePullRequestQuery #iteratePullRequest successfully paginates 1`] = `
 Object {
   "commits": Array [

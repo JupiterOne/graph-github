@@ -10,6 +10,7 @@ import {
 import { ExecutableQuery } from '../CreateQueryExecutor';
 
 interface QueryState extends BaseQueryState {
+  isInitialQuery?: true;
   commits?: CursorState;
   reviews?: CursorState;
   labels?: CursorState;
@@ -41,17 +42,19 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
         $repoOwner: String!
         $maxLimit: Int!
         ${
-          queryState?.commits?.hasNextPage !== false
+          queryState?.isInitialQuery ||
+          queryState?.commits?.hasNextPage === true
             ? '$commitsCursor: String'
             : ''
         }
         ${
-          queryState?.reviews?.hasNextPage !== false
+          queryState?.isInitialQuery ||
+          queryState?.reviews?.hasNextPage === true
             ? '$reviewsCursor: String'
             : ''
         }
         ${
-          queryState?.labels?.hasNextPage !== false
+          queryState?.isInitialQuery || queryState?.labels?.hasNextPage === true
             ? '$labelsCursor: String'
             : ''
         }
@@ -59,9 +62,24 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
               ...pullRequestFields
-              ${queryState?.commits?.hasNextPage !== false ? commitsQuery : ''}
-              ${queryState?.reviews?.hasNextPage !== false ? reviewsQuery : ''}
-              ${queryState?.labels?.hasNextPage !== false ? labelsQuery : ''} 
+              ${
+                queryState?.isInitialQuery ||
+                queryState?.commits?.hasNextPage === true
+                  ? commitsQuery
+                  : ''
+              }
+              ${
+                queryState?.isInitialQuery ||
+                queryState?.reviews?.hasNextPage === true
+                  ? reviewsQuery
+                  : ''
+              }
+              ${
+                queryState?.isInitialQuery ||
+                queryState?.labels?.hasNextPage === true
+                  ? labelsQuery
+                  : ''
+              } 
             }
           }
           ...rateLimit
@@ -162,7 +180,7 @@ const iteratePullRequest: IteratePagination<QueryParams, PullRequest> = async (
 ) => {
   let finalResource: PullRequest | undefined = undefined;
   let queryCost = 0;
-  let queryState: QueryState | undefined = undefined;
+  let queryState: QueryState = { isInitialQuery: true };
   let paginationComplete = false;
 
   while (!paginationComplete) {

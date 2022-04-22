@@ -31,7 +31,6 @@ import {
   toPullRequestEntity,
 } from '../sync/converters';
 import { cloneDeep } from 'lodash';
-import { formatAndThrowGraphQlError } from '../util/formatAndThrowGraphQlError';
 
 export async function fetchPrs(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
@@ -177,39 +176,18 @@ export async function fetchPrs(
           },
         );
       } catch (error) {
-        // Handle both graphQl errors and rest errors
-        const errors = error[0] ? error : [error];
-        if (allErrorsAreNotFoundErrors(errors)) {
-          logger.warn(
-            {
-              error: JSON.stringify(error),
-              repoName: repoEntity.name,
-              repoKey: repoEntity._key,
-            },
-            'Received Not Found error(s) for pull requests for this repository. Skipping pull request ingestion for this repository.',
-          );
-        } else {
-          logger.error(
-            {
-              error: JSON.stringify(error),
-              repoName: repoEntity.name,
-              repoKey: repoEntity._key,
-            },
-            'Unable to process pull request entities due to error.',
-          );
-          formatAndThrowGraphQlError(error, 'iteratePullRequests');
-        }
+        logger.error(
+          {
+            errors: JSON.stringify(error),
+            repoName: repoEntity.name,
+            repoKey: repoEntity._key,
+          },
+          'Unable to process pull request entities due to error.',
+        );
+        throw error;
       }
     },
   );
-}
-
-function allErrorsAreNotFoundErrors(errors: any[]) {
-  return !errors.some((e) => !isNotFoundError(e));
-}
-
-function isNotFoundError(error: any) {
-  return error.type == 'NOT_FOUND' || error.Code == 404 || error.code == 404;
 }
 
 export const prSteps: IntegrationStep<IntegrationConfig>[] = [

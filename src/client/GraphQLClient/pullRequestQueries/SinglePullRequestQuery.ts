@@ -10,9 +10,9 @@ import {
 import { ExecutableQuery } from '../CreateQueryExecutor';
 
 interface QueryState extends BaseQueryState {
-  commits: CursorState;
-  reviews: CursorState;
-  labels: CursorState;
+  commits?: CursorState;
+  reviews?: CursorState;
+  labels?: CursorState;
 }
 
 type QueryParams = {
@@ -41,17 +41,17 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
         $repoOwner: String!
         $maxLimit: Int!
         ${
-          queryState?.commits.hasNextPage !== false
+          queryState?.commits?.hasNextPage !== false
             ? '$commitsCursor: String'
             : ''
         }
         ${
-          queryState?.reviews.hasNextPage !== false
+          queryState?.reviews?.hasNextPage !== false
             ? '$reviewsCursor: String'
             : ''
         }
         ${
-          queryState?.labels.hasNextPage !== false
+          queryState?.labels?.hasNextPage !== false
             ? '$labelsCursor: String'
             : ''
         }
@@ -59,9 +59,9 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
               ...pullRequestFields
-              ${queryState?.commits.hasNextPage !== false ? commitsQuery : ''}
-              ${queryState?.reviews.hasNextPage !== false ? reviewsQuery : ''}
-              ${queryState?.labels.hasNextPage !== false ? labelsQuery : ''} 
+              ${queryState?.commits?.hasNextPage !== false ? commitsQuery : ''}
+              ${queryState?.reviews?.hasNextPage !== false ? reviewsQuery : ''}
+              ${queryState?.labels?.hasNextPage !== false ? labelsQuery : ''} 
             }
           }
           ...rateLimit

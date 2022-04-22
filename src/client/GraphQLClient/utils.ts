@@ -5,9 +5,9 @@ const innerResourcePaginationRequired = (pullRequest): boolean => {
     return false;
   }
   return (
-    pullRequest.commits?.pageInfo.hasNextPage ||
-    pullRequest.reviews?.pageInfo.hasNextPage ||
-    pullRequest.labels?.pageInfo.hasNextPage
+    pullRequest.commits?.pageInfo?.hasNextPage ||
+    pullRequest.reviews?.pageInfo?.hasNextPage ||
+    pullRequest.labels?.pageInfo?.hasNextPage
   );
 };
 

@@ -11,11 +11,14 @@ import {
 describe('SinglePullRequestQuery', () => {
   describe('#buildQuery', () => {
     test('first query - no cursors', () => {
-      const executableQuery = buildQuery({
-        pullRequestNumber: 5,
-        repoName: 'musical-palm-tree',
-        repoOwner: 'J1-Test',
-      });
+      const executableQuery = buildQuery(
+        {
+          pullRequestNumber: 5,
+          repoName: 'musical-palm-tree',
+          repoOwner: 'J1-Test',
+        },
+        { isInitialQuery: true },
+      );
 
       expect(executableQuery).toMatchSnapshot();
     });
@@ -25,6 +28,33 @@ describe('SinglePullRequestQuery', () => {
         commits: { hasNextPage: false },
         reviews: { hasNextPage: false },
         labels: { hasNextPage: true, endCursor: 'labelsEndCursor' },
+      };
+
+      const executableQuery = buildQuery(
+        {
+          pullRequestNumber: 5,
+          repoName: 'musical-palm-tree',
+          repoOwner: 'J1-Test',
+        },
+        queryState,
+      );
+
+      expect(executableQuery).toMatchSnapshot();
+    });
+
+    test('followup query with partial cursors', () => {
+      // 'reviews' was not included in this followup query because
+      // there was nothing to paginate.
+      const queryState = {
+        commits: {
+          endCursor: 'MQ',
+          hasNextPage: false,
+        },
+        labels: {
+          endCursor: 'Y3Vyc2==',
+          hasNextPage: true,
+        },
+        reviews: undefined,
       };
 
       const executableQuery = buildQuery(

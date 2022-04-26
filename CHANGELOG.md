@@ -8,6 +8,18 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.12.0-beta.7 - 2022-04-22
+
+### Fixed
+
+- Added improve retry logic during timeouts.
+- Added enhanced debug logging. Set environment variable `LOG_LEVEL=trace` to
+  see.
+
+### Changes
+
+- Updated integration-sdk-\* packages to version 8.12.1
+
 ## 1.12.0-beta.6 - 2022-04-22
 
 ### Fixed

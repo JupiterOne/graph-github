@@ -73,7 +73,7 @@ export class GitHubGraphQLClient {
    */
   private graph: GraphQLClient;
 
-  private logger: IntegrationLogger;
+  private readonly logger: IntegrationLogger;
   private authClient: Octokit;
   private tokenExpires: number;
   private rateLimitStatus: {
@@ -349,19 +349,35 @@ export class GitHubGraphQLClient {
     );
   }
 
+  private readonly TIMEOUT_RETRY_ATTEMPTS = 3;
+
   /**
    *
    * @param queryString
    * @param queryVariables
+   * @param timeoutRetryAttempt
    * @private
    */
-  private async retryGraphQL(queryString: string, queryVariables) {
+  private async retryGraphQL(
+    queryString: string,
+    queryVariables,
+    timeoutRetryAttempt = 0,
+  ) {
     const { logger } = this;
 
     const queryWithPreRetryErrorHandling = async () => {
       try {
+        logger.debug(
+          { queryString, queryVariables, timeoutRetryAttempt },
+          'Attempting GraphQL request',
+        );
         return await this.graph(queryString)(queryVariables);
       } catch (err) {
+        logger.debug(
+          { queryString, queryVariables, timeoutRetryAttempt, err },
+          'GraphQL request failed.',
+        );
+
         // Add queryString & queryVariables to error.
         if (Array.isArray(err) && err.length > 0) {
           err[0].queryString = queryString;
@@ -387,29 +403,67 @@ export class GitHubGraphQLClient {
       }
     };
 
-    // Check https://github.com/lifeomic/attempt for options on retry
-    return await retry(queryWithPreRetryErrorHandling, {
-      maxAttempts: 3,
-      delay: 30_000, // 30 seconds to start
-      timeout: 180_000, // 3 min timeout. We need this in case Node hangs with ETIMEDOUT
-      factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min
-      handleError: async (error, attemptContext) => {
-        await retryErrorHandle(error, logger, attemptContext, () =>
-          this.refreshToken(),
-        );
+    try {
+      // Check https://github.com/lifeomic/attempt for options on retry
+      return await retry(queryWithPreRetryErrorHandling, {
+        maxAttempts: 3,
+        delay: 30_000, // 30 seconds to start
+        timeout: 180_000, // 3 min timeout. We need this in case Node hangs with ETIMEDOUT
+        factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min
+        handleError: async (error, attemptContext) => {
+          logger.debug('Error being handled in handleError.');
+          await retryErrorHandle(error, logger, attemptContext, () =>
+            this.refreshToken(),
+          );
 
-        if (attemptContext.aborted) {
-          logger.warn(
-            { attemptContext, error, queryString, queryVariables },
-            'Hit an unrecoverable error when attempting to query GraphQL. Aborting.',
-          );
-        } else {
-          logger.warn(
-            { attemptContext, error, queryString, queryVariables },
-            `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
-          );
-        }
-      },
-    });
+          if (attemptContext.aborted) {
+            logger.warn(
+              { attemptContext, error, queryString, queryVariables },
+              'Hit an unrecoverable error when attempting to query GraphQL. Aborting.',
+            );
+          } else {
+            logger.warn(
+              { attemptContext, error, queryString, queryVariables },
+              `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
+            );
+          }
+        },
+        handleTimeout: (attemptContext) => {
+          if (timeoutRetryAttempt < this.TIMEOUT_RETRY_ATTEMPTS) {
+            logger.warn(
+              {
+                attemptContext,
+                queryString,
+                queryVariables,
+                timeoutRetryAttempt,
+              },
+              'Hit a timeout, restarting request retry cycle.',
+            );
+
+            return this.retryGraphQL(
+              queryString,
+              queryVariables,
+              ++timeoutRetryAttempt,
+            );
+          } else {
+            logger.warn(
+              {
+                attemptContext,
+                queryString,
+                queryVariables,
+                timeoutRetryAttempt,
+              },
+              'Hit a timeout for the final time. Unable to collect data for this query.',
+            );
+            return {
+              rateLimit: {},
+            };
+          }
+        },
+      });
+    } catch (error) {
+      logger.error({ error }, 'An error occurred during the request logic.');
+      throw error;
+    }
   }
 }

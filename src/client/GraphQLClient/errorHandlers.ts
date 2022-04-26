@@ -85,7 +85,7 @@ export const retryErrorHandle = async (
     } else if (error.message?.includes('exceeded a secondary rate limit')) {
       logger.info(
         { attemptContext, error },
-        '"Secondary Rate Limit" message received.',
+        '"Secondary Rate Limit" message received. Waiting before retrying.',
       );
       await sleep(300_000);
     } else if (

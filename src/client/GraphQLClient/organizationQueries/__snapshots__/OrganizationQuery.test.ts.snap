@@ -18,7 +18,12 @@ Object {
         websiteUrl
         url
       }
-      ...rateLimit
+      rateLimit {
+        limit
+        cost
+        remaining
+        resetAt
+      }
     }",
   "queryVariables": Object {
     "login": "j1-test",

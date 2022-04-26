@@ -18,7 +18,12 @@ const buildQuery = (login: string): ExecutableQuery => {
         websiteUrl
         url
       }
-      ...rateLimit
+      rateLimit {
+        limit
+        cost
+        remaining
+        resetAt
+      }
     }`;
 
   return {

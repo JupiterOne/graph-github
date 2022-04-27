@@ -87,126 +87,70 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
 };
 
 const pullRequestFields = (isPublicRepo) => {
-  if (isPublicRepo) {
-    return `...on PullRequest {
-      additions
-      author {
-        ...${fragments.teamMemberFields}
-      }
-      authorAssociation
-      baseRefName
-      baseRefOid
-      baseRepository {
-        name
-        url
-        owner {
-          ...${fragments.repositoryOwnerFields}
-        }
-      }
-      body
-      changedFiles
-      checksUrl
-      closed
-      closedAt
-      # comments  # Maybe someday
-      createdAt
-      databaseId
-      deletions
-      editor {
-        ...${fragments.userFields}
-      }
-      # files # Maybe someday
-      headRefName
-      headRefOid
-      headRepository {
-        name
-        owner {
-          ...${fragments.repositoryOwnerFields}
-        }
-      }
-      id
-      isDraft
-      lastEditedAt
-      locked
-      mergeCommit {
-        ...${fragments.commitFields}
-      }
-      mergeable
-      merged
-      mergedAt
-      mergedBy {
-        ...${fragments.teamMemberFields}
-      }
-      number
-      permalink
-      publishedAt
-      reviewDecision
-      # reviewRequests  # Maybe someday
-      state
-      # suggestedReviewers  # Maybe someday
-      title
-      updatedAt
+  return `...on PullRequest {
+    additions
+    author {
+      ...${fragments.teamMemberFields}
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
       url
-    }`;
-  } else {
-    return `...on PullRequest {
-      additions
-      author {
-        ...${fragments.teamMemberFields}
+      owner {
+        ...${fragments.repositoryOwnerFields}
       }
-      authorAssociation
-      baseRefName
-      baseRefOid
-      baseRepository {
-        name
-        url
-        owner {
-          ...${fragments.repositoryOwnerFields}
-        }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...${fragments.userFields}
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...${fragments.repositoryOwnerFields}
       }
-      body
-      changedFiles
-      checksUrl
-      closed
-      closedAt
-      # comments  # Maybe someday
-      createdAt
-      databaseId
-      deletions
-      editor {
-        ...${fragments.userFields}
-      }
-      # files # Maybe someday
-      headRefName
-      headRefOid
-      headRepository {
-        name
-        owner {
-          ...${fragments.repositoryOwnerFields}
-        }
-      }
-      id
-      isDraft
-      lastEditedAt
-      locked
-      mergeable
-      merged
-      mergedAt
-      mergedBy {
-        ...${fragments.teamMemberFields}
-      }
-      number
-      permalink
-      publishedAt
-      reviewDecision
-      # reviewRequests  # Maybe someday
-      state
-      # suggestedReviewers  # Maybe someday
-      title
-      updatedAt
-      url
-    }`;
-  }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    ${
+      isPublicRepo
+        ? `mergeCommit {
+      ...${fragments.commitFields}
+    }`
+        : ''
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...${fragments.teamMemberFields}
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }`;
 };
 
 /**

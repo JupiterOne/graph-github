@@ -91,7 +91,7 @@ export class APIClient {
     const { rateLimit, organization } =
       await this.accountClient.fetchOrganization();
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Organization.',
     );
@@ -113,7 +113,7 @@ export class APIClient {
 
     const rateLimit = await this.accountClient.iterateOrgMembers(iteratee);
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Org Members.',
     );
@@ -133,7 +133,7 @@ export class APIClient {
 
     const rateLimit = await this.accountClient.iterateTeams(iteratee);
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Team Repositories.',
     );
@@ -158,7 +158,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Team Repositories.',
     );
@@ -182,7 +182,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Team Members.',
     );
@@ -331,7 +331,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.accountClient.iterateOrgRepositories(iteratee);
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Org Repositories.',
     );
@@ -359,7 +359,7 @@ export class APIClient {
       lastSuccessfulExecution,
       iteratee,
     );
-    logger.info(
+    logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Pull Requests.',
     );
@@ -384,7 +384,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Issues.',
     );
@@ -411,7 +411,7 @@ export class APIClient {
         lastSuccessfulExecution,
         iteratee,
       );
-      this.logger.info(
+      this.logger.debug(
         { rateLimit },
         'Rate limit consumed while fetching Issues.',
       );

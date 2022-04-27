@@ -1,4 +1,4 @@
-import { graphql as ocktokitGraphQl } from '@octokit/graphql';
+import { graphql as octokitGraphQl } from '@octokit/graphql';
 
 import {
   IntegrationLogger,
@@ -90,11 +90,11 @@ export class GitHubGraphQLClient {
     authClient: Octokit,
   ) {
     this.graphqlUrl = graphqlUrl;
-    this.graph = ocktokitGraphQl.defaults({
+    this.graph = octokitGraphQl.defaults({
       baseUrl: this.graphqlUrl,
       headers: {
         'User-Agent': 'jupiterone-graph-github',
-        authorization: `token ${token}`,
+        Authorization: `token ${token}`,
       },
     });
     this.tokenExpires = tokenExpires;
@@ -131,10 +131,10 @@ export class GitHubGraphQLClient {
         token: string;
         expiresAt: string;
       };
-      this.graph = ocktokitGraphQl.defaults({
+      this.graph = octokitGraphQl.defaults({
         headers: {
           'User-Agent': 'jupiterone-graph-github',
-          authorization: `token ${token}`,
+          Authorization: `token ${token}`,
         },
       });
       this.tokenExpires = parseTimePropertyValue(expiresAt) || 0;

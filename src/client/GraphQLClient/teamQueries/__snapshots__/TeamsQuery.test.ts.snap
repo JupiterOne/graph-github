@@ -9,7 +9,16 @@ exports[`TeamMembersQuery pagination of teams 1`] = `
           edges {
             node {
               id
-              ...teamFields
+              ...on Team {
+    name
+    url
+    slug    
+    createdAt
+    updatedAt
+    databaseId
+    description
+    privacy
+  }
             }
           }
           pageInfo {
@@ -18,6 +27,13 @@ exports[`TeamMembersQuery pagination of teams 1`] = `
           }
         }
       }
-      ...rateLimit
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
     }"
 `;

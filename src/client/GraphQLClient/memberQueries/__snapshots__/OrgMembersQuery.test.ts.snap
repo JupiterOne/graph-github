@@ -9,9 +9,25 @@ exports[`OrgMemberQuery pagination of org members 1`] = `
           edges {
             node {
               id
-              ...userFields
+              ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
             }
-            ...userEdgeFields
+            ...on OrganizationMemberEdge {
+    hasTwoFactorEnabled
+    role
+  }
           }
           pageInfo {
             endCursor
@@ -19,6 +35,13 @@ exports[`OrgMemberQuery pagination of org members 1`] = `
           }
         }
       }
-      ...rateLimit
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
     }"
 `;

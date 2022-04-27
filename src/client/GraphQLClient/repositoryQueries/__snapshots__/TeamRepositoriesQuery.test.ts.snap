@@ -29,6 +29,13 @@ exports[`TeamRepositoriesQuery pagination of team repos 1`] = `
               }
             }
           }
-          ...rateLimit
+          ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
         }"
 `;

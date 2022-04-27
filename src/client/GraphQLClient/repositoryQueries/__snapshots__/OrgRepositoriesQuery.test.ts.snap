@@ -8,7 +8,36 @@ exports[`OrgRepositoriesQuery pagination of org repos 1`] = `
           repositories(first: $maxLimit, after: $repoCursor) {
             nodes {
               id
-					    ...repositoryFields
+					    ...on Repository {
+    name
+    nameWithOwner
+    url
+    isPrivate
+    isArchived
+    createdAt
+    updatedAt
+    autoMergeAllowed
+    databaseId
+    deleteBranchOnMerge
+    description
+    forkCount
+    forkingAllowed
+    homepageUrl
+    isDisabled
+    isEmpty
+    isFork
+    isInOrganization
+    isLocked
+    isMirror
+    isSecurityPolicyEnabled
+    isTemplate
+    isUserConfigurationRepository
+    lockReason
+    mergeCommitAllowed
+    pushedAt
+    rebaseMergeAllowed
+    url
+  }
             }
             pageInfo {
               endCursor
@@ -16,6 +45,13 @@ exports[`OrgRepositoriesQuery pagination of org repos 1`] = `
             }
           }
         }
-        ...rateLimit
+        ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }"
 `;

@@ -87,7 +87,43 @@ Object {
           issueCount
           edges {
             node {
-            ...issueFields
+            ... on Issue {
+    id
+    activeLockReason
+    author {
+      ...on User {
+        name
+        login
+      }
+    }
+    authorAssociation
+    body
+    # bodyHTML
+    # bodyResourcePath
+    bodyText
+    bodyUrl
+    closed # boolean 
+    closedAt
+    # comments # probably a child object if we want these
+    createdAt
+    createdViaEmail # boolean
+    databaseId
+    isPinned # boolean
+    lastEditedAt
+    locked # boolean
+    # milestone # a Milestone object, could put the fields in-line like author
+    number
+    # participants # Participants objects
+    # projectCards # ProjectCardConnection!
+    publishedAt
+    # reactionGroups # : [ReactionGroup!]
+    resourcePath
+    state
+    title
+    titleHTML
+    updatedAt
+    url
+  }
             
             ... on Issue {
                 assignees(first: $maxInnerLimit) {
@@ -123,7 +159,14 @@ Object {
             hasNextPage
           }
         }
-        ...rateLimit
+        ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
     }",
   "queryVariables": Object {
     "issueQuery": "is:issue repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
@@ -151,7 +194,43 @@ Object {
           issueCount
           edges {
             node {
-            ...issueFields
+            ... on Issue {
+    id
+    activeLockReason
+    author {
+      ...on User {
+        name
+        login
+      }
+    }
+    authorAssociation
+    body
+    # bodyHTML
+    # bodyResourcePath
+    bodyText
+    bodyUrl
+    closed # boolean 
+    closedAt
+    # comments # probably a child object if we want these
+    createdAt
+    createdViaEmail # boolean
+    databaseId
+    isPinned # boolean
+    lastEditedAt
+    locked # boolean
+    # milestone # a Milestone object, could put the fields in-line like author
+    number
+    # participants # Participants objects
+    # projectCards # ProjectCardConnection!
+    publishedAt
+    # reactionGroups # : [ReactionGroup!]
+    resourcePath
+    state
+    title
+    titleHTML
+    updatedAt
+    url
+  }
             
             ... on Issue {
                 assignees(first: $maxInnerLimit) {
@@ -187,7 +266,14 @@ Object {
             hasNextPage
           }
         }
-        ...rateLimit
+        ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
     }",
   "queryVariables": Object {
     "issueQuery": "is:issue repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",

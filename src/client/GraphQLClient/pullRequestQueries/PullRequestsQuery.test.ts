@@ -24,6 +24,18 @@ describe('PullRequestsQuery', () => {
       expect(executableQuery).toMatchSnapshot();
     });
 
+    test('first private query - no query state', () => {
+      // Act
+      const executableQuery = buildQuery({
+        fullName: 'J1-Test/musical-palm-tree',
+        public: false,
+        lastExecutionTime: '2011-10-05T14:48:00.000Z',
+      });
+
+      // Assert
+      expect(executableQuery).toMatchSnapshot();
+    });
+
     test('query with query state', () => {
       // Arrange
       const queryState = {

@@ -63,9 +63,15 @@ export class APIClient {
     this.restApiUrl = config.githubApiBaseUrl.includes('api.github.com')
       ? config.githubApiBaseUrl
       : `${config.githubApiBaseUrl}/api/v3`;
+    // More info on baseUrl here: https://github.com/octokit/graphql.js/#use-with-github-enterprise
     this.graphqlUrl = config.githubApiBaseUrl.includes('api.github.com')
-      ? `${config.githubApiBaseUrl}/graphql`
-      : `${config.githubApiBaseUrl}/api/graphql`;
+      ? config.githubApiBaseUrl
+      : `${config.githubApiBaseUrl}/api`;
+
+    this.logger.debug(
+      { graphqlBaseUrl: this.graphqlUrl },
+      'GraphQL client base URL.',
+    );
   }
 
   public async verifyAuthentication(): Promise<void> {

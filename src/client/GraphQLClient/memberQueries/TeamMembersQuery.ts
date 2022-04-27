@@ -9,6 +9,7 @@ import {
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import paginate from '../paginate';
 import utils from '../utils';
+import fragments from '../fragments';
 
 interface QueryState extends BaseQueryState {
   members: CursorState;
@@ -35,9 +36,9 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
             edges {
               node {
                 id
-              ...teamMemberFields
+                ...${fragments.teamMemberFields}
               }
-            ...teamMemberEdgeFields
+              ...${fragments.teamMemberEdgeFields}
             }
             pageInfo {
               endCursor
@@ -46,7 +47,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
           }
         }
       }
-    ...rateLimit
+      ...${fragments.rateLimit}
     }`;
 
   return {

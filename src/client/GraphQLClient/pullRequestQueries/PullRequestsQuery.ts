@@ -12,6 +12,7 @@ import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import SinglePullRequestQuery from './SinglePullRequestQuery';
 import { MAX_SEARCH_LIMIT } from '../paginate';
+import fragments from '../fragments';
 
 interface QueryState extends BaseQueryState {
   pullRequests: CursorState;
@@ -55,11 +56,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
           issueCount
           edges {
             node {
-              ${
-                queryParams.public
-                  ? '...pullRequestFields'
-                  : '...privateRepoPullRequestFields'
-              }
+              ${pullRequestFields(queryParams.public)}
               ${commitsQuery(queryParams.public)}
               ${reviewsQuery(queryParams.public)}
               ${labelsQuery} 
@@ -70,7 +67,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
             hasNextPage
           }
         }
-        ...rateLimit
+        ...${fragments.rateLimit}
       }`;
 
   return {
@@ -89,6 +86,129 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
+const pullRequestFields = (isPublicRepo) => {
+  if (isPublicRepo) {
+    return `...on PullRequest {
+      additions
+      author {
+        ...${fragments.teamMemberFields}
+      }
+      authorAssociation
+      baseRefName
+      baseRefOid
+      baseRepository {
+        name
+        url
+        owner {
+          ...${fragments.repositoryOwnerFields}
+        }
+      }
+      body
+      changedFiles
+      checksUrl
+      closed
+      closedAt
+      # comments  # Maybe someday
+      createdAt
+      databaseId
+      deletions
+      editor {
+        ...${fragments.userFields}
+      }
+      # files # Maybe someday
+      headRefName
+      headRefOid
+      headRepository {
+        name
+        owner {
+          ...${fragments.repositoryOwnerFields}
+        }
+      }
+      id
+      isDraft
+      lastEditedAt
+      locked
+      mergeCommit {
+        ...${fragments.commitFields}
+      }
+      mergeable
+      merged
+      mergedAt
+      mergedBy {
+        ...${fragments.teamMemberFields}
+      }
+      number
+      permalink
+      publishedAt
+      reviewDecision
+      # reviewRequests  # Maybe someday
+      state
+      # suggestedReviewers  # Maybe someday
+      title
+      updatedAt
+      url
+    }`;
+  } else {
+    return `...on PullRequest {
+      additions
+      author {
+        ...${fragments.teamMemberFields}
+      }
+      authorAssociation
+      baseRefName
+      baseRefOid
+      baseRepository {
+        name
+        url
+        owner {
+          ...${fragments.repositoryOwnerFields}
+        }
+      }
+      body
+      changedFiles
+      checksUrl
+      closed
+      closedAt
+      # comments  # Maybe someday
+      createdAt
+      databaseId
+      deletions
+      editor {
+        ...${fragments.userFields}
+      }
+      # files # Maybe someday
+      headRefName
+      headRefOid
+      headRepository {
+        name
+        owner {
+          ...${fragments.repositoryOwnerFields}
+        }
+      }
+      id
+      isDraft
+      lastEditedAt
+      locked
+      mergeable
+      merged
+      mergedAt
+      mergedBy {
+        ...${fragments.teamMemberFields}
+      }
+      number
+      permalink
+      publishedAt
+      reviewDecision
+      # reviewRequests  # Maybe someday
+      state
+      # suggestedReviewers  # Maybe someday
+      title
+      updatedAt
+      url
+    }`;
+  }
+};
+
 /**
  * Builds commits sub-query if repo is public.
  * @param isPublic
@@ -104,7 +224,7 @@ const commitsQuery = (isPublic) => {
         totalCount
         nodes {
           commit {
-            ...commitFields
+            ...${fragments.commitFields}
           }
         }
         pageInfo {
@@ -125,7 +245,11 @@ const reviewsQuery = (isPublic) => {
       reviews(first: $maxLimit) {
         totalCount
         nodes {
-          ${isPublic ? '...reviewFields' : '...privateRepoPRReviewFields'}
+          ${
+            isPublic
+              ? `...${fragments.reviewFields}`
+              : `...${fragments.privateRepoPRReviewFields}`
+          }
         }
         pageInfo {
           endCursor

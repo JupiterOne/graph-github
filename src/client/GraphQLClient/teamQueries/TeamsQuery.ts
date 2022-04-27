@@ -9,6 +9,7 @@ import {
 import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 import utils from '../utils';
+import fragments from '../fragments';
 
 interface QueryState extends BaseQueryState {
   teams: CursorState;
@@ -23,7 +24,7 @@ const buildQuery: BuildQuery<string, QueryState> = (login, queryState) => {
           edges {
             node {
               id
-              ...teamFields
+              ...${fragments.teamFields}
             }
           }
           pageInfo {
@@ -32,7 +33,7 @@ const buildQuery: BuildQuery<string, QueryState> = (login, queryState) => {
           }
         }
       }
-      ...rateLimit
+      ...${fragments.rateLimit}
     }`;
 
   return {

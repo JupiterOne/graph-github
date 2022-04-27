@@ -1,5 +1,6 @@
 import { ExecutableQuery, QueryExecutor } from '../CreateQueryExecutor';
 import { OrgQueryResponse, RateLimitStepSummary } from '../types';
+import fragments from '../fragments';
 
 const buildQuery = (login: string): ExecutableQuery => {
   const query = `
@@ -18,12 +19,7 @@ const buildQuery = (login: string): ExecutableQuery => {
         websiteUrl
         url
       }
-      rateLimit {
-        limit
-        cost
-        remaining
-        resetAt
-      }
+      ...${fragments.rateLimit}
     }`;
 
   return {

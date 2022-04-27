@@ -13,7 +13,7 @@ export default function createGitHubAppClient(
   restApiBaseUrl: string,
   config: IntegrationConfig,
   logger: IntegrationLogger,
-) {
+): Octokit {
   const appId = config.githubAppId;
   const installationId = config.installationId;
   const privateKey = config.githubAppPrivateKey;
@@ -34,7 +34,7 @@ export default function createGitHubAppClient(
    * The auth hook also authenticates requests, manages cached JWTs and tokens,
    * and authenticates using the installation ID passed to createAppAuth.
    */
-  const v3 = new OctokitThrottling({
+  return new OctokitThrottling({
     userAgent: 'jupiter-integration-github',
     baseUrl: restApiBaseUrl,
     authStrategy: createAppAuth,
@@ -64,6 +64,4 @@ export default function createGitHubAppClient(
       },
     },
   });
-
-  return v3;
 }

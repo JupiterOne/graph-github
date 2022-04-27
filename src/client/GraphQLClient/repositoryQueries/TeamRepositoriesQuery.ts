@@ -10,6 +10,7 @@ import {
 import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 import utils from '../utils';
+import fragments from '../fragments';
 
 interface QueryState extends BaseQueryState {
   teamRepos?: CursorState;
@@ -56,7 +57,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
               }
             }
           }
-          ...rateLimit
+          ...${fragments.rateLimit}
         }`;
 
   return {

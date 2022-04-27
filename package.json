@@ -28,12 +28,12 @@
   },
   "dependencies": {
     "@octokit/auth-app": "^3.6.0",
-    "@octokit/core": "^3.5.1",
+    "@octokit/core": "^3.6.0",
+    "@octokit/graphql": "^4.8.0",
     "@octokit/plugin-retry": "^3.0.9",
-    "@octokit/plugin-throttling": "^3.5.2",
-    "@octokit/request": "^5.6.1",
-    "@octokit/rest": "^18.11.4",
-    "graphql.js": "^0.6.8"
+    "@octokit/plugin-throttling": "^3.6.2",
+    "@octokit/request": "^5.6.3",
+    "@octokit/rest": "^18.12.0"
   },
   "peerDependencies": {
     "@jupiterone/integration-sdk-core": "^8.12.1"
@@ -42,11 +42,6 @@
     "@jupiterone/integration-sdk-core": "^8.12.1",
     "@jupiterone/integration-sdk-dev-tools": "^8.12.1",
     "@jupiterone/integration-sdk-testing": "^8.12.1",
-    "@octokit/auth-app": "^3.6.0",
-    "@octokit/core": "^3.5.1",
-    "@octokit/plugin-retry": "^3.0.9",
-    "@octokit/plugin-throttling": "^3.5.2",
-    "@octokit/rest": "^18.11.4",
     "@types/lodash.omit": "^4.5.6"
   }
 }

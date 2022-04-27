@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PullRequestsQuery #buildQuery first query - no query state 1`] = `
+exports[`PullRequestsQuery #buildQuery first private query - no query state 1`] = `
 Object {
   "query": "
       query (
@@ -13,28 +13,110 @@ Object {
           issueCount
           edges {
             node {
-              ...pullRequestFields
-              
-    ... on PullRequest {
-      commits(first: $maxLimit) {
-        totalCount
-        nodes {
-          commit {
-            ...commitFields
-          }
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
+              ...on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
       }
     }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
+              
               
     ... on PullRequest {
       reviews(first: $maxLimit) {
         totalCount
         nodes {
-          ...reviewFields
+          ...on PullRequestReview {
+    id
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }
         }
         pageInfo {
           endCursor
@@ -63,7 +145,221 @@ Object {
             hasNextPage
           }
         }
-        ...rateLimit
+        ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
+      }",
+  "queryVariables": Object {
+    "issueQuery": "is:pr repo:J1-Test/musical-palm-tree updated:>=2011-10-05T14:48:00.000Z",
+    "maxLimit": 100,
+    "maxSearchLimit": 25,
+  },
+}
+`;
+
+exports[`PullRequestsQuery #buildQuery first query - no query state 1`] = `
+Object {
+  "query": "
+      query (
+        $issueQuery: String!, 
+        $maxSearchLimit: Int!,
+        $maxLimit: Int!,
+        $pullRequestsCursor: String
+      ) {
+        search(first: $maxSearchLimit, after: $pullRequestsCursor, type: ISSUE, query: $issueQuery) {
+          issueCount
+          edges {
+            node {
+              ...on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
+              
+    ... on PullRequest {
+      commits(first: $maxLimit) {
+        totalCount
+        nodes {
+          commit {
+            ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+              
+    ... on PullRequest {
+      reviews(first: $maxLimit) {
+        totalCount
+        nodes {
+          ...on PullRequestReview {
+    id
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+              
+  ... on PullRequest {
+    labels(first: $maxLimit) {
+      totalCount
+      nodes {
+        id
+        name
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  } 
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "issueQuery": "is:pr repo:J1-Test/musical-palm-tree updated:>=2011-10-05T14:48:00.000Z",
@@ -86,14 +382,126 @@ Object {
           issueCount
           edges {
             node {
-              ...pullRequestFields
+              ...on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
               
     ... on PullRequest {
       commits(first: $maxLimit) {
         totalCount
         nodes {
           commit {
-            ...commitFields
+            ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
           }
         }
         pageInfo {
@@ -107,7 +515,22 @@ Object {
       reviews(first: $maxLimit) {
         totalCount
         nodes {
-          ...reviewFields
+          ...on PullRequestReview {
+    id
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }
         }
         pageInfo {
           endCursor
@@ -136,7 +559,14 @@ Object {
             hasNextPage
           }
         }
-        ...rateLimit
+        ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "issueQuery": "is:pr repo:J1-Test/musical-palm-tree updated:>=2011-10-05T14:48:00.000Z",
@@ -201,14 +631,126 @@ Object {
           issueCount
           edges {
             node {
-              ...pullRequestFields
+              ...on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
               
     ... on PullRequest {
       commits(first: $maxLimit) {
         totalCount
         nodes {
           commit {
-            ...commitFields
+            ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
           }
         }
         pageInfo {
@@ -222,7 +764,22 @@ Object {
       reviews(first: $maxLimit) {
         totalCount
         nodes {
-          ...reviewFields
+          ...on PullRequestReview {
+    id
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }
         }
         pageInfo {
           endCursor
@@ -251,7 +808,14 @@ Object {
             hasNextPage
           }
         }
-        ...rateLimit
+        ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "issueQuery": "is:pr repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
@@ -275,13 +839,126 @@ Object {
       ) {
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
-              ...pullRequestFields
+              ...
+  on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
               
     commits(first: $maxLimit, after: $commitsCursor) {
       totalCount
       nodes {
         commit {
-          ...commitFields
+          ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
         }
       }
       
@@ -294,7 +971,22 @@ Object {
     reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
-        ...reviewFields
+        ...on PullRequestReview {
+    id
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }
       }
       pageInfo {
         endCursor
@@ -315,7 +1007,14 @@ Object {
     } 
             }
           }
-          ...rateLimit
+          ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "maxLimit": 100,
@@ -340,13 +1039,128 @@ Object {
       ) {
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
-              ...pullRequestFields
+              ...
+  on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
               
               
     reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
-        ...reviewFields
+        ...on PullRequestReview {
+    id
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }
       }
       pageInfo {
         endCursor
@@ -367,7 +1181,14 @@ Object {
     } 
             }
           }
-          ...rateLimit
+          ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "labelsCursor": "Y3Vyc2==",
@@ -438,14 +1259,126 @@ Object {
           issueCount
           edges {
             node {
-              ...pullRequestFields
+              ...on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
               
     ... on PullRequest {
       commits(first: $maxLimit) {
         totalCount
         nodes {
           commit {
-            ...commitFields
+            ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
           }
         }
         pageInfo {
@@ -459,7 +1392,22 @@ Object {
       reviews(first: $maxLimit) {
         totalCount
         nodes {
-          ...reviewFields
+          ...on PullRequestReview {
+    id
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }
         }
         pageInfo {
           endCursor
@@ -488,7 +1436,14 @@ Object {
             hasNextPage
           }
         }
-        ...rateLimit
+        ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "issueQuery": "is:pr repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
@@ -511,14 +1466,126 @@ Object {
           issueCount
           edges {
             node {
-              ...pullRequestFields
+              ...on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
               
     ... on PullRequest {
       commits(first: $maxLimit) {
         totalCount
         nodes {
           commit {
-            ...commitFields
+            ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
           }
         }
         pageInfo {
@@ -532,7 +1599,22 @@ Object {
       reviews(first: $maxLimit) {
         totalCount
         nodes {
-          ...reviewFields
+          ...on PullRequestReview {
+    id
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }
         }
         pageInfo {
           endCursor
@@ -561,7 +1643,14 @@ Object {
             hasNextPage
           }
         }
-        ...rateLimit
+        ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "issueQuery": "is:pr repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",

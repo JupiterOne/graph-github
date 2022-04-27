@@ -9,6 +9,7 @@ import {
 } from '../types';
 import paginate from '../paginate';
 import utils from '../utils';
+import fragments from '../fragments';
 
 interface QueryState extends BaseQueryState {
   repos: CursorState;
@@ -33,7 +34,7 @@ const buildQuery: BuildQuery<string, QueryState> = (
           repositories(first: $maxLimit, after: $repoCursor) {
             nodes {
               id
-					    ...repositoryFields
+					    ...${fragments.repositoryFields}
             }
             pageInfo {
               endCursor
@@ -41,7 +42,7 @@ const buildQuery: BuildQuery<string, QueryState> = (
             }
           }
         }
-        ...rateLimit
+        ...${fragments.rateLimit}
       }`;
 
   return {

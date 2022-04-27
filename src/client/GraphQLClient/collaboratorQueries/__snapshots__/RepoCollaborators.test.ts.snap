@@ -51,7 +51,14 @@ Object {
           }
         }
       }
-      ...rateLimit
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
     }",
   "queryVariables": Object {
     "login": "J1-Test",
@@ -82,7 +89,14 @@ Object {
           }
         }
       }
-      ...rateLimit
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
     }",
   "queryVariables": Object {
     "collaboratorCursor": "more2come==",

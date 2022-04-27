@@ -1,4 +1,4 @@
-import graphql, { GraphQLClient } from 'graphql.js';
+import { graphql as octokitGraphQl } from '@octokit/graphql';
 
 import {
   IntegrationLogger,
@@ -9,7 +9,6 @@ import { retry } from '@lifeomic/attempt';
 import { Octokit } from '@octokit/rest';
 
 import { ResourceIteratee } from '../../client';
-import fragments from './fragments';
 
 import {
   Collaborator,
@@ -39,6 +38,7 @@ import {
   handleNotFoundErrors,
   retryErrorHandle,
 } from './errorHandlers';
+import { graphql } from '@octokit/graphql/dist-types/types';
 
 const FIVE_MINUTES_IN_MILLIS = 300000;
 
@@ -71,7 +71,7 @@ export class GitHubGraphQLClient {
    *    ...
    *  ]
    */
-  private graph: GraphQLClient;
+  private graph: graphql;
 
   private readonly logger: IntegrationLogger;
   private authClient: Octokit;
@@ -90,14 +90,13 @@ export class GitHubGraphQLClient {
     authClient: Octokit,
   ) {
     this.graphqlUrl = graphqlUrl;
-    this.graph = graphql(this.graphqlUrl, {
+    this.graph = octokitGraphQl.defaults({
+      baseUrl: this.graphqlUrl,
       headers: {
         'User-Agent': 'jupiterone-graph-github',
         Authorization: `token ${token}`,
       },
-      asJSON: true,
     });
-    this.graph.fragment(fragments);
     this.tokenExpires = tokenExpires;
     this.logger = logger;
     this.authClient = authClient;
@@ -132,14 +131,12 @@ export class GitHubGraphQLClient {
         token: string;
         expiresAt: string;
       };
-      this.graph = graphql(this.graphqlUrl, {
+      this.graph = octokitGraphQl.defaults({
         headers: {
           'User-Agent': 'jupiterone-graph-github',
           Authorization: `token ${token}`,
         },
-        asJSON: true,
       });
-      this.graph.fragment(fragments);
       this.tokenExpires = parseTimePropertyValue(expiresAt) || 0;
     } catch (err) {
       this.logger.error(err);
@@ -371,7 +368,7 @@ export class GitHubGraphQLClient {
           { queryString, queryVariables, timeoutRetryAttempt },
           'Attempting GraphQL request',
         );
-        return await this.graph(queryString)(queryVariables);
+        return await this.graph(queryString, queryVariables);
       } catch (err) {
         logger.debug(
           { queryString, queryVariables, timeoutRetryAttempt, err },

@@ -8,6 +8,7 @@ import {
   PullRequest,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
+import fragments from '../fragments';
 
 interface QueryState extends BaseQueryState {
   isInitialQuery?: true;
@@ -61,7 +62,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
       ) {
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
-              ...pullRequestFields
+              ...${pullRequestFields}
               ${
                 queryState?.isInitialQuery ||
                 queryState?.commits?.hasNextPage === true
@@ -82,7 +83,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
               } 
             }
           }
-          ...rateLimit
+          ...${fragments.rateLimit}
       }`;
 
   return {
@@ -108,12 +109,74 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
+const pullRequestFields = `
+  on PullRequest {
+    additions
+    author {
+      ...${fragments.teamMemberFields}
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...${fragments.repositoryOwnerFields}
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...${fragments.userFields}
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...${fragments.repositoryOwnerFields}
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...${fragments.commitFields}
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...${fragments.teamMemberFields}
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }`;
+
 const commitsQuery = `
     commits(first: $maxLimit, after: $commitsCursor) {
       totalCount
       nodes {
         commit {
-          ...commitFields
+          ...${fragments.commitFields}
         }
       }
       
@@ -127,7 +190,7 @@ const reviewsQuery = `
     reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
-        ...reviewFields
+        ...${fragments.reviewFields}
       }
       pageInfo {
         endCursor

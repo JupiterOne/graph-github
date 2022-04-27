@@ -11,9 +11,14 @@ exports[`TeamMemberQuery pagination of team members 1`] = `
             edges {
               node {
                 id
-              ...teamMemberFields
+                ...on User {
+    name
+    login
+  }
               }
-            ...teamMemberEdgeFields
+              ...on TeamMemberEdge {
+    role
+  }
             }
             pageInfo {
               endCursor
@@ -22,6 +27,13 @@ exports[`TeamMemberQuery pagination of team members 1`] = `
           }
         }
       }
-    ...rateLimit
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
     }"
 `;

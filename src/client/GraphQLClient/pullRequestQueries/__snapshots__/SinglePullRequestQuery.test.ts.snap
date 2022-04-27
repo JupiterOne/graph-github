@@ -14,13 +14,126 @@ Object {
       ) {
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
-              ...pullRequestFields
+              ...
+  on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
               
     commits(first: $maxLimit, after: $commitsCursor) {
       totalCount
       nodes {
         commit {
-          ...commitFields
+          ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
         }
       }
       
@@ -33,7 +146,22 @@ Object {
     reviews(first: $maxLimit, after: $reviewsCursor) {
       totalCount
       nodes {
-        ...reviewFields
+        ...on PullRequestReview {
+    id
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+    submittedAt
+    updatedAt
+    url
+  }
       }
       pageInfo {
         endCursor
@@ -54,7 +182,14 @@ Object {
     } 
             }
           }
-          ...rateLimit
+          ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "maxLimit": 100,
@@ -79,7 +214,107 @@ Object {
       ) {
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
-              ...pullRequestFields
+              ...
+  on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
               
               
               
@@ -96,7 +331,14 @@ Object {
     } 
             }
           }
-          ...rateLimit
+          ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "labelsCursor": "labelsEndCursor",
@@ -122,7 +364,107 @@ Object {
       ) {
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
-              ...pullRequestFields
+              ...
+  on PullRequest {
+    additions
+    author {
+      ...on User {
+    name
+    login
+  }
+    }
+    authorAssociation
+    baseRefName
+    baseRefOid
+    baseRepository {
+      name
+      url
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    body
+    changedFiles
+    checksUrl
+    closed
+    closedAt
+    # comments  # Maybe someday
+    createdAt
+    databaseId
+    deletions
+    editor {
+      ...on User {
+    login
+    name
+    isSiteAdmin
+    company
+    createdAt
+    databaseId
+    email
+    isEmployee
+    location
+    updatedAt
+    url
+    websiteUrl
+  }
+    }
+    # files # Maybe someday
+    headRefName
+    headRefOid
+    headRepository {
+      name
+      owner {
+        ...on RepositoryOwner {
+    login
+    id
+    url
+  }
+      }
+    }
+    id
+    isDraft
+    lastEditedAt
+    locked
+    mergeCommit {
+      ...on Commit {
+    id
+    oid
+    message
+    authoredDate
+    changedFiles
+    commitUrl
+    author {
+      date
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+    }
+    mergeable
+    merged
+    mergedAt
+    mergedBy {
+      ...on User {
+    name
+    login
+  }
+    }
+    number
+    permalink
+    publishedAt
+    reviewDecision
+    # reviewRequests  # Maybe someday
+    state
+    # suggestedReviewers  # Maybe someday
+    title
+    updatedAt
+    url
+  }
               
               
               
@@ -139,7 +481,14 @@ Object {
     } 
             }
           }
-          ...rateLimit
+          ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
       }",
   "queryVariables": Object {
     "labelsCursor": "Y3Vyc2==",

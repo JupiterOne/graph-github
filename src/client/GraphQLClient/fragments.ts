@@ -120,7 +120,10 @@ export default {
       oid
     }
     author {
-      ...teamMemberFields # this used to be ...userFields
+      ...on User {
+          name
+          login
+        }
     }
     state
     submittedAt
@@ -130,7 +133,10 @@ export default {
   privateRepoPRReviewFields: `on PullRequestReview {
     id
     author {
-      ...teamMemberFields # this used to be ...userFields
+      ...on User {
+          name
+          login
+        }
     }
     state
     submittedAt
@@ -140,7 +146,10 @@ export default {
   pullRequestFields: `on PullRequest {
     additions
     author {
-      ...teamMemberFields # this used to be ...userFields
+      ...on User {
+        name
+        login
+      }
     }
     authorAssociation
     baseRefName
@@ -258,7 +267,10 @@ export default {
     id
     activeLockReason
     author {
-      ...teamMemberFields
+      ...on User {
+        name
+        login
+      }
     }
     authorAssociation
     body

@@ -9,6 +9,7 @@ import {
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import paginate, { MAX_REQUESTS_LIMIT, MAX_SEARCH_LIMIT } from '../paginate';
 import utils from '../utils';
+import fragments from '../fragments';
 
 interface QueryState extends BaseQueryState {
   issues: CursorState;
@@ -49,7 +50,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
           issueCount
           edges {
             node {
-            ...issueFields
+            ... ${fragments.issueFields}
             
             ... on Issue {
                 assignees(first: $maxInnerLimit) {
@@ -85,7 +86,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
             hasNextPage
           }
         }
-        ...rateLimit
+        ...${fragments.rateLimit}
     }`;
 
   return {

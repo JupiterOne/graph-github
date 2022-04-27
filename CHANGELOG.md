@@ -8,6 +8,14 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.12.0-beta.8 - 2022-04-27
+
+### Changes
+
+- Moved to @octokit/graphql.js as our client to improve error handling.
+- Updated @octokit/\* packages and removed redundant packages from
+  `devDependencies`.
+
 ## 1.12.0-beta.7 - 2022-04-22
 
 ### Fixed

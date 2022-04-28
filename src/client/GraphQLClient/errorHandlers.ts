@@ -3,6 +3,13 @@ import { AttemptContext, sleep } from '@lifeomic/attempt';
 import { GraphQlQueryResponse } from '@octokit/graphql/dist-types/types';
 import { GraphqlResponseError } from '@octokit/graphql';
 
+/**
+ * If the errors are all the same specified type, ignore them.
+ * @param errors
+ * @param logger
+ * @param type
+ * @return boolean
+ */
 const handleTypeErrors = (
   errors: GraphQlQueryResponse<never>['errors'],
   logger,

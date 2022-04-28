@@ -8,6 +8,14 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.12.0-beta.9 - 2022-04-28
+
+### Fixed
+
+- Updated error handling to match new @octokit/graphql.js error structure.
+- Updated README for GraphQL client.
+- Errors now return partial data responses when possible.
+
 ## 1.12.0-beta.8 - 2022-04-27
 
 ### Changes

@@ -33,4 +33,48 @@ describe('utils', () => {
       }),
     ).toBeTruthy();
   });
+
+  test('responseToResource', () => {
+    expect(
+      utils.responseToResource({
+        id: 'PR_asdf',
+        commits: {
+          totalCount: 11,
+          nodes: [null, null, null, null, null, { commit: { asdf: 'commit' } }],
+          pageInfo: {
+            endCursor: 'MTE',
+            hasNextPage: false,
+          },
+        },
+        reviews: {
+          totalCount: 117,
+          nodes: [
+            null,
+            undefined,
+            {
+              id: 'asdf',
+              commit: null,
+              author: {},
+              state: 'COMMENTED',
+              submittedAt: '2000-04-19T04:33:08Z',
+              updatedAt: '2000-04-19T04:33:08Z',
+              url: 'https://github.com/',
+            },
+          ],
+          pageInfo: {
+            endCursor: 'asdf333',
+            hasNextPage: true,
+          },
+        },
+        labels: {
+          totalCount: 2,
+          nodes: [null, { asdf: 'label' }],
+          pageInfo: {
+            endCursor: null,
+            hasNextPage: false,
+          },
+        },
+      }),
+    ).toMatchSnapshot();
+  });
 });

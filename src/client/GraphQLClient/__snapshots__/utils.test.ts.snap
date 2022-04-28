@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`utils responseToResource 1`] = `
+Object {
+  "commits": Array [
+    Object {
+      "asdf": "commit",
+    },
+  ],
+  "id": "PR_asdf",
+  "labels": Array [
+    Object {
+      "asdf": "label",
+    },
+  ],
+  "reviews": Array [
+    Object {
+      "author": Object {},
+      "commit": null,
+      "id": "asdf",
+      "state": "COMMENTED",
+      "submittedAt": "2000-04-19T04:33:08Z",
+      "updatedAt": "2000-04-19T04:33:08Z",
+      "url": "https://github.com/",
+    },
+  ],
+}
+`;

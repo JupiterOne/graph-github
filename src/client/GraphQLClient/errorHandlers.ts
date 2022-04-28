@@ -5,6 +5,7 @@ import { GraphqlResponseError } from '@octokit/graphql';
 
 /**
  * If the errors are all the same specified type, ignore them.
+ * TODO: (VDubber) Consider reporting this skipped error once capability is available in SDK.
  * @param errors
  * @param logger
  * @param type

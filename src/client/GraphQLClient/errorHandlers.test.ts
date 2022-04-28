@@ -112,43 +112,7 @@ describe('errorHandlers', () => {
     });
     test('bad cred', async () => {
       // Arrange
-      const error = new GraphqlResponseError(
-        null as any,
-        null as any,
-        { errors: [{ message: 'Bad credentials' }] } as any,
-      );
-      const info = jest.fn();
-      const abort = jest.fn();
-      const refresh = jest.fn();
-      const logger = {
-        info,
-      } as unknown as IntegrationLogger;
-      const attemptContext = {
-        abort,
-      } as unknown as AttemptContext;
-
-      // Act
-      await retryErrorHandle(error, logger, attemptContext, refresh);
-
-      // Arrange
-      expect(info).toHaveBeenCalled();
-      expect(refresh).toHaveBeenCalled();
-      expect(abort).not.toHaveBeenCalled();
-    });
-    test('secondary rate limit', async () => {
-      // Arrange
-      const error = new GraphqlResponseError(
-        null as any,
-        null as any,
-        {
-          errors: [
-            {
-              message: 'Bad credentials',
-              documentation_url: 'google.it',
-            },
-          ],
-        } as any,
-      );
+      const error = new Error('Bad credentials');
       const info = jest.fn();
       const abort = jest.fn();
       const refresh = jest.fn();

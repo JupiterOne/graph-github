@@ -75,22 +75,22 @@ export const retryErrorHandle = async (
       error.errors?.some((e) => e.type === 'RATE_LIMITED')
     ) {
       logger.info({ attemptContext, error }, 'Rate limiting message received.');
-    } else if (error.message?.includes('Bad credentials')) {
-      logger.info({ error }, 'Bad credentials: Refreshing token.');
-      await refreshToken();
-    } else if (error.message?.includes('exceeded a secondary rate limit')) {
-      logger.info(
-        { attemptContext, error },
-        '"Secondary Rate Limit" message received. Waiting before retrying.',
-      );
-      await sleep(300_000);
-    } else if (
-      error.message?.includes('Something went wrong while executing your query')
-    ) {
-      logger.info(
-        { attemptContext, error },
-        `A downstream error occurred on the GitHub API. It may have been caused by a large query thus causing a timeout.`,
-      );
     }
+  } else if (error.message?.includes('Bad credentials')) {
+    logger.info({ error }, 'Bad credentials: Refreshing token.');
+    await refreshToken();
+  } else if (error.message?.includes('exceeded a secondary rate limit')) {
+    logger.info(
+      { attemptContext, error },
+      '"Secondary Rate Limit" message received. Waiting before retrying.',
+    );
+    await sleep(300_000);
+  } else if (
+    error.message?.includes('Something went wrong while executing your query')
+  ) {
+    logger.info(
+      { attemptContext, error },
+      `A downstream error occurred on the GitHub API. It may have been caused by a large query thus causing a timeout.`,
+    );
   }
 };

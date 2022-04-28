@@ -391,10 +391,10 @@ export class GitHubGraphQLClient {
               // Partial data can be included in errors.
               ...error.data,
             };
-          } else {
-            throw error;
           }
         }
+
+        throw error;
       }
     };
 

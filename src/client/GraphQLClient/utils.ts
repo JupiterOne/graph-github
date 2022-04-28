@@ -18,9 +18,11 @@ const responseToResource = (node) => {
 
   return {
     ...node,
-    commits: node.commits?.nodes?.map((node) => node.commit) ?? [],
-    reviews: node.reviews?.nodes ?? [],
-    labels: node.labels?.nodes ?? [],
+    commits:
+      node.commits?.nodes?.filter((node) => node).map((node) => node.commit) ??
+      [],
+    reviews: node.reviews?.nodes?.filter((node) => node) ?? [],
+    labels: node.labels?.nodes?.filter((node) => node) ?? [],
   };
 };
 

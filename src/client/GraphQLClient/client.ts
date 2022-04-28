@@ -1,4 +1,7 @@
-import { graphql as octokitGraphQl } from '@octokit/graphql';
+import {
+  graphql as octokitGraphQl,
+  GraphqlResponseError,
+} from '@octokit/graphql';
 
 import {
   IntegrationLogger,
@@ -369,34 +372,29 @@ export class GitHubGraphQLClient {
           'Attempting GraphQL request',
         );
         return await this.graph(queryString, queryVariables);
-      } catch (err) {
+      } catch (error) {
         logger.debug(
-          { queryString, queryVariables, timeoutRetryAttempt, err },
+          { queryString, queryVariables, timeoutRetryAttempt, error },
           'GraphQL request failed.',
         );
 
-        // Add queryString & queryVariables to error.
-        if (Array.isArray(err) && err.length > 0) {
-          err[0].queryString = queryString;
-          err[0].queryVariables = queryVariables;
-        } else {
-          err.queryString = queryString;
-          err.queryVariables = queryVariables;
+        if (error instanceof GraphqlResponseError) {
+          // Handle pre-retry logic
+          // If resource can't be found, or is not accessible,
+          // continue with processing.
+          if (
+            handleNotFoundErrors(error.errors, logger) ||
+            handleForbiddenErrors(error.errors, logger)
+          ) {
+            return {
+              rateLimit: {},
+              // Partial data can be included in errors.
+              ...error.data,
+            };
+          }
         }
 
-        // Handle pre-retry logic
-        // If resource can't be found, or is not accessible,
-        // continue with processing.
-        if (
-          handleNotFoundErrors(err, logger) ||
-          handleForbiddenErrors(err, logger)
-        ) {
-          return {
-            rateLimit: {},
-          };
-        } else {
-          throw err;
-        }
+        throw error;
       }
     };
 

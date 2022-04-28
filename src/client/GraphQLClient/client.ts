@@ -388,6 +388,7 @@ export class GitHubGraphQLClient {
           ) {
             return {
               rateLimit: {},
+              // Partial data can be included in errors.
               ...error.data,
             };
           } else {

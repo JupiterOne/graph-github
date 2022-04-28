@@ -5,12 +5,13 @@ import {
 } from './errorHandlers';
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import { AttemptContext } from '@lifeomic/attempt';
+import { GraphqlResponseError } from '@octokit/graphql';
 
 describe('errorHandlers', () => {
   describe('handleNotFoundErrors', () => {
     test('contains NOT_FOUND', () => {
       // Arrange
-      const errors = [
+      const errors: any = [
         {
           type: 'NOT_FOUND',
           path: ['repository', 'pullRequest'],
@@ -21,57 +22,76 @@ describe('errorHandlers', () => {
           message: 'Could not resolve to a PullRequest with the number of 68.',
         },
       ];
-      const nonError = { type: 'RATE_LIMITED', message: 'An error message' };
-      const warn = jest.fn();
+      const nonError = {
+        type: 'RATE_LIMITED',
+        message: 'An error message',
+      } as any;
+      const debug = jest.fn();
+      const info = jest.fn();
       const logger = {
-        warn,
+        debug,
+        info,
       } as unknown as IntegrationLogger;
 
       // Act
       expect(handleNotFoundErrors(errors, logger)).toBeTruthy();
-      expect(handleNotFoundErrors(errors[0], logger)).toBeTruthy();
+      expect(handleNotFoundErrors(errors[0], logger)).toBeFalsy();
       expect(handleNotFoundErrors(nonError, logger)).toBeFalsy();
 
       // Assert
-      expect(warn).toHaveBeenCalledTimes(3);
+      expect(debug).toHaveBeenCalledTimes(2);
     });
   });
   describe('handleForbiddenErrors', () => {
     test('contains FORBIDDEN', () => {
       // Arrange
-      const errors = [
+      const errors: any = [
         {
           type: 'FORBIDDEN',
-          path: ['repository', 'pullRequest'],
+          path: ['pullRequest'],
           message: 'Could not resolve to a PullRequest with the number of 67.',
+          extensions: ['one', 'two'],
+          locations: [{ column: 123, line: 233 }],
         },
         {
           type: 'FORBIDDEN',
-          message: 'Could not resolve to a PullRequest with the number of 68.',
+          path: ['pullRequest'],
+          message: 'Could not resolve to a PullRequest with the number of 32.',
+          extensions: ['one', 'two'],
+          locations: [{ column: 33, line: 44 }],
         },
       ];
-      const nonError = { type: 'RATE_LIMITED', message: 'An error message' };
-      const warn = jest.fn();
+      const nonError = {
+        type: 'RATE_LIMITED',
+        message: 'An error message',
+      } as any;
+      const info = jest.fn();
+      const debug = jest.fn();
       const logger = {
-        warn,
+        info,
+        debug,
       } as unknown as IntegrationLogger;
 
       // Act
       expect(handleForbiddenErrors(errors, logger)).toBeTruthy();
-      expect(handleForbiddenErrors(errors[0], logger)).toBeTruthy();
+      expect(handleForbiddenErrors(errors[0], logger)).toBeFalsy();
       expect(handleForbiddenErrors(nonError, logger)).toBeFalsy();
 
       // Assert
-      expect(warn).toHaveBeenCalledTimes(3);
+      expect(debug).toHaveBeenCalledTimes(2);
     });
   });
   describe('#retryErrorHandle', () => {
     test('rate limit', async () => {
       // Arrange
-      const errors = [
-        { type: 'RATE_LIMITED', path: [''], message: 'rate limit error' },
-        { type: 'UNKNOWN', path: [''], message: 'rate limit error' },
-      ];
+      const response = {
+        errors: [
+          { type: 'RATE_LIMITED', path: [''], message: 'rate limit error' },
+          { type: 'UNKNOWN', path: [''], message: 'rate limit error' },
+        ],
+      } as any;
+
+      const error = new GraphqlResponseError({} as any, {} as any, response);
       const abort = jest.fn();
       const info = jest.fn();
       const refresh = jest.fn();
@@ -83,7 +103,7 @@ describe('errorHandlers', () => {
       } as unknown as AttemptContext;
 
       // Act
-      await retryErrorHandle(errors, logger, attemptContext, refresh);
+      await retryErrorHandle(error, logger, attemptContext, refresh);
 
       // Arrange
       expect(info).toHaveBeenCalled();
@@ -92,7 +112,11 @@ describe('errorHandlers', () => {
     });
     test('bad cred', async () => {
       // Arrange
-      const errors = { message: 'Bad credentials' };
+      const error = new GraphqlResponseError(
+        null as any,
+        null as any,
+        { errors: [{ message: 'Bad credentials' }] } as any,
+      );
       const info = jest.fn();
       const abort = jest.fn();
       const refresh = jest.fn();
@@ -104,7 +128,7 @@ describe('errorHandlers', () => {
       } as unknown as AttemptContext;
 
       // Act
-      await retryErrorHandle(errors, logger, attemptContext, refresh);
+      await retryErrorHandle(error, logger, attemptContext, refresh);
 
       // Arrange
       expect(info).toHaveBeenCalled();
@@ -113,10 +137,18 @@ describe('errorHandlers', () => {
     });
     test('secondary rate limit', async () => {
       // Arrange
-      const errors = {
-        message: 'Bad credentials',
-        documentation_url: 'google.it',
-      };
+      const error = new GraphqlResponseError(
+        null as any,
+        null as any,
+        {
+          errors: [
+            {
+              message: 'Bad credentials',
+              documentation_url: 'google.it',
+            },
+          ],
+        } as any,
+      );
       const info = jest.fn();
       const abort = jest.fn();
       const refresh = jest.fn();
@@ -128,7 +160,7 @@ describe('errorHandlers', () => {
       } as unknown as AttemptContext;
 
       // Act
-      await retryErrorHandle(errors, logger, attemptContext, refresh);
+      await retryErrorHandle(error, logger, attemptContext, refresh);
 
       // Arrange
       expect(info).toHaveBeenCalled();

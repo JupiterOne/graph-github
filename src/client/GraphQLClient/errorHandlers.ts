@@ -8,7 +8,7 @@ const handleTypeErrors = (
   logger,
   type: string,
 ): boolean => {
-  if (errors?.every((error) => error.type === type)) {
+  if (Array.isArray(errors) && errors?.every((error) => error.type === type)) {
     logger.info(
       { errors, type },
       'The error was found and ignored because of the type.',
@@ -70,7 +70,10 @@ export const retryErrorHandle = async (
      * and our GraphQL client is not using the @octokit throttling and retry plugins like our REST client
      * therefore some retry logic is appropriate here
      */
-    if (error.errors?.some((e) => e.type === 'RATE_LIMITED')) {
+    if (
+      Array.isArray(error.errors) &&
+      error.errors?.some((e) => e.type === 'RATE_LIMITED')
+    ) {
       logger.info({ attemptContext, error }, 'Rate limiting message received.');
     } else if (error.message?.includes('Bad credentials')) {
       logger.info({ error }, 'Bad credentials: Refreshing token.');

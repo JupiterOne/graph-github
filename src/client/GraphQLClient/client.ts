@@ -135,6 +135,7 @@ export class GitHubGraphQLClient {
         expiresAt: string;
       };
       this.graph = octokitGraphQl.defaults({
+        baseUrl: this.graphqlUrl,
         headers: {
           'User-Agent': 'jupiterone-graph-github',
           Authorization: `token ${token}`,

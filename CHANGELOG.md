@@ -8,6 +8,10 @@ and this project adheres to
 
 [Unreleased]
 
+### Fixed
+
+- Fixed refreshToken in GraphQL client to use correct baseUrl.
+
 ## 1.12.0-beta.9 - 2022-04-28
 
 ### Fixed

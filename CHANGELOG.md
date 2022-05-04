@@ -8,6 +8,12 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.13.0 - 2022-05-04
+
+### Changes
+
+- Promoted all 1.12.0-beta\* fixes.
+
 ## 1.12.0-beta.10 - 2022-04-29
 
 ### Fixed

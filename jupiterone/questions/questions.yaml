@@ -1,0 +1,149 @@
+---
+sourceId: managed:github
+integrationDefinitionId: "${integration_definition_id}"
+questions:
+- id: integration-question-github-access-repo-outside-collaborator
+  title: Which GitHub repos are accessible to outside collaborators?
+  description:
+    Finds all GitHub repos accessible to outside collaborators
+  queries:
+  - query: |
+      FIND github_repo AS repo
+      THAT ALLOWS AS perms
+        github_user WITH role="OUTSIDE" AS user
+      RETURN
+        user.displayName,
+        repo.displayName,
+        perms.adminPermission,
+        perms.maintainPermission,
+        perms.pullPermission,
+        perms.pushPermission,
+        perms.triagePermission
+  tags:
+  - github
+  - access
+  - permissions
+- id: integration-question-github-installed-github-access-apps-admin-write
+  title: What GitHub Apps are installed in my Organization with administration write permissions?
+  description:
+    Finds all installed GitHub Apps that have administration write permissions
+  queries:
+  - query: |
+      FIND github_app WITH permissions.administration='write'
+  tags:
+  - github
+  - access
+  - permissions
+- id: integration-question-github-encrypted-secrets-in-my-organization
+  title: What GitHub Encrypted Secrets do I have in my organization?
+  description: >-
+    Encrypted secrets can be added to each 
+    Repository, Repository Environment, and at the top-level Organization level.  
+    Organizational secrets may be made available to All, Only Private, or 
+    Only Selected repositories. We recommend you practice least privilege 
+    and limit access to only selected, authorized repositories with a business 
+    need to access the Org secret.
+  queries:
+  - query: |
+      Find (github_account|github_repo|github_environment)
+        THAT HAS Secret 
+      RETURN TREE
+  tags:
+  - github
+  - secret
+  - encrypted
+- id: integration-question-github-which-repos-have-access-to-secrets
+  title: Which repos have access to secrets?
+  description: >-
+    We recommend you practice least privilege and limit access to only 
+    selected, authorized repositories with a business need to access the Org secret.  
+    Security teams can periodically review which repositories 
+    have access to Secrets with a query, such as:
+  queries:
+  - query: |
+      FIND CodeRepo 
+        THAT USES Secret 
+      RETURN CodeRepo.displayName, Secret.displayName 
+      ORDER BY Secret.displayName ASC
+  tags:
+  - github
+  - secret
+  - access
+- id: integration-question-github-how-often-are-github-secrets-rotating
+  title: How often are secrets rotating?
+  description: >-
+    Secrets should rotate regularly, especially when an employee 
+    with privileged access to those secrets is off-boarded
+  queries:
+    - name: Past 90 Days
+      resultsAre: INFORMATIVE
+      query: |
+        FIND Secret WITH updatedOn < date.now
+    - name: Past 180 Days
+      resultsAre: INFORMATIVE
+      query: |
+        Find Secret with updatedOn < date.now - 180 days
+    - name: Past Year
+      resultsAre: INFORMATIVE
+      query: |
+        Find Secret with updatedOn < date.now - 1 year
+  tags:
+  - github
+  - secret
+- id: integration-question-github-which-internal-repo-is-most-used-by-other-repos
+  title: Which internal repo is mostly used by other repos?
+  description: >-
+    Identify which internal repos are used the most across other repos.
+    See how all the repos work together and what the impact is if a dependent repo
+    has vulnerabilities. Internal repos being used more frequently should be prioritized.
+  queries:
+    - name: Repos with most dependents
+      resultsAre: INFORMATIVE
+      query: |
+        FIND CodeRepo AS repo
+          THAT USES CodeRepo AS dependency
+        RETURN
+          repo.name, 
+          count(dependency) AS dependents
+        ORDER BY dependents DESC
+    - name: Visualize Dependent Repos Across the Org
+      resultsAre: INFORMATIVE
+      query: |
+        FIND CodeRepo AS repo 
+          THAT USES CodeRepo AS dependency
+        RETURN TREE
+    - name: Visualize Impact of Dependent Repos with Vulnerabilities
+      resultsAre: INFORMATIVE
+      query: |
+        Find CodeRepo AS repo 
+          THAT USES CodeRepo AS dependency
+          THAT HAS (Finding|Vulnerability) WITH open=true
+        RETURN TREE
+  tags:
+  - github
+  - dependency
+  - vuln
+  - repo
+- id: integration-question-github-prs-not-updated-in-7-days
+  title: Are there any open PRs that have not been updated in the last week?
+  description:
+    Finds all open PRs that have not been updated in the last week.
+  queries:
+  - query: |
+      FIND github_pullrequest with open = true AND updatedOn <= date.now-7days
+  tags:
+  - github
+  - dev
+- id: integration-question-github-repos-no-user-and-team-admin-access
+  title: Which GitHub users and teams do not have Github repo administration permissions?
+  description:
+    Find all GitHub users and teams that do not have repo administration permissions.
+  queries:
+  - query: |
+     FIND github_repo
+       THAT ALLOWS AS a (github_user|github_team) 
+     WHERE a.role != 'ADMIN'
+  tags:
+  - github
+  - access
+  - permissions

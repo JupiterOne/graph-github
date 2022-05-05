@@ -78,7 +78,7 @@ questions:
     - name: Past 90 Days
       resultsAre: INFORMATIVE
       query: |
-        FIND Secret WITH updatedOn < date.now
+        FIND Secret WITH updatedOn < date.now - 90 days
     - name: Past 180 Days
       resultsAre: INFORMATIVE
       query: |

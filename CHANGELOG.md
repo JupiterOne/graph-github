@@ -8,6 +8,13 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.13.1 - 2022-05-05
+
+### Fixed
+
+- `integration-question-github-how-often-are-github-secrets-rotating` 90 days
+  managed question to have `- 90 days`
+
 ### Changed
 
 - Added `code-ql` and `questions` workflow

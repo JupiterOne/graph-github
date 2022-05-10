@@ -106,6 +106,9 @@ export class APIClient {
    * @param pullRequestNumber
    */
   public async fetchPullRequest(repoOwner, repoName, pullRequestNumber) {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
     return this.accountClient.fetchPullRequest(
       repoOwner,
       repoName,

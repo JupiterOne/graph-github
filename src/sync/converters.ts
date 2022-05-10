@@ -30,6 +30,7 @@ import {
   RepoKeyAndName,
 } from '../types';
 import {
+  buildPullRequestKey,
   decomposePermissions,
   getAppEntityKey,
   getSecretEntityKey,
@@ -570,7 +571,11 @@ export function toPullRequestEntity(
       assign: {
         _type: GithubEntities.GITHUB_PR._type,
         _class: GithubEntities.GITHUB_PR._class,
-        _key: `${pullRequest.baseRepository.owner.login}/${pullRequest.baseRepository.name}/pull-requests/${pullRequest.number}`,
+        _key: buildPullRequestKey({
+          login: pullRequest.baseRepository.owner.login,
+          repoName: pullRequest.baseRepository.name,
+          pullRequestNumber: pullRequest.number,
+        }),
         displayName: `${pullRequest.baseRepository.name}/${pullRequest.number}`,
         accountLogin: pullRequest.baseRepository.owner.login,
         repository: pullRequest.baseRepository.name,

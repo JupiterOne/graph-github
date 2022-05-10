@@ -1,4 +1,9 @@
-import { aggregateProperties, displayNamesFromLogins } from './propertyHelpers';
+import {
+  aggregateProperties,
+  buildPullRequestKey,
+  decomposePullRequestKey,
+  displayNamesFromLogins,
+} from './propertyHelpers';
 
 describe('aggregrateProperties', () => {
   test('returns empty array for undefined collection', () => {
@@ -26,5 +31,30 @@ describe('displayNamesFromLogin', () => {
         } as any,
       }),
     ).toEqual(['User Name 1', 'Unknown User']);
+  });
+});
+
+describe('pullRequestKey', () => {
+  test('buildPullRequestKey', () => {
+    expect(
+      buildPullRequestKey({
+        login: 'J1',
+        repoName: 'friendly-octokit',
+        pullRequestNumber: 4,
+      }),
+    ).toBe('J1/friendly-octokit/pull-requests/4');
+  });
+  test('decomposePullRequestKey', () => {
+    expect(
+      decomposePullRequestKey('J1/friendly-octokit/pull-requests/4'),
+    ).toEqual({
+      login: 'J1',
+      repoName: 'friendly-octokit',
+      pullRequestNumber: 4,
+    });
+
+    expect(() => decomposePullRequestKey('J1/friendly-octokit/4')).toThrowError(
+      'provided key is invalid',
+    );
   });
 });

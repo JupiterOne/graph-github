@@ -39,7 +39,7 @@ export async function fetchMembers({
   //for use later in other steps
   const memberByLoginMap: IdEntityMap<UserEntity> = {};
 
-  await apiClient.iterateMembers(async (member) => {
+  await apiClient.iterateOrgMembers(async (member) => {
     const memberEntity = (await jobState.addEntity(
       toOrganizationMemberEntity(member),
     )) as UserEntity;

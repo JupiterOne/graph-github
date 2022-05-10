@@ -42,6 +42,7 @@ import {
   retryErrorHandle,
 } from './errorHandlers';
 import { graphql } from '@octokit/graphql/dist-types/types';
+import SinglePullRequestQuery from './pullRequestQueries/SinglePullRequestQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300000;
 
@@ -158,6 +159,31 @@ export class GitHubGraphQLClient {
     this.collectRateLimitStatus(results.rateLimit);
 
     return results;
+  }
+
+  /**
+   * Fetches Pull Request based on the provided parameters.
+   * @param repoOwner
+   * @param repoName
+   * @param pullRequestNumber
+   */
+  public async fetchPullRequest(
+    repoOwner,
+    repoName,
+    pullRequestNumber,
+  ): Promise<PullRequest | null> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    let pullRequest: PullRequest | null = null;
+    await SinglePullRequestQuery.iteratePullRequest(
+      { pullRequestNumber, repoName, repoOwner },
+      executor,
+      (pr) => {
+        pullRequest = pr;
+      },
+    );
+
+    return pullRequest;
   }
 
   /**

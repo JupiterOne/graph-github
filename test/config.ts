@@ -8,7 +8,7 @@ if (process.env.LOAD_ENV) {
     path: path.join(__dirname, '../.env'),
   });
 }
-const DEFAULT_GITHUB_APP_ID = 999999;
+const DEFAULT_GITHUB_APP_ID = 174703;
 const DEFAULT_INSTALLATION_ID = 23522163; // Ask for access to this Org
 //@octokit client instantiation requires a private RSA Key
 const DEFAULT_APP_PRIVATE_KEY = getFakeRsaKey();

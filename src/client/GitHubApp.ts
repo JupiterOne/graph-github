@@ -19,7 +19,7 @@ export default class GitHubApp {
     installationId: number,
   ): Promise<AppsGetInstallationResponse> {
     let installation;
-
+    console.log(installationId);
     try {
       installation = await this.v3.apps.getInstallation({
         installation_id: installationId,

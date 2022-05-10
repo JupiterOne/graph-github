@@ -100,11 +100,25 @@ export class APIClient {
   }
 
   /**
+   *
+   * @param repoOwner
+   * @param repoName
+   * @param pullRequestNumber
+   */
+  public async fetchPullRequest(repoOwner, repoName, pullRequestNumber) {
+    return this.accountClient.fetchPullRequest(
+      repoOwner,
+      repoName,
+      pullRequestNumber,
+    );
+  }
+
+  /**
    * Iterates each member (user) resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
-  public async iterateMembers(
+  public async iterateOrgMembers(
     iteratee: ResourceIteratee<OrgMemberQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {

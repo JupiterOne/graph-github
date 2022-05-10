@@ -17,7 +17,7 @@ interface QueryState extends BaseQueryState {
   labels?: CursorState;
 }
 
-type QueryParams = {
+export type QueryParams = {
   pullRequestNumber: number;
   repoName: string;
   repoOwner: string;

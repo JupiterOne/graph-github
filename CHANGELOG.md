@@ -8,6 +8,25 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.13.1 - 2022-05-05
+
+### Fixed
+
+- `integration-question-github-how-often-are-github-secrets-rotating` 90 days
+  managed question to have `- 90 days`
+
+### Changed
+
+- Added `code-ql` and `questions` workflow
+
+## 1.13.0 - 2022-05-04
+
+### Changes
+
+- Promoted all 1.12.0-beta\* fixes.
+
+## 1.12.0-beta.10 - 2022-04-29
+
 ### Fixed
 
 - Fixed refreshToken in GraphQL client to use correct baseUrl.

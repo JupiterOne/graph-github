@@ -837,11 +837,6 @@
     deepmerge "^4.2.2"
     lodash "^4.17.15"
 
-"@jupiterone/jupiter-types@^49.2.1":
-  version "49.2.1"
-  resolved "https://registry.yarnpkg.com/@jupiterone/jupiter-types/-/jupiter-types-49.2.1.tgz#2c9f00d53b08317f28e6233b8474e7a4088e1062"
-  integrity sha512-laI4uCm0yxztdMZHzJErzHu8hnTGwLE1cj7tBqHdxfCf5eEw76pjFG/2cFeVweLBJfyGI1rBlK9Wp8GL85BcoQ==
-
 "@lifeomic/alpha@^1.4.0":
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/@lifeomic/alpha/-/alpha-1.4.2.tgz#70772f1e2801c5fa15e706edc7d626f1477d9a1f"

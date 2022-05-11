@@ -1,10 +1,11 @@
-import { IntegrationAction } from '@jupiterone/jupiter-types';
 import { partialIngestActionHandler } from './partialIngestActionHandler';
 import { getOrCreateApiClient } from '../client';
 import { IntegrationExecutionContext } from '@jupiterone/integration-sdk-core';
 import { IntegrationConfig } from '../config';
 
-interface IntegrationPartialIngestAction extends IntegrationAction {
+// TODO: extend IntegrationAction from jupiter-types VDubber 5/2022
+interface IntegrationPartialIngestAction {
+  name: string;
   parameters: Record<string, any>;
 }
 
@@ -13,7 +14,7 @@ export interface IntegrationActionExecutionContext<TConfig>
   event: {
     accountId: string;
     integrationInstanceId: string;
-    action: IntegrationAction;
+    action: IntegrationPartialIngestAction;
     timestamp: number;
   };
 }
@@ -30,18 +31,15 @@ export default async function actionExecutionHandler(
 
   await client.verifyAuthentication();
 
-  switch (
-    action.name as string // TODO: Update jupiter-types (VDubber May 2022)
-  ) {
+  switch (action.name) {
     case 'PARTIAL_INGEST': {
-      const partialIngestAction = action as IntegrationPartialIngestAction;
-      if (!partialIngestAction.parameters) {
+      if (!action.parameters) {
         throw new Error('parameters are required for action PARTIAL_INGEST');
       }
 
       return await partialIngestActionHandler(
         client,
-        partialIngestAction.parameters.entities,
+        action.parameters.entities,
       );
     }
   }

@@ -42,7 +42,6 @@
     "@jupiterone/integration-sdk-core": "^8.13.4"
   },
   "devDependencies": {
-    "@jupiterone/jupiter-types": "^49.2.1",
     "@jupiterone/integration-sdk-core": "^8.13.4",
     "@jupiterone/integration-sdk-dev-tools": "^8.13.4",
     "@jupiterone/integration-sdk-testing": "^8.13.4",

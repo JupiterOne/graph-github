@@ -18,18 +18,16 @@ export default class GitHubApp {
   async getInstallation(
     installationId: number,
   ): Promise<AppsGetInstallationResponse> {
-    let installation;
-    console.log(installationId);
     try {
-      installation = await this.v3.apps.getInstallation({
+      const installation = await this.v3.apps.getInstallation({
         installation_id: installationId,
       });
+
+      return installation.data;
     } catch (err) {
       throw new IntegrationValidationError(
         'GitHub App installation associated with this integration instance no longer exists',
       );
     }
-
-    return installation.data;
   }
 }

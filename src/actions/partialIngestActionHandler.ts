@@ -11,28 +11,37 @@ import {
   toPullRequestEntity,
 } from '../sync/converters';
 import { IdEntityMap, UserEntity } from '../types';
-import { IntegrationError } from '@jupiterone/integration-sdk-core';
+import {
+  IntegrationError,
+  IntegrationLogger,
+} from '@jupiterone/integration-sdk-core';
 
-type EntityToIngest = {
+interface EntityToIngest {
   _type: string; // e.g. - github_pullrequest
   _key: string; // e.g. JupiterOne/graph-whitehat/pull-requests/8
-};
+}
+
+interface EntityIngestError extends EntityToIngest {
+  message: string;
+}
 
 /**
  * Proc
  * @param client
  * @param entitiesToIngest
+ * @param logger
  */
 export const partialIngestActionHandler = async (
   client: APIClient,
   entitiesToIngest: EntityToIngest[],
+  logger: IntegrationLogger,
 ) => {
-  const invalidEntities: EntityToIngest[] = [];
+  const errors: EntityIngestError[] = [];
 
   const pendingPromises = entitiesToIngest.map((entity) => {
     if (entity && entity._type === GithubEntities.GITHUB_PR._type) {
       if (!isValidPullRequestKey(entity._key)) {
-        invalidEntities.push(entity);
+        errors.push({ ...entity, message: 'Invalid pull request key' });
       }
 
       const pullRequest = decomposePullRequestKey(entity._key);
@@ -41,19 +50,28 @@ export const partialIngestActionHandler = async (
         repoOwner: pullRequest.login,
         repoName: pullRequest.repoName,
         pullRequestNumber: pullRequest.pullRequestNumber,
+      }).catch((error) => {
+        logger.error({ entity, error }, 'Failed to collect data for entity');
+        errors.push({
+          ...entity,
+          message: 'Failed to collect data for entity.',
+        });
       });
 
-      // TODO: ingest entity and relationships
+      // TODO: INT-3800: Ingest entity and relationships (VDubber May 2022)
     } else {
-      invalidEntities.push(entity);
+      errors.push({
+        ...entity,
+        message: 'github_pullrequest is the only supported entity type.',
+      });
     }
   });
 
   const entities = await Promise.all(pendingPromises);
 
   return {
-    entities,
-    invalidEntities,
+    entities: entities.filter((e) => e),
+    errors,
   };
 };
 
@@ -98,7 +116,7 @@ const buildUserLoginMaps = async (client: APIClient, repoName: string) => {
 
   // Query for all members of organization
   // There's not a good way to fetch a single member from an organization
-  // We can use a REST endpoint but it pulls back different data.
+  // We can use a REST endpoint, but it pulls back different data.
   await client.iterateOrgMembers((member) => {
     memberByLoginMap[member.login] = toOrganizationMemberEntity(member);
   });

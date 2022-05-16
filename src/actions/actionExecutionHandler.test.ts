@@ -39,6 +39,10 @@ describe('actionExecutionHandler', () => {
                 _key: 'bob',
                 _type: 'github_member',
               },
+              {
+                _key: 'j1-ingest/reimagined-barnacle/pull-requests/190000',
+                _type: 'github_pullrequest',
+              },
             ],
           },
         },

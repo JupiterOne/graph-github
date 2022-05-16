@@ -1,6 +1,9 @@
 import { partialIngestActionHandler } from './partialIngestActionHandler';
 import { getOrCreateApiClient } from '../client';
-import { IntegrationExecutionContext } from '@jupiterone/integration-sdk-core';
+import {
+  IntegrationError,
+  IntegrationExecutionContext,
+} from '@jupiterone/integration-sdk-core';
 import { IntegrationConfig } from '../config';
 
 // TODO: extend IntegrationAction from jupiter-types VDubber 5/2022
@@ -40,7 +43,14 @@ export default async function actionExecutionHandler(
       return await partialIngestActionHandler(
         client,
         action.parameters.entities,
+        logger,
       );
+    }
+    default: {
+      throw new IntegrationError({
+        code: 'UNKNOWN_ACTION_NAME',
+        message: 'The provided action.name is not unknown.',
+      });
     }
   }
 }

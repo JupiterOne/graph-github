@@ -100,10 +100,10 @@ export class APIClient {
   }
 
   /**
-   *
-   * @param repoOwner
-   * @param repoName
-   * @param pullRequestNumber
+   * Fetch the pull request based on the provided params.
+   * @param repoOwner e.g. - JupiterOne
+   * @param repoName e.g. - graph-github
+   * @param pullRequestNumber e.g. - 5
    */
   public async fetchPullRequest(repoOwner, repoName, pullRequestNumber) {
     if (!this.accountClient) {

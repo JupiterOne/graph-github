@@ -2348,12 +2348,17 @@ Object {
       "validated": true,
       "webLink": "https://github.com/j1-ingest/reimagined-barnacle/pull/19",
     },
-    undefined,
   ],
   "invalidEntities": Array [
     Object {
       "_key": "bob",
       "_type": "github_member",
+      "message": "github_pullrequest is the only supported entity type at this time.",
+    },
+    Object {
+      "_key": "j1-ingest/reimagined-barnacle/pull-requests/190000",
+      "_type": "github_pullrequest",
+      "message": "Failed to collect data for entity.",
     },
   ],
 }

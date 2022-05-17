@@ -21,7 +21,7 @@ interface EntityToIngest {
   _key: string; // e.g. JupiterOne/graph-whitehat/pull-requests/8
 }
 
-interface EntityIngestError extends EntityToIngest {
+export interface EntityIngestError extends EntityToIngest {
   message: string;
 }
 

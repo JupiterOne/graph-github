@@ -49,7 +49,7 @@ export default async function actionExecutionHandler(
     default: {
       throw new IntegrationError({
         code: 'UNKNOWN_ACTION_NAME',
-        message: 'The provided action.name is not unknown.',
+        message: 'The provided action.name is unknown.',
       });
     }
   }

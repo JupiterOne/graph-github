@@ -8,6 +8,12 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.14.0 - 2022-05-17
+
+### Added
+
+- Added action handler to process real-time entity ingestion. (v1)
+
 ## 1.13.1 - 2022-05-05
 
 ### Fixed

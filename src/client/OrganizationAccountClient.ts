@@ -105,6 +105,20 @@ export default class OrganizationAccountClient {
   }
 
   /**
+   * Fetches the pull request for the given parameters.
+   * @param repoOwner
+   * @param repoName
+   * @param pullRequestNumber
+   */
+  async fetchPullRequest(repoOwner, repoName, pullRequestNumber) {
+    return await this.v4.fetchPullRequest(
+      repoOwner,
+      repoName,
+      pullRequestNumber,
+    );
+  }
+
+  /**
    * Iterate Organization owned Repos.
    * @param iteratee
    */

@@ -100,11 +100,28 @@ export class APIClient {
   }
 
   /**
+   * Fetch the pull request based on the provided params.
+   * @param repoOwner e.g. - JupiterOne
+   * @param repoName e.g. - graph-github
+   * @param pullRequestNumber e.g. - 5
+   */
+  public async fetchPullRequest(repoOwner, repoName, pullRequestNumber) {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    return this.accountClient.fetchPullRequest(
+      repoOwner,
+      repoName,
+      pullRequestNumber,
+    );
+  }
+
+  /**
    * Iterates each member (user) resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
-  public async iterateMembers(
+  public async iterateOrgMembers(
     iteratee: ResourceIteratee<OrgMemberQueryResponse>,
   ): Promise<void> {
     if (!this.accountClient) {

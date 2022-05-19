@@ -202,3 +202,41 @@ export interface PullRequestEntity extends Entity {
   approverLogins?: string[];
   approvers?: string[];
 }
+
+export interface VulnerabilityAlertEntity extends Entity {
+  id: string;
+  name: string;
+  displayName: string;
+  summary: string;
+  category: string;
+  status: string;
+  severity: string;
+  numericSeverity: number;
+  priority: string;
+  score;
+  impact;
+  vector;
+  recommendation;
+  open;
+  references;
+  public;
+  weblink;
+  createdOn;
+  dismissedOn;
+  dismisserLogin;
+  dismissReason;
+  fixReason;
+  number;
+  databaseId;
+  ghsaId;
+  origin;
+  publishedOn;
+  updatedOn;
+  withdrawnOn;
+  packageName;
+  packageEcosystem;
+  vulnerableVersionRange;
+  vulnerableManifestFilename;
+  vulnerableManifestPath;
+  vulnerableRequirements;
+}

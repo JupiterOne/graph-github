@@ -5,7 +5,7 @@ import {
   CursorState,
   IteratePagination,
   ProcessedData,
-  PullRequest,
+  PullRequestResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import fragments from '../fragments';
@@ -236,41 +236,38 @@ export const processResponseData = (
  * @param iteratee
  * @param execute
  */
-const iteratePullRequest: IteratePagination<QueryParams, PullRequest> = async (
-  queryParams,
-  execute,
-  iteratee,
-) => {
-  let finalResource: PullRequest | undefined = undefined;
-  let queryCost = 0;
-  let queryState: QueryState = { isInitialQuery: true };
-  let paginationComplete = false;
+const iteratePullRequest: IteratePagination<QueryParams, PullRequestResponse> =
+  async (queryParams, execute, iteratee) => {
+    let finalResource: PullRequestResponse | undefined = undefined;
+    let queryCost = 0;
+    let queryState: QueryState = { isInitialQuery: true };
+    let paginationComplete = false;
 
-  while (!paginationComplete) {
-    const executable = buildQuery(queryParams, queryState);
+    while (!paginationComplete) {
+      const executable = buildQuery(queryParams, queryState);
 
-    const response = await execute(executable);
+      const response = await execute(executable);
 
-    const { resource: processedResource, queryState: processedQueryState } =
-      processResponseData(response);
+      const { resource: processedResource, queryState: processedQueryState } =
+        processResponseData(response);
 
-    finalResource = joinInnerResources(processedResource, finalResource);
-    queryCost += processedQueryState.rateLimit?.cost ?? 0;
-    queryState = processedQueryState;
-    paginationComplete = isPaginationComplete(processedQueryState);
-  }
+      finalResource = joinInnerResources(processedResource, finalResource);
+      queryCost += processedQueryState.rateLimit?.cost ?? 0;
+      queryState = processedQueryState;
+      paginationComplete = isPaginationComplete(processedQueryState);
+    }
 
-  if (finalResource) {
-    await iteratee(finalResource);
-  }
+    if (finalResource) {
+      await iteratee(finalResource);
+    }
 
-  return {
-    totalCost: queryCost,
-    limit: queryState?.rateLimit?.limit,
-    remaining: queryState?.rateLimit?.remaining,
-    resetAt: queryState?.rateLimit?.resetAt,
+    return {
+      totalCost: queryCost,
+      limit: queryState?.rateLimit?.limit,
+      remaining: queryState?.rateLimit?.remaining,
+      resetAt: queryState?.rateLimit?.resetAt,
+    };
   };
-};
 
 /**
  * Combines the Pull Request resource as
@@ -280,9 +277,9 @@ const iteratePullRequest: IteratePagination<QueryParams, PullRequest> = async (
  * @private
  */
 const joinInnerResources = (
-  newResource: PullRequest,
-  existingResource?: PullRequest,
-): PullRequest => {
+  newResource: PullRequestResponse,
+  existingResource?: PullRequestResponse,
+): PullRequestResponse => {
   if (!existingResource) {
     return newResource;
   }

@@ -214,6 +214,66 @@ export const GithubEntities = {
       required: ['webLink', 'displayName'],
     },
   },
+  GITHUB_VULNERABILITY_ALERT: {
+    _type: 'github_finding',
+    _class: ['Finding'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_finding' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        category: { const: 'application' },
+        severity: { type: 'string' },
+        numericSeverity: { type: 'number' },
+        open: { type: 'boolean' },
+        webLink: { type: 'string' },
+        createdOn: { type: 'number' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: [
+        'category',
+        'severity',
+        'numericSeverity',
+        'open',
+        'displayName',
+        'name',
+        'weblink',
+        'createdOn',
+      ],
+    },
+  },
+  CVE: {
+    _type: 'cve',
+    _class: 'Vulnerability',
+    schema: {
+      properties: {
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        cvssScore: { type: 'string' },
+        references: { type: 'array', items: { type: 'string' } },
+        webLink: { type: 'string' },
+      },
+      required: ['name', 'displayName', 'cvssScore', 'references', 'weblink'],
+    },
+  },
+  CWE: {
+    _type: 'cwe',
+    _class: 'Weakness',
+    schema: {
+      properties: {
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        description: { type: 'string' },
+        references: { type: 'array', items: { type: 'string' } },
+        webLink: { type: 'string' },
+      },
+      required: ['name', 'displayName', 'description', 'references', 'webLink'],
+    },
+  },
 };
 
 export const GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE =
@@ -265,6 +325,12 @@ export const GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE =
   'github_user_created_issue';
 export const GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE =
   'github_user_assigned_issue';
+
+// vuln alerts
+export const GITHUB_REPO_FINDING_RELATIONSHIP_TYPE = 'github_repo_has_finding';
+export const GITHUB_FINDING_CVE_RELATIONSHIP_TYPE = 'github_finding_is_cve';
+export const GITHUB_FINDING_CWE_RELATIONSHIP_TYPE =
+  'github_finding_exploits_cwe';
 
 //these constants are names used to save and retrieve data between steps
 //they are constants instead of strings so that TypeScript will detect spelling errors

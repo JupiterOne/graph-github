@@ -1,4 +1,7 @@
-import { PullRequest, PullRequestUser } from '../../client/GraphQLClient/types';
+import {
+  PullRequestResponse,
+  PullRequestUser,
+} from '../../client/GraphQLClient/types';
 import { UserEntity } from '../../types';
 
 export const fixtureUser: UserEntity = {
@@ -21,7 +24,7 @@ export const pullRequestReviewer: PullRequestUser = {
   name: fixtureReviewerUser.name as string,
   isSiteAdmin: false,
 };
-export const fixturePullRequest: PullRequest = {
+export const fixturePullRequest: PullRequestResponse = {
   additions: 156,
   author: {
     login: fixtureUser.login,

@@ -1,6 +1,6 @@
 import { ResourceIteratee } from '../../../client';
 import {
-  PullRequest,
+  PullRequestResponse,
   IteratePagination,
   CursorState,
   InnerResourceQuery,
@@ -229,7 +229,7 @@ const labelsQuery = `
  */
 export const processResponseData = async (
   responseData,
-  iteratee: ResourceIteratee<PullRequest>,
+  iteratee: ResourceIteratee<PullRequestResponse>,
   onInnerResourceQueryRequired: InnerResourceQuery<InnerResourcePullRequestQuery>,
 ): Promise<QueryState> => {
   if (!responseData) {
@@ -280,57 +280,54 @@ export const processResponseData = async (
  * @param execute
  * @return {rateLimitConsumed}
  */
-const iteratePullRequests: IteratePagination<QueryParams, PullRequest> = async (
-  queryParams,
-  execute,
-  iteratee,
-): Promise<RateLimitStepSummary> => {
-  let pullRequestFetched = 0;
-  let queryCost = 0;
-  let queryState: QueryState | undefined = undefined;
-  let paginationComplete = false;
+const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
+  async (queryParams, execute, iteratee): Promise<RateLimitStepSummary> => {
+    let pullRequestFetched = 0;
+    let queryCost = 0;
+    let queryState: QueryState | undefined = undefined;
+    let paginationComplete = false;
 
-  const countIteratee = async (pullRequest) => {
-    pullRequestFetched++;
-    await iteratee(pullRequest);
-  };
+    const countIteratee = async (pullRequest) => {
+      pullRequestFetched++;
+      await iteratee(pullRequest);
+    };
 
-  while (!paginationComplete) {
-    // Queue of pull requests that have inner resources
-    // and require a separate query to gather complete data.
-    const innerResourceQueries: InnerResourcePullRequestQuery[] = [];
+    while (!paginationComplete) {
+      // Queue of pull requests that have inner resources
+      // and require a separate query to gather complete data.
+      const innerResourceQueries: InnerResourcePullRequestQuery[] = [];
 
-    const executable = buildQuery(queryParams, queryState);
+      const executable = buildQuery(queryParams, queryState);
 
-    const response = await execute(executable);
+      const response = await execute(executable);
 
-    queryState = await processResponseData(response, countIteratee, (query) =>
-      innerResourceQueries.push(query),
-    );
-
-    queryCost += queryState.rateLimit?.cost ?? 0;
-
-    for (const pullRequestQuery of innerResourceQueries) {
-      const { totalCost } = await SinglePullRequestQuery.iteratePullRequest(
-        pullRequestQuery,
-        execute,
-        countIteratee,
+      queryState = await processResponseData(response, countIteratee, (query) =>
+        innerResourceQueries.push(query),
       );
 
-      queryCost += totalCost;
+      queryCost += queryState.rateLimit?.cost ?? 0;
+
+      for (const pullRequestQuery of innerResourceQueries) {
+        const { totalCost } = await SinglePullRequestQuery.iteratePullRequest(
+          pullRequestQuery,
+          execute,
+          countIteratee,
+        );
+
+        queryCost += totalCost;
+      }
+
+      paginationComplete =
+        !queryState.pullRequests?.hasNextPage ||
+        pullRequestFetched >= MAX_RESOURCES_PER_EXECUTION;
     }
 
-    paginationComplete =
-      !queryState.pullRequests?.hasNextPage ||
-      pullRequestFetched >= MAX_RESOURCES_PER_EXECUTION;
-  }
-
-  return {
-    totalCost: queryCost,
-    limit: queryState?.rateLimit?.limit,
-    remaining: queryState?.rateLimit?.remaining,
-    resetAt: queryState?.rateLimit?.resetAt,
+    return {
+      totalCost: queryCost,
+      limit: queryState?.rateLimit?.limit,
+      remaining: queryState?.rateLimit?.remaining,
+      resetAt: queryState?.rateLimit?.resetAt,
+    };
   };
-};
 
 export default { iteratePullRequests };

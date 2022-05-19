@@ -12,6 +12,7 @@ import {
   OrgRepoQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamRepoQueryResponse,
+  VulnerabilityAlertResponse,
 } from './GraphQLClient';
 import {
   OrgAppQueryResponse,
@@ -28,9 +29,9 @@ import {
 import { request } from '@octokit/request';
 import { ResourceIteratee } from '../client';
 import {
-  PullRequest,
-  Issue,
-  Collaborator,
+  PullRequestResponse,
+  IssueResponse,
+  CollaboratorResponse,
   RateLimitStepSummary,
 } from './GraphQLClient/types';
 
@@ -169,7 +170,7 @@ export default class OrganizationAccountClient {
 
   async iterateRepoCollaborators(
     repoName: string,
-    iteratee: ResourceIteratee<Collaborator>,
+    iteratee: ResourceIteratee<CollaboratorResponse>,
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateRepoCollaborators(
       this.login,
@@ -187,7 +188,7 @@ export default class OrganizationAccountClient {
   async iteratePullRequestEntities(
     repo: RepoEntity,
     lastExecutionTime: string, //expect Date.toISOString format
-    iteratee: ResourceIteratee<PullRequest>,
+    iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
@@ -215,7 +216,7 @@ export default class OrganizationAccountClient {
   async iterateIssueEntities(
     repo: RepoEntity,
     lastExecutionTime: string, //expect Date.toISOString format
-    iteratee: ResourceIteratee<Issue>,
+    iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<RateLimitStepSummary> {
     //issues and PRs are actually the same in the API
     //we just filter for is:issue instead of is:pr
@@ -232,6 +233,13 @@ export default class OrganizationAccountClient {
       lastExecutionTime,
       iteratee,
     );
+  }
+
+  async iterateRepoVulnAlerts(
+    repoName: string,
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateRepoVulnAlerts(this.login, repoName, iteratee);
   }
 
   /**

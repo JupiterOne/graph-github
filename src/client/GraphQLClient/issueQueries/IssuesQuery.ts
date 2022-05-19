@@ -2,7 +2,7 @@ import {
   BaseQueryState,
   BuildQuery,
   CursorState,
-  Issue,
+  IssueResponse,
   IteratePagination,
   ProcessResponse,
 } from '../types';
@@ -111,7 +111,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
  * @param responseData
  * @param iteratee
  */
-const processResponseData: ProcessResponse<Issue, QueryState> = async (
+const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
   responseData,
   iteratee,
 ) => {
@@ -150,7 +150,7 @@ const processResponseData: ProcessResponse<Issue, QueryState> = async (
  * @param iteratee
  * @param execute
  */
-const iterateIssues: IteratePagination<QueryParams, Issue> = async (
+const iterateIssues: IteratePagination<QueryParams, IssueResponse> = async (
   queryParams,
   execute,
   iteratee,

@@ -14,6 +14,7 @@
   },
   "scripts": {
     "start": "j1-integration collect",
+    "start:step": "j1-integration collect --step fetch-vulnerability-alerts --disable-schema-validation",
     "graph": "j1-integration visualize",
     "graph:types": "j1-integration visualize-types",
     "lint": "eslint . --cache --fix --ext .ts,.tsx",

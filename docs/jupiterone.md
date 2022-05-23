@@ -45,7 +45,7 @@ graph.
 If you need help with this integration, please contact
 [JupiterOne Support](https://support.jupiterone.io).
 
-## Integration Walkthrough
+## Integration Walk-through
 
 ### In GitHub
 
@@ -62,6 +62,7 @@ read-only permissions to support ingestion of
 - Pull requests: Read-only
 - Issues: Read-only (enables both Issues and private-repo PRs)
 - [Secrets](#secrets-caveat): Read-only
+- Dependabot alerts: Read-only
 
 #### Organization Permissions
 

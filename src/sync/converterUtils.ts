@@ -15,3 +15,13 @@ export function buildVulnAlertRecommendation(
 export function buildVulnAlertId(alert: VulnerabilityAlertResponse) {
   return `ghva_${alert.repository.nameWithOwner}_${alert.number}`;
 }
+
+/**
+ * Finds the nested CVE.
+ * @param alert
+ */
+export function findCve(
+  alert: VulnerabilityAlertResponse,
+): { type: string; value: string } | undefined {
+  return alert.securityAdvisory?.identifiers?.find((id) => id.type === 'CVE');
+}

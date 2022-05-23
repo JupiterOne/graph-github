@@ -6,6 +6,7 @@ import {
   MappedRelationship,
   RelationshipDirection,
   truncateEntityPropertyValue,
+  Entity,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -495,14 +496,10 @@ export function toVulnerabilityAlertEntity(
   });
 }
 
-export function toCveEntity(data: VulnerabilityAlertResponse) {
-  const cve = data.securityAdvisory?.identifiers?.find(
-    (id) => id.type === 'CVE',
-  );
-
-  if (!cve) {
-    return null;
-  }
+export function toCveEntity(
+  cve: { type: string; value: string },
+  cvss?: { score: number; vectorString: string },
+): Entity {
   const cveId = cve.value.toLowerCase();
   const cveIdDisplay = cveId.toUpperCase();
 
@@ -513,9 +510,10 @@ export function toCveEntity(data: VulnerabilityAlertResponse) {
         _type: GithubEntities.CVE._type,
         _class: GithubEntities.CVE._class,
         _key: cveId,
+        id: cveId,
         name: cveIdDisplay,
         displayName: cveIdDisplay,
-        cvssScore: data.securityAdvisory?.cvss.score,
+        cvssScore: cvss?.score,
         references: [`https://nvd.nist.gov/vuln/detail/${cveId}`],
         webLink: `https://nvd.nist.gov/vuln/detail/${cveId}`,
       },
@@ -531,6 +529,7 @@ type VulnerabilityAlertCweResponse = {
 
 export function toCweEntity(cwe: VulnerabilityAlertCweResponse) {
   const cweNumber = cwe.cweId.replace(/^\D+/g, '');
+  const cweId = cwe.cweId.toLowerCase();
 
   return createIntegrationEntity({
     entityData: {
@@ -538,7 +537,8 @@ export function toCweEntity(cwe: VulnerabilityAlertCweResponse) {
       assign: {
         _type: GithubEntities.CWE._type,
         _class: GithubEntities.CWE._class,
-        _key: cwe.cweId.toLowerCase(),
+        _key: cweId,
+        id: cweId,
         name: cwe.name,
         displayName: cwe.cweId.toUpperCase(),
         description: cwe.description,

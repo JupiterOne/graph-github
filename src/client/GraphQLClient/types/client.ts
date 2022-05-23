@@ -47,6 +47,12 @@ export enum TeamRepositoryPermission {
   Write = 'WRITE',
 }
 
+export enum RepositoryVulnerabilityAlertState {
+  Dismissed = 'DISMISSED',
+  Fixed = 'FIXED',
+  Open = 'OPEN',
+}
+
 // All Nodes MUST have an id or else they will not be parsed correctly
 export interface Node {
   id: string;
@@ -160,16 +166,6 @@ export interface OrgTeamRepoQueryResponse extends Node {
   permission: TeamRepositoryPermission;
 }
 
-export interface GithubOrganizationResources {
-  [GithubResource.Organization]: OrgQueryResponse[];
-  [GithubResource.OrganizationMembers]: OrgMemberQueryResponse[];
-  [GithubResource.Teams]: OrgTeamQueryResponse[];
-  [GithubResource.TeamMembers]: OrgTeamMemberQueryResponse[];
-  [GithubResource.TeamRepositories]: OrgTeamRepoQueryResponse[];
-  [GithubResource.Repositories]: OrgRepoQueryResponse[];
-  // [GithubResource. RepositoryCollaborators]: OrgCollaboratorQueryResponse[];
-}
-
 /**
  * Pull Request GraphQL Fragment Types
  */
@@ -179,14 +175,10 @@ export interface PullRequestUser {
   isSiteAdmin: boolean;
 }
 
-export interface repositoryOwner {
+export interface RepositoryOwner {
   login: string;
   id: string;
   url: string;
-}
-
-export interface PullRequestCommitQueryResponse {
-  commit: Commit;
 }
 
 export interface Commit extends Node {
@@ -224,7 +216,7 @@ export interface Review extends Node {
   url: string;
 }
 
-export interface PullRequest extends Node {
+export interface PullRequestResponse extends Node {
   id: string;
   additions: number;
   author?: PullRequestUser;
@@ -233,7 +225,7 @@ export interface PullRequest extends Node {
   baseRefOid: string;
   baseRepository: {
     name: string;
-    owner: repositoryOwner;
+    owner: RepositoryOwner;
   };
   body?: string;
   changedFiles: number;
@@ -248,7 +240,7 @@ export interface PullRequest extends Node {
   headRefOid: string;
   headRepository: {
     name: string;
-    owner: repositoryOwner;
+    owner: RepositoryOwner;
   };
   isDraft: boolean;
   lastEditedAt?: string;
@@ -272,7 +264,7 @@ export interface PullRequest extends Node {
   reviews?: Review[];
 }
 
-export interface Issue extends Node {
+export interface IssueResponse extends Node {
   id: string;
   activeLockReason: string;
   author: {
@@ -302,7 +294,7 @@ export interface Issue extends Node {
   labels?: Label[];
 }
 
-export interface Collaborator extends Node {
+export interface CollaboratorResponse extends Node {
   permission: string;
   login: string;
   name: string;
@@ -311,18 +303,68 @@ export interface Collaborator extends Node {
   repositoryId: string;
 }
 
-export interface GithubSearchResources {
-  [GithubResource.Issues]: Issue[];
-  [GithubResource.PullRequests]: PullRequest[];
-  [GithubResource.PullRequest]: PullRequest;
-  [GithubResource.Commits]: PullRequestCommitQueryResponse[];
-  [GithubResource.Labels]: Label[];
-  [GithubResource.Reviews]: Review[];
-  [GithubResource.Assignees]: Actor[];
-  [GithubResource.Collaborators]: Collaborator[];
+/**
+ * Response structure of a Repo Vulnerability Alert aka Dependabot.
+ */
+export interface VulnerabilityAlertResponse extends Node {
+  repository: {
+    nameWithOwner: string;
+  };
+  createdAt: string;
+  dismissReason?: string;
+  dismissedAt?: string;
+  dismisser?: {
+    name: string;
+    login: string;
+    email?: string;
+  };
+  fixReason?: string;
+  fixedAt?: string;
+  number: number;
+  state: RepositoryVulnerabilityAlertState;
+  securityAdvisory?: {
+    cvss: {
+      vectorString: string;
+      score: number;
+    };
+    cwes: {
+      cweId: string;
+      name: string;
+      description: string;
+    }[];
+    databaseId: number;
+    description: string;
+    ghsaId: string;
+    id: string;
+    identifiers: {
+      type: 'CVE' | 'GHSA';
+      value: string;
+    }[];
+    notificationsPermalink: string;
+    origin: string;
+    permalink: string;
+    publishedAt: string;
+    references: {
+      url: string;
+    }[];
+    severity: string;
+    summary: string;
+    updatedAt?: string;
+    withdrawnAt?: string;
+  };
+  securityVulnerability?: {
+    firstPatchedVersion: {
+      identifier: string;
+    };
+    package: {
+      name: string;
+      ecosystem: string;
+    };
+    severity: string;
+    updatedAt?: string;
+    vulnerableVersionRange: string;
+  };
+  vulnerableManifestFilename: string;
+  vulnerableManifestPath: string;
+  vulnerableRequirements: string;
 }
-
-export type GithubQueryResponse = {
-  rateLimitConsumed: number;
-} & Partial<GithubOrganizationResources> &
-  Partial<GithubSearchResources>;

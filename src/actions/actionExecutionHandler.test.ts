@@ -17,7 +17,7 @@ afterEach(async () => {
 });
 
 describe('actionExecutionHandler', () => {
-  test.skip('action.name=PARTIAL_INGEST', async () => {
+  test('action.name=PARTIAL_INGEST', async () => {
     // Arrange
     recording = setupGithubRecording({
       directory: __dirname,

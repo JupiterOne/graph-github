@@ -14,7 +14,7 @@ import {
   toIssueEntity,
 } from './converters';
 import { EnvironmentEntity, UserEntity } from '../types';
-import { PullRequest } from '../client/GraphQLClient/types';
+import { PullRequestResponse } from '../client/GraphQLClient/types';
 import {
   fixturePullRequest,
   fixtureUser,
@@ -835,7 +835,7 @@ describe('toPullRequestEntity', () => {
   });
 
   test('declined', () => {
-    const declinedPullRequest: PullRequest = {
+    const declinedPullRequest: PullRequestResponse = {
       ...fixturePullRequest,
       state: 'CLOSED',
       merged: false,

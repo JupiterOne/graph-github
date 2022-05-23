@@ -27,5 +27,8 @@ export default async function getStepStartStates(
     ['fetch-env-secrets']: {
       disabled: !scopes.repoSecrets || !scopes.repoEnvironments,
     },
+    ['fetch-vulnerability-alerts']: {
+      disabled: !scopes.dependabotAlerts,
+    },
   };
 }

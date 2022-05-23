@@ -6,6 +6,7 @@ import {
   MappedRelationship,
   RelationshipDirection,
   truncateEntityPropertyValue,
+  Entity,
 } from '@jupiterone/integration-sdk-core';
 
 import {
@@ -42,10 +43,12 @@ import {
   OrgQueryResponse,
   OrgTeamMemberQueryResponse,
   Commit,
-  PullRequest,
+  PullRequestResponse,
   Review,
-  Issue,
-  Collaborator,
+  IssueResponse,
+  CollaboratorResponse,
+  VulnerabilityAlertResponse,
+  RepositoryVulnerabilityAlertState,
 } from '../client/GraphQLClient';
 import {
   OrgAppQueryResponse,
@@ -55,6 +58,10 @@ import {
 
 import { uniq, last, compact, omit } from 'lodash';
 import getCommitsToDestination from '../util/getCommitsToDestination';
+import {
+  buildVulnAlertId,
+  buildVulnAlertRecommendation,
+} from './converterUtils';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -350,7 +357,7 @@ export function toOrganizationMemberEntityFromTeamMember(
 }
 
 export function toOrganizationCollaboratorEntity(
-  data: Collaborator,
+  data: CollaboratorResponse,
   baseUrl: string,
 ): UserEntity {
   const userEntity: UserEntity = {
@@ -373,7 +380,10 @@ export function toOrganizationCollaboratorEntity(
   return userEntity;
 }
 
-export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
+export function toIssueEntity(
+  data: IssueResponse,
+  repoName: string,
+): IssueEntity {
   const issueName = repoName + '/' + String(data.number); //format matches name of PRs
   const labels = data.labels?.map((l) => l.name);
   const truncatedIssueBody = truncateEntityPropertyValue(data.body);
@@ -420,6 +430,125 @@ export function toIssueEntity(data: Issue, repoName: string): IssueEntity {
   });
 
   return issueEntity;
+}
+
+export function toVulnerabilityAlertEntity(
+  data: VulnerabilityAlertResponse,
+  baseUrl: string,
+) {
+  return createIntegrationEntity({
+    entityData: {
+      source: data,
+      assign: {
+        _type: GithubEntities.GITHUB_VULNERABILITY_ALERT._type,
+        _class: GithubEntities.GITHUB_VULNERABILITY_ALERT._class,
+        _key: buildVulnAlertId(data),
+        id: data.id,
+        name: data.securityAdvisory?.summary,
+        displayName: data.securityAdvisory?.summary,
+        summary: data.securityAdvisory?.description,
+        category: 'application',
+        status: data.state,
+        severity: data.securityVulnerability?.severity,
+        numericSeverity: data.securityAdvisory?.cvss.score,
+        priority: data.securityVulnerability?.severity,
+        score: data.securityAdvisory?.cvss.score,
+        impact: data.securityAdvisory?.summary,
+        vector: data.securityAdvisory?.cvss.vectorString,
+        recommendation: buildVulnAlertRecommendation(data),
+        open: data.state === RepositoryVulnerabilityAlertState.Open,
+        references: data.securityAdvisory?.references?.map((ref) => ref.url),
+        public: data.securityAdvisory?.identifiers?.some(
+          (identifier) => identifier.type === 'CVE',
+        ),
+        weblink: apiUrlToWebLink(
+          baseUrl,
+          `/${data.repository.nameWithOwner}/security/dependabot/${data.number}`,
+        ),
+        createdOn: parseTimePropertyValue(data.createdAt),
+        dismissedOn: parseTimePropertyValue(data.dismissedAt),
+        dismisserLogin: data.dismisser?.login,
+        dismissReason: data.dismissReason,
+        fixReason: data.fixReason,
+        number: data.number,
+        databaseId: data.securityAdvisory?.databaseId,
+        ghsaId: data.securityAdvisory?.ghsaId,
+        origin: data.securityAdvisory?.origin,
+        securityAdvisoryPublishedOn: parseTimePropertyValue(
+          data.securityAdvisory?.publishedAt,
+        ),
+        securityAdvisoryUpdatedOn: parseTimePropertyValue(
+          data.securityAdvisory?.updatedAt,
+        ),
+        securityAdvisoryWithdrawnOn: parseTimePropertyValue(
+          data.securityAdvisory?.withdrawnAt,
+        ),
+        vulnerablePackageName: data.securityVulnerability?.package.name,
+        vulnerablePackageEcosystem:
+          data.securityVulnerability?.package.ecosystem,
+        vulnerableVersionRange:
+          data.securityVulnerability?.vulnerableVersionRange,
+        vulnerableManifestFilename: data.vulnerableManifestFilename,
+        vulnerableManifestPath: data.vulnerableManifestPath,
+        vulnerableRequirements: data.vulnerableRequirements,
+      },
+    },
+  });
+}
+
+export function toCveEntity(
+  cve: { type: string; value: string },
+  cvss?: { score: number; vectorString: string },
+): Entity {
+  const cveId = cve.value.toLowerCase();
+  const cveIdDisplay = cveId.toUpperCase();
+
+  return createIntegrationEntity({
+    entityData: {
+      source: cve,
+      assign: {
+        _type: GithubEntities.CVE._type,
+        _class: GithubEntities.CVE._class,
+        _key: cveId,
+        id: cveId,
+        name: cveIdDisplay,
+        displayName: cveIdDisplay,
+        cvssScore: cvss?.score,
+        references: [`https://nvd.nist.gov/vuln/detail/${cveId}`],
+        webLink: `https://nvd.nist.gov/vuln/detail/${cveId}`,
+      },
+    },
+  });
+}
+
+type VulnerabilityAlertCweResponse = {
+  cweId: string;
+  name: string;
+  description: string;
+};
+
+export function toCweEntity(cwe: VulnerabilityAlertCweResponse) {
+  const cweNumber = cwe.cweId.replace(/^\D+/g, '');
+  const cweId = cwe.cweId.toLowerCase();
+
+  return createIntegrationEntity({
+    entityData: {
+      source: cwe,
+      assign: {
+        _type: GithubEntities.CWE._type,
+        _class: GithubEntities.CWE._class,
+        _key: cweId,
+        id: cweId,
+        name: cwe.name,
+        displayName: cwe.cweId.toUpperCase(),
+        description: cwe.description,
+        references: [
+          `https://cwe.mitre.org/data/definitions/${cweNumber}.html`,
+        ],
+        webLink: `https://cwe.mitre.org/data/definitions/${cweNumber}.html`,
+      },
+    },
+  });
 }
 
 export function createRepoAllowsTeamRelationship(
@@ -521,7 +650,7 @@ export function createUnknownUserIssueRelationship(
 }
 
 export function toPullRequestEntity(
-  pullRequest: PullRequest,
+  pullRequest: PullRequestResponse,
   teamMembersByLoginMap: IdEntityMap<UserEntity>, //
   allKnownUsersByLoginMap: IdEntityMap<UserEntity>, // Includes known collaborators
 ): PullRequestEntity {

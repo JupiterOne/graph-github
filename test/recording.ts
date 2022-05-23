@@ -18,8 +18,6 @@ export function setupGithubRecording(
 
   return setupRecording({
     ...input,
-    redactedRequestHeaders: ['Authorization'],
-    redactedResponseHeaders: ['set-cookie'],
     mutateEntry: (entry) => {
       redact(entry);
     },
@@ -32,18 +30,7 @@ export function setupGithubRecording(
 }
 
 function redact(entry): void {
-  if (!entry.response.content.text) {
-    return;
-  }
-
-  //let's unzip the entry so we can modify it
   mutations.unzipGzippedRecordingEntry(entry);
-
-  entry.request.headers.forEach((header) => {
-    if (header.name === 'authorization') {
-      header.value = 'Bearer [REDACTED]';
-    }
-  });
 
   if (/access_tokens/.exec(entry.request.url)) {
     const responseContent = JSON.parse(entry.response.content.text);

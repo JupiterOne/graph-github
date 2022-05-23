@@ -114,6 +114,7 @@ export async function validateInvocation(
   repoSecrets: boolean;
   repoEnvironments: boolean;
   repoIssues: boolean;
+  dependabotAlerts: boolean;
 }> {
   const { config } = context.instance;
 

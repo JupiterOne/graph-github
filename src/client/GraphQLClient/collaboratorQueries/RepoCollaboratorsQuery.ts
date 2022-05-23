@@ -1,7 +1,7 @@
 import {
   BaseQueryState,
   BuildQuery,
-  Collaborator,
+  CollaboratorResponse,
   CursorState,
   IteratePagination,
   ProcessResponse,
@@ -61,35 +61,34 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
-const processResponseData: ProcessResponse<Collaborator, QueryState> = async (
-  responseData,
-  iteratee,
-) => {
-  const rateLimit = responseData.rateLimit;
-  const collaboratorEdges = responseData.repository?.collaborators?.edges ?? [];
+const processResponseData: ProcessResponse<CollaboratorResponse, QueryState> =
+  async (responseData, iteratee) => {
+    const rateLimit = responseData.rateLimit;
+    const collaboratorEdges =
+      responseData.repository?.collaborators?.edges ?? [];
 
-  for (const edge of collaboratorEdges) {
-    if (!utils.hasProperties(edge?.node)) {
-      continue;
+    for (const edge of collaboratorEdges) {
+      if (!utils.hasProperties(edge?.node)) {
+        continue;
+      }
+      const node = edge.node;
+
+      const collaborator: CollaboratorResponse = {
+        id: node.id,
+        name: node.name,
+        login: node.login,
+        permission: edge.permission,
+        repositoryId: responseData.repository?.id,
+      };
+
+      await iteratee(collaborator);
     }
-    const node = edge.node;
 
-    const collaborator: Collaborator = {
-      id: node.id,
-      name: node.name,
-      login: node.login,
-      permission: edge.permission,
-      repositoryId: responseData.repository?.id,
+    return {
+      rateLimit,
+      collaborators: responseData.repository?.collaborators?.pageInfo,
     };
-
-    await iteratee(collaborator);
-  }
-
-  return {
-    rateLimit,
-    collaborators: responseData.repository?.collaborators?.pageInfo,
   };
-};
 
 /**
  * Paginates over the collaborators found on the given repo.
@@ -97,16 +96,18 @@ const processResponseData: ProcessResponse<Collaborator, QueryState> = async (
  * @param execute
  * @param iteratee
  */
-const iterateCollaborators: IteratePagination<QueryParams, Collaborator> =
-  async (queryParams, execute, iteratee) => {
-    return paginate(
-      queryParams,
-      iteratee,
-      execute,
-      buildQuery,
-      processResponseData,
-      (queryState) => !queryState?.collaborators?.hasNextPage ?? true,
-    );
-  };
+const iterateCollaborators: IteratePagination<
+  QueryParams,
+  CollaboratorResponse
+> = async (queryParams, execute, iteratee) => {
+  return paginate(
+    queryParams,
+    iteratee,
+    execute,
+    buildQuery,
+    processResponseData,
+    (queryState) => !queryState?.collaborators?.hasNextPage ?? true,
+  );
+};
 
 export default { iterateCollaborators };

@@ -24,13 +24,18 @@ import {
   OrgTeamMemberQueryResponse,
   GitHubGraphQLClient,
   OrgTeamRepoQueryResponse,
+  VulnerabilityAlertResponse,
 } from './client/GraphQLClient';
 import {
   OrgAppQueryResponse,
   SecretQueryResponse,
   RepoEnvironmentQueryResponse,
 } from './client/RESTClient/types';
-import { PullRequest, Issue, Collaborator } from './client/GraphQLClient/types';
+import {
+  PullRequestResponse,
+  IssueResponse,
+  CollaboratorResponse,
+} from './client/GraphQLClient/types';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -51,6 +56,7 @@ export class APIClient {
     repoSecrets: boolean;
     repoEnvironments: boolean;
     repoIssues: boolean;
+    dependabotAlerts: boolean;
   };
 
   readonly restApiUrl: string;
@@ -366,7 +372,7 @@ export class APIClient {
     repo: RepoEntity,
     logger: IntegrationLogger,
     lastSuccessfulExecution: string,
-    iteratee: ResourceIteratee<PullRequest>,
+    iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
@@ -390,7 +396,7 @@ export class APIClient {
    */
   public async iterateRepoCollaborators(
     repoName: string,
-    iteratee: ResourceIteratee<Collaborator>,
+    iteratee: ResourceIteratee<CollaboratorResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
@@ -417,7 +423,7 @@ export class APIClient {
   public async iterateIssues(
     repo: RepoEntity,
     lastSuccessfulExecution: string,
-    iteratee: ResourceIteratee<Issue>,
+    iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
@@ -437,6 +443,24 @@ export class APIClient {
         'Repo issues scope was not provided, skipping Issue ingestion.',
       );
     }
+  }
+
+  public async iterateRepoVulnAlerts(
+    repo: RepoEntity,
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+  ) {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.accountClient.iterateRepoVulnAlerts(
+      repo.name,
+      iteratee,
+    );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Issues.',
+    );
   }
 
   public async setupAccountClient(): Promise<void> {
@@ -464,6 +488,7 @@ export class APIClient {
       myPermissions = permissions;
       tokenExpires = parseTimePropertyValue(expiresAt) || 0;
     } catch (err) {
+      console.trace(err);
       throw new IntegrationProviderAuthenticationError({
         cause: err,
         endpoint: err.response?.url,
@@ -511,6 +536,7 @@ export class APIClient {
         repoSecrets: false,
         repoEnvironments: false,
         repoIssues: false,
+        dependabotAlerts: false,
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');
@@ -592,6 +618,17 @@ export class APIClient {
     } else {
       this.scopes.repoIssues = true;
     }
+
+    //ingesting dependabot alerts requires scope vulnerability_alerts:read
+    if (['read', 'write'].includes(perms.vulnerability_alerts!)) {
+      this.scopes.dependabotAlerts = true;
+    } else {
+      this.logger.info(
+        "Token does not have 'vulnerability_alerts' (aka dependabot alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
+      );
+      this.scopes.dependabotAlerts = false;
+    }
+
     //scopes check done
   }
 }

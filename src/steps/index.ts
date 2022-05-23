@@ -12,6 +12,7 @@ import { issueSteps } from './issues';
 import { envSecretSteps } from './envSecrets';
 import { teamRepoSteps } from './teamRepos';
 import { teamMemberSteps } from './teamMembers';
+import { vulnerabilityAlertsSteps } from './vulnerabilityAlertsSteps';
 
 const integrationSteps = [
   ...accountSteps,
@@ -28,6 +29,7 @@ const integrationSteps = [
   ...envSecretSteps,
   ...teamMemberSteps,
   ...teamRepoSteps,
+  ...vulnerabilityAlertsSteps,
 ];
 
 export { integrationSteps };

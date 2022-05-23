@@ -14,15 +14,16 @@ import { Octokit } from '@octokit/rest';
 import { ResourceIteratee } from '../../client';
 
 import {
-  Collaborator,
-  Issue,
+  CollaboratorResponse,
+  IssueResponse,
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamQueryResponse,
   OrgTeamRepoQueryResponse,
-  PullRequest,
+  PullRequestResponse,
   RateLimitStepSummary,
+  VulnerabilityAlertResponse,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
@@ -43,6 +44,7 @@ import {
 } from './errorHandlers';
 import { graphql } from '@octokit/graphql/dist-types/types';
 import SinglePullRequestQuery from './pullRequestQueries/SinglePullRequestQuery';
+import RepoVulnAlertsQuery from './vulnerabilityAlertQueries/RepoVulnAlertsQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300000;
 
@@ -171,10 +173,10 @@ export class GitHubGraphQLClient {
     repoOwner,
     repoName,
     pullRequestNumber,
-  ): Promise<PullRequest | null> {
+  ): Promise<PullRequestResponse | null> {
     const executor = createQueryExecutor(this, this.logger);
 
-    let pullRequest: PullRequest | null = null;
+    let pullRequest: PullRequestResponse | null = null;
     await SinglePullRequestQuery.iteratePullRequest(
       { pullRequestNumber, repoName, repoOwner },
       executor,
@@ -195,7 +197,7 @@ export class GitHubGraphQLClient {
   public async iteratePullRequests(
     repository: { fullName: string; public: boolean },
     lastExecutionTime: string,
-    iteratee: ResourceIteratee<PullRequest>,
+    iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
@@ -220,7 +222,7 @@ export class GitHubGraphQLClient {
   public async iterateIssues(
     repoFullName: string,
     lastExecutionTime: string,
-    iteratee: ResourceIteratee<Issue>,
+    iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
@@ -274,7 +276,7 @@ export class GitHubGraphQLClient {
   public async iterateRepoCollaborators(
     login,
     repoName,
-    iteratee: ResourceIteratee<Collaborator>,
+    iteratee: ResourceIteratee<CollaboratorResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
@@ -347,6 +349,22 @@ export class GitHubGraphQLClient {
     return this.collectRateLimitStatus(
       await TeamMembersQuery.iterateMembers(
         { login, teamSlug },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  public async iterateRepoVulnAlerts(
+    login: string,
+    repoName: string,
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await RepoVulnAlertsQuery.iterateVulnerabilityAlerts(
+        { login, repoName },
         executor,
         iteratee,
       ),

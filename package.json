@@ -14,6 +14,7 @@
   },
   "scripts": {
     "start": "j1-integration collect",
+    "start:step": "j1-integration collect --step fetch-vulnerability-alerts --disable-schema-validation",
     "graph": "j1-integration visualize",
     "graph:types": "j1-integration visualize-types",
     "lint": "eslint . --cache --fix --ext .ts,.tsx",
@@ -27,7 +28,9 @@
     "prepush": "yarn format:check && yarn lint && yarn type-check && jest --changedSince main",
     "graph:spec": "j1-integration visualize-types --project-path docs/spec --output-file ./.j1-integration/types-graph/index.spec.html",
     "validate:questions": "j1-integration validate-question-file -a $MANAGED_QUESTIONS_JUPITERONE_ACCOUNT_ID -k $MANAGED_QUESTIONS_JUPITERONE_API_KEY",
-    "validate:questions:dry": "j1-integration validate-question-file --dry-run"
+    "validate:questions:dry": "j1-integration validate-question-file --dry-run",
+    "visualize:types": "j1-integration visualize-types",
+    "visualize:spec": "j1-integration visualize-types -p docs/spec -o .j1-integration/types-graph/index.spec.html"
   },
   "dependencies": {
     "@octokit/auth-app": "^3.6.0",
@@ -39,12 +42,12 @@
     "@octokit/rest": "^18.12.0"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.13.4"
+    "@jupiterone/integration-sdk-core": "^8.13.9"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.13.4",
-    "@jupiterone/integration-sdk-dev-tools": "^8.13.4",
-    "@jupiterone/integration-sdk-testing": "^8.13.4",
+    "@jupiterone/integration-sdk-core": "^8.13.9",
+    "@jupiterone/integration-sdk-dev-tools": "^8.13.9",
+    "@jupiterone/integration-sdk-testing": "^8.13.9",
     "@types/lodash.omit": "^4.5.6"
   }
 }

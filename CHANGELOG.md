@@ -8,6 +8,13 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.15.0 - 2022-05-23
+
+### Added
+
+- Added Vulnerability Alerts (aka Dependabot Alerts) ingestion step. In order to
+  enable, this requires the Dependabot Alert read-only permission.
+
 ## 1.14.0 - 2022-05-17
 
 ### Added

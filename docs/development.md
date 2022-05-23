@@ -50,6 +50,7 @@ you'll need to do the following:
       - Pull requests: Read-only
       - Issues: Read-only (enables both Issues and private-repo PRs)
       - Secrets: Read-only (only name and creation date is collected)
+      - Dependabot alerts: Read-only
 
       **Organization Permissions**
 

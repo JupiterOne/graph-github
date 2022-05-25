@@ -33,6 +33,7 @@ import {
   SecretEntity,
   TeamEntity,
   UserEntity,
+  VulnerabilityAlertEntity,
 } from '../types';
 import {
   buildPullRequestKey,
@@ -556,7 +557,7 @@ export function createCweEntity(cwe: VulnerabilityAlertCweResponse) {
 }
 
 export function createFindingCveRelationship(
-  findingEntity,
+  findingEntity: VulnerabilityAlertEntity,
   cveEntity,
 ): Relationship {
   return createMappedRelationship({
@@ -566,13 +567,23 @@ export function createFindingCveRelationship(
       sourceEntityKey: findingEntity._key,
       relationshipDirection: RelationshipDirection.FORWARD,
       targetFilterKeys: [['_type', '_key']],
-      targetEntity: cveEntity,
+      targetEntity: {
+        _key: cveEntity._key,
+        _type: cveEntity._type,
+        _class: cveEntity._class,
+        id: cveEntity.id,
+        displayName: cveEntity.displayName,
+        name: cveEntity.name,
+        cvssScore: cveEntity.cvssScore,
+        webLink: cveEntity.webLink,
+        references: cveEntity.references,
+      },
     },
   });
 }
 
 export function createFindingCweRelationship(
-  findingEntity,
+  findingEntity: VulnerabilityAlertEntity,
   cweEntity,
 ): Relationship {
   return createMappedRelationship({
@@ -582,7 +593,17 @@ export function createFindingCweRelationship(
       sourceEntityKey: findingEntity._key,
       relationshipDirection: RelationshipDirection.FORWARD,
       targetFilterKeys: [['_type', '_key']],
-      targetEntity: cweEntity,
+      targetEntity: {
+        _key: cweEntity._key,
+        _type: cweEntity._type,
+        _class: cweEntity._class,
+        id: cweEntity.id,
+        displayName: cweEntity.displayName,
+        name: cweEntity.name,
+        webLink: cweEntity.webLink,
+        description: cweEntity.description,
+        references: cweEntity.references,
+      },
     },
   });
 }

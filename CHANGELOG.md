@@ -8,6 +8,15 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.15.1 - 2022-05-25
+
+### Fixed
+
+- Fixed buildVulnAlertRecommendation() to handle responses without
+  `firstPatchedVersion`.
+- Changed Vulnerability Alert to CVE/CWE from a direct relationship to a mapped
+  relationship.
+
 ## 1.15.0 - 2022-05-23
 
 ### Added

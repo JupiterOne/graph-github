@@ -6,10 +6,16 @@ export function buildVulnAlertRecommendation(
   if (!alert.securityVulnerability) {
     return;
   }
-  return (
+
+  const packageRecommendation =
     `Update ${alert.securityVulnerability.package.ecosystem} package ` +
-    `"${alert.securityVulnerability.package.name}" to >= ${alert.securityVulnerability.firstPatchedVersion.identifier}`
-  );
+    `"${alert.securityVulnerability.package.name}"`;
+
+  if (alert.securityVulnerability.firstPatchedVersion?.identifier) {
+    return `${packageRecommendation} to >= ${alert.securityVulnerability.firstPatchedVersion.identifier}`;
+  } else {
+    return `${packageRecommendation}. Vulnerable version range: ${alert.securityVulnerability.vulnerableVersionRange}`;
+  }
 }
 
 export function buildVulnAlertId(alert: VulnerabilityAlertResponse) {

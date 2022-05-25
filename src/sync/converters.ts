@@ -1,34 +1,38 @@
 import {
-  setRawData,
-  parseTimePropertyValue,
-  RelationshipClass,
   createIntegrationEntity,
-  MappedRelationship,
-  RelationshipDirection,
-  truncateEntityPropertyValue,
+  createMappedRelationship,
   Entity,
+  MappedRelationship,
+  parseTimePropertyValue,
+  Relationship,
+  RelationshipClass,
+  RelationshipDirection,
+  setRawData,
+  truncateEntityPropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
 import {
-  GithubEntities,
+  GITHUB_FINDING_CVE_RELATIONSHIP_TYPE,
+  GITHUB_FINDING_CWE_RELATIONSHIP_TYPE,
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
   GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+  GithubEntities,
 } from '../constants';
 
 import {
   AccountEntity,
-  AppEntity,
-  SecretEntity,
-  RepoEntity,
-  UserEntity,
-  PullRequestEntity,
-  IdEntityMap,
-  TeamEntity,
-  IssueEntity,
   AccountType,
+  AppEntity,
   EnvironmentEntity,
+  IdEntityMap,
+  IssueEntity,
+  PullRequestEntity,
   RepoAllowRelationship,
+  RepoEntity,
   RepoKeyAndName,
+  SecretEntity,
+  TeamEntity,
+  UserEntity,
 } from '../types';
 import {
   buildPullRequestKey,
@@ -37,26 +41,26 @@ import {
   getSecretEntityKey,
 } from '../util/propertyHelpers';
 import {
-  OrgMemberQueryResponse,
-  OrgRepoQueryResponse,
-  OrgTeamQueryResponse,
-  OrgQueryResponse,
-  OrgTeamMemberQueryResponse,
-  Commit,
-  PullRequestResponse,
-  Review,
-  IssueResponse,
   CollaboratorResponse,
-  VulnerabilityAlertResponse,
+  Commit,
+  IssueResponse,
+  OrgMemberQueryResponse,
+  OrgQueryResponse,
+  OrgRepoQueryResponse,
+  OrgTeamMemberQueryResponse,
+  OrgTeamQueryResponse,
+  PullRequestResponse,
   RepositoryVulnerabilityAlertState,
+  Review,
+  VulnerabilityAlertResponse,
 } from '../client/GraphQLClient';
 import {
   OrgAppQueryResponse,
-  SecretQueryResponse,
   RepoEnvironmentQueryResponse,
+  SecretQueryResponse,
 } from '../client/RESTClient/types';
 
-import { uniq, last, compact, omit } from 'lodash';
+import { compact, last, omit, uniq } from 'lodash';
 import getCommitsToDestination from '../util/getCommitsToDestination';
 import {
   buildVulnAlertId,
@@ -432,7 +436,7 @@ export function toIssueEntity(
   return issueEntity;
 }
 
-export function toVulnerabilityAlertEntity(
+export function createVulnerabilityAlertEntity(
   data: VulnerabilityAlertResponse,
   baseUrl: string,
 ) {
@@ -496,7 +500,7 @@ export function toVulnerabilityAlertEntity(
   });
 }
 
-export function toCveEntity(
+export function createCveEntity(
   cve: { type: string; value: string },
   cvss?: { score: number; vectorString: string },
 ): Entity {
@@ -527,7 +531,7 @@ type VulnerabilityAlertCweResponse = {
   description: string;
 };
 
-export function toCweEntity(cwe: VulnerabilityAlertCweResponse) {
+export function createCweEntity(cwe: VulnerabilityAlertCweResponse) {
   const cweNumber = cwe.cweId.replace(/^\D+/g, '');
   const cweId = cwe.cweId.toLowerCase();
 
@@ -547,6 +551,38 @@ export function toCweEntity(cwe: VulnerabilityAlertCweResponse) {
         ],
         webLink: `https://cwe.mitre.org/data/definitions/${cweNumber}.html`,
       },
+    },
+  });
+}
+
+export function createFindingCveRelationship(
+  findingEntity,
+  cveEntity,
+): Relationship {
+  return createMappedRelationship({
+    _class: RelationshipClass.IS,
+    _type: GITHUB_FINDING_CVE_RELATIONSHIP_TYPE,
+    _mapping: {
+      sourceEntityKey: findingEntity._key,
+      relationshipDirection: RelationshipDirection.FORWARD,
+      targetFilterKeys: [['_type', '_key']],
+      targetEntity: cveEntity,
+    },
+  });
+}
+
+export function createFindingCweRelationship(
+  findingEntity,
+  cweEntity,
+): Relationship {
+  return createMappedRelationship({
+    _class: RelationshipClass.EXPLOITS,
+    _type: GITHUB_FINDING_CWE_RELATIONSHIP_TYPE,
+    _mapping: {
+      sourceEntityKey: findingEntity._key,
+      relationshipDirection: RelationshipDirection.FORWARD,
+      targetFilterKeys: [['_type', '_key']],
+      targetEntity: cweEntity,
     },
   });
 }

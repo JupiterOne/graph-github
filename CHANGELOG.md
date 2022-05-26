@@ -8,6 +8,12 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.15.2 - 2022-05-26
+
+### Fixed
+
+- Modified Vulnerability to CVE/CWE mapped relationship to correct properties.
+
 ## 1.15.1 - 2022-05-25
 
 ### Fixed

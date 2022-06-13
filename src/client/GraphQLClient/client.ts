@@ -358,13 +358,19 @@ export class GitHubGraphQLClient {
   public async iterateRepoVulnAlerts(
     login: string,
     repoName: string,
+    filters: { severities: string[]; states: string[] },
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
       await RepoVulnAlertsQuery.iterateVulnerabilityAlerts(
-        { login, repoName },
+        {
+          login,
+          repoName,
+          severityFilter: filters.severities ?? [],
+          stateFilter: filters.states ?? [],
+        },
         executor,
         iteratee,
       ),

@@ -5,7 +5,7 @@ export type QueryExecutor = (executable: ExecutableQuery) => Promise<any>;
 
 export type ExecutableQuery = {
   query: string;
-  queryVariables: { [key: string]: string | number | undefined };
+  queryVariables: { [key: string]: string | number | undefined | string[] };
   rateLimit?: {
     limit: number;
     remaining: number;

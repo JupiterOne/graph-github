@@ -238,8 +238,14 @@ export default class OrganizationAccountClient {
   async iterateRepoVulnAlerts(
     repoName: string,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+    filters: { severities: string[]; states: string[] },
   ): Promise<RateLimitStepSummary> {
-    return await this.v4.iterateRepoVulnAlerts(this.login, repoName, iteratee);
+    return await this.v4.iterateRepoVulnAlerts(
+      this.login,
+      repoName,
+      filters,
+      iteratee,
+    );
   }
 
   /**

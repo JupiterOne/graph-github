@@ -1,7 +1,8 @@
 import {
   IntegrationLogger,
-  IntegrationValidationError,
   IntegrationProviderAuthenticationError,
+  IntegrationValidationError,
+  IntegrationWarnEventName,
   parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
@@ -18,24 +19,24 @@ import getInstallation from './util/getInstallation';
 import createGitHubAppClient from './util/createGitHubAppClient';
 import OrganizationAccountClient from './client/OrganizationAccountClient';
 import {
+  GitHubGraphQLClient,
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
-  OrgTeamQueryResponse,
   OrgTeamMemberQueryResponse,
-  GitHubGraphQLClient,
+  OrgTeamQueryResponse,
   OrgTeamRepoQueryResponse,
   VulnerabilityAlertResponse,
 } from './client/GraphQLClient';
 import {
   OrgAppQueryResponse,
-  SecretQueryResponse,
   RepoEnvironmentQueryResponse,
+  SecretQueryResponse,
 } from './client/RESTClient/types';
 import {
-  PullRequestResponse,
-  IssueResponse,
   CollaboratorResponse,
-} from './client/GraphQLClient/types';
+  IssueResponse,
+  PullRequestResponse,
+} from './client/GraphQLClient';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -456,6 +457,10 @@ export class APIClient {
     const rateLimit = await this.accountClient.iterateRepoVulnAlerts(
       repo.name,
       iteratee,
+      {
+        states: this.config.dependabotAlertStates,
+        severities: this.config.dependabotAlertSeverities,
+      },
     );
     this.logger.debug(
       { rateLimit },
@@ -540,6 +545,7 @@ export class APIClient {
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');
+
     //checking for proper scopes
     if (!(perms.members === 'read' || perms.members === 'write')) {
       throw new IntegrationValidationError(
@@ -627,6 +633,25 @@ export class APIClient {
         "Token does not have 'vulnerability_alerts' (aka dependabot alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
       );
       this.scopes.dependabotAlerts = false;
+    }
+
+    const missingScopes = Object.keys(this.scopes).filter(
+      (key) => !this.scopes[key],
+    );
+
+    if (missingScopes.length > 0) {
+      const missingScopesMessage = `The following scope(s) were not granted: [${missingScopes.join(
+        ', ',
+      )}]. Ingestion will be limited! Please accept new permissions to ingest full dataset.`;
+
+      this.logger.info(
+        { allScopes: this.scopes, missingScopes },
+        missingScopesMessage,
+      );
+      this.logger.publishWarnEvent({
+        name: IntegrationWarnEventName.MissingPermission,
+        description: missingScopesMessage,
+      });
     }
 
     //scopes check done

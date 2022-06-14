@@ -104,6 +104,21 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    * populated by the user.
    */
   githubInstallationId: string;
+
+  /**
+   * Boolean indicating if dependabot alerts should be ingested.
+   */
+  enableDependabotAlerts: boolean;
+
+  /**
+   * Array of alert states used to filter alerts.
+   */
+  dependabotAlertStates: string[];
+
+  /**
+   * Array of severities used to filter alerts.
+   */
+  dependabotAlertSeverities: string[];
 }
 
 export async function validateInvocation(
@@ -153,6 +168,15 @@ export function sanitizeConfig(config: IntegrationConfig) {
       config.githubApiBaseUrl ??
       'https://api.github.com',
   );
+
+  config.enableDependabotAlerts =
+    config.enableDependabotAlerts ||
+    Boolean(process.env['ENABLE_DEPENDABOT_ALERTS']);
+
+  if (config.enableDependabotAlerts) {
+    config.dependabotAlertSeverities = config.dependabotAlertSeverities ?? [];
+    config.dependabotAlertStates = config.dependabotAlertStates ?? [];
+  }
 
   if (
     !config.githubAppId ||

@@ -8,6 +8,13 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.16.0 - 2022-06-14
+
+### Added
+
+- Added ability to enable/disable ingestion of Dependabot vulnerability
+  findings. Includes finding filter options on status and severity.
+
 ## 1.15.2 - 2022-05-26
 
 ### Fixed

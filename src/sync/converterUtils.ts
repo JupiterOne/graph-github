@@ -19,7 +19,7 @@ export function buildVulnAlertRecommendation(
 }
 
 export function buildVulnAlertId(alert: VulnerabilityAlertResponse) {
-  return `ghva_${alert.repository.nameWithOwner}_${alert.number}`;
+  return `ghva_${alert.repository.nameWithOwner}_${alert.id}`;
 }
 
 /**

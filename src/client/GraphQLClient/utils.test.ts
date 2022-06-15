@@ -1,4 +1,4 @@
-import utils from './utils';
+import utils, { EnterpriseFeatures } from './utils';
 
 describe('utils', () => {
   test('hasProperties', () => {
@@ -76,5 +76,25 @@ describe('utils', () => {
         },
       }),
     ).toMatchSnapshot();
+  });
+  test('#isSupported', () => {
+    expect(
+      utils.isSupported(
+        EnterpriseFeatures.REPO_VULN_ALERT_STATE_ARG,
+        '3.3.300',
+      ),
+    ).toBeFalsy();
+    expect(
+      utils.isSupported(EnterpriseFeatures.REPO_VULN_ALERT_FIELDS, '3.5.0'),
+    ).toBeTruthy();
+    expect(
+      utils.isSupported(EnterpriseFeatures.REPO_VULN_ALERT_FIELDS, '3.6.3'),
+    ).toBeTruthy();
+    expect(
+      utils.isSupported(EnterpriseFeatures.REPO_VULN_ALERT_FIELDS, ''),
+    ).toBeTruthy();
+    expect(
+      utils.isSupported(EnterpriseFeatures.REPO_VULN_ALERT_FIELDS, null),
+    ).toBeTruthy();
   });
 });

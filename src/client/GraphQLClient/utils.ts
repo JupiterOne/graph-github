@@ -1,4 +1,5 @@
 import { URL } from 'url';
+import { gte } from 'semver';
 
 const innerResourcePaginationRequired = (pullRequest): boolean => {
   if (!pullRequest) {
@@ -56,10 +57,36 @@ const hasProperties = (object: any) => {
   }
 };
 
+/**
+ * Specifies the version a feature was added to GHE Server.
+ */
+export enum EnterpriseFeatures {
+  REPO_VULN_ALERT_STATE_ARG = '3.5.0',
+  REPO_VULN_ALERT_FIELDS = '3.5.0', // fixReason, fixedAt, number, state were added
+}
+
+/**
+ * Returns t/f if the provided feature is supported for the provided server version.
+ * @param featureVersion
+ * @param gheServerVersion
+ */
+const isSupported = (
+  featureVersion: EnterpriseFeatures,
+  gheServerVersion?: string | null,
+): boolean => {
+  if (!gheServerVersion || gheServerVersion.length === 0) {
+    // All features are supported if on GH Cloud.
+    return true;
+  }
+
+  return gte(gheServerVersion, featureVersion);
+};
+
 export default {
   hasProperties,
   innerResourcePaginationRequired,
   responseToResource,
   findRepoOwnerAndName: determineRepoOwnerAndName,
   hasRepoOwnerAndName,
+  isSupported,
 };

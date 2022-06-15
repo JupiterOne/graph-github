@@ -106,6 +106,16 @@ export default class OrganizationAccountClient {
   }
 
   /**
+   * Fetches meta about the API server. https://docs.github.com/en/enterprise-server@3.5/rest/meta
+   * Used to determine compatibility for GHE Server versions.
+   */
+  async fetchMeta() {
+    return (await this.v3.meta.get().then((result) => result.data)) as {
+      installed_version: string;
+    };
+  }
+
+  /**
    * Fetches the pull request for the given parameters.
    * @param repoOwner
    * @param repoName
@@ -239,11 +249,13 @@ export default class OrganizationAccountClient {
     repoName: string,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
     filters: { severities: string[]; states: string[] },
+    gheServerVersion?: string,
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateRepoVulnAlerts(
       this.login,
       repoName,
       filters,
+      gheServerVersion,
       iteratee,
     );
   }

@@ -8,6 +8,14 @@ and this project adheres to
 
 [Unreleased]
 
+### Fixed
+
+- `validateInvocation` now uses /meta endpoint. Establishes the version of GHE
+  Server, as applicable.
+- Based on the GHE Server version, the Vulnerability Alert queries are modified.
+- Vulnerability Alert converter was updated to handle the less verbose response
+  from older versions.
+
 ## 1.16.0 - 2022-06-14
 
 ### Added

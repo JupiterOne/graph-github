@@ -472,6 +472,7 @@ export class APIClient {
         states: this.config.dependabotAlertStates,
         severities: this.config.dependabotAlertSeverities,
       },
+      this.gheServerVersion,
     );
     this.logger.debug(
       { rateLimit },

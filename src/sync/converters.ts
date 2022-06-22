@@ -437,6 +437,13 @@ export function toIssueEntity(
   return issueEntity;
 }
 
+/**
+ * Maps response data to entity
+ * Note: Fields state, fixReason, fixedOn, and number
+ *       are not supported in GHE Server version <3.5.0.
+ * @param data
+ * @param baseUrl
+ */
 export function createVulnerabilityAlertEntity(
   data: VulnerabilityAlertResponse,
   baseUrl: string,
@@ -461,20 +468,25 @@ export function createVulnerabilityAlertEntity(
         impact: data.securityAdvisory?.summary,
         vector: data.securityAdvisory?.cvss.vectorString,
         recommendation: buildVulnAlertRecommendation(data),
-        open: data.state === RepositoryVulnerabilityAlertState.Open,
+        open: data.state
+          ? data.state === RepositoryVulnerabilityAlertState.Open
+          : !data.dismissedAt,
         references: data.securityAdvisory?.references?.map((ref) => ref.url),
         public: data.securityAdvisory?.identifiers?.some(
           (identifier) => identifier.type === 'CVE',
         ),
         weblink: apiUrlToWebLink(
           baseUrl,
-          `/${data.repository.nameWithOwner}/security/dependabot/${data.number}`,
+          `/${data.repository.nameWithOwner}/security/dependabot/${
+            data.number ?? ''
+          }`,
         ),
         createdOn: parseTimePropertyValue(data.createdAt),
         dismissedOn: parseTimePropertyValue(data.dismissedAt),
         dismisserLogin: data.dismisser?.login,
         dismissReason: data.dismissReason,
         fixReason: data.fixReason,
+        fixedOn: parseTimePropertyValue(data.fixedAt),
         number: data.number,
         databaseId: data.securityAdvisory?.databaseId,
         ghsaId: data.securityAdvisory?.ghsaId,

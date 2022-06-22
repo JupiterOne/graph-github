@@ -39,6 +39,9 @@ graph.
 - You must have permission in JupiterOne to install new integrations.
 - If setting up for GitHub Enterprise Server, the URL to your instance is
   required.
+- Note: GitHub Enterprise Server Versions 3.3.3 and above have been verified as
+  compatible with this integration. Other versions may work but are not fully
+  supported.
 
 ## Support
 

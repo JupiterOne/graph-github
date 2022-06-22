@@ -51,6 +51,7 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 export class APIClient {
   accountClient: OrganizationAccountClient;
   ghsToken: string;
+  gheServerVersion?: string;
   scopes: {
     orgAdmin: boolean;
     orgSecrets: boolean;
@@ -82,10 +83,20 @@ export class APIClient {
   }
 
   public async verifyAuthentication(): Promise<void> {
-    // the most light-weight request possible to validate
-    // authentication works with the provided credentials, throw an err if
-    // authentication fails
-    await this.setupAccountClient();
+    await this.fetchAndSetupMeta();
+  }
+
+  /**
+   * Queries meta endpoint and saves the GHE Server version, if applicable.
+   */
+  private async fetchAndSetupMeta(): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+
+    const meta = await this.accountClient.fetchMeta();
+    this.gheServerVersion = meta.installed_version ?? null;
+    this.logger.info({ meta }, 'API meta');
   }
 
   /**
@@ -461,6 +472,7 @@ export class APIClient {
         states: this.config.dependabotAlertStates,
         severities: this.config.dependabotAlertSeverities,
       },
+      this.gheServerVersion,
     );
     this.logger.debug(
       { rateLimit },
@@ -474,11 +486,13 @@ export class APIClient {
         'Integration id should be a number.',
       );
     }
+
     const appClient = createGitHubAppClient(
       this.restApiUrl,
       this.config,
       this.logger,
     );
+
     let tokenExpires: number;
     let myPermissions: TokenPermissions;
     try {
@@ -489,6 +503,7 @@ export class APIClient {
         permissions: TokenPermissions;
         expiresAt: string;
       };
+
       this.ghsToken = token;
       myPermissions = permissions;
       tokenExpires = parseTimePropertyValue(expiresAt) || 0;

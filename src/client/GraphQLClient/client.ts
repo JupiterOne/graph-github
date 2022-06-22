@@ -359,6 +359,7 @@ export class GitHubGraphQLClient {
     login: string,
     repoName: string,
     filters: { severities: string[]; states: string[] },
+    gheServerVersion: string | undefined,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
@@ -370,6 +371,7 @@ export class GitHubGraphQLClient {
           repoName,
           severityFilter: filters.severities ?? [],
           stateFilter: filters.states ?? [],
+          gheServerVersion,
         },
         executor,
         iteratee,

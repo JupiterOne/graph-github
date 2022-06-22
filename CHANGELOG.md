@@ -16,6 +16,13 @@ and this project adheres to
 - Vulnerability Alert converter was updated to handle the less verbose response
   from older versions.
 
+## 1.17.0 - 2022-06-22
+
+### Fixed
+
+- Finding relationships to CWE and CVE are now mapped relationships and do not
+  create direct relationships.
+
 ## 1.16.0 - 2022-06-14
 
 ### Added

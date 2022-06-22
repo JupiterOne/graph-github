@@ -573,24 +573,22 @@ export function createFindingCveRelationship(
   cveEntity,
 ): Relationship {
   return createMappedRelationship({
+    source: findingEntity,
     _class: RelationshipClass.IS,
     _type: GITHUB_FINDING_CVE_RELATIONSHIP_TYPE,
-    _mapping: {
-      sourceEntityKey: findingEntity._key,
-      relationshipDirection: RelationshipDirection.FORWARD,
-      targetFilterKeys: [['_type', '_key']],
-      targetEntity: {
-        _key: cveEntity._key,
-        _type: cveEntity._type,
-        _class: cveEntity._class,
-        id: cveEntity.id,
-        displayName: cveEntity.displayName,
-        name: cveEntity.name,
-        cvssScore: cveEntity.cvssScore,
-        webLink: cveEntity.webLink,
-        references: cveEntity.references,
-      },
+    target: {
+      _key: cveEntity._key,
+      _type: cveEntity._type,
+      _class: cveEntity._class,
+      id: cveEntity.id,
+      displayName: cveEntity.displayName,
+      name: cveEntity.name,
+      cvssScore: cveEntity.cvssScore,
+      webLink: cveEntity.webLink,
+      references: cveEntity.references,
     },
+    relationshipDirection: RelationshipDirection.FORWARD,
+    skipTargetCreation: false,
   });
 }
 
@@ -599,24 +597,22 @@ export function createFindingCweRelationship(
   cweEntity,
 ): Relationship {
   return createMappedRelationship({
+    source: findingEntity,
     _class: RelationshipClass.EXPLOITS,
     _type: GITHUB_FINDING_CWE_RELATIONSHIP_TYPE,
-    _mapping: {
-      sourceEntityKey: findingEntity._key,
-      relationshipDirection: RelationshipDirection.FORWARD,
-      targetFilterKeys: [['_type', '_key']],
-      targetEntity: {
-        _key: cweEntity._key,
-        _type: cweEntity._type,
-        _class: cweEntity._class,
-        id: cweEntity.id,
-        displayName: cweEntity.displayName,
-        name: cweEntity.name,
-        webLink: cweEntity.webLink,
-        description: cweEntity.description,
-        references: cweEntity.references,
-      },
+    target: {
+      _key: cweEntity._key,
+      _type: cweEntity._type,
+      _class: cweEntity._class,
+      id: cweEntity.id,
+      displayName: cweEntity.displayName,
+      name: cweEntity.name,
+      webLink: cweEntity.webLink,
+      description: cweEntity.description,
+      references: cweEntity.references,
     },
+    relationshipDirection: RelationshipDirection.FORWARD,
+    skipTargetCreation: false,
   });
 }
 

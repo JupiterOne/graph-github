@@ -8,6 +8,8 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.17.1 - 2022-06-22
+
 ### Fixed
 
 - `validateInvocation` now uses /meta endpoint. Establishes the version of GHE

@@ -8,6 +8,8 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.17.0 - 2022-06-22
+
 ### Fixed
 
 - Finding relationships to CWE and CVE are now mapped relationships and do not

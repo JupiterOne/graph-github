@@ -71,8 +71,7 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    * The ID number assigned to the installation.
    * In the managed environment for GitHub Cloud, the authentication flow automatically
    * populates this field.
-   * In the managed environment for GitHub Enterprise Server, this value is not used.
-   * Instead the githubInstallationId is filled in by the user.
+   * In the managed environment for GitHub Enterprise Server, this value is filled in by the user.
    */
   installationId: number;
 
@@ -97,13 +96,6 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    * Valid example: my.github.com or https://my.git.org
    */
   githubApiBaseUrl: string;
-
-  /**
-   * Used during GitHub Enterprise Server configuration.
-   * Same value as installationId but this value is
-   * populated by the user.
-   */
-  githubInstallationId: string;
 
   /**
    * Boolean indicating if dependabot alerts should be ingested.

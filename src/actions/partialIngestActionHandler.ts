@@ -35,7 +35,7 @@ export const partialIngestActionHandler = async (
   client: APIClient,
   entitiesToIngest: EntityToIngest[],
   logger: IntegrationLogger,
-) => {
+): Promise<{ entities: any[]; errors: EntityIngestError[] }> => {
   const errors: EntityIngestError[] = [];
 
   const pendingPromises = entitiesToIngest.map((entity) => {
@@ -56,9 +56,8 @@ export const partialIngestActionHandler = async (
           ...entity,
           message: 'Failed to collect data for entity.',
         });
+        return null;
       });
-
-      // TODO: INT-3800: Ingest entity and relationships (VDubber May 2022)
     } else {
       errors.push({
         ...entity,

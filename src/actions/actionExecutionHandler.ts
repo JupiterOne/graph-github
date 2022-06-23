@@ -1,6 +1,10 @@
-import { partialIngestActionHandler } from './partialIngestActionHandler';
+import {
+  EntityIngestError,
+  partialIngestActionHandler,
+} from './partialIngestActionHandler';
 import { getOrCreateApiClient } from '../client';
 import {
+  Entity,
   IntegrationError,
   IntegrationExecutionContext,
 } from '@jupiterone/integration-sdk-core';
@@ -24,7 +28,7 @@ export interface IntegrationActionExecutionContext<TConfig>
 
 export default async function actionExecutionHandler(
   context: IntegrationActionExecutionContext<IntegrationConfig>,
-) {
+): Promise<{ entities: Entity[]; errors: EntityIngestError[] }> {
   const { logger, instance, event } = context;
   const { action } = event;
 

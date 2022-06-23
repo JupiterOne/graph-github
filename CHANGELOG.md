@@ -8,6 +8,11 @@ and this project adheres to
 
 [Unreleased]
 
+### Changed
+
+- Eliminated the unused config value `githubInstallationId`.
+- Update action return types.
+
 ## 1.17.1 - 2022-06-22
 
 ### Fixed

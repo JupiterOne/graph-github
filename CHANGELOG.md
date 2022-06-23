@@ -8,6 +8,8 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.17.2 - 2022-06-23
+
 ### Changed
 
 - Eliminated the unused config value `githubInstallationId`.

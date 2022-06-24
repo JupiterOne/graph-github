@@ -8,6 +8,14 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.17.3 - 2022-06-24
+
+### Fixed
+
+- Duplicate PR keys are now being caught, logged, and skipped. Duplication
+  should only be happening in rare instances such as when a new PR is entered
+  during ingestion and pagination is shifted.
+
 ## 1.17.2 - 2022-06-23
 
 ### Changed

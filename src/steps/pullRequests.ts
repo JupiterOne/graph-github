@@ -94,9 +94,14 @@ export async function fetchPrs(
               teamMembersByLoginMap,
               usersByLoginMap!,
             );
-            const prEntity = (await jobState.addEntity(
-              pr,
-            )) as PullRequestEntity;
+            // If we receive a new PR into a repo while paginating, the
+            // results will shift and cause us to see a PR twice.
+            let prEntity = await jobState.findEntity(pr._key);
+            if (prEntity) {
+              logger.info({ key: pr._key }, 'PR already exists in job state.');
+            } else {
+              prEntity = (await jobState.addEntity(pr)) as PullRequestEntity;
+            }
 
             await jobState.addRelationship(
               createDirectRelationship({

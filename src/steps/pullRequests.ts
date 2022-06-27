@@ -100,84 +100,85 @@ export async function fetchPrs(
             // cannot have duplicate keys for either.
             if (jobState.hasKey(pr._key)) {
               logger.info({ key: pr._key }, 'PR already exists in job state.');
-            } else {
-              const prEntity = (await jobState.addEntity(
-                pr,
-              )) as PullRequestEntity;
+              return;
+            }
 
+            const prEntity = (await jobState.addEntity(
+              pr,
+            )) as PullRequestEntity;
+
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.HAS,
+                from: repoEntity,
+                to: prEntity,
+              }),
+            );
+
+            if (usersByLoginMap![pr.authorLogin]) {
               await jobState.addRelationship(
                 createDirectRelationship({
-                  _class: RelationshipClass.HAS,
-                  from: repoEntity,
+                  _class: RelationshipClass.OPENED,
+                  from: usersByLoginMap![pr.authorLogin],
                   to: prEntity,
                 }),
               );
+            } else {
+              //we don't recognize this author - make a mapped relationship
+              await jobState.addRelationship(
+                createUnknownUserIssueRelationship(
+                  pr.authorLogin,
+                  GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
+                  RelationshipClass.OPENED,
+                  prEntity._key,
+                ),
+              );
+            }
 
-              if (usersByLoginMap![pr.authorLogin]) {
-                await jobState.addRelationship(
-                  createDirectRelationship({
-                    _class: RelationshipClass.OPENED,
-                    from: usersByLoginMap![pr.authorLogin],
-                    to: prEntity,
-                  }),
-                );
-              } else {
-                //we don't recognize this author - make a mapped relationship
-                await jobState.addRelationship(
-                  createUnknownUserIssueRelationship(
-                    pr.authorLogin,
-                    GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
-                    RelationshipClass.OPENED,
-                    prEntity._key,
-                  ),
-                );
-              }
-
-              if (pr.reviewerLogins) {
-                for (const reviewer of pr.reviewerLogins) {
-                  if (usersByLoginMap![reviewer]) {
-                    await jobState.addRelationship(
-                      createDirectRelationship({
-                        _class: RelationshipClass.REVIEWED,
-                        from: usersByLoginMap![reviewer],
-                        to: prEntity,
-                      }),
-                    );
-                  } else {
-                    //we don't recognize this reviewer - make a mapped relationship
-                    await jobState.addRelationship(
-                      createUnknownUserIssueRelationship(
-                        reviewer,
-                        GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
-                        RelationshipClass.REVIEWED,
-                        prEntity._key,
-                      ),
-                    );
-                  }
+            if (pr.reviewerLogins) {
+              for (const reviewer of pr.reviewerLogins) {
+                if (usersByLoginMap![reviewer]) {
+                  await jobState.addRelationship(
+                    createDirectRelationship({
+                      _class: RelationshipClass.REVIEWED,
+                      from: usersByLoginMap![reviewer],
+                      to: prEntity,
+                    }),
+                  );
+                } else {
+                  //we don't recognize this reviewer - make a mapped relationship
+                  await jobState.addRelationship(
+                    createUnknownUserIssueRelationship(
+                      reviewer,
+                      GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
+                      RelationshipClass.REVIEWED,
+                      prEntity._key,
+                    ),
+                  );
                 }
               }
+            }
 
-              if (pr.approverLogins) {
-                for (const approver of pr.approverLogins) {
-                  if (usersByLoginMap![approver]) {
-                    await jobState.addRelationship(
-                      createDirectRelationship({
-                        _class: RelationshipClass.APPROVED,
-                        from: usersByLoginMap![approver],
-                        to: prEntity,
-                      }),
-                    );
-                  } else {
-                    //we don't recognize this approver - make a mapped relationship
-                    await jobState.addRelationship(
-                      createUnknownUserIssueRelationship(
-                        approver,
-                        GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
-                        RelationshipClass.APPROVED,
-                        prEntity._key,
-                      ),
-                    );
-                  }
+            if (pr.approverLogins) {
+              for (const approver of pr.approverLogins) {
+                if (usersByLoginMap![approver]) {
+                  await jobState.addRelationship(
+                    createDirectRelationship({
+                      _class: RelationshipClass.APPROVED,
+                      from: usersByLoginMap![approver],
+                      to: prEntity,
+                    }),
+                  );
+                } else {
+                  //we don't recognize this approver - make a mapped relationship
+                  await jobState.addRelationship(
+                    createUnknownUserIssueRelationship(
+                      approver,
+                      GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
+                      RelationshipClass.APPROVED,
+                      prEntity._key,
+                    ),
+                  );
                 }
               }
             }

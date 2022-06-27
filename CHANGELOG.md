@@ -8,6 +8,12 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.17.4 - 2022-06-27
+
+### Fixed
+
+- Duplicate PR keys now also prevent duplicate relationships from being created.
+
 ## 1.17.3 - 2022-06-24
 
 ### Fixed

@@ -1,9 +1,10 @@
 import {
+  DisabledStepReason,
   IntegrationExecutionContext,
   StepStartStates,
 } from '@jupiterone/integration-sdk-core';
 
-import { validateInvocation, IntegrationConfig } from './config';
+import { IntegrationConfig, validateInvocation } from './config';
 
 export default async function getStepStartStates(
   context: IntegrationExecutionContext<IntegrationConfig>,
@@ -19,18 +20,37 @@ export default async function getStepStartStates(
     ['fetch-team-repos']: { disabled: false },
     ['fetch-collaborators']: { disabled: false },
     ['fetch-prs']: { disabled: false },
-    ['fetch-issues']: { disabled: !scopes.repoIssues },
-    ['fetch-apps']: { disabled: !scopes.orgAdmin },
-    ['fetch-environments']: { disabled: !scopes.repoEnvironments },
-    ['fetch-org-secrets']: { disabled: !scopes.orgSecrets },
-    ['fetch-repo-secrets']: { disabled: !scopes.repoSecrets },
+    ['fetch-issues']: {
+      disabled: !scopes.repoIssues,
+      disabledReason: DisabledStepReason.PERMISSION,
+    },
+    ['fetch-apps']: {
+      disabled: !scopes.orgAdmin,
+      disabledReason: DisabledStepReason.PERMISSION,
+    },
+    ['fetch-environments']: {
+      disabled: !scopes.repoEnvironments,
+      disabledReason: DisabledStepReason.PERMISSION,
+    },
+    ['fetch-org-secrets']: {
+      disabled: !scopes.orgSecrets,
+      disabledReason: DisabledStepReason.PERMISSION,
+    },
+    ['fetch-repo-secrets']: {
+      disabled: !scopes.repoSecrets,
+      disabledReason: DisabledStepReason.PERMISSION,
+    },
     ['fetch-env-secrets']: {
       disabled: !scopes.repoSecrets || !scopes.repoEnvironments,
+      disabledReason: DisabledStepReason.PERMISSION,
     },
     ['fetch-vulnerability-alerts']: {
       disabled:
         !scopes.dependabotAlerts ||
         !context.instance.config.enableDependabotAlerts,
+      disabledReason: !context.instance.config.enableDependabotAlerts
+        ? DisabledStepReason.CONFIG
+        : DisabledStepReason.PERMISSION,
     },
   };
 }

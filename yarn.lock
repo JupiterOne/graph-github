@@ -743,20 +743,20 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@jupiterone/data-model@^0.49.0":
-  version "0.49.0"
-  resolved "https://registry.yarnpkg.com/@jupiterone/data-model/-/data-model-0.49.0.tgz#453dc055ab2dd5fc3f913fde53579e28cecd0f24"
-  integrity sha512-BG3ld27HbZ7X5b4o6vbP0ugZawUCOSHxYhWK0H3eaQRg8zBNK4lxgeH1ZqnaRuoRqs/nxOuZlt77ozhPyCLQMQ==
+"@jupiterone/data-model@^0.50.0":
+  version "0.50.0"
+  resolved "https://registry.yarnpkg.com/@jupiterone/data-model/-/data-model-0.50.0.tgz#a3fb8e84867fc74dc1c656d38c4a6bcd6255ef5e"
+  integrity sha512-G/6+m93PUbZe9hV8Vf6cIyw/m9de4u2rCeQrlReI71STuYkHh8uNmz4R8NDFcGFQOCOewQXW79f7MlCpwQaNJQ==
   dependencies:
     ajv "^8.0.0"
     ajv-formats "^2.0.0"
 
-"@jupiterone/integration-sdk-cli@^8.14.1":
-  version "8.14.1"
-  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-cli/-/integration-sdk-cli-8.14.1.tgz#4a690ee229f1c61e3de435f469403c3a205df662"
-  integrity sha512-VedlbK9IQMrbAcQoTeALGqyCB/rQGmTmTFlZY1fhK/iBsYG0EDXBKFmVGWH+cA9rYJpClX5KbGIKu69cMjdzaA==
+"@jupiterone/integration-sdk-cli@^8.18.0":
+  version "8.18.0"
+  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-cli/-/integration-sdk-cli-8.18.0.tgz#64d2108d3788fcbb9451cfc0f9cf94bb8ba59ab3"
+  integrity sha512-RgaRl5RJf3+DkeTnbBpKAJ197lOmkr2Ua967KMG5/8M4UwvhVilCGLQO9JG/OOKpEQaPx4jFUAVbM/5l77wnlA==
   dependencies:
-    "@jupiterone/integration-sdk-runtime" "^8.14.1"
+    "@jupiterone/integration-sdk-runtime" "^8.18.0"
     chalk "^4"
     commander "^5.0.0"
     fs-extra "^10.1.0"
@@ -770,22 +770,22 @@
     upath "^1.2.0"
     vis "^4.21.0-EOL"
 
-"@jupiterone/integration-sdk-core@^8.14.1":
-  version "8.14.1"
-  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-core/-/integration-sdk-core-8.14.1.tgz#1cc97add44c338344c3f446af6c5dbe06a3c160c"
-  integrity sha512-NzK3dCQkjiEg3lAUFPd+2g3lWrcQHnom13JHw0zRwdcDdjQuEzx2zz7jJa8zWJ4v1YzDLDtn0ZANQ6U70wlyOQ==
+"@jupiterone/integration-sdk-core@^8.18.0":
+  version "8.18.0"
+  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-core/-/integration-sdk-core-8.18.0.tgz#1079106e3ad2e696fcb6425cd1977172f455fcbd"
+  integrity sha512-IQiR2LizpKP1u/hJU49qu+8udLZwXSodc2N2fS7fPLxxBEuYm/ejj/NndR+rmPoVPk68cS2kIkzOuibmHAuSWw==
   dependencies:
-    "@jupiterone/data-model" "^0.49.0"
+    "@jupiterone/data-model" "^0.50.0"
     lodash "^4.17.21"
     uuid "^8.3.2"
 
-"@jupiterone/integration-sdk-dev-tools@^8.14.1":
-  version "8.14.1"
-  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-dev-tools/-/integration-sdk-dev-tools-8.14.1.tgz#294b0616ee7f0c2cdaac00c976cc1e9570dbcadc"
-  integrity sha512-3HSTgg9kVlqdXKi9VHxRYV4x1e5lILjw6NXJpuxnboSVDv2HC9GSGDXikquj2U3BY33iiGRqkhcLRf1W2QxgAA==
+"@jupiterone/integration-sdk-dev-tools@^8.18.0":
+  version "8.18.0"
+  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-dev-tools/-/integration-sdk-dev-tools-8.18.0.tgz#dc71e0494f6b2b18e8389c1a222e2f9eaee133b2"
+  integrity sha512-RLn+qOWLuO7FlL5IoXRx/FDp8UkCFsx3IdrlF323v0Q+Y6mhhQ53mTKg1MdU87bBs+qwd2/0dUyq3fsed+wE4w==
   dependencies:
-    "@jupiterone/integration-sdk-cli" "^8.14.1"
-    "@jupiterone/integration-sdk-testing" "^8.14.1"
+    "@jupiterone/integration-sdk-cli" "^8.18.0"
+    "@jupiterone/integration-sdk-testing" "^8.18.0"
     "@types/jest" "^27.1.0"
     "@types/node" "^14.0.5"
     "@typescript-eslint/eslint-plugin" "^4.22.0"
@@ -801,12 +801,12 @@
     ts-node "^9.1.1"
     typescript "^4.2.4"
 
-"@jupiterone/integration-sdk-runtime@^8.14.1":
-  version "8.14.1"
-  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-runtime/-/integration-sdk-runtime-8.14.1.tgz#12c6c4f878dfca699725b2dca6f708e594e00ea8"
-  integrity sha512-HtiicriuG0UHr8mzw03XSyUF+j1RlHrWUoU2zCy9Wo3qwPIW/sHrpsE1z33noRon+9mrFrX8VjscJ9YvQmyR+w==
+"@jupiterone/integration-sdk-runtime@^8.18.0":
+  version "8.18.0"
+  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-runtime/-/integration-sdk-runtime-8.18.0.tgz#44c2d78ed4038dba50433f45db311ff4f9de3693"
+  integrity sha512-TlO92hbTqAPYPueGf994vDWJhSbOfmgC/fRUmDlOF2dOk9c9KcOVGRfQT+Gyd9LnmkoPSADIpBW/YP0u92LfBA==
   dependencies:
-    "@jupiterone/integration-sdk-core" "^8.14.1"
+    "@jupiterone/integration-sdk-core" "^8.18.0"
     "@lifeomic/alpha" "^1.4.0"
     "@lifeomic/attempt" "^3.0.3"
     async-sema "^3.1.0"
@@ -824,13 +824,13 @@
     rimraf "^3.0.2"
     uuid "^7.0.3"
 
-"@jupiterone/integration-sdk-testing@^8.14.1":
-  version "8.14.1"
-  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-testing/-/integration-sdk-testing-8.14.1.tgz#fb7b8b42af2a9ac46b4ae27dade154ef8817745b"
-  integrity sha512-B3QLRq3n25ECoK/QbYtmVrRpLsSVLJyxTcYAAozwnCJneqZwTUsZcAVJCOXtfip4yTLHqJkyu0IZdBCLcoym6A==
+"@jupiterone/integration-sdk-testing@^8.18.0":
+  version "8.18.0"
+  resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-testing/-/integration-sdk-testing-8.18.0.tgz#e894db051b05e5100d31612bfe0a19460ae8a707"
+  integrity sha512-+G2X9dLF9Pr4U+ZDtgpfQTshP9DcuVhdyd6gWoy2707qwZRU7AWNdMiETOEwQBBoU+myqbTccgOKheaxQ/OITQ==
   dependencies:
-    "@jupiterone/integration-sdk-core" "^8.14.1"
-    "@jupiterone/integration-sdk-runtime" "^8.14.1"
+    "@jupiterone/integration-sdk-core" "^8.18.0"
+    "@jupiterone/integration-sdk-runtime" "^8.18.0"
     "@pollyjs/adapter-node-http" "^6.0.5"
     "@pollyjs/core" "^6.0.5"
     "@pollyjs/persister-fs" "^6.0.5"
@@ -4189,14 +4189,7 @@ nock@^13.2.1:
     lodash.set "^4.3.2"
     propagate "^2.0.0"
 
-node-fetch@^2.6.1:
-  version "2.6.7"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
-  integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
-  dependencies:
-    whatwg-url "^5.0.0"
-
-node-fetch@^2.6.7:
+node-fetch@^2.6.1, node-fetch@^2.6.7:
   version "2.6.7"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
   integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==

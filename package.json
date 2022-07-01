@@ -44,12 +44,12 @@
     "semver": "^7.3.7"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.14.1"
+    "@jupiterone/integration-sdk-core": "^8.18.0"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.14.1",
-    "@jupiterone/integration-sdk-dev-tools": "^8.14.1",
-    "@jupiterone/integration-sdk-testing": "^8.14.1",
+    "@jupiterone/integration-sdk-core": "^8.18.0",
+    "@jupiterone/integration-sdk-dev-tools": "^8.18.0",
+    "@jupiterone/integration-sdk-testing": "^8.18.0",
     "@types/lodash.omit": "^4.5.6"
   }
 }

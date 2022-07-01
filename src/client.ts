@@ -96,7 +96,12 @@ export class APIClient {
 
     const meta = await this.accountClient.fetchMeta();
     this.gheServerVersion = meta.installed_version ?? null;
-    this.logger.info({ meta }, 'API meta');
+    if (this.gheServerVersion) {
+      this.logger.info(
+        { gheServerVersion: this.gheServerVersion },
+        'GitHub Enterprise Server version',
+      );
+    }
   }
 
   /**

@@ -165,6 +165,10 @@ export function sanitizeConfig(config: IntegrationConfig) {
     config.enableDependabotAlerts ||
     Boolean(process.env['ENABLE_DEPENDABOT_ALERTS']);
 
+  config.pullRequestIngestStartDatetime =
+    config.pullRequestIngestStartDatetime ||
+    process.env['PULL_REQUEST_INGEST_START_DATETIME']; // Expects Date.toISOString format
+
   if (config.enableDependabotAlerts) {
     config.dependabotAlertSeverities = config.dependabotAlertSeverities ?? [];
     config.dependabotAlertStates = config.dependabotAlertStates ?? [];

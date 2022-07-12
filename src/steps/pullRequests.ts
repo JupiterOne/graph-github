@@ -4,6 +4,7 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   createDirectRelationship,
+  Execution,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
@@ -38,11 +39,10 @@ export async function fetchPrs(
   const config = context.instance.config;
   const jobState = context.jobState;
   const logger = context.logger;
-  const lastSuccessfulSyncTime =
-    context.executionHistory.lastSuccessful?.startedOn ?? 0;
-  const lastSuccessfulExecution = new Date(
-    lastSuccessfulSyncTime,
-  ).toISOString();
+  const ingestStartDatetime = determineIngestStartDatetime(
+    config,
+    context.executionHistory.lastSuccessful,
+  );
   const apiClient = getOrCreateApiClient(config, logger);
   const accountEntity = await jobState.getData<AccountEntity>(
     DATA_ACCOUNT_ENTITY,
@@ -80,6 +80,11 @@ export async function fetchPrs(
     );
   }
 
+  logger.info(
+    { ingestStartDatetime },
+    'Pull requests will be ingested starting on the specified date.',
+  );
+
   await jobState.iterateEntities<RepoEntity>(
     { _type: GithubEntities.GITHUB_REPO._type },
     async (repoEntity) => {
@@ -87,7 +92,7 @@ export async function fetchPrs(
         await apiClient.iteratePullRequests(
           repoEntity,
           logger,
-          lastSuccessfulExecution,
+          ingestStartDatetime,
           async (pullRequest) => {
             const pr = toPullRequestEntity(
               pullRequest,
@@ -198,6 +203,31 @@ export async function fetchPrs(
     },
   );
 }
+
+/**
+ * Determines what the ingestion start datetime should be for PRs.
+ * Values are considered in the following order:
+ * 1. Value provided by config
+ * 2. last successful build time
+ * 3. Defaults to Unix epoch
+ * @param config
+ * @param lastSuccessful
+ */
+const determineIngestStartDatetime = (
+  config: IntegrationConfig,
+  lastSuccessful?: Execution,
+): string => {
+  let startDatetime;
+  if (config.pullRequestIngestStartDatetime) {
+    startDatetime = config.pullRequestIngestStartDatetime;
+  } else if (lastSuccessful?.startedOn) {
+    startDatetime = lastSuccessful?.startedOn;
+  } else {
+    startDatetime = 0;
+  }
+
+  return new Date(startDatetime).toISOString();
+};
 
 export const prSteps: IntegrationStep<IntegrationConfig>[] = [
   {

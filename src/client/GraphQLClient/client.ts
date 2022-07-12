@@ -191,12 +191,12 @@ export class GitHubGraphQLClient {
   /**
    * Iterates over pull requests for the given repository.
    * @param repository
-   * @param lastExecutionTime
+   * @param ingestStartDatetime
    * @param iteratee
    */
   public async iteratePullRequests(
     repository: { fullName: string; public: boolean },
-    lastExecutionTime: string,
+    ingestStartDatetime: string,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
@@ -205,7 +205,7 @@ export class GitHubGraphQLClient {
       await PullRequestsQuery.iteratePullRequests(
         {
           ...repository,
-          lastExecutionTime,
+          ingestStartDatetime,
         },
         executor,
         iteratee,

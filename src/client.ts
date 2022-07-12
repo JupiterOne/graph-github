@@ -382,13 +382,13 @@ export class APIClient {
    *
    * @param repo entity
    * @param logger logger
-   * @param lastSuccessfulExecution date string
+   * @param ingestStartDatetime date string
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iteratePullRequests(
     repo: RepoEntity,
     logger: IntegrationLogger,
-    lastSuccessfulExecution: string,
+    ingestStartDatetime: string,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
@@ -396,7 +396,7 @@ export class APIClient {
     }
     const rateLimit = await this.accountClient.iteratePullRequestEntities(
       repo,
-      lastSuccessfulExecution,
+      ingestStartDatetime,
       iteratee,
     );
     logger.debug(

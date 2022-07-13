@@ -27,7 +27,7 @@ type InnerResourcePullRequestQuery = {
 type QueryParams = {
   fullName: string;
   public: boolean;
-  lastExecutionTime: string;
+  ingestStartDatetime: string;
 };
 
 const MAX_INNER_RESOURCE_LIMIT = 100;
@@ -76,7 +76,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      issueQuery: `is:pr repo:${queryParams.fullName} updated:>=${queryParams.lastExecutionTime}`,
+      issueQuery: `is:pr repo:${queryParams.fullName} updated:>=${queryParams.ingestStartDatetime}`,
       maxSearchLimit: MAX_SEARCH_LIMIT,
       maxLimit: MAX_INNER_RESOURCE_LIMIT,
       ...(queryState?.pullRequests?.hasNextPage && {

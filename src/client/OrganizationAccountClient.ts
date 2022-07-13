@@ -192,26 +192,25 @@ export default class OrganizationAccountClient {
   /**
    * Calls the GraphQL client to iterate over pull request entities.
    * @param repo
-   * @param lastExecutionTime
+   * @param ingestStartDatetime
    * @param iteratee
    */
   async iteratePullRequestEntities(
     repo: RepoEntity,
-    lastExecutionTime: string, //expect Date.toISOString format
+    ingestStartDatetime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
       return { totalCost: 0 };
     }
-    lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
-
+    ingestStartDatetime = this.sanitizeLastExecutionTime(ingestStartDatetime);
     return await this.v4.iteratePullRequests(
       {
         fullName: repo.fullName,
         public: repo.public,
       },
-      lastExecutionTime,
+      ingestStartDatetime,
       iteratee,
     );
   }

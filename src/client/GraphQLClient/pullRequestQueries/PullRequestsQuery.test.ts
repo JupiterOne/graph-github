@@ -17,7 +17,7 @@ describe('PullRequestsQuery', () => {
       const executableQuery = buildQuery({
         fullName: 'J1-Test/musical-palm-tree',
         public: true,
-        lastExecutionTime: '2011-10-05T14:48:00.000Z',
+        ingestStartDatetime: '2011-10-05T14:48:00.000Z',
       });
 
       // Assert
@@ -29,7 +29,7 @@ describe('PullRequestsQuery', () => {
       const executableQuery = buildQuery({
         fullName: 'J1-Test/musical-palm-tree',
         public: false,
-        lastExecutionTime: '2011-10-05T14:48:00.000Z',
+        ingestStartDatetime: '2011-10-05T14:48:00.000Z',
       });
 
       // Assert
@@ -47,7 +47,7 @@ describe('PullRequestsQuery', () => {
         {
           fullName: 'J1-Test/musical-palm-tree',
           public: true,
-          lastExecutionTime: '2011-10-05T14:48:00.000Z',
+          ingestStartDatetime: '2011-10-05T14:48:00.000Z',
         },
         queryState,
       );
@@ -110,7 +110,7 @@ describe('PullRequestsQuery', () => {
         {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
-          lastExecutionTime: '2011-10-05T14:48:00.000Z',
+          ingestStartDatetime: '2011-10-05T14:48:00.000Z',
         },
         execute,
         iteratee,
@@ -144,7 +144,7 @@ describe('PullRequestsQuery', () => {
         {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
-          lastExecutionTime: '2011-10-05T14:48:00.000Z',
+          ingestStartDatetime: '2011-10-05T14:48:00.000Z',
         },
         execute,
         iteratee,
@@ -170,7 +170,7 @@ describe('PullRequestsQuery', () => {
         {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
-          lastExecutionTime: '2011-10-05T14:48:00.000Z',
+          ingestStartDatetime: '2011-10-05T14:48:00.000Z',
         },
         execute,
         iteratee,

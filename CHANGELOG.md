@@ -8,6 +8,14 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.19.0 - 2022-07-14
+
+## Changed
+
+- Added `pullRequestIngestStartDatetime` to config to allow pull request
+  ingestion to start at a specified date.
+- Update the GitHub Finding property name. (Summary -> description).
+
 ## 1.18.0 - 2022-07-01
 
 ### Changed

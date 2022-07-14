@@ -458,7 +458,7 @@ export function createVulnerabilityAlertEntity(
         id: data.id,
         name: data.securityAdvisory?.summary,
         displayName: data.securityAdvisory?.summary,
-        summary: data.securityAdvisory?.description,
+        description: data.securityAdvisory?.description,
         category: 'application',
         status: data.state,
         severity: data.securityVulnerability?.severity,

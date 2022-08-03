@@ -23,6 +23,7 @@ import {
   AccountEntity,
   AccountType,
   AppEntity,
+  BranchProtectionRuleEntity,
   EnvironmentEntity,
   IdEntityMap,
   IssueEntity,
@@ -47,6 +48,7 @@ import {
   IssueResponse,
   OrgMemberQueryResponse,
   OrgQueryResponse,
+  OrgRepoBranchProtectionRuleQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamQueryResponse,
@@ -262,6 +264,64 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     rawData: omit(data, ['members', 'repos']),
   });
   return teamEntity;
+}
+
+export function toBranchProtectionEntity(
+  data: OrgRepoBranchProtectionRuleQueryResponse,
+): BranchProtectionRuleEntity {
+  //Create Array<string> from the object returned by bypass_pull_request_allowances
+  //TODO Connect users, teams, and apps to the rest of J1 objects
+  const bypass_pull_request_allowances: Array<string> = [];
+
+  //TODO How do I connect users, teams, and apps to the rest of J1?
+  if (
+    data.required_pull_request_reviews.bypass_pull_request_allowances !==
+    undefined
+  ) {
+    for (const { login } of data.required_pull_request_reviews
+      .bypass_pull_request_allowances.users as Array<{
+      login: string;
+    }>) {
+      bypass_pull_request_allowances.push(login);
+    }
+    for (const { slug } of data.required_pull_request_reviews
+      .bypass_pull_request_allowances.teams as Array<{
+      slug: string;
+    }>) {
+      bypass_pull_request_allowances.push(slug);
+    }
+    for (const { slug } of data.required_pull_request_reviews
+      .bypass_pull_request_allowances.apps as Array<{
+      slug: string;
+    }>) {
+      bypass_pull_request_allowances.push(slug);
+    }
+  }
+
+  const branchProtectionRuleEntity: BranchProtectionRuleEntity = {
+    _class: GithubEntities.GITHUB_REPO._class,
+    _type: GithubEntities.GITHUB_REPO._type,
+    _key: data.id,
+    url: data.url,
+    //name doesn't get returned, so pull it from the url
+    name: data.url.split('/').slice(-2).shift(),
+    block_creations: data.block_creations.enabled,
+    allow_deletions: data.allow_deletions.enabled,
+    allow_force_pushes: data.allow_force_pushes.enabled,
+    required_linear_history: data.required_linear_history.enabled,
+    enforce_admins: data.enforce_admins.enabled,
+    required_signatures: data.required_signatures.enabled,
+    required_conversation_resolution:
+      data.required_conversation_resolution.enabled,
+    required_approving_review_count:
+      data.required_pull_request_reviews.required_approving_review_count,
+    require_code_owner_reviews:
+      data.required_pull_request_reviews.require_code_owner_reviews,
+    required_status_checks: data.required_status_checks.checks,
+    bypass_pull_request_allowances: bypass_pull_request_allowances,
+  };
+  setRawData(branchProtectionRuleEntity, { name: 'default', rawData: data });
+  return branchProtectionRuleEntity;
 }
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {

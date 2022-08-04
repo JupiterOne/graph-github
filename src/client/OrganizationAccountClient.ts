@@ -308,7 +308,7 @@ export default class OrganizationAccountClient {
       );
 
       //Create an array to push all protection rules
-      const branchProtectionRules: Array<string> = [];
+      const branchProtectionRules: BranchProtectionRulesQueryResponse[] = [];
 
       for (const { name } of protectedBranches.data as Array<{
         name: string;

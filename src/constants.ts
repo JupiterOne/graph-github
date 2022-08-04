@@ -35,6 +35,24 @@ export const GithubEntities = {
       required: ['name', 'displayName', 'webLink', 'createdOn'],
     },
   },
+  //TODO What all goes here? -cg
+  GITHUB_BRANCH_PROTECITON_RULE: {
+    _type: 'github_branch_protection_rule',
+    _class: ['rule'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_branch_protection_rule' },
+        webLink: { type: 'string' },
+        displayName: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['webLink', 'displayName'],
+    },
+  },
   GITHUB_COLLABORATOR: {
     _type: 'github_user',
     _class: ['User'],
@@ -331,6 +349,11 @@ export const GITHUB_REPO_FINDING_RELATIONSHIP_TYPE = 'github_repo_has_finding';
 export const GITHUB_FINDING_CVE_RELATIONSHIP_TYPE = 'github_finding_is_cve';
 export const GITHUB_FINDING_CWE_RELATIONSHIP_TYPE =
   'github_finding_exploits_cwe';
+
+//TODO Not sure what else goes here -cg
+//branch protection rules
+export const GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE =
+  'github_branch_has_protection_fule';
 
 //these constants are names used to save and retrieve data between steps
 //they are constants instead of strings so that TypeScript will detect spelling errors

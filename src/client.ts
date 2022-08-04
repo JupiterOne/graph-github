@@ -31,6 +31,7 @@ import {
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
+  BranchProtectionRulesQueryResponse,
 } from './client/RESTClient/types';
 import {
   CollaboratorResponse,
@@ -59,6 +60,7 @@ export class APIClient {
     repoEnvironments: boolean;
     repoIssues: boolean;
     dependabotAlerts: boolean;
+    branchProtectionPolicy: boolean;
   };
 
   readonly restApiUrl: string;
@@ -313,6 +315,28 @@ export class APIClient {
   }
 
   /**
+   * Iterates each Github repo secret.
+   *
+   * @param repoName
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBranchProtectionPolicy(
+    repoName: string,
+    iteratee: ResourceIteratee<BranchProtectionRulesQueryResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.branchProtectionPolicy) {
+      const branchProtectionPolicy: BranchProtectionRulesQueryResponse[] =
+        await this.accountClient.getBranchProtectionRules(repoName);
+      for (const branchProtectionRule of branchProtectionPolicy) {
+        await iteratee(branchProtectionRule);
+      }
+    }
+  }
+
+  /**
    * Iterates each Github environment.
    *
    * @param repoName
@@ -562,6 +586,7 @@ export class APIClient {
         repoEnvironments: false,
         repoIssues: false,
         dependabotAlerts: false,
+        branchProtectionPolicy: false,
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');

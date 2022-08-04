@@ -269,8 +269,6 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 export function toBranchProtectionEntity(
   data: OrgRepoBranchProtectionRuleQueryResponse,
 ): BranchProtectionRuleEntity {
-  //Create Array<string> from the object returned by bypass_pull_request_allowances
-  //TODO Connect users, teams, and apps to the rest of J1 objects
   const bypass_pull_request_allowances: Array<string> = [];
 
   //TODO How do I connect users, teams, and apps to the rest of J1?

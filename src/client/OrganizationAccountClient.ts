@@ -19,6 +19,7 @@ import {
   SecretQueryResponse,
   OrgSecretRepoQueryResponse,
   RepoEnvironmentQueryResponse,
+  BranchProtectionRulesQueryResponse,
 } from './RESTClient/types';
 import {
   RepoEntity,
@@ -286,6 +287,55 @@ export default class OrganizationAccountClient {
       return orgSecrets || [];
     } catch (err) {
       this.logger.warn('Error while attempting to ingest organization secrets');
+      throw new IntegrationError(err);
+    }
+  }
+
+  //TODO BranchProtectionRules are supported in GraphQL, I just wasn't sure how to implement them properly.
+  //This should be moved whenever someone has the time -cg
+  async getBranchProtectionRules(
+    repoName: string,
+  ): Promise<BranchProtectionRulesQueryResponse[]> {
+    try {
+      //Get all protected branches in the repo
+      const protectedBranches = await this.v3.request(
+        'GET /repos/{owner}/{repo}/branches', //https://docs.github.com/en/rest/branches/branches#list-branches
+        {
+          owner: this.login,
+          repo: repoName,
+          protected: true,
+        },
+      );
+
+      //Create an array to push all protection rules
+      const branchProtectionRules: Array<string> = [];
+
+      for (const { name } of protectedBranches.data as Array<{
+        name: string;
+      }>) {
+        const protectionRule = await this.v3.paginate(
+          'GET /repos/{owner}/{repo}/branches/{branch}/protection' as any, //https://docs.github.com/en/rest/branches/branch-protection
+          {
+            owner: this.login,
+            repo: repoName,
+            branch: name,
+            per_page: 100,
+          },
+          (response) => {
+            console.log(
+              `Fetched branchProtectionRules for ${response.data.url}`,
+            );
+            return response.data;
+          },
+        );
+        branchProtectionRules.push(protectionRule);
+      }
+
+      return branchProtectionRules || [];
+    } catch (err) {
+      this.logger.warn(
+        'Error while attempting to ingest branch protection rules',
+      );
       throw new IntegrationError(err);
     }
   }

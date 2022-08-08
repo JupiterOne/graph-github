@@ -306,7 +306,7 @@ export default class OrganizationAccountClient {
           protected: true,
         },
       );
-
+      console.log(`Branches to query rules for `, protectedBranches);
       //Create an array to push all protection rules
       const branchProtectionRules: BranchProtectionRulesQueryResponse[] = [];
 
@@ -330,7 +330,6 @@ export default class OrganizationAccountClient {
         );
         branchProtectionRules.push(protectionRule);
       }
-
       return branchProtectionRules || [];
     } catch (err) {
       this.logger.warn(

@@ -47,7 +47,7 @@ export async function fetchBranchProtectionRule({
           createDirectRelationship({
             _class: RelationshipClass.HAS,
             fromType: GithubEntities.GITHUB_REPO._type,
-            toType: GithubEntities.GITHUB_ENVIRONMENT._type,
+            toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
             fromKey: repoTag._key,
             toKey: branchProtectionRuleEntity._key,
           }),
@@ -60,7 +60,7 @@ export async function fetchBranchProtectionRule({
 export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
   [
     {
-      id: 'branch-protection-rules',
+      id: 'fetch-branch-protection-rules',
       name: 'Fetch Branch Protection Rules',
       entities: [
         {

@@ -147,58 +147,60 @@ https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md
 
 The following entities are created:
 
-| Resources                   | Entity `_type`       | Entity `_class` |
-| --------------------------- | -------------------- | --------------- |
-| Account                     | `github_account`     | `Account`       |
-| CVE                         | `cve`                | `Vulnerability` |
-| CWE                         | `cwe`                | `Weakness`      |
-| GitHub Env Secret           | `github_env_secret`  | `Secret`        |
-| GitHub Environment          | `github_environment` | `Configuration` |
-| GitHub Issue                | `github_issue`       | `Issue`         |
-| GitHub Org Secret           | `github_org_secret`  | `Secret`        |
-| GitHub Pull Request         | `github_pullrequest` | `PR`            |
-| GitHub Repo Secret          | `github_repo_secret` | `Secret`        |
-| GitHub Team                 | `github_team`        | `UserGroup`     |
-| GitHub Vulnerability Alerts | `github_finding`     | `Finding`       |
-| Github App                  | `github_app`         | `Application`   |
-| Github Repo                 | `github_repo`        | `CodeRepo`      |
-| Github User                 | `github_user`        | `User`          |
+| Resources                      | Entity `_type`                  | Entity `_class` |
+| ------------------------------ | ------------------------------- | --------------- |
+| Account                        | `github_account`                | `Account`       |
+| CVE                            | `cve`                           | `Vulnerability` |
+| CWE                            | `cwe`                           | `Weakness`      |
+| GitHub Branch Protection Rules | `github_branch_protection_rule` | `Rule`          |
+| GitHub Env Secret              | `github_env_secret`             | `Secret`        |
+| GitHub Environment             | `github_environment`            | `Configuration` |
+| GitHub Issue                   | `github_issue`                  | `Issue`         |
+| GitHub Org Secret              | `github_org_secret`             | `Secret`        |
+| GitHub Pull Request            | `github_pullrequest`            | `PR`            |
+| GitHub Repo Secret             | `github_repo_secret`            | `Secret`        |
+| GitHub Team                    | `github_team`                   | `UserGroup`     |
+| GitHub Vulnerability Alerts    | `github_finding`                | `Finding`       |
+| Github App                     | `github_app`                    | `Application`   |
+| Github Repo                    | `github_repo`                   | `CodeRepo`      |
+| Github User                    | `github_user`                   | `User`          |
 
 ### Relationships
 
 The following relationships are created:
 
-| Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
-| --------------------- | --------------------- | --------------------- |
-| `github_account`      | **HAS**               | `github_org_secret`   |
-| `github_account`      | **HAS**               | `github_team`         |
-| `github_account`      | **HAS**               | `github_user`         |
-| `github_account`      | **INSTALLED**         | `github_app`          |
-| `github_account`      | **OWNS**              | `github_repo`         |
-| `github_env_secret`   | **OVERRIDES**         | `github_org_secret`   |
-| `github_env_secret`   | **OVERRIDES**         | `github_repo_secret`  |
-| `github_environment`  | **HAS**               | `github_env_secret`   |
-| `github_finding`      | **EXPLOITS**          | `cwe`                 |
-| `github_finding`      | **IS**                | `cve`                 |
-| `github_repo`         | **ALLOWS**            | `github_team`         |
-| `github_repo`         | **ALLOWS**            | `github_user`         |
-| `github_repo`         | **HAS**               | `github_environment`  |
-| `github_repo`         | **HAS**               | `github_finding`      |
-| `github_repo`         | **HAS**               | `github_issue`        |
-| `github_repo`         | **HAS**               | `github_pullrequest`  |
-| `github_repo`         | **HAS**               | `github_repo_secret`  |
-| `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`   |
-| `github_repo`         | **USES**              | `github_env_secret`   |
-| `github_repo`         | **USES**              | `github_org_secret`   |
-| `github_repo`         | **USES**              | `github_repo_secret`  |
-| `github_team`         | **HAS**               | `github_user`         |
-| `github_user`         | **APPROVED**          | `github_pullrequest`  |
-| `github_user`         | **ASSIGNED**          | `github_issue`        |
-| `github_user`         | **CREATED**           | `github_issue`        |
-| `github_user`         | **MANAGES**           | `github_account`      |
-| `github_user`         | **MANAGES**           | `github_team`         |
-| `github_user`         | **OPENED**            | `github_pullrequest`  |
-| `github_user`         | **REVIEWED**          | `github_pullrequest`  |
+| Source Entity `_type` | Relationship `_class` | Target Entity `_type`           |
+| --------------------- | --------------------- | ------------------------------- |
+| `github_account`      | **HAS**               | `github_org_secret`             |
+| `github_account`      | **HAS**               | `github_team`                   |
+| `github_account`      | **HAS**               | `github_user`                   |
+| `github_account`      | **INSTALLED**         | `github_app`                    |
+| `github_account`      | **OWNS**              | `github_repo`                   |
+| `github_repo`         | **HAS**               | `github_branch_protection_rule` |
+| `github_env_secret`   | **OVERRIDES**         | `github_org_secret`             |
+| `github_env_secret`   | **OVERRIDES**         | `github_repo_secret`            |
+| `github_environment`  | **HAS**               | `github_env_secret`             |
+| `github_finding`      | **EXPLOITS**          | `cwe`                           |
+| `github_finding`      | **IS**                | `cve`                           |
+| `github_repo`         | **ALLOWS**            | `github_team`                   |
+| `github_repo`         | **ALLOWS**            | `github_user`                   |
+| `github_repo`         | **HAS**               | `github_environment`            |
+| `github_repo`         | **HAS**               | `github_finding`                |
+| `github_repo`         | **HAS**               | `github_issue`                  |
+| `github_repo`         | **HAS**               | `github_pullrequest`            |
+| `github_repo`         | **HAS**               | `github_repo_secret`            |
+| `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`             |
+| `github_repo`         | **USES**              | `github_env_secret`             |
+| `github_repo`         | **USES**              | `github_org_secret`             |
+| `github_repo`         | **USES**              | `github_repo_secret`            |
+| `github_team`         | **HAS**               | `github_user`                   |
+| `github_user`         | **APPROVED**          | `github_pullrequest`            |
+| `github_user`         | **ASSIGNED**          | `github_issue`                  |
+| `github_user`         | **CREATED**           | `github_issue`                  |
+| `github_user`         | **MANAGES**           | `github_account`                |
+| `github_user`         | **MANAGES**           | `github_team`                   |
+| `github_user`         | **OPENED**            | `github_pullrequest`            |
+| `github_user`         | **REVIEWED**          | `github_pullrequest`            |
 
 <!--
 ********************************************************************************

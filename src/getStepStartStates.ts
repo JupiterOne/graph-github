@@ -13,13 +13,13 @@ export default async function getStepStartStates(
 
   return {
     ['fetch-account']: { disabled: false },
-    ['fetch-users']: { disabled: false },
+    ['fetch-users']: { disabled: true },
     ['fetch-repos']: { disabled: false },
-    ['fetch-teams']: { disabled: false },
-    ['fetch-team-members']: { disabled: false },
-    ['fetch-team-repos']: { disabled: false },
-    ['fetch-collaborators']: { disabled: false },
-    ['fetch-prs']: { disabled: false },
+    ['fetch-teams']: { disabled: true },
+    ['fetch-team-members']: { disabled: true },
+    ['fetch-team-repos']: { disabled: true },
+    ['fetch-collaborators']: { disabled: true },
+    ['fetch-prs']: { disabled: true },
     ['fetch-issues']: {
       disabled: !scopes.repoIssues,
       disabledReason: DisabledStepReason.PERMISSION,
@@ -51,6 +51,10 @@ export default async function getStepStartStates(
       disabledReason: !context.instance.config.enableDependabotAlerts
         ? DisabledStepReason.CONFIG
         : DisabledStepReason.PERMISSION,
+    },
+    ['fetch-branch-protection-rules']: {
+      disabled: !scopes.orgAdmin,
+      disabledReason: DisabledStepReason.PERMISSION,
     },
   };
 }

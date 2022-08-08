@@ -60,7 +60,6 @@ export class APIClient {
     repoEnvironments: boolean;
     repoIssues: boolean;
     dependabotAlerts: boolean;
-    branchProtectionPolicy: boolean;
   };
 
   readonly restApiUrl: string;
@@ -327,7 +326,7 @@ export class APIClient {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
-    if (this.scopes.branchProtectionPolicy) {
+    if (this.scopes.orgAdmin) {
       const branchProtectionPolicy: BranchProtectionRulesQueryResponse[] =
         await this.accountClient.getBranchProtectionRules(repoName);
       for (const branchProtectionRule of branchProtectionPolicy) {
@@ -586,7 +585,6 @@ export class APIClient {
         repoEnvironments: false,
         repoIssues: false,
         dependabotAlerts: false,
-        branchProtectionPolicy: false,
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');

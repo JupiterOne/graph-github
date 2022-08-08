@@ -38,7 +38,7 @@ export const GithubEntities = {
   //TODO What all goes here? -cg
   GITHUB_BRANCH_PROTECITON_RULE: {
     _type: 'github_branch_protection_rule',
-    _class: ['rule'],
+    _class: ['Rule'],
     schema: {
       additionalProperties: true,
       properties: {

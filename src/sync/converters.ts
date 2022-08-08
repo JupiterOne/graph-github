@@ -48,7 +48,7 @@ import {
   IssueResponse,
   OrgMemberQueryResponse,
   OrgQueryResponse,
-  OrgRepoBranchProtectionRuleQueryResponse,
+  // OrgRepoBranchProtectionRuleQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamQueryResponse,
@@ -69,6 +69,7 @@ import {
   buildVulnAlertId,
   buildVulnAlertRecommendation,
 } from './converterUtils';
+import { BranchProtectionRulesQueryResponse } from '../client/RESTClient/types';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -267,7 +268,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 }
 
 export function toBranchProtectionEntity(
-  data: OrgRepoBranchProtectionRuleQueryResponse,
+  data: BranchProtectionRulesQueryResponse,
 ): BranchProtectionRuleEntity {
   const bypass_pull_request_allowances: Array<string> = [];
 
@@ -299,7 +300,7 @@ export function toBranchProtectionEntity(
   const branchProtectionRuleEntity: BranchProtectionRuleEntity = {
     _class: GithubEntities.GITHUB_REPO._class,
     _type: GithubEntities.GITHUB_REPO._type,
-    _key: data.id,
+    _key: data.url,
     url: data.url,
     //name doesn't get returned, so pull it from the url
     name: data.url.split('/').slice(-2).shift(),

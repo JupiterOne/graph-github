@@ -13,13 +13,13 @@ export default async function getStepStartStates(
 
   return {
     ['fetch-account']: { disabled: false },
-    ['fetch-users']: { disabled: true },
+    ['fetch-users']: { disabled: false },
     ['fetch-repos']: { disabled: false },
-    ['fetch-teams']: { disabled: true },
-    ['fetch-team-members']: { disabled: true },
-    ['fetch-team-repos']: { disabled: true },
-    ['fetch-collaborators']: { disabled: true },
-    ['fetch-prs']: { disabled: true },
+    ['fetch-teams']: { disabled: false },
+    ['fetch-team-members']: { disabled: false },
+    ['fetch-team-repos']: { disabled: false },
+    ['fetch-collaborators']: { disabled: false },
+    ['fetch-prs']: { disabled: false },
     ['fetch-issues']: {
       disabled: !scopes.repoIssues,
       disabledReason: DisabledStepReason.PERMISSION,

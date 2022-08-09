@@ -354,11 +354,11 @@ export const GITHUB_FINDING_CWE_RELATIONSHIP_TYPE =
 export const GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE =
   'github_repo_has_branch_protection_rule';
 export const GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE =
-  'github_user_overides_branch_protection_rule';
+  'github_user_overrides_branch_protection_rule';
 export const GITHUB_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE =
-  'github_team_overides_branch_protection_rule';
+  'github_team_overrides_branch_protection_rule';
 export const GITHUB_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE =
-  'github_app_overides_branch_protection_rule';
+  'github_app_overrides_branch_protection_rule';
 
 //these constants are names used to save and retrieve data between steps
 //they are constants instead of strings so that TypeScript will detect spelling errors

@@ -19,6 +19,7 @@ import {
   GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
 import { toBranchProtectionEntity } from '../sync/converters';
+import { getAppEntityKey } from '../util/propertyHelpers';
 
 export async function fetchBranchProtectionRule({
   instance,
@@ -57,47 +58,47 @@ export async function fetchBranchProtectionRule({
           branchProtectionRule.required_pull_request_reviews
             ?.bypass_pull_request_allowances
         ) {
-          for (const { login } of branchProtectionRule
+          for (const { node_id } of branchProtectionRule
             .required_pull_request_reviews.bypass_pull_request_allowances
             ?.users as Array<{
-            login: string;
+            node_id: string;
           }>) {
             await jobState.addRelationship(
               createDirectRelationship({
                 _class: RelationshipClass.OVERRIDES,
                 fromType: GithubEntities.GITHUB_MEMBER._type,
                 toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-                fromKey: login,
+                fromKey: node_id,
                 toKey: branchProtectionRuleEntity._key,
               }),
             );
           }
-          for (const { team } of branchProtectionRule
+          for (const { id } of branchProtectionRule
             .required_pull_request_reviews.bypass_pull_request_allowances
             ?.teams as Array<{
-            team: string;
+            id: string;
           }>) {
             await jobState.addRelationship(
               createDirectRelationship({
                 _class: RelationshipClass.OVERRIDES,
                 fromType: GithubEntities.GITHUB_TEAM._type,
                 toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-                fromKey: team,
+                fromKey: id,
                 toKey: branchProtectionRuleEntity._key,
               }),
             );
           }
-          for (const { app } of branchProtectionRule
+          for (const { id } of branchProtectionRule
             .required_pull_request_reviews.bypass_pull_request_allowances
             ?.apps as Array<{
-            app: string;
+            id: string;
           }>) {
             await jobState.addRelationship(
               createDirectRelationship({
                 _class: RelationshipClass.OVERRIDES,
                 fromType: GithubEntities.GITHUB_APP._type,
                 toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-                fromKey: app,
+                fromKey: getAppEntityKey(id),
                 toKey: branchProtectionRuleEntity._key,
               }),
             );
@@ -146,7 +147,12 @@ export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
           targetType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
         },
       ],
-      dependsOn: ['fetch-repos'],
+      dependsOn: [
+        'fetch-repos',
+        'fetch-team-members',
+        'fetch-teams',
+        'fetch-apps',
+      ],
       executionHandler: fetchBranchProtectionRule,
     },
   ];

@@ -11,9 +11,10 @@ import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { BranchProtectionRuleEntity, RepoKeyAndName } from '../types';
 import {
-  //TODO Not sure what else goes here -cg
-  //Here
   GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
+  GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
+  GITHUB_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
+  GITHUB_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
   GithubEntities,
   GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
@@ -39,9 +40,9 @@ export async function fetchBranchProtectionRule({
   for (const repoTag of repoTags) {
     await apiClient.iterateBranchProtectionPolicy(
       repoTag.name,
-      async (repo) => {
+      async (branchProtectionRule) => {
         const branchProtectionRuleEntity = (await jobState.addEntity(
-          toBranchProtectionEntity(repo),
+          toBranchProtectionEntity(branchProtectionRule),
         )) as BranchProtectionRuleEntity;
         await jobState.addRelationship(
           createDirectRelationship({
@@ -52,6 +53,56 @@ export async function fetchBranchProtectionRule({
             toKey: branchProtectionRuleEntity._key,
           }),
         );
+        if (
+          branchProtectionRule.required_pull_request_reviews
+            ?.bypass_pull_request_allowances
+        ) {
+          for (const { login } of branchProtectionRule
+            .required_pull_request_reviews.bypass_pull_request_allowances
+            ?.users as Array<{
+            login: string;
+          }>) {
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.OVERRIDES,
+                fromType: GithubEntities.GITHUB_MEMBER._type,
+                toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+                fromKey: login,
+                toKey: branchProtectionRuleEntity._key,
+              }),
+            );
+          }
+          for (const { team } of branchProtectionRule
+            .required_pull_request_reviews.bypass_pull_request_allowances
+            ?.teams as Array<{
+            team: string;
+          }>) {
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.OVERRIDES,
+                fromType: GithubEntities.GITHUB_TEAM._type,
+                toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+                fromKey: team,
+                toKey: branchProtectionRuleEntity._key,
+              }),
+            );
+          }
+          for (const { app } of branchProtectionRule
+            .required_pull_request_reviews.bypass_pull_request_allowances
+            ?.apps as Array<{
+            app: string;
+          }>) {
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.OVERRIDES,
+                fromType: GithubEntities.GITHUB_APP._type,
+                toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+                fromKey: app,
+                toKey: branchProtectionRuleEntity._key,
+              }),
+            );
+          }
+        }
       },
     );
   }
@@ -74,6 +125,24 @@ export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
           _type: GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
           sourceType: GithubEntities.GITHUB_REPO._type,
           _class: RelationshipClass.HAS,
+          targetType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+        },
+        {
+          _type: GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
+          sourceType: GithubEntities.GITHUB_MEMBER._type,
+          _class: RelationshipClass.OVERRIDES,
+          targetType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+        },
+        {
+          _type: GITHUB_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
+          sourceType: GithubEntities.GITHUB_TEAM._type,
+          _class: RelationshipClass.OVERRIDES,
+          targetType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+        },
+        {
+          _type: GITHUB_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
+          sourceType: GithubEntities.GITHUB_APP._type,
+          _class: RelationshipClass.OVERRIDES,
           targetType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
         },
       ],

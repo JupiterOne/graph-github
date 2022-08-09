@@ -291,11 +291,9 @@ export default class OrganizationAccountClient {
     }
   }
 
-  //TODO BranchProtectionRules are supported in GraphQL, I just wasn't sure how to implement them properly.
-  //This should be moved whenever someone has the time -cg
   async getBranchProtectionRules(
     repoName: string,
-  ): Promise<BranchProtectionRulesQueryResponse[]> {
+  ): Promise<BranchProtectionRulesQueryResponse[][]> {
     try {
       //Get all protected branches in the repo
       const protectedBranches = await this.v3.request(
@@ -306,9 +304,9 @@ export default class OrganizationAccountClient {
           protected: true,
         },
       );
-      console.log(`Branches to query rules for `, protectedBranches);
+
       //Create an array to push all protection rules
-      const branchProtectionRules: BranchProtectionRulesQueryResponse[] = [];
+      const branchProtectionRules: BranchProtectionRulesQueryResponse[][] = [];
 
       for (const { name } of protectedBranches.data as Array<{
         name: string;

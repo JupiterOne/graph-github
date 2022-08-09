@@ -327,10 +327,12 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.orgAdmin) {
-      const branchProtectionPolicy: BranchProtectionRulesQueryResponse[] =
+      const branchProtectionPolicy: BranchProtectionRulesQueryResponse[][] =
         await this.accountClient.getBranchProtectionRules(repoName);
-      for (const branchProtectionRule of branchProtectionPolicy) {
-        await iteratee(branchProtectionRule);
+      for (const branchProtectionRuleArray of branchProtectionPolicy) {
+        for (const branchProtectionRule of branchProtectionRuleArray) {
+          await iteratee(branchProtectionRule);
+        }
       }
     }
   }

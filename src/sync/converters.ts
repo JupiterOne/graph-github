@@ -272,11 +272,7 @@ export function toBranchProtectionEntity(
 ): BranchProtectionRuleEntity {
   const bypass_pull_request_allowances: Array<string> = [];
 
-  //TODO How do I connect users, teams, and apps to the rest of J1?
-  if (
-    data.required_pull_request_reviews.bypass_pull_request_allowances !==
-    undefined
-  ) {
+  if (data.required_pull_request_reviews?.bypass_pull_request_allowances) {
     for (const { login } of data.required_pull_request_reviews
       .bypass_pull_request_allowances.users as Array<{
       login: string;
@@ -297,13 +293,16 @@ export function toBranchProtectionEntity(
     }
   }
 
+  //name doesn't get returned, so pull it from the url
+  const displayName = data.url.split('/').slice(-2).shift();
+
   const branchProtectionRuleEntity: BranchProtectionRuleEntity = {
-    _class: GithubEntities.GITHUB_REPO._class,
-    _type: GithubEntities.GITHUB_REPO._type,
+    _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
+    _type: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
     _key: data.url,
     url: data.url,
-    //name doesn't get returned, so pull it from the url
-    name: data.url.split('/').slice(-2).shift(),
+    name: displayName,
+    displayName: displayName,
     block_creations: data.block_creations.enabled,
     allow_deletions: data.allow_deletions.enabled,
     allow_force_pushes: data.allow_force_pushes.enabled,
@@ -313,10 +312,10 @@ export function toBranchProtectionEntity(
     required_conversation_resolution:
       data.required_conversation_resolution.enabled,
     required_approving_review_count:
-      data.required_pull_request_reviews.required_approving_review_count,
+      data.required_pull_request_reviews?.required_approving_review_count,
     require_code_owner_reviews:
-      data.required_pull_request_reviews.require_code_owner_reviews,
-    required_status_checks: data.required_status_checks.checks,
+      data.required_pull_request_reviews?.require_code_owner_reviews,
+    required_status_checks: data.required_status_checks?.checks,
     bypass_pull_request_allowances: bypass_pull_request_allowances,
   };
   setRawData(branchProtectionRuleEntity, { name: 'default', rawData: data });

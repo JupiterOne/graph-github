@@ -30,17 +30,13 @@ test('fetchBranchProtectionRules exec handler', async () => {
   });
   sanitizeConfig(integrationConfig);
 
-  const {
-    collectedEntities,
-    collectedRelationships,
-    encounteredTypes,
-    jobState,
-  } = await executeStepWithDependencies({
-    //change
-    stepId: branchProtectionRulesSteps[0].id,
-    invocationConfig: invocationConfig as any,
-    instanceConfig: integrationConfig,
-  });
+  const { collectedEntities, collectedRelationships, encounteredTypes } =
+    await executeStepWithDependencies({
+      //change
+      stepId: branchProtectionRulesSteps[0].id,
+      invocationConfig: invocationConfig as any,
+      instanceConfig: integrationConfig,
+    });
 
   expect({
     numCollectedEntities: collectedEntities.length,

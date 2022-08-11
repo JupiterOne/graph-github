@@ -97,6 +97,7 @@ export interface BranchProtectionRuleEntity extends Entity {
   requireCodeOwnerReviews: boolean;
   requiredStatusChecks: Array<string> | undefined;
   bypassPullRequestAllowances: Array<string> | undefined;
+  requiredConversationResolution: boolean;
 }
 
 export interface IssueEntity extends Entity {

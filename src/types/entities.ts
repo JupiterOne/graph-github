@@ -87,16 +87,16 @@ export interface BranchProtectionRuleEntity extends Entity {
   url: string;
   name: string | undefined;
   required_conversation_resolution: boolean;
-  block_creations: boolean;
-  allow_deletions: boolean;
-  allow_force_pushes: boolean;
-  required_linear_history: boolean;
-  enforce_admins: boolean;
-  required_signatures: boolean;
-  required_approving_review_count: number;
-  require_code_owner_reviews: boolean;
-  required_status_checks: Array<string> | undefined;
-  bypass_pull_request_allowances: Array<string> | undefined;
+  blockCreations: boolean;
+  allowDeletions: boolean;
+  allowForcePushes: boolean;
+  requiredLinearHistory: boolean;
+  enforceAdmins: boolean;
+  requiredSignatures: boolean;
+  requiredApprovingReviewCount: number;
+  requireCodeOwnerReviews: boolean;
+  requiredStatusChecks: Array<string> | undefined;
+  bypassPullRequestAllowances: Array<string> | undefined;
 }
 
 export interface IssueEntity extends Entity {

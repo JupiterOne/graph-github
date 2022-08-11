@@ -84,9 +84,9 @@ Object {
       "displayName": "ALLOWS",
       "maintainPermission": false,
       "pullPermission": true,
-      "pushPermission": false,
-      "role": "READ",
-      "triagePermission": false,
+      "pushPermission": true,
+      "role": "WRITE",
+      "triagePermission": true,
     },
     Object {
       "_class": "ALLOWS",

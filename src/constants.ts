@@ -35,7 +35,7 @@ export const GithubEntities = {
       required: ['name', 'displayName', 'webLink', 'createdOn'],
     },
   },
-  //TODO What all goes here? -cg
+
   GITHUB_BRANCH_PROTECITON_RULE: {
     _type: 'github_branch_protection_rule',
     _class: ['Rule'],

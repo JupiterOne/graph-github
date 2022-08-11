@@ -303,20 +303,20 @@ export function toBranchProtectionEntity(
     url: data.url,
     name: displayName,
     displayName: displayName,
-    block_creations: data.block_creations.enabled,
-    allow_deletions: data.allow_deletions.enabled,
-    allow_force_pushes: data.allow_force_pushes.enabled,
-    required_linear_history: data.required_linear_history.enabled,
-    enforce_admins: data.enforce_admins.enabled,
-    required_signatures: data.required_signatures.enabled,
-    required_conversation_resolution:
+    blockCreations: data.block_creations.enabled,
+    allowDeletions: data.allow_deletions.enabled,
+    allowForcePushes: data.allow_force_pushes.enabled,
+    requiredLinearHistory: data.required_linear_history.enabled,
+    enforceAdmins: data.enforce_admins.enabled,
+    requiredSignatures: data.required_signatures.enabled,
+    requiredConversationResolution:
       data.required_conversation_resolution.enabled,
-    required_approving_review_count:
+    requiredApprovingReviewCount:
       data.required_pull_request_reviews?.required_approving_review_count,
-    require_code_owner_reviews:
+    requireCodeOwnerReviews:
       data.required_pull_request_reviews?.require_code_owner_reviews,
-    required_status_checks: data.required_status_checks?.checks,
-    bypass_pull_request_allowances: bypass_pull_request_allowances,
+    requiredStatusChecks: data.required_status_checks?.checks,
+    bypassPullRequestAllowances: bypass_pull_request_allowances,
   };
   setRawData(branchProtectionRuleEntity, { name: 'default', rawData: data });
   return branchProtectionRuleEntity;

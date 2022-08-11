@@ -109,33 +109,6 @@ export interface OrgTeamQueryResponse extends Node {
   privacy: string;
 }
 
-// export interface OrgRepoBranchProtectionRuleQueryResponse extends Node {
-//   url: string;
-//   required_status_checks: {
-//     strict: boolean;
-//     checks: Array<string>;
-//   };
-//   required_pull_request_reviews: {
-//     dismiss_stale_reviews: boolean;
-//     require_code_owner_reviews: boolean;
-//     required_approving_review_count: number;
-//     bypass_pull_request_allowances:
-//       | {
-//           users: Array<any>;
-//           teams: Array<any>;
-//           apps: Array<any>;
-//         }
-//       | undefined;
-//   };
-//   required_signatures: { enabled: boolean };
-//   enforce_admins: { enabled: boolean };
-//   required_linear_history: { enabled: boolean };
-//   allow_force_pushes: { enabled: boolean };
-//   allow_deletions: { enabled: boolean };
-//   block_creations: { enabled: boolean };
-//   required_conversation_resolution: { enabled: boolean };
-// }
-
 //this response expresses the association between a team and a member of the team
 export interface OrgTeamMemberQueryResponse extends Node {
   //id will be github User's id

@@ -86,7 +86,6 @@ export interface TeamEntity extends Entity {
 export interface BranchProtectionRuleEntity extends Entity {
   url: string;
   name: string | undefined;
-  required_conversation_resolution: boolean;
   blockCreations: boolean;
   allowDeletions: boolean;
   allowForcePushes: boolean;

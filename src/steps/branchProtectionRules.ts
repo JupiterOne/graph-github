@@ -73,32 +73,32 @@ export async function fetchBranchProtectionRule({
               }),
             );
           }
-          for (const { id } of branchProtectionRule
+          for (const { node_id } of branchProtectionRule
             .required_pull_request_reviews.bypass_pull_request_allowances
             ?.teams as Array<{
-            id: string;
+            node_id: string;
           }>) {
             await jobState.addRelationship(
               createDirectRelationship({
                 _class: RelationshipClass.OVERRIDES,
                 fromType: GithubEntities.GITHUB_TEAM._type,
                 toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-                fromKey: id,
+                fromKey: node_id,
                 toKey: branchProtectionRuleEntity._key,
               }),
             );
           }
-          for (const { id } of branchProtectionRule
+          for (const { node_id } of branchProtectionRule
             .required_pull_request_reviews.bypass_pull_request_allowances
             ?.apps as Array<{
-            id: string;
+            node_id: string;
           }>) {
             await jobState.addRelationship(
               createDirectRelationship({
                 _class: RelationshipClass.OVERRIDES,
                 fromType: GithubEntities.GITHUB_APP._type,
                 toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-                fromKey: getAppEntityKey(id),
+                fromKey: getAppEntityKey(node_id),
                 toKey: branchProtectionRuleEntity._key,
               }),
             );

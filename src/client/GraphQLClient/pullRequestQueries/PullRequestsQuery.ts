@@ -28,10 +28,10 @@ type QueryParams = {
   fullName: string;
   public: boolean;
   ingestStartDatetime: string;
+  maxResourceIngestion: number;
 };
 
 const MAX_INNER_RESOURCE_LIMIT = 100;
-const MAX_RESOURCES_PER_EXECUTION = 500;
 
 /**
  * Builds the leanest query possible
@@ -226,6 +226,7 @@ const labelsQuery = `
  * @param responseData
  * @param iteratee
  * @param onInnerResourceQueryRequired
+ * @param logger
  */
 export const processResponseData = async (
   responseData,
@@ -278,10 +279,16 @@ export const processResponseData = async (
  * @param queryParams
  * @param iteratee
  * @param execute
- * @return {rateLimitConsumed}
+ * @param logger
+ * @return Promise
  */
 const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
-  async (queryParams, execute, iteratee): Promise<RateLimitStepSummary> => {
+  async (
+    queryParams,
+    execute,
+    iteratee,
+    logger,
+  ): Promise<RateLimitStepSummary> => {
     let pullRequestFetched = 0;
     let queryCost = 0;
     let queryState: QueryState | undefined = undefined;
@@ -317,9 +324,22 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
         queryCost += totalCost;
       }
 
+      const exceededMaxResourceLimit =
+        pullRequestFetched >= queryParams.maxResourceIngestion;
+
       paginationComplete =
-        !queryState.pullRequests?.hasNextPage ||
-        pullRequestFetched >= MAX_RESOURCES_PER_EXECUTION;
+        !queryState.pullRequests?.hasNextPage || exceededMaxResourceLimit;
+
+      if (exceededMaxResourceLimit) {
+        logger?.warn(
+          {
+            paginationComplete,
+            pullRequestFetched,
+            maxPullRequests: queryParams.maxResourceIngestion,
+          },
+          'Max PR resource ingestion was reached.',
+        );
+      }
     }
 
     return {

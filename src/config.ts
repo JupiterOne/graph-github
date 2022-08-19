@@ -169,6 +169,10 @@ export function sanitizeConfig(config: IntegrationConfig) {
     config.pullRequestIngestStartDatetime ||
     process.env['PULL_REQUEST_INGEST_START_DATETIME']; // Expects Date.toISOString format
 
+  config.pullRequestMaxResourcesPerRepo =
+    config.pullRequestMaxResourcesPerRepo ||
+    process.env['PULL_REQUEST_MAX_RESOURCES_PER_REPO'];
+
   if (config.enableDependabotAlerts) {
     config.dependabotAlertSeverities = config.dependabotAlertSeverities ?? [];
     config.dependabotAlertStates = config.dependabotAlertStates ?? [];

@@ -18,6 +18,7 @@ describe('PullRequestsQuery', () => {
         fullName: 'J1-Test/musical-palm-tree',
         public: true,
         ingestStartDatetime: '2011-10-05T14:48:00.000Z',
+        maxResourceIngestion: 500,
       });
 
       // Assert
@@ -30,6 +31,7 @@ describe('PullRequestsQuery', () => {
         fullName: 'J1-Test/musical-palm-tree',
         public: false,
         ingestStartDatetime: '2011-10-05T14:48:00.000Z',
+        maxResourceIngestion: 500,
       });
 
       // Assert
@@ -48,6 +50,7 @@ describe('PullRequestsQuery', () => {
           fullName: 'J1-Test/musical-palm-tree',
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
+          maxResourceIngestion: 500,
         },
         queryState,
       );
@@ -111,6 +114,7 @@ describe('PullRequestsQuery', () => {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
+          maxResourceIngestion: 500,
         },
         execute,
         iteratee,
@@ -145,6 +149,7 @@ describe('PullRequestsQuery', () => {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
+          maxResourceIngestion: 500,
         },
         execute,
         iteratee,
@@ -171,6 +176,7 @@ describe('PullRequestsQuery', () => {
           fullName: 'J1-Test/happy-sunshine',
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
+          maxResourceIngestion: 500,
         },
         execute,
         iteratee,

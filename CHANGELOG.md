@@ -8,6 +8,13 @@ and this project adheres to
 
 [Unreleased]
 
+## 1.20.0 - 2022-08-19
+
+## Changed
+
+- Added `pullRequestMaxResourcesPerRepo` to config to allow the max limit of
+  pull requests to be adjusted. Default remains at 500 per repo.
+
 ## 1.19.0 - 2022-07-14
 
 ## Changed

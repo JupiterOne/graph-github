@@ -193,11 +193,13 @@ export default class OrganizationAccountClient {
    * Calls the GraphQL client to iterate over pull request entities.
    * @param repo
    * @param ingestStartDatetime
+   * @param maxResourceIngestion
    * @param iteratee
    */
   async iteratePullRequestEntities(
     repo: RepoEntity,
     ingestStartDatetime: string, //expect Date.toISOString format
+    maxResourceIngestion: number,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     if (!this.authorizedForPullRequests) {
@@ -211,6 +213,7 @@ export default class OrganizationAccountClient {
         public: repo.public,
       },
       ingestStartDatetime,
+      maxResourceIngestion,
       iteratee,
     );
   }

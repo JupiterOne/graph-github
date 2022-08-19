@@ -1,5 +1,6 @@
 import { ResourceIteratee } from '../../../client';
 import { ExecutableQuery, QueryExecutor } from '../CreateQueryExecutor';
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 
 export type CursorState = {
   hasNextPage?: boolean;
@@ -12,6 +13,7 @@ export type IteratePagination<P, I> = (
   queryParams: P,
   execute: QueryExecutor,
   iteratee: ResourceIteratee<I>,
+  logger?: IntegrationLogger,
 ) => Promise<RateLimitStepSummary>;
 
 export type RateLimitStepSummary = {

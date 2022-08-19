@@ -183,6 +183,7 @@ export class GitHubGraphQLClient {
       (pr) => {
         pullRequest = pr;
       },
+      this.logger,
     );
 
     return pullRequest;
@@ -192,11 +193,13 @@ export class GitHubGraphQLClient {
    * Iterates over pull requests for the given repository.
    * @param repository
    * @param ingestStartDatetime
+   * @param maxResourceIngestion
    * @param iteratee
    */
   public async iteratePullRequests(
     repository: { fullName: string; public: boolean },
     ingestStartDatetime: string,
+    maxResourceIngestion: number,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
@@ -206,9 +209,11 @@ export class GitHubGraphQLClient {
         {
           ...repository,
           ingestStartDatetime,
+          maxResourceIngestion,
         },
         executor,
         iteratee,
+        this.logger,
       ),
     );
   }

@@ -33,17 +33,17 @@ import {
 } from '../sync/converters';
 import { cloneDeep } from 'lodash';
 
+const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
+
 export async function fetchPrs(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
 ) {
   const config = context.instance.config;
   const jobState = context.jobState;
   const logger = context.logger;
-  const ingestStartDatetime = determineIngestStartDatetime(
-    config,
-    context.executionHistory.lastSuccessful,
-  );
+
   const apiClient = getOrCreateApiClient(config, logger);
+
   const accountEntity = await jobState.getData<AccountEntity>(
     DATA_ACCOUNT_ENTITY,
   );
@@ -80,9 +80,17 @@ export async function fetchPrs(
     );
   }
 
+  const ingestStartDatetime = determineIngestStartDatetime(
+    config,
+    context.executionHistory.lastSuccessful,
+  );
+  const maxResourceIngestion =
+    config.pullRequestMaxResourcesPerRepo ??
+    DEFAULT_MAX_RESOURCES_PER_EXECUTION;
+
   logger.info(
-    { ingestStartDatetime },
-    'Pull requests will be ingested starting on the specified date.',
+    { ingestStartDatetime, maxResourceIngestion },
+    'Pull requests will be ingested starting on the specified date with the specified max resources to ingest.',
   );
 
   await jobState.iterateEntities<RepoEntity>(
@@ -93,6 +101,7 @@ export async function fetchPrs(
           repoEntity,
           logger,
           ingestStartDatetime,
+          maxResourceIngestion,
           async (pullRequest) => {
             const pr = toPullRequestEntity(
               pullRequest,

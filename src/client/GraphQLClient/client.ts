@@ -14,6 +14,7 @@ import { Octokit } from '@octokit/rest';
 import { ResourceIteratee } from '../../client';
 
 import {
+  BranchProtectionRuleResponse,
   CollaboratorResponse,
   IssueResponse,
   OrgMemberQueryResponse,
@@ -45,6 +46,7 @@ import {
 import { graphql } from '@octokit/graphql/dist-types/types';
 import SinglePullRequestQuery from './pullRequestQueries/SinglePullRequestQuery';
 import RepoVulnAlertsQuery from './vulnerabilityAlertQueries/RepoVulnAlertsQuery';
+import BranchProtectionRulesQuery from './branchProtectionRulesQueries/BranchProtectionRulesQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300000;
 
@@ -378,6 +380,28 @@ export class GitHubGraphQLClient {
           stateFilter: filters.states ?? [],
           gheServerVersion,
         },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  /**
+   * Iterates through all branch protections rules found on the provided repo.
+   * @param login - aka company
+   * @param repoName
+   * @param iteratee
+   */
+  public async iterateRepoBranchProtectionRules(
+    login: string,
+    repoName: string,
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BranchProtectionRulesQuery.iterateBranchProtectionRules(
+        { repoOwner: login, repoName },
         executor,
         iteratee,
       ),

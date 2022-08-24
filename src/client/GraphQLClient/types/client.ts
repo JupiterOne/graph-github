@@ -369,3 +369,42 @@ export interface VulnerabilityAlertResponse extends Node {
   vulnerableManifestPath: string;
   vulnerableRequirements: string;
 }
+
+export interface BranchProtectionRuleResponse extends Node {
+  requiresLinearHistory: boolean;
+  requiredApprovingReviewCount: number;
+  dismissesStaleReviews: boolean;
+  requiresCodeOwnerReviews: boolean;
+  requiresCommitSignatures: boolean;
+  isAdminEnforced: boolean;
+  allowsForcePushes: boolean;
+  allowsDeletions: boolean;
+  blocksCreations: boolean;
+  requiresConversationResolution: boolean;
+  pattern: string;
+  requiresApprovingReviews: boolean;
+  requiredStatusCheckContexts: boolean;
+  creator: {
+    login: string;
+  };
+  databaseId: number;
+  requiresStatusChecks: boolean;
+  requiresStrictStatusChecks: boolean;
+  restrictsPushes: boolean;
+  restrictsReviewDismissals: boolean;
+  requiredStatusChecks: Array<{
+    context: string;
+    app: {
+      id: string;
+      name: string;
+    };
+  }>;
+  bypassForcePushAllowances: {
+    teams: Array<Actor>;
+    apps: Array<Actor>;
+    users: Array<Actor>;
+  };
+  bypassPullRequestAllowances: Array<Actor>;
+  pushAllowances: Array<Actor>;
+  reviewDismissalAllowances: Array<Actor>;
+}

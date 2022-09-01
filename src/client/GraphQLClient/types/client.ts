@@ -62,8 +62,9 @@ export interface Node {
 }
 
 interface Actor {
+  id: string;
   name?: string | null;
-  login: string;
+  login?: string | null;
 }
 
 export interface OrgQueryResponse extends Node, Actor {
@@ -386,7 +387,7 @@ export interface BranchProtectionRuleResponse extends Node {
   requiresConversationResolution: boolean;
   pattern: string;
   requiresApprovingReviews: boolean;
-  requiredStatusCheckContexts: boolean;
+  requiredStatusCheckContexts: Array<string>;
   creator: {
     login: string;
   };
@@ -407,7 +408,11 @@ export interface BranchProtectionRuleResponse extends Node {
     apps: Array<Actor>;
     users: Array<Actor>;
   };
-  bypassPullRequestAllowances: Array<Actor>;
+  bypassPullRequestAllowances: {
+    teams: Array<Actor>;
+    apps: Array<Actor>;
+    users: Array<Actor>;
+  };
   pushAllowances: Array<Actor>;
   reviewDismissalAllowances: Array<Actor>;
 }

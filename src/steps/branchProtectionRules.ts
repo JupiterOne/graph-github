@@ -1,4 +1,3 @@
-//TODO  Have someone review this file -cg
 import {
   IntegrationStep,
   IntegrationStepExecutionContext,
@@ -10,6 +9,7 @@ import {
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { BranchProtectionRuleEntity, RepoKeyAndName } from '../types';
+import { BranchProtectionRuleResponse } from '../client/GraphQLClient';
 import {
   GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
   GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
@@ -20,6 +20,7 @@ import {
 } from '../constants';
 import { toBranchProtectionEntity } from '../sync/converters';
 import { getAppEntityKey } from '../util/propertyHelpers';
+import BranchProtectionRulesQuery from '../client/GraphQLClient/branchProtectionRulesQueries/BranchProtectionRulesQuery';
 
 export async function fetchBranchProtectionRule({
   instance,
@@ -54,55 +55,55 @@ export async function fetchBranchProtectionRule({
             toKey: branchProtectionRuleEntity._key,
           }),
         );
-        if (
-          branchProtectionRule.required_pull_request_reviews
-            ?.bypass_pull_request_allowances
-        ) {
-          for (const { node_id } of branchProtectionRule
-            .required_pull_request_reviews.bypass_pull_request_allowances
-            ?.users as Array<{
-            node_id: string;
-          }>) {
-            await jobState.addRelationship(
-              createDirectRelationship({
-                _class: RelationshipClass.OVERRIDES,
-                fromType: GithubEntities.GITHUB_MEMBER._type,
-                toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-                fromKey: node_id,
-                toKey: branchProtectionRuleEntity._key,
-              }),
-            );
-          }
-          for (const { node_id } of branchProtectionRule
-            .required_pull_request_reviews.bypass_pull_request_allowances
-            ?.teams as Array<{
-            node_id: string;
-          }>) {
-            await jobState.addRelationship(
-              createDirectRelationship({
-                _class: RelationshipClass.OVERRIDES,
-                fromType: GithubEntities.GITHUB_TEAM._type,
-                toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-                fromKey: node_id,
-                toKey: branchProtectionRuleEntity._key,
-              }),
-            );
-          }
-          for (const { node_id } of branchProtectionRule
-            .required_pull_request_reviews.bypass_pull_request_allowances
-            ?.apps as Array<{
-            node_id: string;
-          }>) {
-            await jobState.addRelationship(
-              createDirectRelationship({
-                _class: RelationshipClass.OVERRIDES,
-                fromType: GithubEntities.GITHUB_APP._type,
-                toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-                fromKey: getAppEntityKey(node_id),
-                toKey: branchProtectionRuleEntity._key,
-              }),
-            );
-          }
+        if (branchProtectionRule.bypassPullRequestAllowances?.users) {
+          console.log(
+            `Users: ${branchProtectionRule.bypassPullRequestAllowances?.users}`,
+          );
+          /*
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.OVERRIDES,
+              fromType: GithubEntities.GITHUB_MEMBER._type,
+              toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+              fromKey: branchProtectionRule.bypassPullRequestAllowances?.users<login>,
+              toKey: branchProtectionRuleEntity._key,
+            }),
+          );
+          */
+        }
+
+        if (branchProtectionRule.bypassPullRequestAllowances?.teams) {
+          console.log(
+            `Teams: ${branchProtectionRule.bypassPullRequestAllowances?.teams}`,
+          );
+          /*
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.OVERRIDES,
+              fromType: GithubEntities.GITHUB_MEMBER._type,
+              toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+              fromKey: branchProtectionRule.bypassPullRequestAllowances?.users<login>,
+              toKey: branchProtectionRuleEntity._key,
+            }),
+          );
+          */
+        }
+
+        if (branchProtectionRule.bypassPullRequestAllowances?.apps) {
+          console.log(
+            `Apps: ${branchProtectionRule.bypassPullRequestAllowances?.apps}`,
+          );
+          /*
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.OVERRIDES,
+              fromType: GithubEntities.GITHUB_MEMBER._type,
+              toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+              fromKey: branchProtectionRule.bypassPullRequestAllowances?.users<login>,
+              toKey: branchProtectionRuleEntity._key,
+            }),
+          );
+          */
         }
       },
     );

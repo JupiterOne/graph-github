@@ -43,6 +43,7 @@ import {
   getSecretEntityKey,
 } from '../util/propertyHelpers';
 import {
+  BranchProtectionRuleResponse,
   CollaboratorResponse,
   Commit,
   IssueResponse,
@@ -69,7 +70,7 @@ import {
   buildVulnAlertId,
   buildVulnAlertRecommendation,
 } from './converterUtils';
-import { BranchProtectionRulesQueryResponse } from '../client/RESTClient/types';
+import { teams } from '../client/GraphQLClient/teamQueries/testResponses';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -268,58 +269,52 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 }
 
 export function toBranchProtectionEntity(
-  data: BranchProtectionRulesQueryResponse,
+  data: BranchProtectionRuleResponse,
 ): BranchProtectionRuleEntity {
   const bypass_pull_request_allowances: Array<string> = [];
-
-  if (data.required_pull_request_reviews?.bypass_pull_request_allowances) {
-    for (const { login } of data.required_pull_request_reviews
-      .bypass_pull_request_allowances.users as Array<{
-      login: string;
-    }>) {
-      bypass_pull_request_allowances.push(login);
+  if (data.bypassPullRequestAllowances) {
+    if (data.bypassPullRequestAllowances.users) {
+      for (const { login } of data.bypassPullRequestAllowances.teams as Array<{
+        login: string;
+      }>) {
+        bypass_pull_request_allowances.push(login);
+      }
     }
-    for (const { slug } of data.required_pull_request_reviews
-      .bypass_pull_request_allowances.teams as Array<{
-      slug: string;
-    }>) {
-      bypass_pull_request_allowances.push(slug);
+    if (data.bypassPullRequestAllowances.teams) {
+      for (const { name } of data.bypassPullRequestAllowances.teams as Array<{
+        name: string;
+      }>)
+        bypass_pull_request_allowances.push(name);
     }
-    for (const { slug } of data.required_pull_request_reviews
-      .bypass_pull_request_allowances.apps as Array<{
-      slug: string;
-    }>) {
-      bypass_pull_request_allowances.push(slug);
+    if (data.bypassPullRequestAllowances.apps) {
+      for (const { name } of data.bypassPullRequestAllowances.apps as Array<{
+        name: string;
+      }>)
+        bypass_pull_request_allowances.push(name);
     }
   }
 
-  //name doesn't get returned, so pull it from the url
-  const displayName = data.url.split('/').slice(-2).shift();
-
-  const branchProtectionRuleEntity: BranchProtectionRuleEntity = {
+  const BranchProtectionRuleResponse: BranchProtectionRuleEntity = {
     _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
     _type: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-    _key: data.url,
-    url: data.url,
-    name: displayName,
-    displayName: displayName,
-    blockCreations: data.block_creations.enabled,
-    allowDeletions: data.allow_deletions.enabled,
-    allowForcePushes: data.allow_force_pushes.enabled,
-    requiredLinearHistory: data.required_linear_history.enabled,
-    enforceAdmins: data.enforce_admins.enabled,
-    requiredSignatures: data.required_signatures.enabled,
-    requiredConversationResolution:
-      data.required_conversation_resolution.enabled,
-    requiredApprovingReviewCount:
-      data.required_pull_request_reviews?.required_approving_review_count,
-    requireCodeOwnerReviews:
-      data.required_pull_request_reviews?.require_code_owner_reviews,
-    requiredStatusChecks: data.required_status_checks?.checks,
+    _key: data.pattern,
+    name: data.pattern,
+    displayName: data.pattern,
+    blockCreations: data.blocksCreations,
+    allowDeletions: data.allowsDeletions,
+    allowForcePushes: data.allowsForcePushes,
+    requiredLinearHistory: data.requiresLinearHistory,
+    enforceAdmins: data.isAdminEnforced,
+    requiredSignatures: data.requiresCommitSignatures,
+    requiredConversationResolution: data.requiresConversationResolution,
+    requiredApprovingReviewCount: data.requiredApprovingReviewCount,
+    requireCodeOwnerReviews: data.requiresCodeOwnerReviews,
+    requiredStatusChecks: data.requiredStatusCheckContexts,
     bypassPullRequestAllowances: bypass_pull_request_allowances,
   };
-  setRawData(branchProtectionRuleEntity, { name: 'default', rawData: data });
-  return branchProtectionRuleEntity;
+
+  setRawData(BranchProtectionRuleResponse, { name: 'default', rawData: data });
+  return BranchProtectionRuleResponse;
 }
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {

@@ -26,12 +26,12 @@ import {
   OrgTeamQueryResponse,
   OrgTeamRepoQueryResponse,
   VulnerabilityAlertResponse,
+  BranchProtectionRuleResponse,
 } from './client/GraphQLClient';
 import {
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
-  BranchProtectionRulesQueryResponse,
 } from './client/RESTClient/types';
 import {
   CollaboratorResponse,
@@ -321,19 +321,22 @@ export class APIClient {
    */
   public async iterateBranchProtectionPolicy(
     repoName: string,
-    iteratee: ResourceIteratee<BranchProtectionRulesQueryResponse>,
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
   ): Promise<void> {
     if (!this.accountClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.orgAdmin) {
-      const branchProtectionPolicy: BranchProtectionRulesQueryResponse[][] =
-        await this.accountClient.getBranchProtectionRules(repoName);
-      for (const branchProtectionRuleArray of branchProtectionPolicy) {
-        for (const branchProtectionRule of branchProtectionRuleArray) {
-          await iteratee(branchProtectionRule);
-        }
-      }
+      const rateLimit =
+        await this.accountClient.iterateRepoBranchProtectionRules(
+          repoName,
+          iteratee,
+        );
+
+      this.logger.debug(
+        { rateLimit },
+        'Rate limit consumed while fetching Team Members.',
+      );
     }
   }
 

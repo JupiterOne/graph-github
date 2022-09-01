@@ -43,14 +43,14 @@ export const GithubEntities = {
       additionalProperties: true,
       properties: {
         _type: { const: 'github_branch_protection_rule' },
-        url: { type: 'string' },
+        name: { type: 'string' },
         displayName: { type: 'string' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
         },
       },
-      required: ['url', 'displayName'],
+      required: ['name', 'displayName'],
     },
   },
   GITHUB_COLLABORATOR: {

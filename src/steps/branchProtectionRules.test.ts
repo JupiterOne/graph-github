@@ -8,7 +8,7 @@ import {
   GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
   GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
   GITHUB_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
-  //GITHUB_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
+  GITHUB_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
   GithubEntities,
 } from '../constants';
 import { invocationConfig } from '..';
@@ -61,21 +61,25 @@ test('fetchBranchProtectionRules exec handler', async () => {
   );
   expect(branchProtectionRulesType.length).toBeGreaterThan(0);
 
+  //Test for users
   const branchProtectionRulesMemberOverrideType = collectedRelationships.filter(
     (e) => e._type === GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
   );
-  expect(branchProtectionRulesMemberOverrideType.length).toBeGreaterThan(0);
+  expect(branchProtectionRulesMemberOverrideType.length).toBeGreaterThanOrEqual(
+    0,
+  );
 
+  //Test for Teams
   const branchProtectionRulesTeamOverrideType = collectedRelationships.filter(
     (e) => e._type === GITHUB_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
   );
-  expect(branchProtectionRulesTeamOverrideType.length).toBeGreaterThan(0);
+  expect(branchProtectionRulesTeamOverrideType.length).toBeGreaterThanOrEqual(
+    0,
+  );
 
-  //Need to add App to bypass protection rules before running this test.
-  /*
+  //Test for Apps
   const branchProtectionRulesAppOverrideType = collectedRelationships.filter(
     (e) => e._type === GITHUB_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
   );
-  expect(branchProtectionRulesAppOverrideType.length).toBeGreaterThan(0);
-  */
+  expect(branchProtectionRulesAppOverrideType.length).toBeGreaterThanOrEqual(0);
 });

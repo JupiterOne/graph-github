@@ -294,10 +294,12 @@ export function toBranchProtectionEntity(
     }
   }
 
+  const branchProtectionKey = `${data.databaseId}-${data.pattern}`;
+
   const BranchProtectionRuleResponse: BranchProtectionRuleEntity = {
     _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
     _type: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-    _key: data.pattern,
+    _key: branchProtectionKey,
     name: data.pattern,
     displayName: data.pattern,
     blockCreations: data.blocksCreations,

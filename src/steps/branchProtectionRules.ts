@@ -9,7 +9,6 @@ import {
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { BranchProtectionRuleEntity, RepoKeyAndName } from '../types';
-import { BranchProtectionRuleResponse } from '../client/GraphQLClient';
 import {
   GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
   GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
@@ -19,8 +18,6 @@ import {
   GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
 import { toBranchProtectionEntity } from '../sync/converters';
-import { getAppEntityKey } from '../util/propertyHelpers';
-import BranchProtectionRulesQuery from '../client/GraphQLClient/branchProtectionRulesQueries/BranchProtectionRulesQuery';
 
 export async function fetchBranchProtectionRule({
   instance,

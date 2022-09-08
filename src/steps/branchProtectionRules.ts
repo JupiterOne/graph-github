@@ -41,7 +41,11 @@ export async function fetchBranchProtectionRule({
       repoTag.name,
       async (branchProtectionRule) => {
         const branchProtectionRuleEntity = (await jobState.addEntity(
-          toBranchProtectionEntity(branchProtectionRule),
+          toBranchProtectionEntity(
+            branchProtectionRule,
+            config.githubApiBaseUrl,
+            apiClient.accountClient.login,
+          ),
         )) as BranchProtectionRuleEntity;
         await jobState.addRelationship(
           createDirectRelationship({

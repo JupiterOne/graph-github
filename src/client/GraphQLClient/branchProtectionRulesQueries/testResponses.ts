@@ -1,10 +1,11 @@
-const branchProtectionRulesReponses = [
+const branchProtectionRulesResponses = [
   {
     repository: {
       name: 'reimagined-barnacle',
       branchProtectionRules: {
         nodes: [
           {
+            id: 'BPR_sdflk_slkwefoi',
             requiresLinearHistory: false,
             requiredApprovingReviewCount: 2,
             dismissesStaleReviews: false,
@@ -96,4 +97,4 @@ const branchProtectionRulesReponses = [
   },
 ];
 
-export { branchProtectionRulesReponses };
+export { branchProtectionRulesResponses };

@@ -33,6 +33,7 @@ Object {
   },
   "databaseId": 25221868,
   "dismissesStaleReviews": false,
+  "id": "BPR_sdflk_slkwefoi",
   "isAdminEnforced": false,
   "pattern": "release-*",
   "pushAllowances": Object {
@@ -40,6 +41,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 2,
   "requiredStatusCheckContexts": Array [],
   "requiredStatusChecks": Array [],
@@ -100,6 +102,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 1,
   "requiredStatusCheckContexts": Array [],
   "requiredStatusChecks": Array [],
@@ -132,6 +135,7 @@ Object {
             name
             branchProtectionRules(first: $maxLimit) {
               nodes {
+                id
                 requiresLinearHistory
                 requiredApprovingReviewCount
                 dismissesStaleReviews

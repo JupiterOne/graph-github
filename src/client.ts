@@ -314,7 +314,7 @@ export class APIClient {
   }
 
   /**
-   * Iterates each Github repo secret.
+   * Iterates branch protection rules for the provided repoName.
    *
    * @param repoName
    * @param iteratee receives each resource to produce entities/relationships
@@ -335,7 +335,7 @@ export class APIClient {
 
       this.logger.debug(
         { rateLimit },
-        'Rate limit consumed while fetching Team Members.',
+        'Rate limit consumed while fetching Branch Protection Rules.',
       );
     }
   }

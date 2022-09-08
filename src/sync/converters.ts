@@ -23,7 +23,6 @@ import {
   AccountEntity,
   AccountType,
   AppEntity,
-  BranchProtectionRuleEntity,
   EnvironmentEntity,
   IdEntityMap,
   IssueEntity,
@@ -49,7 +48,6 @@ import {
   IssueResponse,
   OrgMemberQueryResponse,
   OrgQueryResponse,
-  // OrgRepoBranchProtectionRuleQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamQueryResponse,
@@ -70,7 +68,6 @@ import {
   buildVulnAlertId,
   buildVulnAlertRecommendation,
 } from './converterUtils';
-import { teams } from '../client/GraphQLClient/teamQueries/testResponses';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -270,53 +267,53 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
 
 export function toBranchProtectionEntity(
   data: BranchProtectionRuleResponse,
-): BranchProtectionRuleEntity {
-  const bypass_pull_request_allowances: Array<string> = [];
-  if (data.bypassPullRequestAllowances) {
-    if (data.bypassPullRequestAllowances.users) {
-      for (const { login } of data.bypassPullRequestAllowances.teams as Array<{
-        login: string;
-      }>) {
-        bypass_pull_request_allowances.push(login);
-      }
+  baseUrl: string,
+  orgLogin: string,
+) {
+  const bypassPullRequestAllowances: Array<string> = [];
+  for (const user of data.bypassPullRequestAllowances?.users ?? []) {
+    if (user?.login) {
+      bypassPullRequestAllowances.push(user.login);
     }
-    if (data.bypassPullRequestAllowances.teams) {
-      for (const { name } of data.bypassPullRequestAllowances.teams as Array<{
-        name: string;
-      }>)
-        bypass_pull_request_allowances.push(name);
+  }
+  for (const team of data.bypassPullRequestAllowances?.teams ?? []) {
+    if (team?.name) {
+      bypassPullRequestAllowances.push(team.name);
     }
-    if (data.bypassPullRequestAllowances.apps) {
-      for (const { name } of data.bypassPullRequestAllowances.apps as Array<{
-        name: string;
-      }>)
-        bypass_pull_request_allowances.push(name);
+  }
+  for (const app of data.bypassPullRequestAllowances?.apps ?? []) {
+    if (app?.name) {
+      bypassPullRequestAllowances.push(app.name);
     }
   }
 
-  const branchProtectionKey = `${data.databaseId}-${data.pattern}`;
-
-  const BranchProtectionRuleResponse: BranchProtectionRuleEntity = {
-    _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
-    _type: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-    _key: branchProtectionKey,
-    name: data.pattern,
-    displayName: data.pattern,
-    blockCreations: data.blocksCreations,
-    allowDeletions: data.allowsDeletions,
-    allowForcePushes: data.allowsForcePushes,
-    requiredLinearHistory: data.requiresLinearHistory,
-    enforceAdmins: data.isAdminEnforced,
-    requiredSignatures: data.requiresCommitSignatures,
-    requiredConversationResolution: data.requiresConversationResolution,
-    requiredApprovingReviewCount: data.requiredApprovingReviewCount,
-    requireCodeOwnerReviews: data.requiresCodeOwnerReviews,
-    requiredStatusChecks: data.requiredStatusCheckContexts,
-    bypassPullRequestAllowances: bypass_pull_request_allowances,
-  };
-
-  setRawData(BranchProtectionRuleResponse, { name: 'default', rawData: data });
-  return BranchProtectionRuleResponse;
+  return createIntegrationEntity({
+    entityData: {
+      source: data,
+      assign: {
+        _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
+        _type: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+        _key: `github_${data.id}`,
+        webLink: apiUrlToWebLink(
+          baseUrl,
+          `/${orgLogin}/${data.repoName}/settings/branch_protection_rules/${data.databaseId}`,
+        ),
+        name: data.pattern,
+        displayName: data.pattern,
+        blockCreations: data.blocksCreations,
+        allowDeletions: data.allowsDeletions,
+        allowForcePushes: data.allowsForcePushes,
+        requiredLinearHistory: data.requiresLinearHistory,
+        enforceAdmins: data.isAdminEnforced,
+        requiredSignatures: data.requiresCommitSignatures,
+        requiredConversationResolution: data.requiresConversationResolution,
+        requiredApprovingReviewCount: data.requiredApprovingReviewCount,
+        requireCodeOwnerReviews: data.requiresCodeOwnerReviews,
+        requiredStatusChecks: data.requiredStatusCheckContexts,
+        bypassPullRequestAllowances,
+      },
+    },
+  });
 }
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {

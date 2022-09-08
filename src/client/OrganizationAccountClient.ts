@@ -266,8 +266,6 @@ export default class OrganizationAccountClient {
   async iterateRepoBranchProtectionRules(
     repoName: string,
     iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
-    //filters: { severities: string[]; states: string[] },
-    gheServerVersion?: string,
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateRepoBranchProtectionRules(
       this.login,

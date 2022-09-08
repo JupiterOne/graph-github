@@ -64,7 +64,7 @@ export interface Node {
 interface Actor {
   id: string;
   name?: string | null;
-  login?: string | null;
+  login: string;
 }
 
 export interface OrgQueryResponse extends Node, Actor {
@@ -375,6 +375,7 @@ export interface VulnerabilityAlertResponse extends Node {
 }
 
 export interface BranchProtectionRuleResponse extends Node {
+  repoName: string;
   requiresLinearHistory: boolean;
   requiredApprovingReviewCount: number;
   dismissesStaleReviews: boolean;
@@ -404,9 +405,9 @@ export interface BranchProtectionRuleResponse extends Node {
     };
   }>;
   bypassForcePushAllowances: {
-    teams: Array<Actor>;
-    apps: Array<Actor>;
-    users: Array<Actor>;
+    teams: Array<Omit<Actor, 'login'>>;
+    apps: Array<Omit<Actor, 'login'>>;
+    users: Array<Omit<Actor, 'name'>>;
   };
   bypassPullRequestAllowances: {
     teams: Array<Actor>;

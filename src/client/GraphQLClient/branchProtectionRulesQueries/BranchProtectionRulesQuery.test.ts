@@ -1,5 +1,5 @@
 import BranchProtectionRulesQuery from './BranchProtectionRulesQuery';
-import { branchProtectionRulesReponses } from './testResponses';
+import { branchProtectionRulesResponses } from './testResponses';
 
 describe('BranchProtectionRulesQuery', () => {
   describe('#iterateBranchProtectionRules', () => {
@@ -7,7 +7,7 @@ describe('BranchProtectionRulesQuery', () => {
       const iteratee = jest.fn();
       const execute = jest
         .fn()
-        .mockResolvedValueOnce(branchProtectionRulesReponses[0]);
+        .mockResolvedValueOnce(branchProtectionRulesResponses[0]);
 
       // Act
       const result =
@@ -20,7 +20,6 @@ describe('BranchProtectionRulesQuery', () => {
           iteratee,
         );
 
-      console.log(`total cost`, result.totalCost);
       // Assert
       expect(result.totalCost).toBe(0);
       expect(iteratee).toHaveBeenCalledTimes(2);

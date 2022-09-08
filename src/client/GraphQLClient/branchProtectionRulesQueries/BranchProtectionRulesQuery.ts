@@ -32,6 +32,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
             name
             branchProtectionRules(first: $maxLimit) {
               nodes {
+                id
                 requiresLinearHistory
                 requiredApprovingReviewCount
                 dismissesStaleReviews
@@ -132,6 +133,7 @@ const processResponseData: ProcessResponse<
     }
 
     const processedRule = {
+      repoName: responseData.repository.name,
       ...rule,
       bypassForcePushAllowances: processActors(
         rule.bypassForcePushAllowances?.nodes,

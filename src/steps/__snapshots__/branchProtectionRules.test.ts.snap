@@ -7,7 +7,7 @@ Object {
       "_class": Array [
         "Rule",
       ],
-      "_key": "25221868-release-*",
+      "_key": "github_BPR_kwDOG-zMhM4BgNrs",
       "_rawData": Array [
         Object {
           "name": "default",
@@ -43,6 +43,7 @@ Object {
             },
             "databaseId": 25221868,
             "dismissesStaleReviews": false,
+            "id": "BPR_kwDOG-zMhM4BgNrs",
             "isAdminEnforced": false,
             "pattern": "release-*",
             "pushAllowances": Object {
@@ -50,6 +51,7 @@ Object {
               "teams": Array [],
               "users": Array [],
             },
+            "repoName": "reimagined-barnacle",
             "requiredApprovingReviewCount": 2,
             "requiredStatusCheckContexts": Array [],
             "requiredStatusChecks": Array [],
@@ -75,11 +77,13 @@ Object {
       "allowForcePushes": false,
       "blockCreations": false,
       "bypassPullRequestAllowances": Array [
-        undefined,
+        "adam-in-ict",
         "j1-nested-team",
       ],
+      "createdOn": undefined,
       "displayName": "release-*",
       "enforceAdmins": false,
+      "id": "BPR_kwDOG-zMhM4BgNrs",
       "name": "release-*",
       "requireCodeOwnerReviews": false,
       "requiredApprovingReviewCount": 2,
@@ -87,12 +91,13 @@ Object {
       "requiredLinearHistory": false,
       "requiredSignatures": true,
       "requiredStatusChecks": Array [],
+      "webLink": "https://github.com/j1-ingest/reimagined-barnacle/settings/branch_protection_rules/25221868",
     },
     Object {
       "_class": Array [
         "Rule",
       ],
-      "_key": "27924631-main",
+      "_key": "github_BPR_kwDOG-zMhM4BqhiX",
       "_rawData": Array [
         Object {
           "name": "default",
@@ -128,6 +133,7 @@ Object {
             },
             "databaseId": 27924631,
             "dismissesStaleReviews": true,
+            "id": "BPR_kwDOG-zMhM4BqhiX",
             "isAdminEnforced": true,
             "pattern": "main",
             "pushAllowances": Object {
@@ -135,6 +141,7 @@ Object {
               "teams": Array [],
               "users": Array [],
             },
+            "repoName": "reimagined-barnacle",
             "requiredApprovingReviewCount": 1,
             "requiredStatusCheckContexts": Array [],
             "requiredStatusChecks": Array [],
@@ -160,11 +167,13 @@ Object {
       "allowForcePushes": false,
       "blockCreations": false,
       "bypassPullRequestAllowances": Array [
-        undefined,
+        "electricgull",
         "j1-nested-team",
       ],
+      "createdOn": undefined,
       "displayName": "main",
       "enforceAdmins": true,
+      "id": "BPR_kwDOG-zMhM4BqhiX",
       "name": "main",
       "requireCodeOwnerReviews": false,
       "requiredApprovingReviewCount": 1,
@@ -172,22 +181,23 @@ Object {
       "requiredLinearHistory": false,
       "requiredSignatures": false,
       "requiredStatusChecks": Array [],
+      "webLink": "https://github.com/j1-ingest/reimagined-barnacle/settings/branch_protection_rules/27924631",
     },
   ],
   "collectedRelationships": Array [
     Object {
       "_class": "HAS",
       "_fromEntityKey": "R_kgDOG-zMhA",
-      "_key": "R_kgDOG-zMhA|has|25221868-release-*",
-      "_toEntityKey": "25221868-release-*",
+      "_key": "R_kgDOG-zMhA|has|github_BPR_kwDOG-zMhM4BgNrs",
+      "_toEntityKey": "github_BPR_kwDOG-zMhM4BgNrs",
       "_type": "github_repo_has_branch_protection_rule",
       "displayName": "HAS",
     },
     Object {
       "_class": "HAS",
       "_fromEntityKey": "R_kgDOG-zMhA",
-      "_key": "R_kgDOG-zMhA|has|27924631-main",
-      "_toEntityKey": "27924631-main",
+      "_key": "R_kgDOG-zMhA|has|github_BPR_kwDOG-zMhM4BqhiX",
+      "_toEntityKey": "github_BPR_kwDOG-zMhM4BqhiX",
       "_type": "github_repo_has_branch_protection_rule",
       "displayName": "HAS",
     },

@@ -21,7 +21,6 @@ afterEach(async () => {
   await recording.stop();
 });
 
-//change
 test('fetchBranchProtectionRules exec handler', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
@@ -32,7 +31,6 @@ test('fetchBranchProtectionRules exec handler', async () => {
 
   const { collectedEntities, collectedRelationships, encounteredTypes } =
     await executeStepWithDependencies({
-      //change
       stepId: branchProtectionRulesSteps[0].id,
       invocationConfig: invocationConfig as any,
       instanceConfig: integrationConfig,

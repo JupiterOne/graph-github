@@ -53,8 +53,7 @@ export default async function getStepStartStates(
         : DisabledStepReason.PERMISSION,
     },
     ['fetch-branch-protection-rules']: {
-      disabled: !scopes.orgAdmin,
-      disabledReason: DisabledStepReason.PERMISSION,
+      disabled: false,
     },
   };
 }

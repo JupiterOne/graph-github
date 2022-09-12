@@ -21,10 +21,10 @@ afterEach(async () => {
   await recording.stop();
 });
 
-test('fetchBranchProtectionRules exec handler', async () => {
+// TODO: enable support for jobState.getData
+test.skip('fetchBranchProtectionRules exec handler', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
-    //change
     name: 'branchProtectionRules',
   });
   sanitizeConfig(integrationConfig);

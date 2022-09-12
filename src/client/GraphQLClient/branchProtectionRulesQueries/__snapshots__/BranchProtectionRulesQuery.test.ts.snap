@@ -173,6 +173,7 @@ Object {
       ... on App {
         id
         name
+        databaseId
       }
       ... on Team {
         id
@@ -194,6 +195,7 @@ Object {
       ... on App {
         id
         name
+        databaseId
       }
       ... on Team {
         id
@@ -215,6 +217,7 @@ Object {
       ... on App {
         id
         name
+        databaseId
       }
       ... on Team {
         id
@@ -236,6 +239,7 @@ Object {
       ... on App {
         id
         name
+        databaseId
       }
       ... on Team {
         id

@@ -11,7 +11,7 @@ export interface AccountEntity extends Entity {
   description?: string;
   email?: string;
   node?: string;
-  databaseId?: string;
+  databaseId?: number;
   verified?: boolean;
   location?: string;
   websiteUrl?: string;
@@ -76,7 +76,7 @@ export interface TeamEntity extends Entity {
   fullName: string;
   createdOn: number | undefined;
   updatedOn: number | undefined;
-  databaseId: string;
+  databaseId: number;
   description: string;
   node: string;
   privacy: string;
@@ -172,7 +172,7 @@ export interface UserEntity extends Entity {
   company?: string;
   createdOn?: number | undefined;
   updatedOn?: number | undefined;
-  databaseId?: string;
+  databaseId?: number;
   email?: string;
   employee?: boolean;
   location?: string;

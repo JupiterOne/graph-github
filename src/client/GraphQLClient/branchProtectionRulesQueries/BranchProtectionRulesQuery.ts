@@ -108,6 +108,7 @@ const actorQuery = `
       ... on App {
         id
         name
+        databaseId
       }
       ... on Team {
         id
@@ -160,6 +161,7 @@ type ActorNode = {
     __typename: 'Team' | 'User' | 'App';
     id: string;
     name: string;
+    databaseId?: string;
     slug?: string;
     login?: string;
   };

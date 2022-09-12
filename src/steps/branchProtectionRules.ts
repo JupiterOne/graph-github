@@ -1,21 +1,29 @@
 import {
+  createDirectRelationship,
+  IntegrationMissingKeyError,
   IntegrationStep,
   IntegrationStepExecutionContext,
-  IntegrationMissingKeyError,
   RelationshipClass,
-  createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { BranchProtectionRuleEntity, RepoKeyAndName } from '../types';
 import {
-  GITHUB_REPO_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
-  GITHUB_REPO_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
-  GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
+  AppEntity,
+  BranchProtectionRuleEntity,
+  IdEntityMap,
+  RepoKeyAndName,
+  UserEntity,
+} from '../types';
+import {
+  GITHUB_APP_BY_APP_ID,
+  GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_REPO_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
-  GithubEntities,
+  GITHUB_REPO_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
+  GITHUB_REPO_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
+  GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
+  GithubEntities,
 } from '../constants';
 import { toBranchProtectionEntity } from '../sync/converters';
 
@@ -47,6 +55,7 @@ export async function fetchBranchProtectionRule({
             apiClient.accountClient.login,
           ),
         )) as BranchProtectionRuleEntity;
+
         await jobState.addRelationship(
           createDirectRelationship({
             _class: RelationshipClass.HAS,
@@ -56,22 +65,78 @@ export async function fetchBranchProtectionRule({
             toKey: branchProtectionRuleEntity._key,
           }),
         );
-        if (branchProtectionRule.bypassPullRequestAllowances?.users) {
-          console.log(
-            `Users: ${branchProtectionRule.bypassPullRequestAllowances?.users}`,
+
+        if (
+          Array.isArray(branchProtectionRule.bypassPullRequestAllowances?.users)
+        ) {
+          const usersByLoginMap = await jobState.getData<
+            IdEntityMap<UserEntity>
+          >(GITHUB_MEMBER_BY_LOGIN_MAP);
+
+          if (usersByLoginMap) {
+            await Promise.all(
+              branchProtectionRule.bypassPullRequestAllowances?.users.map(
+                async (user) => {
+                  await jobState.addRelationship(
+                    createDirectRelationship({
+                      _class: RelationshipClass.OVERRIDES,
+                      from: usersByLoginMap[user.login],
+                      to: branchProtectionRuleEntity,
+                    }),
+                  );
+                },
+              ),
+            );
+          }
+        }
+
+        if (
+          Array.isArray(branchProtectionRule.bypassPullRequestAllowances?.teams)
+        ) {
+          await Promise.all(
+            branchProtectionRule.bypassPullRequestAllowances.teams.map(
+              async (team) => {
+                const teamEntity = await jobState.findEntity(team.id);
+
+                if (teamEntity) {
+                  await jobState.addRelationship(
+                    createDirectRelationship({
+                      _class: RelationshipClass.OVERRIDES,
+                      from: teamEntity,
+                      to: branchProtectionRuleEntity,
+                    }),
+                  );
+                }
+              },
+            ),
           );
         }
 
-        if (branchProtectionRule.bypassPullRequestAllowances?.teams) {
-          console.log(
-            `Teams: ${branchProtectionRule.bypassPullRequestAllowances?.teams}`,
+        if (
+          Array.isArray(branchProtectionRule.bypassPullRequestAllowances?.apps)
+        ) {
+          const appsById = await jobState.getData<IdEntityMap<AppEntity>>(
+            GITHUB_APP_BY_APP_ID,
           );
-        }
 
-        if (branchProtectionRule.bypassPullRequestAllowances?.apps) {
-          console.log(
-            `Apps: ${branchProtectionRule.bypassPullRequestAllowances?.apps}`,
-          );
+          if (appsById) {
+            await Promise.all(
+              branchProtectionRule.bypassPullRequestAllowances.apps.map(
+                async (app) => {
+                  if (appsById && appsById[`${app.databaseId}`]) {
+                    const appEntity = appsById[`${app.databaseId}`];
+                    await jobState.addRelationship(
+                      createDirectRelationship({
+                        _class: RelationshipClass.OVERRIDES,
+                        from: appEntity,
+                        to: branchProtectionRuleEntity,
+                      }),
+                    );
+                  }
+                },
+              ),
+            );
+          }
         }
       },
     );

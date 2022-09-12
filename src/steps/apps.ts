@@ -14,6 +14,7 @@ import { AccountEntity, AppEntity } from '../types';
 import {
   GithubEntities,
   GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
+  GITHUB_APP_BY_APP_ID,
 } from '../constants';
 
 export async function fetchApps({
@@ -34,8 +35,12 @@ export async function fetchApps({
     );
   }
 
+  const appIdMap = {};
   await apiClient.iterateApps(async (app) => {
     const appEntity = (await jobState.addEntity(toAppEntity(app))) as AppEntity;
+
+    appIdMap[app.app_id] = appEntity;
+
     await jobState.addRelationship(
       createDirectRelationship({
         _class: RelationshipClass.INSTALLED,
@@ -44,6 +49,8 @@ export async function fetchApps({
       }),
     );
   });
+
+  await jobState.setData(GITHUB_APP_BY_APP_ID, appIdMap);
 }
 
 export const appSteps: IntegrationStep<IntegrationConfig>[] = [

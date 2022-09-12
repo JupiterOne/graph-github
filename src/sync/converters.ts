@@ -253,7 +253,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     fullName: data.name,
     createdOn: parseTimePropertyValue(data.createdAt),
     updatedOn: parseTimePropertyValue(data.updatedAt),
-    databaseId: data.databaseId || '',
+    databaseId: data.databaseId,
     description: data.description || '',
     node: data.id,
     privacy: data.privacy || '',
@@ -270,23 +270,6 @@ export function toBranchProtectionEntity(
   baseUrl: string,
   orgLogin: string,
 ) {
-  const bypassPullRequestAllowances: Array<string> = [];
-  for (const user of data.bypassPullRequestAllowances?.users ?? []) {
-    if (user?.login) {
-      bypassPullRequestAllowances.push(user.login);
-    }
-  }
-  for (const team of data.bypassPullRequestAllowances?.teams ?? []) {
-    if (team?.name) {
-      bypassPullRequestAllowances.push(team.name);
-    }
-  }
-  for (const app of data.bypassPullRequestAllowances?.apps ?? []) {
-    if (app?.name) {
-      bypassPullRequestAllowances.push(app.name);
-    }
-  }
-
   return createIntegrationEntity({
     entityData: {
       source: data,
@@ -310,7 +293,6 @@ export function toBranchProtectionEntity(
         requiredApprovingReviewCount: data.requiredApprovingReviewCount,
         requireCodeOwnerReviews: data.requiresCodeOwnerReviews,
         requiredStatusChecks: data.requiredStatusCheckContexts,
-        bypassPullRequestAllowances,
       },
     },
   });

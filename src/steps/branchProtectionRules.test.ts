@@ -5,10 +5,10 @@ import { branchProtectionRulesSteps } from './branchProtectionRules';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import {
-  GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
-  GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
-  GITHUB_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
-  GITHUB_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
+  GITHUB_REPO_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
+  GITHUB_REPO_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
+  GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
+  GITHUB_REPO_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
   GithubEntities,
 } from '../constants';
 import { invocationConfig } from '..';
@@ -55,13 +55,13 @@ test('fetchBranchProtectionRules exec handler', async () => {
 
   // relationships
   const branchProtectionRulesType = collectedRelationships.filter(
-    (e) => e._type === GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
+    (e) => e._type === GITHUB_REPO_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
   );
   expect(branchProtectionRulesType.length).toBeGreaterThan(0);
 
   //Test for users
   const branchProtectionRulesMemberOverrideType = collectedRelationships.filter(
-    (e) => e._type === GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
+    (e) => e._type === GITHUB_REPO_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
   );
   expect(branchProtectionRulesMemberOverrideType.length).toBeGreaterThanOrEqual(
     0,
@@ -69,7 +69,7 @@ test('fetchBranchProtectionRules exec handler', async () => {
 
   //Test for Teams
   const branchProtectionRulesTeamOverrideType = collectedRelationships.filter(
-    (e) => e._type === GITHUB_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
+    (e) => e._type === GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
   );
   expect(branchProtectionRulesTeamOverrideType.length).toBeGreaterThanOrEqual(
     0,
@@ -77,7 +77,7 @@ test('fetchBranchProtectionRules exec handler', async () => {
 
   //Test for Apps
   const branchProtectionRulesAppOverrideType = collectedRelationships.filter(
-    (e) => e._type === GITHUB_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
+    (e) => e._type === GITHUB_REPO_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
   );
   expect(branchProtectionRulesAppOverrideType.length).toBeGreaterThanOrEqual(0);
 });

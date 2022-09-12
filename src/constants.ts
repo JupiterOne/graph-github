@@ -351,13 +351,13 @@ export const GITHUB_FINDING_CWE_RELATIONSHIP_TYPE =
   'github_finding_exploits_cwe';
 
 //branch protection rules
-export const GITHUB_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE =
+export const GITHUB_REPO_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE =
   'github_repo_has_branch_protection_rule';
-export const GITHUB_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE =
+export const GITHUB_REPO_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE =
   'github_user_overrides_branch_protection_rule';
-export const GITHUB_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE =
+export const GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE =
   'github_team_overrides_branch_protection_rule';
-export const GITHUB_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE =
+export const GITHUB_REPO_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE =
   'github_app_overrides_branch_protection_rule';
 
 //these constants are names used to save and retrieve data between steps

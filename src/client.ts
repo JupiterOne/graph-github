@@ -26,6 +26,7 @@ import {
   OrgTeamQueryResponse,
   OrgTeamRepoQueryResponse,
   VulnerabilityAlertResponse,
+  BranchProtectionRuleResponse,
 } from './client/GraphQLClient';
 import {
   OrgAppQueryResponse,
@@ -309,6 +310,33 @@ export class APIClient {
       for (const secret of repoSecrets) {
         await iteratee(secret);
       }
+    }
+  }
+
+  /**
+   * Iterates branch protection rules for the provided repoName.
+   *
+   * @param repoName
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBranchProtectionPolicy(
+    repoName: string,
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
+  ): Promise<void> {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.orgAdmin) {
+      const rateLimit =
+        await this.accountClient.iterateRepoBranchProtectionRules(
+          repoName,
+          iteratee,
+        );
+
+      this.logger.debug(
+        { rateLimit },
+        'Rate limit consumed while fetching Branch Protection Rules.',
+      );
     }
   }
 

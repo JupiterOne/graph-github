@@ -1,0 +1,275 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BranchProtectionRulesQuery #iterateBranchProtectionRules Pulling data out 1`] = `
+Object {
+  "allowsDeletions": false,
+  "allowsForcePushes": false,
+  "blocksCreations": false,
+  "bypassForcePushAllowances": Object {
+    "apps": Array [],
+    "teams": Array [],
+    "users": Array [],
+  },
+  "bypassPullRequestAllowances": Object {
+    "apps": Array [],
+    "teams": Array [
+      Object {
+        "__typename": "Team",
+        "id": "T_kwDOBfl5Zc4AWFta",
+        "name": "j1-nested-team",
+      },
+    ],
+    "users": Array [
+      Object {
+        "__typename": "User",
+        "email": "",
+        "id": "MDQ6VXNlcjU1NzcxODIz",
+        "login": "adam-in-ict",
+      },
+    ],
+  },
+  "creator": Object {
+    "login": "VDubber",
+  },
+  "databaseId": 25221868,
+  "dismissesStaleReviews": false,
+  "id": "BPR_sdflk_slkwefoi",
+  "isAdminEnforced": false,
+  "pattern": "release-*",
+  "pushAllowances": Object {
+    "apps": Array [],
+    "teams": Array [],
+    "users": Array [],
+  },
+  "repoName": "reimagined-barnacle",
+  "requiredApprovingReviewCount": 2,
+  "requiredStatusCheckContexts": Array [],
+  "requiredStatusChecks": Array [],
+  "requiresApprovingReviews": true,
+  "requiresCodeOwnerReviews": false,
+  "requiresCommitSignatures": true,
+  "requiresConversationResolution": false,
+  "requiresLinearHistory": false,
+  "requiresStatusChecks": false,
+  "requiresStrictStatusChecks": true,
+  "restrictsPushes": false,
+  "restrictsReviewDismissals": false,
+  "reviewDismissalAllowances": Object {
+    "apps": Array [],
+    "teams": Array [],
+    "users": Array [],
+  },
+}
+`;
+
+exports[`BranchProtectionRulesQuery #iterateBranchProtectionRules Pulling data out 2`] = `
+Object {
+  "allowsDeletions": false,
+  "allowsForcePushes": false,
+  "blocksCreations": false,
+  "bypassForcePushAllowances": Object {
+    "apps": Array [],
+    "teams": Array [],
+    "users": Array [],
+  },
+  "bypassPullRequestAllowances": Object {
+    "apps": Array [],
+    "teams": Array [
+      Object {
+        "__typename": "Team",
+        "id": "T_kwDOBfl5Zc4AWFta",
+        "name": "j1-nested-team",
+      },
+    ],
+    "users": Array [
+      Object {
+        "__typename": "User",
+        "email": "",
+        "id": "MDQ6VXNlcjE2NTYyMDg1",
+        "login": "electricgull",
+      },
+    ],
+  },
+  "creator": Object {
+    "login": "electricgull",
+  },
+  "databaseId": 27924631,
+  "dismissesStaleReviews": true,
+  "isAdminEnforced": true,
+  "pattern": "main",
+  "pushAllowances": Object {
+    "apps": Array [],
+    "teams": Array [],
+    "users": Array [],
+  },
+  "repoName": "reimagined-barnacle",
+  "requiredApprovingReviewCount": 1,
+  "requiredStatusCheckContexts": Array [],
+  "requiredStatusChecks": Array [],
+  "requiresApprovingReviews": true,
+  "requiresCodeOwnerReviews": false,
+  "requiresCommitSignatures": false,
+  "requiresConversationResolution": false,
+  "requiresLinearHistory": false,
+  "requiresStatusChecks": true,
+  "requiresStrictStatusChecks": false,
+  "restrictsPushes": false,
+  "restrictsReviewDismissals": false,
+  "reviewDismissalAllowances": Object {
+    "apps": Array [],
+    "teams": Array [],
+    "users": Array [],
+  },
+}
+`;
+
+exports[`BranchProtectionRulesQuery #iterateBranchProtectionRules Pulling data out 3`] = `
+Object {
+  "query": "
+      query (
+        $repoName: String!
+        $repoOwner: String!
+        $maxLimit: Int!
+      ) {
+          repository(name: $repoName, owner: $repoOwner) {
+            name
+            branchProtectionRules(first: $maxLimit) {
+              nodes {
+                id
+                requiresLinearHistory
+                requiredApprovingReviewCount
+                dismissesStaleReviews
+                requiresCodeOwnerReviews
+                requiresCommitSignatures
+                isAdminEnforced
+                allowsForcePushes
+                allowsDeletions
+                blocksCreations
+                requiresConversationResolution
+                pattern
+                allowsDeletions
+                requiresApprovingReviews
+                requiredStatusCheckContexts
+                creator {
+                  login
+                }
+                databaseId
+                requiresStatusChecks
+                requiresStrictStatusChecks
+                restrictsPushes
+                restrictsReviewDismissals
+                requiredStatusChecks {
+                  context
+                  app {
+                    id
+                    name
+                  }
+                }
+                bypassForcePushAllowances(first: $maxLimit) {
+                  nodes {
+                    
+    actor {
+      __typename
+      ... on App {
+        id
+        name
+        databaseId
+      }
+      ... on Team {
+        id
+        name
+      }
+      ... on User {
+        id
+        login
+        email
+      }
+    }
+                  }
+                }
+                bypassPullRequestAllowances(first: $maxLimit) {
+                  nodes {
+                    
+    actor {
+      __typename
+      ... on App {
+        id
+        name
+        databaseId
+      }
+      ... on Team {
+        id
+        name
+      }
+      ... on User {
+        id
+        login
+        email
+      }
+    }
+                  }
+                }
+                pushAllowances(first: $maxLimit) {
+                  nodes {
+                    
+    actor {
+      __typename
+      ... on App {
+        id
+        name
+        databaseId
+      }
+      ... on Team {
+        id
+        name
+      }
+      ... on User {
+        id
+        login
+        email
+      }
+    }
+                  }
+                }
+                reviewDismissalAllowances(first: $maxLimit) {
+                  nodes {
+                    
+    actor {
+      __typename
+      ... on App {
+        id
+        name
+        databaseId
+      }
+      ... on Team {
+        id
+        name
+      }
+      ... on User {
+        id
+        login
+        email
+      }
+    }
+                  }
+                }
+              }
+            }
+          }
+          ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
+      }
+  ",
+  "queryVariables": Object {
+    "maxLimit": 100,
+    "repoName": "happy-sunshine",
+    "repoOwner": "J1-Test",
+  },
+}
+`;

@@ -6,6 +6,7 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import {
+  BranchProtectionRuleResponse,
   GitHubGraphQLClient,
   OrgMemberQueryResponse,
   OrgTeamQueryResponse,
@@ -258,6 +259,17 @@ export default class OrganizationAccountClient {
       repoName,
       filters,
       gheServerVersion,
+      iteratee,
+    );
+  }
+
+  async iterateRepoBranchProtectionRules(
+    repoName: string,
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateRepoBranchProtectionRules(
+      this.login,
+      repoName,
       iteratee,
     );
   }

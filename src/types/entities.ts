@@ -11,7 +11,7 @@ export interface AccountEntity extends Entity {
   description?: string;
   email?: string;
   node?: string;
-  databaseId?: string;
+  databaseId?: number;
   verified?: boolean;
   location?: string;
   websiteUrl?: string;
@@ -76,11 +76,27 @@ export interface TeamEntity extends Entity {
   fullName: string;
   createdOn: number | undefined;
   updatedOn: number | undefined;
-  databaseId: string;
+  databaseId: number;
   description: string;
   node: string;
   privacy: string;
   webLink: string;
+}
+
+export interface BranchProtectionRuleEntity extends Entity {
+  name: string;
+  displayName: string;
+  blockCreations: boolean;
+  allowDeletions: boolean;
+  allowForcePushes: boolean;
+  requiredLinearHistory: boolean;
+  enforceAdmins: boolean;
+  requiredSignatures: boolean;
+  requiredApprovingReviewCount: number;
+  requireCodeOwnerReviews: boolean;
+  requiredStatusChecks: Array<string> | undefined;
+  bypassPullRequestAllowances: Array<string> | undefined;
+  requiredConversationResolution: boolean;
 }
 
 export interface IssueEntity extends Entity {
@@ -156,7 +172,7 @@ export interface UserEntity extends Entity {
   company?: string;
   createdOn?: number | undefined;
   updatedOn?: number | undefined;
-  databaseId?: string;
+  databaseId?: number;
   email?: string;
   employee?: boolean;
   location?: string;

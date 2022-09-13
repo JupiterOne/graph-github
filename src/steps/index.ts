@@ -13,6 +13,7 @@ import { envSecretSteps } from './envSecrets';
 import { teamRepoSteps } from './teamRepos';
 import { teamMemberSteps } from './teamMembers';
 import { vulnerabilityAlertsSteps } from './vulnerabilityAlertsSteps';
+import { branchProtectionRulesSteps } from './branchProtectionRules';
 
 const integrationSteps = [
   ...accountSteps,
@@ -30,6 +31,7 @@ const integrationSteps = [
   ...teamMemberSteps,
   ...teamRepoSteps,
   ...vulnerabilityAlertsSteps,
+  ...branchProtectionRulesSteps,
 ];
 
 export { integrationSteps };

@@ -9,7 +9,10 @@
  *     message
  *     ...
  *   }
+ *
+ * Interfaces in this file represent the objects returned by the github API
  */
+
 export enum GithubResource {
   Organization = 'organization',
   OrganizationMembers = 'membersWithRole',
@@ -59,6 +62,8 @@ export interface Node {
 }
 
 interface Actor {
+  id: string;
+  databaseId?: number; // This is used to identify an app
   name?: string | null;
   login: string;
 }
@@ -68,7 +73,7 @@ export interface OrgQueryResponse extends Node, Actor {
   updatedAt: string;
   description: string;
   email: string;
-  databaseId: string;
+  databaseId: number;
   isVerified: boolean;
   location: string;
   websiteUrl: string;
@@ -85,7 +90,7 @@ export interface OrgMemberQueryResponse extends Node, Actor {
   isSiteAdmin: boolean;
   company: string;
   createdAt: string;
-  databaseId: string;
+  databaseId: number;
   email: string;
   isEmployee: boolean;
   location: string;
@@ -101,7 +106,7 @@ export interface OrgTeamQueryResponse extends Node {
   name: string;
   createdAt: string;
   updatedAt: string;
-  databaseId: string;
+  databaseId: number;
   description: string;
   privacy: string;
 }
@@ -368,4 +373,48 @@ export interface VulnerabilityAlertResponse extends Node {
   vulnerableManifestFilename: string;
   vulnerableManifestPath: string;
   vulnerableRequirements: string;
+}
+
+export interface BranchProtectionRuleResponse extends Node {
+  repoName: string;
+  requiresLinearHistory: boolean;
+  requiredApprovingReviewCount: number;
+  dismissesStaleReviews: boolean;
+  requiresCodeOwnerReviews: boolean;
+  requiresCommitSignatures: boolean;
+  isAdminEnforced: boolean;
+  allowsForcePushes: boolean;
+  allowsDeletions: boolean;
+  blocksCreations: boolean;
+  requiresConversationResolution: boolean;
+  pattern: string;
+  requiresApprovingReviews: boolean;
+  requiredStatusCheckContexts: Array<string>;
+  creator: {
+    login: string;
+  };
+  databaseId: number;
+  requiresStatusChecks: boolean;
+  requiresStrictStatusChecks: boolean;
+  restrictsPushes: boolean;
+  restrictsReviewDismissals: boolean;
+  requiredStatusChecks: Array<{
+    context: string;
+    app: {
+      id: string;
+      name: string;
+    };
+  }>;
+  bypassForcePushAllowances: {
+    teams: Array<Omit<Actor, 'login'>>;
+    apps: Array<Omit<Actor, 'login'>>;
+    users: Array<Omit<Actor, 'name'>>;
+  };
+  bypassPullRequestAllowances: {
+    teams: Array<Actor>;
+    apps: Array<Actor>;
+    users: Array<Actor>;
+  };
+  pushAllowances: Array<Actor>;
+  reviewDismissalAllowances: Array<Actor>;
 }

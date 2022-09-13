@@ -35,6 +35,24 @@ export const GithubEntities = {
       required: ['name', 'displayName', 'webLink', 'createdOn'],
     },
   },
+
+  GITHUB_BRANCH_PROTECITON_RULE: {
+    _type: 'github_branch_protection_rule',
+    _class: ['Rule'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_branch_protection_rule' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['name', 'displayName'],
+    },
+  },
   GITHUB_COLLABORATOR: {
     _type: 'github_user',
     _class: ['User'],
@@ -332,6 +350,16 @@ export const GITHUB_FINDING_CVE_RELATIONSHIP_TYPE = 'github_finding_is_cve';
 export const GITHUB_FINDING_CWE_RELATIONSHIP_TYPE =
   'github_finding_exploits_cwe';
 
+//branch protection rules
+export const GITHUB_REPO_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE =
+  'github_repo_has_branch_protection_rule';
+export const GITHUB_REPO_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE =
+  'github_user_overrides_branch_protection_rule';
+export const GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE =
+  'github_team_overrides_branch_protection_rule';
+export const GITHUB_REPO_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE =
+  'github_app_overrides_branch_protection_rule';
+
 //these constants are names used to save and retrieve data between steps
 //they are constants instead of strings so that TypeScript will detect spelling errors
 export const GITHUB_MEMBER_BY_LOGIN_MAP = 'GITHUB_MEMBER_BY_LOGIN_MAP';
@@ -340,3 +368,4 @@ export const GITHUB_OUTSIDE_COLLABORATOR_ARRAY =
 export const GITHUB_REPO_TAGS_ARRAY = 'GITHUB_REPO_TAGS_ARRAY';
 export const GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP =
   'GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP';
+export const GITHUB_APP_BY_APP_ID = 'GITHUB_APP_BY_APP_ID';

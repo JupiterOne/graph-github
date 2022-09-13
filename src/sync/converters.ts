@@ -42,6 +42,7 @@ import {
   getSecretEntityKey,
 } from '../util/propertyHelpers';
 import {
+  BranchProtectionRuleResponse,
   CollaboratorResponse,
   Commit,
   IssueResponse,
@@ -252,7 +253,7 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     fullName: data.name,
     createdOn: parseTimePropertyValue(data.createdAt),
     updatedOn: parseTimePropertyValue(data.updatedAt),
-    databaseId: data.databaseId || '',
+    databaseId: data.databaseId,
     description: data.description || '',
     node: data.id,
     privacy: data.privacy || '',
@@ -262,6 +263,39 @@ export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
     rawData: omit(data, ['members', 'repos']),
   });
   return teamEntity;
+}
+
+export function toBranchProtectionEntity(
+  data: BranchProtectionRuleResponse,
+  baseUrl: string,
+  orgLogin: string,
+) {
+  return createIntegrationEntity({
+    entityData: {
+      source: data,
+      assign: {
+        _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
+        _type: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+        _key: `github_${data.id}`,
+        webLink: apiUrlToWebLink(
+          baseUrl,
+          `/${orgLogin}/${data.repoName}/settings/branch_protection_rules/${data.databaseId}`,
+        ),
+        name: data.pattern,
+        displayName: data.pattern,
+        blockCreations: data.blocksCreations,
+        allowDeletions: data.allowsDeletions,
+        allowForcePushes: data.allowsForcePushes,
+        requiredLinearHistory: data.requiresLinearHistory,
+        enforceAdmins: data.isAdminEnforced,
+        requiredSignatures: data.requiresCommitSignatures,
+        requiredConversationResolution: data.requiresConversationResolution,
+        requiredApprovingReviewCount: data.requiredApprovingReviewCount,
+        requireCodeOwnerReviews: data.requiresCodeOwnerReviews,
+        requiredStatusChecks: data.requiredStatusCheckContexts,
+      },
+    },
+  });
 }
 
 export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {

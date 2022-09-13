@@ -1,6 +1,5 @@
 import { Recording } from '@jupiterone/integration-sdk-testing';
 import { sanitizeConfig } from '../config';
-//change
 import { branchProtectionRulesSteps } from './branchProtectionRules';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';

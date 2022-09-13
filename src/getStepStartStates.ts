@@ -20,6 +20,9 @@ export default async function getStepStartStates(
     ['fetch-team-repos']: { disabled: false },
     ['fetch-collaborators']: { disabled: false },
     ['fetch-prs']: { disabled: false },
+    ['fetch-branch-protection-rules']: {
+      disabled: false,
+    },
     ['fetch-issues']: {
       disabled: !scopes.repoIssues,
       disabledReason: DisabledStepReason.PERMISSION,
@@ -51,10 +54,6 @@ export default async function getStepStartStates(
       disabledReason: !context.instance.config.enableDependabotAlerts
         ? DisabledStepReason.CONFIG
         : DisabledStepReason.PERMISSION,
-    },
-    ['fetch-branch-protection-rules']: {
-      disabled: !scopes.orgAdmin,
-      disabledReason: DisabledStepReason.PERMISSION,
     },
   };
 }

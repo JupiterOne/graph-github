@@ -6,18 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-[Unreleased]
+## 1.21.0 - 2022-09-13
+
+### Added
+
+- Added `branchProtectionRules` step with the following entity and
+  relationships:
+
+| Resources                      | Entity `_type`                  | Entity `_class` |
+| ------------------------------ | ------------------------------- | --------------- |
+| GitHub Branch Protection Rules | `github_branch_protection_rule` | `Rule`          |
+
+| Source Entity `_type` | Relationship `_class` | Target Entity `_type`           |
+| --------------------- | --------------------- | ------------------------------- |
+| `github_team`         | **OVERRIDES**         | `github_branch_protection_rule` |
+| `github_repo`         | **HAS**               | `github_branch_protection_rule` |
+| `github_user`         | **OVERRIDES**         | `github_branch_protection_rule` |
+| `github_app`          | **OVERRIDES**         | `github_branch_protection_rule` |
+
+### Changed
+
+- Property `databaseId` type was change from `string` to `number`
 
 ## 1.20.0 - 2022-08-19
 
-## Changed
+### Changed
 
 - Added `pullRequestMaxResourcesPerRepo` to config to allow the max limit of
   pull requests to be adjusted. Default remains at 500 per repo.
 
 ## 1.19.0 - 2022-07-14
 
-## Changed
+### Changed
 
 - Added `pullRequestIngestStartDatetime` to config to allow pull request
   ingestion to start at a specified date.

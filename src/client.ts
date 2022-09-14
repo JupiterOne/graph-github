@@ -56,6 +56,7 @@ export class APIClient {
   scopes: {
     orgAdmin: boolean;
     orgSecrets: boolean;
+    repoAdmin: boolean;
     repoSecrets: boolean;
     repoEnvironments: boolean;
     repoIssues: boolean;
@@ -589,6 +590,7 @@ export class APIClient {
       this.scopes = {
         orgAdmin: false,
         orgSecrets: false,
+        repoAdmin: false,
         repoSecrets: false,
         repoEnvironments: false,
         repoIssues: false,
@@ -684,6 +686,16 @@ export class APIClient {
         "Token does not have 'vulnerability_alerts' (aka dependabot alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
       );
       this.scopes.dependabotAlerts = false;
+    }
+
+    //ingesting branch protection rules requires scope repo administration:read
+    if (['read', 'write'].includes(perms.administration!)) {
+      this.scopes.repoAdmin = true;
+    } else {
+      this.logger.info(
+        "Token does not have 'administration' (aka repo administration) scope. Repo Branch Protection Rules cannot be ingested.",
+      );
+      this.scopes.repoAdmin = false;
     }
 
     const missingScopes = Object.keys(this.scopes).filter(

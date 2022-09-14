@@ -8,6 +8,7 @@ describe('getStepStartStates', () => {
     const validateInvocationSpy = jest
       .spyOn(config, 'validateInvocation')
       .mockResolvedValueOnce({
+        repoAdmin: true,
         repoIssues: true,
         orgAdmin: true,
         repoEnvironments: true,
@@ -34,6 +35,7 @@ describe('getStepStartStates', () => {
     const validateInvocationSpy = jest
       .spyOn(config, 'validateInvocation')
       .mockResolvedValueOnce({
+        repoAdmin: true,
         repoIssues: true,
         orgAdmin: true,
         repoEnvironments: true,
@@ -61,9 +63,10 @@ describe('getStepStartStates', () => {
     const validateInvocationSpy = jest
       .spyOn(config, 'validateInvocation')
       .mockResolvedValueOnce({
+        repoAdmin: true,
         repoIssues: true,
-        orgAdmin: true,
         repoEnvironments: true,
+        orgAdmin: true,
         orgSecrets: false,
         repoSecrets: false,
         dependabotAlerts: false,

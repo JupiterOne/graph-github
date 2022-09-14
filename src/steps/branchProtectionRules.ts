@@ -83,6 +83,9 @@ export async function fetchBranchProtectionRule({
                         _class: RelationshipClass.OVERRIDES,
                         from: usersByLoginMap[user.login],
                         to: branchProtectionRuleEntity,
+                        properties: {
+                          bypassPullRequestAllowance: true,
+                        },
                       }),
                     );
                   } else {
@@ -111,6 +114,9 @@ export async function fetchBranchProtectionRule({
                       _class: RelationshipClass.OVERRIDES,
                       from: teamEntity,
                       to: branchProtectionRuleEntity,
+                      properties: {
+                        bypassPullRequestAllowance: true,
+                      },
                     }),
                   );
                 } else {
@@ -142,6 +148,9 @@ export async function fetchBranchProtectionRule({
                         _class: RelationshipClass.OVERRIDES,
                         from: appEntity,
                         to: branchProtectionRuleEntity,
+                        properties: {
+                          bypassPullRequestAllowance: true,
+                        },
                       }),
                     );
                   } else {

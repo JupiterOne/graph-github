@@ -688,6 +688,16 @@ export class APIClient {
       this.scopes.dependabotAlerts = false;
     }
 
+    //ingesting branch protection rules requires scope repo administration:read
+    if (['read', 'write'].includes(perms.administration!)) {
+      this.scopes.repoAdmin = true;
+    } else {
+      this.logger.info(
+        "Token does not have 'administration' (aka repo administration) scope. Repo Branch Protection Rules cannot be ingested.",
+      );
+      this.scopes.repoAdmin = false;
+    }
+
     const missingScopes = Object.keys(this.scopes).filter(
       (key) => !this.scopes[key],
     );

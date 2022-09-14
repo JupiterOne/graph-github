@@ -77,13 +77,20 @@ export async function fetchBranchProtectionRule({
             await Promise.all(
               branchProtectionRule.bypassPullRequestAllowances?.users.map(
                 async (user) => {
-                  await jobState.addRelationship(
-                    createDirectRelationship({
-                      _class: RelationshipClass.OVERRIDES,
-                      from: usersByLoginMap[user.login],
-                      to: branchProtectionRuleEntity,
-                    }),
-                  );
+                  if (usersByLoginMap[user.login]) {
+                    await jobState.addRelationship(
+                      createDirectRelationship({
+                        _class: RelationshipClass.OVERRIDES,
+                        from: usersByLoginMap[user.login],
+                        to: branchProtectionRuleEntity,
+                      }),
+                    );
+                  } else {
+                    logger.info(
+                      { user },
+                      'Failed to find user by login for bypassPullRequestAllowances',
+                    );
+                  }
                 },
               ),
             );
@@ -105,6 +112,11 @@ export async function fetchBranchProtectionRule({
                       from: teamEntity,
                       to: branchProtectionRuleEntity,
                     }),
+                  );
+                } else {
+                  logger.info(
+                    { team },
+                    'Failed to find team entity for bypassPullRequestAllowances.',
                   );
                 }
               },
@@ -131,6 +143,11 @@ export async function fetchBranchProtectionRule({
                         from: appEntity,
                         to: branchProtectionRuleEntity,
                       }),
+                    );
+                  } else {
+                    logger.info(
+                      { app },
+                      'Failed to find by databaseId for bypassPullRequestAllowances.',
                     );
                   }
                 },

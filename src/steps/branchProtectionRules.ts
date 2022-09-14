@@ -77,13 +77,23 @@ export async function fetchBranchProtectionRule({
             await Promise.all(
               branchProtectionRule.bypassPullRequestAllowances?.users.map(
                 async (user) => {
-                  await jobState.addRelationship(
-                    createDirectRelationship({
-                      _class: RelationshipClass.OVERRIDES,
-                      from: usersByLoginMap[user.login],
-                      to: branchProtectionRuleEntity,
-                    }),
-                  );
+                  if (usersByLoginMap[user.login]) {
+                    await jobState.addRelationship(
+                      createDirectRelationship({
+                        _class: RelationshipClass.OVERRIDES,
+                        from: usersByLoginMap[user.login],
+                        to: branchProtectionRuleEntity,
+                        properties: {
+                          bypassPullRequestAllowance: true,
+                        },
+                      }),
+                    );
+                  } else {
+                    logger.warn(
+                      { user },
+                      'Failed to find user by login for bypassPullRequestAllowances',
+                    );
+                  }
                 },
               ),
             );
@@ -104,7 +114,15 @@ export async function fetchBranchProtectionRule({
                       _class: RelationshipClass.OVERRIDES,
                       from: teamEntity,
                       to: branchProtectionRuleEntity,
+                      properties: {
+                        bypassPullRequestAllowance: true,
+                      },
                     }),
+                  );
+                } else {
+                  logger.warn(
+                    { team },
+                    'Failed to find team entity for bypassPullRequestAllowances.',
                   );
                 }
               },
@@ -130,7 +148,15 @@ export async function fetchBranchProtectionRule({
                         _class: RelationshipClass.OVERRIDES,
                         from: appEntity,
                         to: branchProtectionRuleEntity,
+                        properties: {
+                          bypassPullRequestAllowance: true,
+                        },
                       }),
+                    );
+                  } else {
+                    logger.warn(
+                      { app },
+                      'Failed to find by databaseId for bypassPullRequestAllowances.',
                     );
                   }
                 },

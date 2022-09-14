@@ -89,7 +89,7 @@ export async function fetchBranchProtectionRule({
                       }),
                     );
                   } else {
-                    logger.info(
+                    logger.warn(
                       { user },
                       'Failed to find user by login for bypassPullRequestAllowances',
                     );
@@ -120,7 +120,7 @@ export async function fetchBranchProtectionRule({
                     }),
                   );
                 } else {
-                  logger.info(
+                  logger.warn(
                     { team },
                     'Failed to find team entity for bypassPullRequestAllowances.',
                   );
@@ -154,7 +154,7 @@ export async function fetchBranchProtectionRule({
                       }),
                     );
                   } else {
-                    logger.info(
+                    logger.warn(
                       { app },
                       'Failed to find by databaseId for bypassPullRequestAllowances.',
                     );

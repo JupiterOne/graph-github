@@ -118,6 +118,7 @@ export async function validateInvocation(
 ): Promise<{
   orgAdmin: boolean;
   orgSecrets: boolean;
+  repoAdmin: boolean;
   repoSecrets: boolean;
   repoEnvironments: boolean;
   repoIssues: boolean;

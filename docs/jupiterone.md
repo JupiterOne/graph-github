@@ -60,6 +60,7 @@ read-only permissions to support ingestion of
 #### Repository Permissions
 
 - Actions: Read-only
+- Administration: Read-only
 - Environments: Read-only
 - Metadata: Read-only
 - Pull requests: Read-only

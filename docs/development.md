@@ -45,6 +45,7 @@ you'll need to do the following:
       **Repository Permissions**
 
       - Actions: Read-only
+      - Administration: Read-only
       - Environments: Read-only
       - Metadata: Read-only
       - Pull requests: Read-only

@@ -56,6 +56,7 @@ export class APIClient {
   scopes: {
     orgAdmin: boolean;
     orgSecrets: boolean;
+    repoAdmin: boolean;
     repoSecrets: boolean;
     repoEnvironments: boolean;
     repoIssues: boolean;

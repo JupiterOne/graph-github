@@ -590,6 +590,7 @@ export class APIClient {
       this.scopes = {
         orgAdmin: false,
         orgSecrets: false,
+        repoAdmin: false,
         repoSecrets: false,
         repoEnvironments: false,
         repoIssues: false,

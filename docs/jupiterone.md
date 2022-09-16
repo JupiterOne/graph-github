@@ -183,6 +183,7 @@ The following relationships are created:
 | `github_environment`  | **HAS**               | `github_env_secret`             |
 | `github_finding`      | **EXPLOITS**          | `cwe`                           |
 | `github_finding`      | **IS**                | `cve`                           |
+| `github_pullrequest`  | **CONTAINS**          | `github_pullrequest`            |
 | `github_repo`         | **ALLOWS**            | `github_team`                   |
 | `github_repo`         | **ALLOWS**            | `github_user`                   |
 | `github_repo`         | **HAS**               | `github_branch_protection_rule` |

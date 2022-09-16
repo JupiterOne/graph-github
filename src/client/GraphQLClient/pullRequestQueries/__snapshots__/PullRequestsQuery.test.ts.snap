@@ -240,7 +240,7 @@ Object {
     lastEditedAt
     locked
     mergeCommit {
-      ...on Commit {
+              ...on Commit {
     id
     oid
     message
@@ -254,7 +254,17 @@ Object {
       }
     }
   }
+              
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
     }
+            }
     mergeable
     merged
     mergedAt
@@ -447,7 +457,7 @@ Object {
     lastEditedAt
     locked
     mergeCommit {
-      ...on Commit {
+              ...on Commit {
     id
     oid
     message
@@ -461,7 +471,17 @@ Object {
       }
     }
   }
+              
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
     }
+            }
     mergeable
     merged
     mergedAt
@@ -603,6 +623,16 @@ Object {
       "name": "feature",
     },
   ],
+  "mergeCommit": Object {
+    "associatedPullRequest": Object {
+      "id": "PR_kwDOIAVVA84_DshD",
+      "number": 2,
+      "reviewDecision": null,
+      "state": "MERGED",
+      "url": "https://github.com/j1-ingest/ubiquitous-umbrella/pull/2",
+    },
+    "id": "C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI",
+  },
   "reviews": Array [
     Object {
       "id": "review1",
@@ -696,7 +726,7 @@ Object {
     lastEditedAt
     locked
     mergeCommit {
-      ...on Commit {
+              ...on Commit {
     id
     oid
     message
@@ -710,7 +740,17 @@ Object {
       }
     }
   }
+              
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
     }
+            }
     mergeable
     merged
     mergedAt
@@ -919,6 +959,16 @@ Object {
       }
     }
   }
+      
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
+    }
     }
     mergeable
     merged
@@ -1119,6 +1169,16 @@ Object {
       }
     }
   }
+      
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
+    }
     }
     mergeable
     merged
@@ -1324,7 +1384,7 @@ Object {
     lastEditedAt
     locked
     mergeCommit {
-      ...on Commit {
+              ...on Commit {
     id
     oid
     message
@@ -1338,7 +1398,17 @@ Object {
       }
     }
   }
+              
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
     }
+            }
     mergeable
     merged
     mergedAt
@@ -1531,7 +1601,7 @@ Object {
     lastEditedAt
     locked
     mergeCommit {
-      ...on Commit {
+              ...on Commit {
     id
     oid
     message
@@ -1545,7 +1615,17 @@ Object {
       }
     }
   }
+              
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
     }
+            }
     mergeable
     merged
     mergedAt
@@ -1725,6 +1805,17 @@ Object {
   ],
   "id": "MDExOlB1bGxSZXF1ZXN0OQ==",
   "labels": Array [],
+  "mergeCommit": Object {
+    "associatedPullRequest": Object {
+      "id": "PR_kwDOIAVVA84_DshD",
+      "number": 2,
+      "reviewDecision": null,
+      "state": "MERGED",
+      "url": "https://github.com/j1-ingest/ubiquitous-umbrella/pull/2",
+    },
+    "id": "C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI",
+    "oid": "8563e9b2d6334b750f8f7b630858188950d2ab92",
+  },
   "reviews": Array [],
   "title": "Create CHANGELOG.md #2",
 }

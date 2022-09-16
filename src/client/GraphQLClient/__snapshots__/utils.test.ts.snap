@@ -26,3 +26,26 @@ Object {
   ],
 }
 `;
+
+exports[`utils responseToResource 2`] = `
+Object {
+  "commits": Array [],
+  "labels": Array [],
+  "mergeCommit": Object {
+    "associatedPullRequest": Object {
+      "id": "PR_kwDOIAVVA84_DshD",
+      "number": 2,
+      "reviewDecision": null,
+      "state": "MERGED",
+      "url": "https://github.com/j1-ingest/ubiquitous-umbrella/pull/2",
+    },
+    "author": Object {
+      "user": Object {
+        "login": "VDubber",
+      },
+    },
+    "id": "C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI",
+  },
+  "reviews": Array [],
+}
+`;

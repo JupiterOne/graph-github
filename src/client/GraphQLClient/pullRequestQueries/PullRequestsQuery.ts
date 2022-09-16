@@ -130,8 +130,9 @@ const pullRequestFields = (isPublicRepo) => {
     ${
       isPublicRepo
         ? `mergeCommit {
-      ...${fragments.commitFields}
-    }`
+              ...${fragments.commitFields}
+              ${fragments.associatedPullRequest}
+            }`
         : ''
     }
     mergeable

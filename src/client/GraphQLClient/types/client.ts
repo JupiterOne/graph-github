@@ -199,6 +199,15 @@ export interface Commit extends Node {
   };
 }
 
+export interface MergeCommit extends Commit {
+  associatedPullRequest?: AssociatedPullRequest;
+}
+
+export interface AssociatedPullRequest {
+  id: string;
+  number: number;
+}
+
 export interface Label extends Node {
   id: string;
   name: string;
@@ -250,7 +259,7 @@ export interface PullRequestResponse extends Node {
   isDraft: boolean;
   lastEditedAt?: string;
   locked: boolean;
-  mergeCommit?: Commit;
+  mergeCommit?: MergeCommit;
   mergeable: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN';
   merged: boolean;
   mergedAt?: string;

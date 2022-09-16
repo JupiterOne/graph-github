@@ -1,4 +1,7 @@
-import { VulnerabilityAlertResponse } from '../client/GraphQLClient';
+import {
+  PullRequestResponse,
+  VulnerabilityAlertResponse,
+} from '../client/GraphQLClient';
 
 export function buildVulnAlertRecommendation(
   alert: VulnerabilityAlertResponse,
@@ -30,4 +33,13 @@ export function findCve(
   alert: VulnerabilityAlertResponse,
 ): { type: string; value: string } | undefined {
   return alert.securityAdvisory?.identifiers?.find((id) => id.type === 'CVE');
+}
+
+export function hasAssociatedMergePullRequest(
+  pullRequest: PullRequestResponse,
+) {
+  return (
+    pullRequest.mergeCommit?.associatedPullRequest?.id &&
+    pullRequest.id !== pullRequest.mergeCommit?.associatedPullRequest?.id
+  );
 }

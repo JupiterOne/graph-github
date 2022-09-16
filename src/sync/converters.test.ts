@@ -12,6 +12,7 @@ import {
   toEnvironmentEntity,
   toEnvSecretEntity,
   toIssueEntity,
+  createAssociatedMergePullRequestRelationship,
 } from './converters';
 import { EnvironmentEntity, UserEntity } from '../types';
 import { PullRequestResponse } from '../client/GraphQLClient/types';
@@ -942,5 +943,27 @@ describe('createUnknownUserPrRelationship', () => {
       },
       displayName: 'APPROVED',
     });
+  });
+});
+
+describe('createAssociatedMergePullRequestRelationship', () => {
+  test('parameter validation', () => {
+    expect(() =>
+      createAssociatedMergePullRequestRelationship({} as PullRequestResponse),
+    ).toThrow('number is required on the associated pull request');
+
+    expect(() =>
+      createAssociatedMergePullRequestRelationship({
+        id: '#1',
+        mergeCommit: {
+          associatedPullRequest: {
+            id: '#1',
+            number: 1,
+          },
+        },
+      } as PullRequestResponse),
+    ).toThrow(
+      'associated pull request must be different than source pull request.',
+    );
   });
 });

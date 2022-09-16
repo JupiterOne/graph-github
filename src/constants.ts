@@ -313,6 +313,8 @@ export const GITHUB_REPO_TEAM_RELATIONSHIP_TYPE = 'github_repo_allows_team';
 export const GITHUB_REPO_USER_RELATIONSHIP_TYPE = 'github_repo_allows_user';
 export const GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE =
   'github_account_installed_app';
+export const GITHUB_PR_CONTAINS_PR_RELATIONSHIP_TYPE =
+  'github_pullrequest_contains_pullrequest';
 
 //org secrets
 export const GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE =

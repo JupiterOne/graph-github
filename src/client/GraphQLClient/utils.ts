@@ -1,5 +1,6 @@
 import { URL } from 'url';
 import { gte } from 'semver';
+import { first } from 'lodash';
 
 const innerResourcePaginationRequired = (pullRequest): boolean => {
   if (!pullRequest) {
@@ -17,8 +18,20 @@ const responseToResource = (node) => {
     return null;
   }
 
+  const associatedPullRequest = first(
+    node.mergeCommit?.associatedPullRequests?.nodes,
+  );
+
+  delete node.mergeCommit?.associatedPullRequests;
+
   return {
     ...node,
+    ...(node.mergeCommit && {
+      mergeCommit: {
+        ...node.mergeCommit,
+        associatedPullRequest,
+      },
+    }),
     commits:
       node.commits?.nodes?.filter((node) => node).map((node) => node.commit) ??
       [],

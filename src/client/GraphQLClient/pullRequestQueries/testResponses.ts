@@ -74,6 +74,21 @@ const pullRequestsPublic = [
             id: 'MDExOlB1bGxSZXF1ZXN0OQ==',
             title: 'Create CHANGELOG.md #2',
             closed: false,
+            mergeCommit: {
+              id: 'C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI',
+              oid: '8563e9b2d6334b750f8f7b630858188950d2ab92',
+              associatedPullRequests: {
+                nodes: [
+                  {
+                    number: 2,
+                    id: 'PR_kwDOIAVVA84_DshD',
+                    state: 'MERGED',
+                    reviewDecision: null,
+                    url: 'https://github.com/j1-ingest/ubiquitous-umbrella/pull/2',
+                  },
+                ],
+              },
+            },
             commits: {
               totalCount: 1,
               nodes: [
@@ -273,6 +288,20 @@ const singleQueryFullResponse = {
     pullRequest: {
       id: 'MDExOlB1bGxSZXF1ZXN0MTA=',
       title: 'Update CHANGELOG.md',
+      mergeCommit: {
+        id: 'C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI',
+        associatedPullRequests: {
+          nodes: [
+            {
+              number: 2,
+              id: 'PR_kwDOIAVVA84_DshD',
+              state: 'MERGED',
+              reviewDecision: null,
+              url: 'https://github.com/j1-ingest/ubiquitous-umbrella/pull/2',
+            },
+          ],
+        },
+      },
       commits: {
         totalCount: 1,
         nodes: [

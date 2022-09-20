@@ -1,10 +1,10 @@
 import {
+  createDirectRelationship,
+  Execution,
   IntegrationMissingKeyError,
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
-  createDirectRelationship,
-  Execution,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
@@ -12,26 +12,29 @@ import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 
 import {
-  PullRequestEntity,
-  UserEntity,
-  RepoEntity,
   AccountEntity,
   IdEntityMap,
+  PullRequestEntity,
+  RepoEntity,
+  UserEntity,
 } from '../types';
 import {
-  GithubEntities,
-  GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
-  GITHUB_REPO_PR_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
+  GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
+  GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  GITHUB_PR_CONTAINS_PR_RELATIONSHIP_TYPE,
+  GITHUB_REPO_PR_RELATIONSHIP_TYPE,
+  GithubEntities,
 } from '../constants';
 import {
+  createAssociatedMergePullRequestRelationship,
   createUnknownUserIssueRelationship,
   toPullRequestEntity,
 } from '../sync/converters';
 import { cloneDeep } from 'lodash';
+import { hasAssociatedMergePullRequest } from '../sync/converterUtils';
 
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
 
@@ -128,6 +131,12 @@ export async function fetchPrs(
                 to: prEntity,
               }),
             );
+
+            if (hasAssociatedMergePullRequest(pullRequest)) {
+              await jobState.addRelationship(
+                createAssociatedMergePullRequestRelationship(pullRequest),
+              );
+            }
 
             if (usersByLoginMap![pr.authorLogin]) {
               await jobState.addRelationship(
@@ -278,6 +287,12 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
         sourceType: GithubEntities.GITHUB_MEMBER._type,
         targetType: GithubEntities.GITHUB_PR._type,
         partial: true,
+      },
+      {
+        _type: GITHUB_PR_CONTAINS_PR_RELATIONSHIP_TYPE,
+        _class: RelationshipClass.CONTAINS,
+        sourceType: GithubEntities.GITHUB_PR._type,
+        targetType: GithubEntities.GITHUB_PR._type,
       },
     ],
     dependsOn: ['fetch-repos', 'fetch-users', 'fetch-collaborators'],

@@ -1,4 +1,5 @@
 import {
+  createDirectRelationship,
   createIntegrationEntity,
   createMappedRelationship,
   Entity,
@@ -748,6 +749,49 @@ export function createUnknownUserIssueRelationship(
   };
 }
 
+/**
+ * Creates a relationship between two Pull Requests where commits build on each other.
+ * This is commonly caused by sharing commits from a series of branches.
+ * PR1 - Branch A -> main with commit {A}
+ * PR2 - Branch B -> main with commits {A, B}
+ * PR3 - Branch C -> main with commits {A, B, C}
+ *
+ * When Branch C is merged (via PR3), PR1 and PR2 are automatically set to "merged"
+ * because their commits now exist in main. This must be a GitHub feature
+ */
+export function createAssociatedMergePullRequestRelationship(
+  pullRequest: PullRequestResponse,
+) {
+  if (!pullRequest.mergeCommit?.associatedPullRequest?.number) {
+    throw new Error('number is required on the associated pull request');
+  }
+  if (pullRequest.id === pullRequest.mergeCommit.associatedPullRequest.id) {
+    throw new Error(
+      'associated pull request must be different than source pull request.',
+    );
+  }
+
+  return createDirectRelationship({
+    _class: RelationshipClass.CONTAINS,
+    toType: GithubEntities.GITHUB_PR._type,
+    toKey: buildPullRequestKey({
+      login: pullRequest.baseRepository.owner.login,
+      repoName: pullRequest.baseRepository.name,
+      pullRequestNumber: pullRequest.number,
+    }),
+    fromType: GithubEntities.GITHUB_PR._type,
+    fromKey: buildPullRequestKey({
+      login: pullRequest.baseRepository.owner.login,
+      repoName: pullRequest.baseRepository.name,
+      pullRequestNumber: pullRequest.mergeCommit?.associatedPullRequest?.number,
+    }),
+    properties: {
+      sharedCommit: pullRequest.mergeCommit.commitUrl,
+      sharedCommitOid: pullRequest.mergeCommit.oid,
+    },
+  });
+}
+
 export function toPullRequestEntity(
   pullRequest: PullRequestResponse,
   teamMembersByLoginMap: IdEntityMap<UserEntity>, //
@@ -756,6 +800,9 @@ export function toPullRequestEntity(
   const commits = pullRequest.commits;
   const reviews = pullRequest.reviews;
   const labels = pullRequest.labels?.map((l) => l.name);
+
+  // Private repo PRs don't have access to commits.
+  const hasCommits = Array.isArray(commits) && commits.length > 0;
 
   const approvals = reviews
     ?.filter(isApprovalReview)
@@ -831,9 +878,9 @@ export function toPullRequestEntity(
         node: pullRequest.id,
         declined: pullRequest.state === 'CLOSED' && !pullRequest.merged,
         approved: pullRequest.reviewDecision === 'APPROVED',
-        allCommitsApproved: commitsNotApproved
-          ? commitsNotApproved.length === 0
-          : undefined,
+        allCommitsApproved:
+          hasCommits &&
+          (commitsNotApproved ? commitsNotApproved.length === 0 : undefined),
 
         commits: commitHashes,
         commitsCount: commitsCount,

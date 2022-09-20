@@ -1,5 +1,11 @@
-import { buildVulnAlertRecommendation } from './converterUtils';
-import { VulnerabilityAlertResponse } from '../client/GraphQLClient';
+import {
+  buildVulnAlertRecommendation,
+  hasAssociatedMergePullRequest,
+} from './converterUtils';
+import {
+  PullRequestResponse,
+  VulnerabilityAlertResponse,
+} from '../client/GraphQLClient';
 
 describe('converterUtils', () => {
   test('buildVulnAlertRecommendation without securityVulnerability', () => {
@@ -41,5 +47,21 @@ describe('converterUtils', () => {
     expect(buildVulnAlertRecommendation(alert)).toBe(
       'Update NPM package "my-npm-package". Vulnerable version range: >= 3.0.0, < 3.0.1',
     );
+  });
+
+  test('hasAssociatedMergePullRequest', () => {
+    const pullRequest = {
+      id: 'thisPR',
+      mergeCommit: {
+        associatedPullRequest: {
+          id: 'associatedPR',
+        },
+      },
+    } as PullRequestResponse;
+
+    expect(hasAssociatedMergePullRequest(pullRequest)).toBeTruthy();
+
+    pullRequest.id = 'associatedPR';
+    expect(hasAssociatedMergePullRequest(pullRequest)).toBeFalsy();
   });
 });

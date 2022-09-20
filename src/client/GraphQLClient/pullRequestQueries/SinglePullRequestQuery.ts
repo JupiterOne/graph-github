@@ -152,6 +152,7 @@ const pullRequestFields = `
     locked
     mergeCommit {
       ...${fragments.commitFields}
+      ${fragments.associatedPullRequest}
     }
     mergeable
     merged

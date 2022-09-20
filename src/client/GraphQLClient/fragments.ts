@@ -114,6 +114,16 @@ export default {
       }
     }
   }`,
+  associatedPullRequest: `
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
+    }`,
   reviewFields: `on PullRequestReview {
     id
     commit {

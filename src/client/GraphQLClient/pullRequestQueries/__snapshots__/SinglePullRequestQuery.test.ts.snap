@@ -94,6 +94,16 @@ Object {
       }
     }
   }
+      
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
+    }
     }
     mergeable
     merged
@@ -294,6 +304,16 @@ Object {
       }
     }
   }
+      
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
+    }
     }
     mergeable
     merged
@@ -444,6 +464,16 @@ Object {
       }
     }
   }
+      
+    associatedPullRequests(first: 1) {
+      nodes {
+        id
+        number
+        state
+        reviewDecision
+        url
+      }
+    }
     }
     mergeable
     merged
@@ -526,6 +556,10 @@ Object {
       "name": "feature",
     },
   ],
+  "mergeCommit": Object {
+    "associatedPullRequest": undefined,
+    "id": "C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI",
+  },
   "reviews": Array [
     Object {
       "id": "review1",
@@ -580,6 +614,16 @@ Object {
         "name": "documentation",
       },
     ],
+    "mergeCommit": Object {
+      "associatedPullRequest": Object {
+        "id": "PR_kwDOIAVVA84_DshD",
+        "number": 2,
+        "reviewDecision": null,
+        "state": "MERGED",
+        "url": "https://github.com/j1-ingest/ubiquitous-umbrella/pull/2",
+      },
+      "id": "C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI",
+    },
     "reviews": Array [
       Object {
         "id": "review1",

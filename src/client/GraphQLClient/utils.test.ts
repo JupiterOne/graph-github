@@ -76,6 +76,30 @@ describe('utils', () => {
         },
       }),
     ).toMatchSnapshot();
+
+    expect(
+      utils.responseToResource({
+        mergeCommit: {
+          id: 'C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI',
+          associatedPullRequests: {
+            nodes: [
+              {
+                number: 2,
+                id: 'PR_kwDOIAVVA84_DshD',
+                state: 'MERGED',
+                reviewDecision: null,
+                url: 'https://github.com/j1-ingest/ubiquitous-umbrella/pull/2',
+              },
+            ],
+          },
+          author: {
+            user: {
+              login: 'VDubber',
+            },
+          },
+        },
+      }),
+    ).toMatchSnapshot();
   });
   test('#isSupported', () => {
     expect(

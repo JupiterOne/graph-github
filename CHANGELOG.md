@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.22.0 - 2022-09-20
+
+### Added
+
+- Added relationship between two pull requests that share the same merge commit.
+  This allows for discovery of pull request merges without approval given the
+  following scenario:
+
+  > PR1 - Branch A -> main with commit {A}  
+  > PR2 - Branch B -> main with commits {A, B}  
+  > PR3 - Branch C -> main with commits {A, B, C}
+
+  If PR3 is merged first, PR1 and PR2 will be marked as MERGED and potentially
+  without approval in some circumstances. This new CONTAINS relationship will
+  indicate that PR3 ->CONTAINS-> (PR1 | PR2)
+
+| Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
+| --------------------- | --------------------- | --------------------- |
+| `github_pullrequest`  | **CONTAINS**          | `github_pullrequest`  |
+
+### Fixed
+
+- `github_pullrequest` entity property `allCommitsApproved` will now only be set
+  if commits are available on a given pull request. If a repo is private,
+  permissions don't allow us to pull commit history.
+
+## 1.21.2 - 2022-09-15
+
+### Fixed
+
+- Fixed branch protection rules logic to only add relationship when the user is
+  known.
+
+### Added
+
+- Added `bypassPullRequestAllowance` property to OVERRIDES relationship between
+  (github_user|github_app|github_team) and branch protection rule.
+
 ## 1.21.1 - 2022-09-14
 
 ## Changed

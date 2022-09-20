@@ -879,8 +879,9 @@ export function toPullRequestEntity(
         declined: pullRequest.state === 'CLOSED' && !pullRequest.merged,
         approved: pullRequest.reviewDecision === 'APPROVED',
         allCommitsApproved:
-          hasCommits &&
-          (commitsNotApproved ? commitsNotApproved.length === 0 : undefined),
+          hasCommits && commitsNotApproved
+            ? commitsNotApproved.length === 0
+            : undefined,
 
         commits: commitHashes,
         commitsCount: commitsCount,

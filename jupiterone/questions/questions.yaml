@@ -147,3 +147,16 @@ questions:
   - github
   - access
   - permissions
+- id: integration-question-github-repos-without-branch-protection
+  title: Which GitHub repos do not have branch protection rules?
+  description:
+    Finds all GitHub repos without branch protection rules.
+  queries:
+  - resultsAre: BAD
+    query: |
+      FIND github_repo that !HAS github_branch_protection_rule
+  tags:
+  - github
+  - dev
+  - access
+  - permissions

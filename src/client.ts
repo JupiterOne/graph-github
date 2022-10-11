@@ -68,6 +68,7 @@ export class APIClient {
     repoEnvironments: boolean;
     repoIssues: boolean;
     dependabotAlerts: boolean;
+    repoPages: boolean;
   };
 
   readonly restApiUrl: string;
@@ -643,6 +644,7 @@ export class APIClient {
         repoEnvironments: false,
         repoIssues: false,
         dependabotAlerts: false,
+        repoPages: false,
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');
@@ -734,6 +736,15 @@ export class APIClient {
         "Token does not have 'vulnerability_alerts' (aka dependabot alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
       );
       this.scopes.dependabotAlerts = false;
+    }
+
+    //ingesting github pages requires scope repo pages:read
+    if (['read', 'write'].includes(perms.pages!)) {
+      this.scopes.repoPages = true;
+    } else {
+      this.logger.info(
+        'Token does not have Github Pages permissions enabled. Github Pages information per repo will not be gathered.',
+      );
     }
 
     //ingesting branch protection rules requires scope repo administration:read

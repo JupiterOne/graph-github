@@ -192,7 +192,6 @@ test('toRepositoryEntities', () => {
     lockReason: '',
     mergeCommitAllowed: true,
     rebaseMergeAllowed: true,
-    hasPages: false,
   });
 });
 

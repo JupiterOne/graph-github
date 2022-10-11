@@ -42,11 +42,13 @@ export async function fetchRepos({
 
   await apiClient.iterateRepos(async (repo) => {
     const repoEntity = toRepositoryEntity(repo);
-    const pagesInfo = await apiClient.fetchPagesInfoForRepo(
-      repoEntity.owner,
-      repoEntity.name,
-    );
-    decorateRepoEntityWithPagesInfo(repoEntity, pagesInfo);
+    if (apiClient.scopes.repoPages) {
+      const pagesInfo = await apiClient.fetchPagesInfoForRepo(
+        repoEntity.owner,
+        repoEntity.name,
+      );
+      decorateRepoEntityWithPagesInfo(repoEntity, pagesInfo);
+    }
     await jobState.addEntity(repoEntity);
 
     repoTags.push({

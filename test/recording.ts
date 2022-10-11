@@ -24,16 +24,6 @@ export function setupGithubRecording(
     options: {
       mode: recordingEnabled ? 'record' : 'replay',
       recordFailedRequests: true,
-      // matchRequestsBy: {
-      //   url: (url) => {
-      //     if (url.includes('installations'))
-      //       return url.replace(
-      //         /installations\/[0-9]*/,
-      //         'installations/someInstallationId',
-      //       );
-      //     return url;
-      //   },
-      // },
       ...input.options,
     },
   });

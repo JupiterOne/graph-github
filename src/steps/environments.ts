@@ -38,7 +38,7 @@ export async function fetchEnvironments({
       const envEntity = (await jobState.addEntity(
         toEnvironmentEntity(
           env,
-          apiClient.accountClient.login,
+          apiClient.graphQLClient.login,
           config.githubApiBaseUrl,
           repoTag,
         ),

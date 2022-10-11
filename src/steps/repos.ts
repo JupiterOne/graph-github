@@ -9,8 +9,11 @@ import {
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import { toRepositoryEntity } from '../sync/converters';
-import { AccountEntity, RepoEntity, RepoKeyAndName } from '../types';
+import {
+  decorateRepoEntityWithPagesInfo,
+  toRepositoryEntity,
+} from '../sync/converters';
+import { AccountEntity, RepoKeyAndName } from '../types';
 import {
   GithubEntities,
   GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
@@ -38,9 +41,13 @@ export async function fetchRepos({
   const repoTags: RepoKeyAndName[] = []; //for use later in PRs
 
   await apiClient.iterateRepos(async (repo) => {
-    const repoEntity = (await jobState.addEntity(
-      toRepositoryEntity(repo),
-    )) as RepoEntity;
+    const repoEntity = toRepositoryEntity(repo);
+    const pagesInfo = await apiClient.fetchPagesInfoForRepo(
+      repoEntity.owner,
+      repoEntity.name,
+    );
+    decorateRepoEntityWithPagesInfo(repoEntity, pagesInfo);
+    await jobState.addEntity(repoEntity);
 
     repoTags.push({
       _key: repoEntity._key,

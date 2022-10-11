@@ -69,6 +69,7 @@ import {
   buildVulnAlertId,
   buildVulnAlertRecommendation,
 } from './converterUtils';
+import { GithubPagesInfo } from '../client';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -334,8 +335,18 @@ export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
     lockReason: data.lockReason || '',
     mergeCommitAllowed: data.mergeCommitAllowed,
     rebaseMergeAllowed: data.rebaseMergeAllowed,
+    hasPages: false, // we decorate this field with subsequent call to decorateRepoEntityWithPagesInfo
   };
   setRawData(repoEntity, { name: 'default', rawData: data });
+  return repoEntity;
+}
+
+export function decorateRepoEntityWithPagesInfo(
+  repoEntity: RepoEntity,
+  pagesInfo: GithubPagesInfo,
+): RepoEntity {
+  repoEntity.hasPages = pagesInfo.hasPages;
+  repoEntity.pageUrl = pagesInfo.pagesUrl;
   return repoEntity;
 }
 

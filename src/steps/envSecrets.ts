@@ -44,7 +44,7 @@ export async function fetchEnvSecrets({
         const secretEntity = (await jobState.addEntity(
           toEnvSecretEntity(
             envSecret,
-            apiClient.accountClient.login,
+            apiClient.graphQLClient.login,
             config.githubApiBaseUrl,
             envEntity,
           ),
@@ -71,7 +71,7 @@ export async function fetchEnvSecrets({
         const keyOfHypotheticalOrgSecretOfSameName = getSecretEntityKey({
           name: envSecret.name,
           secretOwnerType: 'Org',
-          secretOwnerName: apiClient.accountClient.login,
+          secretOwnerName: apiClient.graphQLClient.login,
         });
         if (await jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
           await jobState.addRelationship(

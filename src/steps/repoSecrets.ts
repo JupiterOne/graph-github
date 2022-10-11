@@ -46,7 +46,7 @@ export async function fetchRepoSecrets({
       const secretEntity = (await jobState.addEntity(
         toRepoSecretEntity(
           secret,
-          apiClient.accountClient.login,
+          apiClient.graphQLClient.login,
           config.githubApiBaseUrl,
           repoTag.name,
         ),
@@ -76,7 +76,7 @@ export async function fetchRepoSecrets({
       const keyOfHypotheticalOrgSecretOfSameName = getSecretEntityKey({
         name: secret.name,
         secretOwnerType: 'Org',
-        secretOwnerName: apiClient.accountClient.login,
+        secretOwnerName: apiClient.graphQLClient.login,
       });
       if (await jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
         await jobState.addRelationship(

@@ -346,7 +346,7 @@ export function decorateRepoEntityWithPagesInfo(
   pagesInfo: GithubPagesInfo,
 ): RepoEntity {
   repoEntity.hasPages = pagesInfo.hasPages;
-  repoEntity.pageUrl = pagesInfo.pagesUrl;
+  repoEntity.pagesUrl = pagesInfo.pagesUrl;
   return repoEntity;
 }
 

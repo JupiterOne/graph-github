@@ -67,6 +67,7 @@ read-only permissions to support ingestion of
 - Issues: Read-only (enables both Issues and private-repo PRs)
 - [Secrets](#secrets-caveat): Read-only
 - Dependabot alerts: Read-only
+- Pages: Read-only
 
 #### Organization Permissions
 

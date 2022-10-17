@@ -153,6 +153,8 @@ export interface RepoEntity extends Entity {
   mergeCommitAllowed: boolean | undefined;
   rebaseMergeAllowed: boolean | undefined;
   webLink: string;
+  hasPages?: boolean | undefined;
+  pagesUrl?: string | undefined;
 }
 
 //to cut down on memory usage, this type will be passed between steps for relationship building

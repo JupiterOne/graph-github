@@ -13,6 +13,7 @@ import {
   toEnvSecretEntity,
   toIssueEntity,
   createAssociatedMergePullRequestRelationship,
+  decorateRepoEntityWithPagesInfo,
 } from './converters';
 import { EnvironmentEntity, UserEntity } from '../types';
 import { PullRequestResponse } from '../client/GraphQLClient/types';
@@ -21,6 +22,7 @@ import {
   fixtureUser,
   fixtureReviewerUser,
 } from './fixtures/pullRequest';
+import { GithubPagesInfo } from '../client';
 
 describe('toAccountEntity', () => {
   const apiResponse = {
@@ -190,6 +192,88 @@ test('toRepositoryEntities', () => {
     lockReason: '',
     mergeCommitAllowed: true,
     rebaseMergeAllowed: true,
+  });
+});
+
+test('decorateRepoEntityWithPagesInfo', () => {
+  const apiResponse = {
+    id: 'repo-node-id',
+    name: 'repo-name',
+    nameWithOwner: 'owner/repo-name',
+    isPrivate: true,
+    isArchived: false,
+    url: 'web-link',
+    createdAt: '2021-05-27T15:23:24Z',
+    updatedAt: '2021-05-27T15:23:28Z',
+    autoMergeAllowed: false,
+    databaseId: 371419598,
+    deleteBranchOnMerge: false,
+    description: 'This is a test repository',
+    forkingAllowed: true,
+    forkCount: 1,
+    homepageUrl: null,
+    isDisabled: false,
+    isEmpty: false,
+    isFork: false,
+    isInOrganization: true,
+    isLocked: false,
+    isMirror: false,
+    isSecurityPolicyEnabled: false,
+    isTemplate: false,
+    isUserConfigurationRepository: false,
+    lockReason: null,
+    mergeCommitAllowed: true,
+    pushedAt: '2021-06-08T18:12:39Z',
+    rebaseMergeAllowed: true,
+  };
+  const pagesInfo: GithubPagesInfo = {
+    hasPages: true,
+    pagesUrl: 'thispagerocks.com',
+  };
+  const entity = toRepositoryEntity(apiResponse as any);
+  decorateRepoEntityWithPagesInfo(entity, pagesInfo);
+  expect(entity).toEqual({
+    _key: 'repo-node-id',
+    _type: 'github_repo',
+    _class: ['CodeRepo'],
+    _rawData: [
+      {
+        name: 'default',
+        rawData: apiResponse,
+      },
+    ],
+    webLink: 'web-link',
+    public: false,
+    name: 'repo-name',
+    displayName: 'repo-name',
+    fullName: 'owner/repo-name',
+    owner: 'owner',
+    archived: false,
+    createdOn: 1622129004000,
+    updatedOn: 1622129008000,
+    pushedOn: 1623175959000,
+    databaseId: 371419598,
+    autoMergeAllowed: false,
+    deleteBranchOnMerge: false,
+    description: 'This is a test repository',
+    homepageUrl: '',
+    node: 'repo-node-id',
+    disabled: false,
+    empty: false,
+    fork: false,
+    forkingAllowed: true,
+    forkCount: 1,
+    inOrganization: true,
+    locked: false,
+    mirror: false,
+    securityPolicyEnabled: false,
+    template: false,
+    userConfigurationRepository: false,
+    lockReason: '',
+    mergeCommitAllowed: true,
+    rebaseMergeAllowed: true,
+    hasPages: true,
+    pagesUrl: 'thispagerocks.com',
   });
 });
 

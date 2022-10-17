@@ -52,7 +52,7 @@ export async function fetchBranchProtectionRule({
           toBranchProtectionEntity(
             branchProtectionRule,
             config.githubApiBaseUrl,
-            apiClient.accountClient.login,
+            apiClient.graphQLClient.login,
           ),
         )) as BranchProtectionRuleEntity;
 

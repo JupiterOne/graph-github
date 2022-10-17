@@ -47,7 +47,7 @@ export async function fetchOrgSecrets({
     const secretEntity = (await jobState.addEntity(
       toOrgSecretEntity(
         secret,
-        apiClient.accountClient.login || '',
+        apiClient.graphQLClient.login || '',
         config.githubApiBaseUrl,
       ),
     )) as SecretEntity;

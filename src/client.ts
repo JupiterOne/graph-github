@@ -1,5 +1,6 @@
 import {
   IntegrationLogger,
+  IntegrationProviderAPIError,
   IntegrationProviderAuthenticationError,
   IntegrationValidationError,
   IntegrationWarnEventName,
@@ -38,8 +39,13 @@ import {
   IssueResponse,
   PullRequestResponse,
 } from './client/GraphQLClient';
+import { Octokit } from '@octokit/rest';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
+export type GithubPagesInfo = {
+  hasPages: boolean;
+  pagesUrl?: string;
+};
 
 /**
  * An APIClient maintains authentication state and provides an interface to
@@ -50,7 +56,8 @@ export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
  * resources.
  */
 export class APIClient {
-  accountClient: OrganizationAccountClient;
+  graphQLClient: OrganizationAccountClient;
+  restClient: Octokit;
   ghsToken: string;
   gheServerVersion?: string;
   scopes: {
@@ -61,6 +68,7 @@ export class APIClient {
     repoEnvironments: boolean;
     repoIssues: boolean;
     dependabotAlerts: boolean;
+    repoPages: boolean;
   };
 
   readonly restApiUrl: string;
@@ -92,11 +100,11 @@ export class APIClient {
    * Queries meta endpoint and saves the GHE Server version, if applicable.
    */
   private async fetchAndSetupMeta(): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
 
-    const meta = await this.accountClient.fetchMeta();
+    const meta = await this.graphQLClient.fetchMeta();
     this.gheServerVersion = meta.installed_version ?? null;
     if (this.gheServerVersion) {
       this.logger.info(
@@ -110,11 +118,11 @@ export class APIClient {
    * Fetch the organization.
    */
   public async fetchOrganization() {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     const { rateLimit, organization } =
-      await this.accountClient.fetchOrganization();
+      await this.graphQLClient.fetchOrganization();
 
     this.logger.debug(
       { rateLimit },
@@ -131,10 +139,10 @@ export class APIClient {
    * @param pullRequestNumber e.g. - 5
    */
   public async fetchPullRequest(repoOwner, repoName, pullRequestNumber) {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    return this.accountClient.fetchPullRequest(
+    return this.graphQLClient.fetchPullRequest(
       repoOwner,
       repoName,
       pullRequestNumber,
@@ -149,11 +157,11 @@ export class APIClient {
   public async iterateOrgMembers(
     iteratee: ResourceIteratee<OrgMemberQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
 
-    const rateLimit = await this.accountClient.iterateOrgMembers(iteratee);
+    const rateLimit = await this.graphQLClient.iterateOrgMembers(iteratee);
 
     this.logger.debug(
       { rateLimit },
@@ -169,11 +177,11 @@ export class APIClient {
   public async iterateTeams(
     iteratee: ResourceIteratee<OrgTeamQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
 
-    const rateLimit = await this.accountClient.iterateTeams(iteratee);
+    const rateLimit = await this.graphQLClient.iterateTeams(iteratee);
 
     this.logger.debug(
       { rateLimit },
@@ -191,11 +199,11 @@ export class APIClient {
     team: TeamEntity,
     iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
 
-    const rateLimit = await this.accountClient.iterateTeamRepositories(
+    const rateLimit = await this.graphQLClient.iterateTeamRepositories(
       team.name,
       iteratee,
     );
@@ -216,10 +224,10 @@ export class APIClient {
     team: TeamEntity,
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.accountClient.iterateTeamMembers(
+    const rateLimit = await this.graphQLClient.iterateTeamMembers(
       team.name,
       iteratee,
     );
@@ -238,12 +246,12 @@ export class APIClient {
   public async iterateApps(
     iteratee: ResourceIteratee<OrgAppQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.orgAdmin) {
       const apps: OrgAppQueryResponse[] =
-        await this.accountClient.getInstalledApps(this.ghsToken);
+        await this.graphQLClient.getInstalledApps(this.ghsToken);
       for (const app of apps) {
         await iteratee(app);
       }
@@ -260,12 +268,12 @@ export class APIClient {
     allRepos: RepoKeyAndName[],
     iteratee: ResourceIteratee<SecretQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.orgSecrets) {
       const secrets: SecretQueryResponse[] =
-        await this.accountClient.getOrganizationSecrets();
+        await this.graphQLClient.getOrganizationSecrets();
       for (const secret of secrets) {
         //set repos that use this secret, so we can make relationships in iteratree
         secret.visibility === 'all'
@@ -277,7 +285,7 @@ export class APIClient {
         ) {
           //go get the list of repos and add them
           const reposForOrgSecret =
-            await this.accountClient.getReposForOrgSecret(secret.name);
+            await this.graphQLClient.getReposForOrgSecret(secret.name);
           const secretRepos: RepoKeyAndName[] = [];
           for (const repo of reposForOrgSecret) {
             const repoTag = allRepos.find((r) => r._key === repo.node_id);
@@ -302,12 +310,12 @@ export class APIClient {
     repoName: string,
     iteratee: ResourceIteratee<SecretQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.repoSecrets) {
       const repoSecrets: SecretQueryResponse[] =
-        await this.accountClient.getRepoSecrets(repoName);
+        await this.graphQLClient.getRepoSecrets(repoName);
       for (const secret of repoSecrets) {
         await iteratee(secret);
       }
@@ -324,12 +332,12 @@ export class APIClient {
     repoName: string,
     iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.orgAdmin) {
       const rateLimit =
-        await this.accountClient.iterateRepoBranchProtectionRules(
+        await this.graphQLClient.iterateRepoBranchProtectionRules(
           repoName,
           iteratee,
         );
@@ -351,12 +359,12 @@ export class APIClient {
     repoName: string,
     iteratee: ResourceIteratee<RepoEnvironmentQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.repoEnvironments) {
       const environments: RepoEnvironmentQueryResponse[] =
-        await this.accountClient.getEnvironments(repoName);
+        await this.graphQLClient.getEnvironments(repoName);
       for (const env of environments) {
         await iteratee(env);
       }
@@ -373,11 +381,11 @@ export class APIClient {
     envEntity: EnvironmentEntity,
     iteratee: ResourceIteratee<SecretQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.repoSecrets) {
-      const envSecrets = await this.accountClient.getEnvSecrets(
+      const envSecrets = await this.graphQLClient.getEnvSecrets(
         envEntity.parentRepoDatabaseId,
         envEntity.name,
         envEntity.parentRepoName,
@@ -389,6 +397,43 @@ export class APIClient {
   }
 
   /**
+   * fetch information on Github Pages a specific repo
+   *
+   * @param repoOwner e.g. - JupiterOne
+   * @param repoName e.g. - graph-github
+   */
+  public async fetchPagesInfoForRepo(
+    repoOwner: string,
+    repoName: string,
+  ): Promise<GithubPagesInfo> {
+    if (!this.restClient) {
+      await this.setupAccountClient();
+    }
+    try {
+      const getPagesReponse = await this.restClient.rest.repos.getPages({
+        repo: repoName,
+        owner: repoOwner,
+      });
+      return {
+        hasPages: true,
+        pagesUrl: getPagesReponse.data.html_url || getPagesReponse.data.url,
+      };
+    } catch (err) {
+      if (err.status === 404) {
+        return {
+          hasPages: false,
+        };
+      }
+      throw new IntegrationProviderAPIError({
+        endpoint: this.restApiUrl,
+        status: err.status,
+        statusText: err.statusText,
+        message: 'Encountered error while fetching Github Pages info for repo',
+      });
+    }
+  }
+
+  /**
    * Iterates each repo (CodeRepo) resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
@@ -396,10 +441,10 @@ export class APIClient {
   public async iterateRepos(
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.accountClient.iterateOrgRepositories(iteratee);
+    const rateLimit = await this.graphQLClient.iterateOrgRepositories(iteratee);
     this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Org Repositories.',
@@ -422,10 +467,10 @@ export class APIClient {
     maxResourceIngestion: number,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.accountClient.iteratePullRequestEntities(
+    const rateLimit = await this.graphQLClient.iteratePullRequestEntities(
       repo,
       ingestStartDatetime,
       maxResourceIngestion,
@@ -447,11 +492,11 @@ export class APIClient {
     repoName: string,
     iteratee: ResourceIteratee<CollaboratorResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
 
-    const rateLimit = await this.accountClient.iterateRepoCollaborators(
+    const rateLimit = await this.graphQLClient.iterateRepoCollaborators(
       repoName,
       iteratee,
     );
@@ -474,11 +519,11 @@ export class APIClient {
     lastSuccessfulExecution: string,
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<void> {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.repoIssues) {
-      const rateLimit = await this.accountClient.iterateIssueEntities(
+      const rateLimit = await this.graphQLClient.iterateIssueEntities(
         repo,
         lastSuccessfulExecution,
         iteratee,
@@ -498,11 +543,11 @@ export class APIClient {
     repo: RepoEntity,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
   ) {
-    if (!this.accountClient) {
+    if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
 
-    const rateLimit = await this.accountClient.iterateRepoVulnAlerts(
+    const rateLimit = await this.graphQLClient.iterateRepoVulnAlerts(
       repo.name,
       iteratee,
       {
@@ -517,6 +562,9 @@ export class APIClient {
     );
   }
 
+  /**
+   * Will set up this.graphQLClient and this.restClient
+   */
   public async setupAccountClient(): Promise<void> {
     if (isNaN(this.config.installationId)) {
       throw new IntegrationValidationError(
@@ -570,7 +618,8 @@ export class APIClient {
       );
     }
 
-    this.accountClient = new OrganizationAccountClient({
+    this.restClient = appClient;
+    this.graphQLClient = new OrganizationAccountClient({
       login: installation?.account?.login ?? this.config.githubAppDefaultLogin,
       baseUrl: this.restApiUrl,
       restClient: appClient,
@@ -595,6 +644,7 @@ export class APIClient {
         repoEnvironments: false,
         repoIssues: false,
         dependabotAlerts: false,
+        repoPages: false,
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');
@@ -686,6 +736,15 @@ export class APIClient {
         "Token does not have 'vulnerability_alerts' (aka dependabot alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
       );
       this.scopes.dependabotAlerts = false;
+    }
+
+    //ingesting github pages requires scope repo pages:read
+    if (['read', 'write'].includes(perms.pages!)) {
+      this.scopes.repoPages = true;
+    } else {
+      this.logger.info(
+        'Token does not have Github Pages permissions enabled. Github Pages information per repo will not be gathered.',
+      );
     }
 
     //ingesting branch protection rules requires scope repo administration:read

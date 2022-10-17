@@ -52,6 +52,7 @@ you'll need to do the following:
       - Issues: Read-only (enables both Issues and private-repo PRs)
       - Secrets: Read-only (only name and creation date is collected)
       - Dependabot alerts: Read-only
+      - Pages: Read-only
 
       **Organization Permissions**
 

@@ -32,6 +32,7 @@ import {
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
+  BillingActionsReponse,
 } from './client/RESTClient/types';
 import {
   CollaboratorResponse,
@@ -312,6 +313,17 @@ export class APIClient {
         await iteratee(secret);
       }
     }
+  }
+
+  /**
+   * Fetch the pull request based on the provided params.
+   * @param repoOwner e.g. - JupiterOne
+   */
+  public async fetchBillingActions(repoOwner) {
+    if (!this.accountClient) {
+      await this.setupAccountClient();
+    }
+    return this.accountClient.fetchBillingActions(repoOwner);
   }
 
   /**

@@ -65,6 +65,17 @@ export interface RepoEnvironmentQueryResponse {
   envSecrets?: SecretQueryResponse[];
 }
 
+export interface BillingActionsReponse {
+  total_minutes_used: number;
+  total_paid_minutes_used: number;
+  included_minutes: number;
+  minutes_used_breakdown: {
+    UBUNTU?: number | undefined;
+    MACOS?: number | undefined;
+    WINDOWS?: number | undefined;
+  };
+}
+
 interface ProtectionRule {
   id: string;
   node_id: string;

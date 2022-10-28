@@ -20,6 +20,7 @@ import {
   SecretQueryResponse,
   OrgSecretRepoQueryResponse,
   RepoEnvironmentQueryResponse,
+  BillingActionsReponse,
 } from './RESTClient/types';
 import {
   RepoEntity,
@@ -35,6 +36,7 @@ import {
   CollaboratorResponse,
   RateLimitStepSummary,
 } from './GraphQLClient/types';
+import { issuesResponses } from './GraphQLClient/issueQueries/testResponses';
 
 export default class OrganizationAccountClient {
   authorizedForPullRequests: boolean;
@@ -301,6 +303,23 @@ export default class OrganizationAccountClient {
       return orgSecrets || [];
     } catch (err) {
       this.logger.warn('Error while attempting to ingest organization secrets');
+      throw new IntegrationError(err);
+    }
+  }
+
+  async fetchBillingActions(repoAdmin): Promise<BillingActionsReponse> {
+    try {
+      const billingActions = (
+        await this.v3.request('GET /orgs/{org}/settings/billing/actions', {
+          org: repoAdmin,
+        })
+      ).data;
+
+      this.logger.info('Fetched page of billing actions');
+      this.v3RateLimitConsumed++;
+      return billingActions || [];
+    } catch (err) {
+      this.logger.warn('Error while attempting to ingest billing actions');
       throw new IntegrationError(err);
     }
   }

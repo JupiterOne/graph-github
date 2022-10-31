@@ -53,7 +53,7 @@ export default async function getStepStartStates(
         : DisabledStepReason.PERMISSION,
     },
     ['fetch-branch-protection-rules']: {
-      disabled: !scopes.repoAdmin,
+      disabled: !scopes.repoAdmin && !scopes.repoDiscussions,
       disabledReason: DisabledStepReason.PERMISSION,
     },
   };

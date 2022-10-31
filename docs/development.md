@@ -53,6 +53,7 @@ you'll need to do the following:
       - Secrets: Read-only (only name and creation date is collected)
       - Dependabot alerts: Read-only
       - Pages: Read-only
+      - Discussions: Read-only
 
       **Organization Permissions**
 

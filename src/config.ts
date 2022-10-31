@@ -123,6 +123,7 @@ export async function validateInvocation(
   repoEnvironments: boolean;
   repoIssues: boolean;
   dependabotAlerts: boolean;
+  repoDiscussions: boolean;
 }> {
   const { config } = context.instance;
 

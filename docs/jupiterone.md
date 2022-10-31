@@ -68,6 +68,7 @@ read-only permissions to support ingestion of
 - [Secrets](#secrets-caveat): Read-only
 - Dependabot alerts: Read-only
 - Pages: Read-only
+- Discussions: Read-only
 
 #### Organization Permissions
 

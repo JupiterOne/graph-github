@@ -15,6 +15,7 @@ describe('getStepStartStates', () => {
         orgSecrets: false,
         repoSecrets: false,
         dependabotAlerts: true,
+        repoDiscussions: true,
       });
     const context = {
       instance: {
@@ -42,6 +43,7 @@ describe('getStepStartStates', () => {
         orgSecrets: false,
         repoSecrets: false,
         dependabotAlerts: true,
+        repoDiscussions: true,
       });
 
     const context = {
@@ -70,6 +72,7 @@ describe('getStepStartStates', () => {
         orgSecrets: false,
         repoSecrets: false,
         dependabotAlerts: false,
+        repoDiscussions: true,
       });
 
     const context = {
@@ -85,5 +88,63 @@ describe('getStepStartStates', () => {
     expect(validateInvocationSpy).toHaveBeenCalled();
     expect(states['fetch-vulnerability-alerts'].disabled).toBeTruthy();
     expect(states['fetch-repo-secrets'].disabled).toBeTruthy();
+  });
+
+  test('enable fetch-branch-protection-rules', async () => {
+    const validateInvocationSpy = jest
+      .spyOn(config, 'validateInvocation')
+      .mockResolvedValueOnce({
+        // tested permissions
+        repoAdmin: true,
+        repoDiscussions: true,
+        // not applicable
+        repoIssues: true,
+        repoEnvironments: true,
+        orgAdmin: true,
+        orgSecrets: false,
+        repoSecrets: false,
+        dependabotAlerts: false,
+      })
+      .mockResolvedValueOnce({
+        // tested permissions
+        repoAdmin: true,
+        repoDiscussions: false,
+        // not applicable
+        repoIssues: true,
+        repoEnvironments: true,
+        orgAdmin: true,
+        orgSecrets: false,
+        repoSecrets: false,
+        dependabotAlerts: false,
+      })
+      .mockResolvedValueOnce({
+        // tested permissions
+        repoAdmin: false,
+        repoDiscussions: false,
+        // not applicable
+        repoIssues: true,
+        repoEnvironments: true,
+        orgAdmin: true,
+        orgSecrets: false,
+        repoSecrets: false,
+        dependabotAlerts: false,
+      });
+
+    const states = await getStepStartStates({
+      instance: { config: {} },
+    } as any);
+
+    expect(validateInvocationSpy).toHaveBeenCalled();
+    expect(states['fetch-branch-protection-rules'].disabled).toBeFalsy();
+
+    const states2 = await getStepStartStates({
+      instance: { config: {} },
+    } as any);
+    expect(states2['fetch-branch-protection-rules'].disabled).toBeFalsy();
+
+    const states3 = await getStepStartStates({
+      instance: { config: {} },
+    } as any);
+    expect(states3['fetch-branch-protection-rules'].disabled).toBeTruthy();
   });
 });

@@ -69,6 +69,7 @@ export class APIClient {
     repoIssues: boolean;
     dependabotAlerts: boolean;
     repoPages: boolean;
+    repoDiscussions: boolean;
   };
 
   readonly restApiUrl: string;
@@ -645,6 +646,7 @@ export class APIClient {
         repoIssues: false,
         dependabotAlerts: false,
         repoPages: false,
+        repoDiscussions: false,
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');
@@ -752,9 +754,19 @@ export class APIClient {
       this.scopes.repoAdmin = true;
     } else {
       this.logger.info(
-        "Token does not have 'administration' (aka repo administration) scope. Repo Branch Protection Rules cannot be ingested.",
+        "Token does not have repo 'administration' scope. Repo Branch Protection Rules cannot be ingested.",
       );
       this.scopes.repoAdmin = false;
+    }
+
+    //ingesting branch protection rules on private repos requires scope repo discussions:read
+    if (['read', 'write'].includes(perms.discussions!)) {
+      this.scopes.repoDiscussions = true;
+    } else {
+      this.logger.info(
+        "Token does not have repo 'discussions' scope. Repo Branch Protection Rules cannot be ingested for private repos.",
+      );
+      this.scopes.repoDiscussions = false;
     }
 
     const missingScopes = Object.keys(this.scopes).filter(

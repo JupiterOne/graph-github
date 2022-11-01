@@ -61,18 +61,19 @@ read-only permissions to support ingestion of
 
 - Actions: Read-only
 - Administration: Read-only
-- Environments: Read-only
-- Metadata: Read-only
-- Pull requests: Read-only
-- Issues: Read-only (enables both Issues and private-repo PRs)
-- [Secrets](#secrets-caveat): Read-only
 - Dependabot alerts: Read-only
+- Discussions: Read-only
+- Environments: Read-only
+- Issues: Read-only (enables both Issues and private-repo PRs)
+- Metadata: Read-only
 - Pages: Read-only
+- Pull requests: Read-only
+- [Secrets](#secrets-caveat): Read-only
 
 #### Organization Permissions
 
-- Members: Read-only
 - Administration: Read-only
+- Members: Read-only
 - [Secrets](#secrets-caveat): Read-only
 
 #### User Permissions

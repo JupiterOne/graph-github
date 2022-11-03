@@ -1,0 +1,2357 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.3",
+  "version": 1,
+  "metadata": {
+    "tools": [
+      {
+        "vendor": "CycloneDX",
+        "name": "Node.js module",
+        "version": "3.1.1",
+        "hashes": []
+      }
+    ]
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/auth-app@3.6.0",
+      "group": "@octokit",
+      "name": "auth-app",
+      "version": "3.6.0",
+      "description": "GitHub App authentication for JavaScript",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/auth-app@3.6.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/auth-app.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/auth-app.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/auth-app.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/auth-oauth-app@4.3.0",
+      "group": "@octokit",
+      "name": "auth-oauth-app",
+      "version": "4.3.0",
+      "description": "GitHub OAuth App authentication for JavaScript",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/auth-oauth-app@4.3.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/auth-oauth-app.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/auth-oauth-app.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/auth-oauth-app.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/auth-oauth-device@3.1.2",
+      "group": "@octokit",
+      "name": "auth-oauth-device",
+      "version": "3.1.2",
+      "description": "GitHub OAuth Device authentication strategy for JavaScript",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/auth-oauth-device@3.1.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/auth-oauth-device.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/auth-oauth-device.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/auth-oauth-device.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/oauth-methods@1.2.4",
+      "group": "@octokit",
+      "name": "oauth-methods",
+      "version": "1.2.4",
+      "description": "Set of stateless request methods to create, check, reset, refresh, and delete user access tokens for OAuth and GitHub Apps",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/oauth-methods@1.2.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/oauth-methods.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/oauth-methods.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/oauth-methods.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/oauth-authorization-url@4.3.3",
+      "group": "@octokit",
+      "name": "oauth-authorization-url",
+      "version": "4.3.3",
+      "description": "Universal library to retrieve GitHubâs identity URL for the OAuth web flow",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/oauth-authorization-url@4.3.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/oauth-authorization-url.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/oauth-authorization-url.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/oauth-authorization-url.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/request@5.6.1",
+      "group": "@octokit",
+      "name": "request",
+      "version": "5.6.1",
+      "description": "Send parameterized requests to GitHubâs APIs with sensible defaults in browsers and Node",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/request@5.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/request.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/request.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/request.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/endpoint@6.0.12",
+      "group": "@octokit",
+      "name": "endpoint",
+      "version": "6.0.12",
+      "description": "Turns REST API endpoints into generic request options",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/endpoint@6.0.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/endpoint.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/endpoint.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/endpoint.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/types@6.31.3",
+      "group": "@octokit",
+      "name": "types",
+      "version": "6.31.3",
+      "description": "Shared TypeScript definitions for Octokit projects",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/types@6.31.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/types.ts#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/types.ts/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/types.ts.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/openapi-types@10.6.4",
+      "group": "@octokit",
+      "name": "openapi-types",
+      "version": "10.6.4",
+      "description": "Generated TypeScript definitions based on GitHub's OpenAPI spec for api.github.com",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/openapi-types@10.6.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/openapi-types.ts#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/openapi-types.ts/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/openapi-types.ts.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/is-plain-object@5.0.0",
+      "name": "is-plain-object",
+      "version": "5.0.0",
+      "description": "Returns true if an object was created by the `Object` constructor, or Object.create(null).",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/is-plain-object@5.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/jonschlinkert/is-plain-object",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/jonschlinkert/is-plain-object/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/jonschlinkert/is-plain-object.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/universal-user-agent@6.0.0",
+      "name": "universal-user-agent",
+      "version": "6.0.0",
+      "description": "Get a user agent string in both browser and node",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "purl": "pkg:npm/universal-user-agent@6.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/gr2m/universal-user-agent#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/gr2m/universal-user-agent/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/gr2m/universal-user-agent.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/request-error@2.1.0",
+      "group": "@octokit",
+      "name": "request-error",
+      "version": "2.1.0",
+      "description": "Error class for Octokit request errors",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/request-error@2.1.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/request-error.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/request-error.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/request-error.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/deprecation@2.3.1",
+      "name": "deprecation",
+      "version": "2.3.1",
+      "description": "Log a deprecation message with stack",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "purl": "pkg:npm/deprecation@2.3.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/gr2m/deprecation#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/gr2m/deprecation/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/gr2m/deprecation.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/once@1.4.0",
+      "name": "once",
+      "version": "1.4.0",
+      "description": "Run a function exactly one time",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "purl": "pkg:npm/once@1.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/isaacs/once#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/isaacs/once/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git://github.com/isaacs/once.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/wrappy@1.0.2",
+      "name": "wrappy",
+      "version": "1.0.2",
+      "description": "Callback wrapping utility",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "purl": "pkg:npm/wrappy@1.0.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/npm/wrappy",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/npm/wrappy/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/npm/wrappy.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/node-fetch@2.6.7",
+      "name": "node-fetch",
+      "version": "2.6.7",
+      "description": "A light-weight module that brings window.fetch to node.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/node-fetch@2.6.7",
+      "externalReferences": [
+        {
+          "url": "https://github.com/bitinn/node-fetch",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/bitinn/node-fetch/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/bitinn/node-fetch.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/whatwg-url@5.0.0",
+      "name": "whatwg-url",
+      "version": "5.0.0",
+      "description": "An implementation of the WHATWG URL Standard's URL API and parsing machinery",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/whatwg-url@5.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/jsdom/whatwg-url#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/jsdom/whatwg-url/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/jsdom/whatwg-url.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/tr46@0.0.3",
+      "name": "tr46",
+      "version": "0.0.3",
+      "description": "An implementation of the Unicode TR46 spec",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/tr46@0.0.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Sebmaster/tr46.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/Sebmaster/tr46.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/Sebmaster/tr46.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/webidl-conversions@3.0.1",
+      "name": "webidl-conversions",
+      "version": "3.0.1",
+      "description": "Implements the WebIDL algorithms for converting to and from JavaScript values",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:npm/webidl-conversions@3.0.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/jsdom/webidl-conversions#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/jsdom/webidl-conversions/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/jsdom/webidl-conversions.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/btoa-lite@1.0.0",
+      "name": "btoa-lite",
+      "version": "1.0.0",
+      "description": "Smallest/simplest possible means of using btoa with both Node and browserify",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/btoa-lite@1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/hughsk/btoa-lite",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/hughsk/btoa-lite/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git://github.com/hughsk/btoa-lite.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/auth-oauth-user@1.3.0",
+      "group": "@octokit",
+      "name": "auth-oauth-user",
+      "version": "1.3.0",
+      "description": "Octokit authentication strategy for OAuth clients",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/auth-oauth-user@1.3.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/auth-oauth-user.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/auth-oauth-user.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/auth-oauth-user.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40types/btoa-lite@1.0.0",
+      "group": "@types",
+      "name": "btoa-lite",
+      "version": "1.0.0",
+      "description": "TypeScript definitions for btoa-lite",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/btoa-lite@1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40types/lru-cache@5.1.1",
+      "group": "@types",
+      "name": "lru-cache",
+      "version": "5.1.1",
+      "description": "TypeScript definitions for lru-cache",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/lru-cache@5.1.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lru-cache",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lru-cache@6.0.0",
+      "name": "lru-cache",
+      "version": "6.0.0",
+      "description": "A cache object that deletes the least-recently-used items.",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lru-cache@6.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/isaacs/node-lru-cache#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/isaacs/node-lru-cache/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git://github.com/isaacs/node-lru-cache.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/yallist@4.0.0",
+      "name": "yallist",
+      "version": "4.0.0",
+      "description": "Yet Another Linked List",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "purl": "pkg:npm/yallist@4.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/isaacs/yallist#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/isaacs/yallist/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/isaacs/yallist.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/universal-github-app-jwt@1.1.0",
+      "name": "universal-github-app-jwt",
+      "version": "1.1.0",
+      "description": "Calculate GitHub App bearer tokens for Node & modern browsers",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/universal-github-app-jwt@1.1.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/gr2m/universal-github-app-jwt#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/gr2m/universal-github-app-jwt/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/gr2m/universal-github-app-jwt.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40types/jsonwebtoken@8.5.5",
+      "group": "@types",
+      "name": "jsonwebtoken",
+      "version": "8.5.5",
+      "description": "TypeScript definitions for jsonwebtoken",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/jsonwebtoken@8.5.5",
+      "externalReferences": [
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/jsonwebtoken",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40types/node@16.10.2",
+      "group": "@types",
+      "name": "node",
+      "version": "16.10.2",
+      "description": "TypeScript definitions for Node.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40types/node@16.10.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/node",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/jsonwebtoken@8.5.1",
+      "name": "jsonwebtoken",
+      "version": "8.5.1",
+      "description": "JSON Web Token implementation (symmetric and asymmetric)",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/jsonwebtoken@8.5.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/auth0/node-jsonwebtoken#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/auth0/node-jsonwebtoken/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/auth0/node-jsonwebtoken.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/jws@3.2.2",
+      "name": "jws",
+      "version": "3.2.2",
+      "description": "Implementation of JSON Web Signatures",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/jws@3.2.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/brianloveswords/node-jws#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/brianloveswords/node-jws/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git://github.com/brianloveswords/node-jws.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/jwa@1.4.1",
+      "name": "jwa",
+      "version": "1.4.1",
+      "description": "JWA implementation (supports all JWS algorithms)",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/jwa@1.4.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/brianloveswords/node-jwa#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/brianloveswords/node-jwa/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git://github.com/brianloveswords/node-jwa.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/buffer-equal-constant-time@1.0.1",
+      "name": "buffer-equal-constant-time",
+      "version": "1.0.1",
+      "description": "Constant-time comparison of Buffers",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:npm/buffer-equal-constant-time@1.0.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/goinstant/buffer-equal-constant-time#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/goinstant/buffer-equal-constant-time/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+ssh://git@github.com/goinstant/buffer-equal-constant-time.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/ecdsa-sig-formatter@1.0.11",
+      "name": "ecdsa-sig-formatter",
+      "version": "1.0.11",
+      "description": "Translate ECDSA signatures between ASN.1/DER and JOSE-style concatenation",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ecdsa-sig-formatter@1.0.11",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Brightspace/node-ecdsa-sig-formatter#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/Brightspace/node-ecdsa-sig-formatter/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+ssh://git@github.com/Brightspace/node-ecdsa-sig-formatter.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/safe-buffer@5.2.1",
+      "name": "safe-buffer",
+      "version": "5.2.1",
+      "description": "Safer Node.js Buffer API",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/safe-buffer@5.2.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/feross/safe-buffer",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/feross/safe-buffer/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git://github.com/feross/safe-buffer.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lodash.includes@4.3.0",
+      "name": "lodash.includes",
+      "version": "4.3.0",
+      "description": "The lodash method `_.includes` exported as a module.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash.includes@4.3.0",
+      "externalReferences": [
+        {
+          "url": "https://lodash.com/",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/lodash/lodash/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/lodash/lodash.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lodash.isboolean@3.0.3",
+      "name": "lodash.isboolean",
+      "version": "3.0.3",
+      "description": "The lodash method `_.isBoolean` exported as a module.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash.isboolean@3.0.3",
+      "externalReferences": [
+        {
+          "url": "https://lodash.com/",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/lodash/lodash/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/lodash/lodash.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lodash.isinteger@4.0.4",
+      "name": "lodash.isinteger",
+      "version": "4.0.4",
+      "description": "The lodash method `_.isInteger` exported as a module.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash.isinteger@4.0.4",
+      "externalReferences": [
+        {
+          "url": "https://lodash.com/",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/lodash/lodash/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/lodash/lodash.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lodash.isnumber@3.0.3",
+      "name": "lodash.isnumber",
+      "version": "3.0.3",
+      "description": "The lodash method `_.isNumber` exported as a module.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash.isnumber@3.0.3",
+      "externalReferences": [
+        {
+          "url": "https://lodash.com/",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/lodash/lodash/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/lodash/lodash.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lodash.isplainobject@4.0.6",
+      "name": "lodash.isplainobject",
+      "version": "4.0.6",
+      "description": "The lodash method `_.isPlainObject` exported as a module.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash.isplainobject@4.0.6",
+      "externalReferences": [
+        {
+          "url": "https://lodash.com/",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/lodash/lodash/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/lodash/lodash.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lodash.isstring@4.0.1",
+      "name": "lodash.isstring",
+      "version": "4.0.1",
+      "description": "The lodash method `_.isString` exported as a module.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash.isstring@4.0.1",
+      "externalReferences": [
+        {
+          "url": "https://lodash.com/",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/lodash/lodash/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/lodash/lodash.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lodash.once@4.1.1",
+      "name": "lodash.once",
+      "version": "4.1.1",
+      "description": "The lodash method `_.once` exported as a module.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash.once@4.1.1",
+      "externalReferences": [
+        {
+          "url": "https://lodash.com/",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/lodash/lodash/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/lodash/lodash.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/ms@2.1.3",
+      "name": "ms",
+      "version": "2.1.3",
+      "description": "Tiny millisecond conversion utility",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ms@2.1.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/vercel/ms#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/vercel/ms/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/vercel/ms.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/semver@5.7.1",
+      "name": "semver",
+      "version": "5.7.1",
+      "description": "The semantic version parser used by npm.",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "purl": "pkg:npm/semver@5.7.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/npm/node-semver#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/npm/node-semver/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/npm/node-semver.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/core@3.6.0",
+      "group": "@octokit",
+      "name": "core",
+      "version": "3.6.0",
+      "description": "Extendable client for GitHub's REST & GraphQL APIs",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/core@3.6.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/core.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/core.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/core.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/auth-token@2.5.0",
+      "group": "@octokit",
+      "name": "auth-token",
+      "version": "2.5.0",
+      "description": "GitHub API token authentication for browsers and Node.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/auth-token@2.5.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/auth-token.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/auth-token.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/auth-token.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/graphql@4.8.0",
+      "group": "@octokit",
+      "name": "graphql",
+      "version": "4.8.0",
+      "description": "GitHub GraphQL API client for browsers and Node",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/graphql@4.8.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/graphql.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/graphql.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/graphql.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/request@5.6.3",
+      "group": "@octokit",
+      "name": "request",
+      "version": "5.6.3",
+      "description": "Send parameterized requests to GitHub's APIs with sensible defaults in browsers and Node",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/request@5.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/request.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/request.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/request.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/before-after-hook@2.2.2",
+      "name": "before-after-hook",
+      "version": "2.2.2",
+      "description": "asynchronous before/error/after hooks for internal functionality",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:npm/before-after-hook@2.2.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/gr2m/before-after-hook#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/gr2m/before-after-hook/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/gr2m/before-after-hook.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/plugin-retry@3.0.9",
+      "group": "@octokit",
+      "name": "plugin-retry",
+      "version": "3.0.9",
+      "description": "Automatic retry plugin for octokit",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/plugin-retry@3.0.9",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/plugin-retry.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/plugin-retry.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/plugin-retry.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/bottleneck@2.19.5",
+      "name": "bottleneck",
+      "version": "2.19.5",
+      "description": "Distributed task scheduler and rate limiter",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/bottleneck@2.19.5",
+      "externalReferences": [
+        {
+          "url": "https://github.com/SGrondin/bottleneck#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/SGrondin/bottleneck/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/SGrondin/bottleneck.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/plugin-throttling@3.6.2",
+      "group": "@octokit",
+      "name": "plugin-throttling",
+      "version": "3.6.2",
+      "description": "Octokit plugin for GitHub's recommended request throttling",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/plugin-throttling@3.6.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/plugin-throttling.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/plugin-throttling.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/plugin-throttling.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/rest@18.12.0",
+      "group": "@octokit",
+      "name": "rest",
+      "version": "18.12.0",
+      "description": "GitHub REST API client for Node.js",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/rest@18.12.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/rest.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/rest.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/rest.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/core@3.5.1",
+      "group": "@octokit",
+      "name": "core",
+      "version": "3.5.1",
+      "description": "Extendable client for GitHub's REST & GraphQL APIs",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/core@3.5.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/core.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/core.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/core.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/plugin-paginate-rest@2.17.0",
+      "group": "@octokit",
+      "name": "plugin-paginate-rest",
+      "version": "2.17.0",
+      "description": "Octokit plugin to paginate REST API endpoint responses",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/plugin-paginate-rest@2.17.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/plugin-paginate-rest.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/plugin-paginate-rest.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/plugin-paginate-rest.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/types@6.34.0",
+      "group": "@octokit",
+      "name": "types",
+      "version": "6.34.0",
+      "description": "Shared TypeScript definitions for Octokit projects",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/types@6.34.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/types.ts#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/types.ts/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/types.ts.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/openapi-types@11.2.0",
+      "group": "@octokit",
+      "name": "openapi-types",
+      "version": "11.2.0",
+      "description": "Generated TypeScript definitions based on GitHub's OpenAPI spec for api.github.com",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/openapi-types@11.2.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/openapi-types.ts#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/openapi-types.ts/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/openapi-types.ts.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/plugin-request-log@1.0.4",
+      "group": "@octokit",
+      "name": "plugin-request-log",
+      "version": "1.0.4",
+      "description": "Log all requests and request errors",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/plugin-request-log@1.0.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/plugin-request-log.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/plugin-request-log.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/plugin-request-log.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40octokit/plugin-rest-endpoint-methods@5.13.0",
+      "group": "@octokit",
+      "name": "plugin-rest-endpoint-methods",
+      "version": "5.13.0",
+      "description": "Octokit plugin adding one method for all of api.github.com REST API endpoints",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40octokit/plugin-rest-endpoint-methods@5.13.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/octokit/plugin-rest-endpoint-methods.js#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/octokit/plugin-rest-endpoint-methods.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/octokit/plugin-rest-endpoint-methods.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/semver@7.3.7",
+      "name": "semver",
+      "version": "7.3.7",
+      "description": "The semantic version parser used by npm.",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC"
+          }
+        }
+      ],
+      "purl": "pkg:npm/semver@7.3.7",
+      "externalReferences": [
+        {
+          "url": "https://github.com/npm/node-semver#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/npm/node-semver/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/npm/node-semver.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40jupiterone/data-model@0.50.0",
+      "group": "@jupiterone",
+      "name": "data-model",
+      "version": "0.50.0",
+      "description": "- [Data Model Guide](https://support.jupiterone.io/hc/en-us/sections/360002424373-JupiterOne-Graph-Data-Model)",
+      "licenses": [
+        {
+          "license": {
+            "id": "MPL-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jupiterone/data-model@0.50.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/JupiterOne/data-model#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/JupiterOne/data-model/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+ssh://git@github.com/JupiterOne/data-model.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/ajv@8.6.3",
+      "name": "ajv",
+      "version": "8.6.3",
+      "description": "Another JSON Schema Validator",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ajv@8.6.3",
+      "externalReferences": [
+        {
+          "url": "https://ajv.js.org",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/ajv-validator/ajv/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/ajv-validator/ajv.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/fast-deep-equal@3.1.3",
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "description": "Fast deep equal",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/fast-deep-equal@3.1.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/epoberezkin/fast-deep-equal#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/epoberezkin/fast-deep-equal/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/epoberezkin/fast-deep-equal.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/json-schema-traverse@1.0.0",
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "description": "Traverse JSON Schema passing each schema object to callback",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/json-schema-traverse@1.0.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/epoberezkin/json-schema-traverse#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/epoberezkin/json-schema-traverse/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/epoberezkin/json-schema-traverse.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/require-from-string@2.0.2",
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "description": "Require module from string",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/require-from-string@2.0.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/floatdrop/require-from-string#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/floatdrop/require-from-string/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/floatdrop/require-from-string.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/uri-js@4.4.1",
+      "name": "uri-js",
+      "version": "4.4.1",
+      "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-2-Clause"
+          }
+        }
+      ],
+      "purl": "pkg:npm/uri-js@4.4.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/garycourt/uri-js",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/garycourt/uri-js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+ssh://git@github.com/garycourt/uri-js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/punycode@2.1.1",
+      "name": "punycode",
+      "version": "2.1.1",
+      "description": "A robust Punycode converter that fully complies to RFC 3492 and RFC 5891, and works on nearly all JavaScript platforms.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/punycode@2.1.1",
+      "externalReferences": [
+        {
+          "url": "https://mths.be/punycode",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/bestiejs/punycode.js/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/bestiejs/punycode.js.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/ajv-formats@2.1.1",
+      "name": "ajv-formats",
+      "version": "2.1.1",
+      "description": "Format validation for Ajv v7+",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/ajv-formats@2.1.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ajv-validator/ajv-formats#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/ajv-validator/ajv-formats/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/ajv-validator/ajv-formats.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/%40jupiterone/integration-sdk-core@8.18.0",
+      "group": "@jupiterone",
+      "name": "integration-sdk-core",
+      "version": "8.18.0",
+      "description": "The SDK for developing JupiterOne integrations",
+      "licenses": [
+        {
+          "license": {
+            "id": "MPL-2.0"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40jupiterone/integration-sdk-core@8.18.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/JupiterOne/sdk#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/JupiterOne/sdk/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+ssh://git@github.com/JupiterOne/sdk.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/lodash@4.17.21",
+      "name": "lodash",
+      "version": "4.17.21",
+      "description": "Lodash modular utilities.",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/lodash@4.17.21",
+      "externalReferences": [
+        {
+          "url": "https://lodash.com/",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/lodash/lodash/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/lodash/lodash.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:npm/uuid@8.3.2",
+      "name": "uuid",
+      "version": "8.3.2",
+      "description": "RFC4122 (v1, v4, and v5) UUIDs",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/uuid@8.3.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/uuidjs/uuid#readme",
+          "type": "website",
+          "hashes": []
+        },
+        {
+          "url": "https://github.com/uuidjs/uuid/issues",
+          "type": "issue-tracker",
+          "hashes": []
+        },
+        {
+          "url": "git+https://github.com/uuidjs/uuid.git",
+          "type": "vcs",
+          "hashes": []
+        }
+      ],
+      "scope": "required"
+    }
+  ]
+}

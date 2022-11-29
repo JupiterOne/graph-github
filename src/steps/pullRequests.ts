@@ -35,6 +35,7 @@ import {
 } from '../sync/converters';
 import { cloneDeep } from 'lodash';
 import { hasAssociatedMergePullRequest } from '../sync/converterUtils';
+import { sub } from 'date-fns';
 
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
 
@@ -222,6 +223,17 @@ export async function fetchPrs(
   );
 }
 
+const PollingIntervalToDurationMap: Record<string, Duration> = {
+  DISABLED: {},
+  ONE_WEEK: { days: 7 },
+  ONE_DAY: { days: 1 },
+  TWELVE_HOURS: { hours: 12 },
+  EIGHT_HOURS: { hours: 8 },
+  FOUR_HOURS: { hours: 4 },
+  ONE_HOUR: { hours: 1 },
+  THIRTY_MINUTES: { minutes: 30 },
+};
+
 /**
  * Determines what the ingestion start datetime should be for PRs.
  * Values are considered in the following order:
@@ -231,15 +243,27 @@ export async function fetchPrs(
  * @param config
  * @param lastSuccessful
  */
-const determineIngestStartDatetime = (
+export const determineIngestStartDatetime = (
   config: IntegrationConfig,
   lastSuccessful?: Execution,
 ): string => {
   let startDatetime;
   if (config.pullRequestIngestStartDatetime) {
+    // Allows for historical pull requests to be ingested.
     startDatetime = config.pullRequestIngestStartDatetime;
   } else if (lastSuccessful?.startedOn) {
     startDatetime = lastSuccessful?.startedOn;
+
+    // subtract a pollingInterval to collect any missed PRs during the previous run
+    if (
+      config.pollingInterval &&
+      PollingIntervalToDurationMap[config.pollingInterval]
+    ) {
+      startDatetime = sub(
+        startDatetime,
+        PollingIntervalToDurationMap[config.pollingInterval],
+      );
+    }
   } else {
     startDatetime = 0;
   }

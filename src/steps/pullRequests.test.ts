@@ -1,6 +1,6 @@
 import { Recording } from '@jupiterone/integration-sdk-testing';
-import { sanitizeConfig } from '../config';
-import { prSteps } from './pullRequests';
+import { IntegrationConfig, sanitizeConfig } from '../config';
+import { determineIngestStartDatetime, prSteps } from './pullRequests';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import {
@@ -17,7 +17,9 @@ jest.setTimeout(20000);
 
 let recording: Recording;
 afterEach(async () => {
-  await recording.stop();
+  if (recording) {
+    await recording.stop();
+  }
 });
 
 test('fetchPrs exec handler', async () => {
@@ -69,3 +71,28 @@ test('fetchPrs exec handler', async () => {
   );
   expect(memberReviewedPrRels.length).toBeGreaterThan(0);
 });
+
+describe.each([
+  ['test', Date.UTC(2002, 5, 22, 15)],
+  ['DISABLED', Date.UTC(2002, 5, 22, 15)],
+  ['ONE_WEEK', Date.UTC(2002, 5, 15, 15)],
+  ['ONE_DAY', Date.UTC(2002, 5, 21, 15)],
+  ['TWELVE_HOURS', Date.UTC(2002, 5, 22, 3)],
+  ['EIGHT_HOURS', Date.UTC(2002, 5, 22, 7)],
+  ['FOUR_HOURS', Date.UTC(2002, 5, 22, 11)],
+  ['ONE_HOUR', Date.UTC(2002, 5, 22, 14)],
+  ['THIRTY_MINUTES', Date.UTC(2002, 5, 22, 14, 30)],
+])(
+  'determineIngestStartDatetime',
+  (pollingInterval: string, expected: number) => {
+    const startedOn = Date.UTC(2002, 5, 22, 15);
+
+    const config = {
+      pollingInterval,
+    } as unknown as IntegrationConfig;
+
+    expect(determineIngestStartDatetime(config, { startedOn })).toBe(
+      new Date(expected).toISOString(),
+    );
+  },
+);

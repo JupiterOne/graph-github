@@ -88,7 +88,7 @@ describe.each([
   (pollingInterval: SchedulerInterval, expected: number) => {
     const startedOn = Date.UTC(2002, 5, 22, 15);
 
-    let config = {
+    const config = {
       pollingInterval,
     } as unknown as IntegrationConfig;
 

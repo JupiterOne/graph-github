@@ -36,7 +36,6 @@ import {
 import { cloneDeep } from 'lodash';
 import { hasAssociatedMergePullRequest } from '../sync/converterUtils';
 import { sub } from 'date-fns';
-import { SchedulerInterval } from '@jupiterone/jupiter-types';
 
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
 
@@ -224,15 +223,15 @@ export async function fetchPrs(
   );
 }
 
-const PollingIntervalToDurationMap: Record<SchedulerInterval, Duration> = {
-  [SchedulerInterval.DISABLED]: {},
-  [SchedulerInterval.ONE_WEEK]: { days: 7 },
-  [SchedulerInterval.ONE_DAY]: { days: 1 },
-  [SchedulerInterval.TWELVE_HOURS]: { hours: 12 },
-  [SchedulerInterval.EIGHT_HOURS]: { hours: 8 },
-  [SchedulerInterval.FOUR_HOURS]: { hours: 4 },
-  [SchedulerInterval.ONE_HOUR]: { hours: 1 },
-  [SchedulerInterval.THIRTY_MINUTES]: { minutes: 30 },
+const PollingIntervalToDurationMap: Record<string, Duration> = {
+  DISABLED: {},
+  ONE_WEEK: { days: 7 },
+  ONE_DAY: { days: 1 },
+  TWELVE_HOURS: { hours: 12 },
+  EIGHT_HOURS: { hours: 8 },
+  FOUR_HOURS: { hours: 4 },
+  ONE_HOUR: { hours: 1 },
+  THIRTY_MINUTES: { minutes: 30 },
 };
 
 /**

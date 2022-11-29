@@ -12,7 +12,6 @@ import {
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
-import { SchedulerInterval } from '@jupiterone/jupiter-types';
 
 jest.setTimeout(20000);
 
@@ -74,18 +73,18 @@ test('fetchPrs exec handler', async () => {
 });
 
 describe.each([
-  ['test' as SchedulerInterval, Date.UTC(2002, 5, 22, 15)],
-  [SchedulerInterval.DISABLED, Date.UTC(2002, 5, 22, 15)],
-  [SchedulerInterval.ONE_WEEK, Date.UTC(2002, 5, 15, 15)],
-  [SchedulerInterval.ONE_DAY, Date.UTC(2002, 5, 21, 15)],
-  [SchedulerInterval.TWELVE_HOURS, Date.UTC(2002, 5, 22, 3)],
-  [SchedulerInterval.EIGHT_HOURS, Date.UTC(2002, 5, 22, 7)],
-  [SchedulerInterval.FOUR_HOURS, Date.UTC(2002, 5, 22, 11)],
-  [SchedulerInterval.ONE_HOUR, Date.UTC(2002, 5, 22, 14)],
-  [SchedulerInterval.THIRTY_MINUTES, Date.UTC(2002, 5, 22, 14, 30)],
+  ['test', Date.UTC(2002, 5, 22, 15)],
+  ['DISABLED', Date.UTC(2002, 5, 22, 15)],
+  ['ONE_WEEK', Date.UTC(2002, 5, 15, 15)],
+  ['ONE_DAY', Date.UTC(2002, 5, 21, 15)],
+  ['TWELVE_HOURS', Date.UTC(2002, 5, 22, 3)],
+  ['EIGHT_HOURS', Date.UTC(2002, 5, 22, 7)],
+  ['FOUR_HOURS', Date.UTC(2002, 5, 22, 11)],
+  ['ONE_HOUR', Date.UTC(2002, 5, 22, 14)],
+  ['THIRTY_MINUTES', Date.UTC(2002, 5, 22, 14, 30)],
 ])(
   'determineIngestStartDatetime',
-  (pollingInterval: SchedulerInterval, expected: number) => {
+  (pollingInterval: string, expected: number) => {
     const startedOn = Date.UTC(2002, 5, 22, 15);
 
     const config = {

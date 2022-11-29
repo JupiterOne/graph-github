@@ -964,6 +964,11 @@
     deepmerge "^4.2.2"
     lodash "^4.17.15"
 
+"@jupiterone/jupiter-types@^49.5.0":
+  version "49.5.0"
+  resolved "https://registry.yarnpkg.com/@jupiterone/jupiter-types/-/jupiter-types-49.5.0.tgz#d2494defbc34e39ce215bdceb125b0d4588453e1"
+  integrity sha512-qMbQqK+iyCwWlVlx01hrfouGa0hOzsWNM/BupuxHaS92dfDRLeAkEtChB1XRnPl61o6zm3XG1UJutAzDQJTdIA==
+
 "@lifeomic/alpha@^1.4.0":
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/@lifeomic/alpha/-/alpha-1.4.2.tgz#70772f1e2801c5fa15e706edc7d626f1477d9a1f"
@@ -2406,6 +2411,11 @@ data-urls@^2.0.0:
     abab "^2.0.3"
     whatwg-mimetype "^2.3.0"
     whatwg-url "^8.0.0"
+
+date-fns@^2.29.3:
+  version "2.29.3"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.29.3.tgz#27402d2fc67eb442b511b70bbdf98e6411cd68a8"
+  integrity sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==
 
 debug@2.6.9:
   version "2.6.9"

@@ -1,4 +1,4 @@
-# Integration with JupiterOne
+# GitHub
 
 ## GitHub + JupiterOne Integration Benefits
 

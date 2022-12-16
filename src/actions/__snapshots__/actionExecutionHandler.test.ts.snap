@@ -2323,6 +2323,7 @@ Object {
       "declined": false,
       "description": undefined,
       "displayName": "reimagined-barnacle/19",
+      "filesChangedCount": 1,
       "id": "19",
       "labels": Array [],
       "mergeCommitHash": undefined,

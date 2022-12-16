@@ -878,6 +878,7 @@ export function toPullRequestEntity(
         databaseId: pullRequest.databaseId,
         webLink: pullRequest.url,
         labels: labels,
+        filesChangedCount: pullRequest.changedFiles,
 
         state: pullRequest.state,
         open: pullRequest.state === 'OPEN',

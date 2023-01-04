@@ -346,6 +346,9 @@ export const GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE =
 export const GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE =
   'github_user_assigned_issue';
 
+//codeScanning alerts
+export const GITHUB_FINDING_ALERT_RULE_RELATIONSHIP_TYPE = 'github_finding_is_alert_rule';
+
 // vuln alerts
 export const GITHUB_REPO_FINDING_RELATIONSHIP_TYPE = 'github_repo_has_finding';
 export const GITHUB_FINDING_CVE_RELATIONSHIP_TYPE = 'github_finding_is_cve';

@@ -99,6 +99,25 @@ export interface BranchProtectionRuleEntity extends Entity {
   requiredConversationResolution: boolean;
 }
 
+export interface CodeScanAlertsEntity extends Entity {
+  name: string;
+  displayName: string;
+  summary: string;
+  status: string;
+  severity: string;
+  priority: string;
+  state: string;
+  weblink: string;
+  createdOn;
+  dismissedOn;
+  dismisserLogin;
+  dismissReason;
+  fixedOn;
+  toolName: string;
+  toolVersion?: string;
+  repository: string;
+}
+
 export interface IssueEntity extends Entity {
   name: string;
   displayName: string;
@@ -237,7 +256,6 @@ export interface VulnerabilityAlertEntity extends Entity {
   recommendation;
   open;
   references;
-  public;
   weblink;
   createdOn;
   dismissedOn;

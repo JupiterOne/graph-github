@@ -24,6 +24,7 @@ import {
   AccountEntity,
   AccountType,
   AppEntity,
+  CodeScanAlertsEntity,
   EnvironmentEntity,
   IdEntityMap,
   IssueEntity,
@@ -59,6 +60,7 @@ import {
 } from '../client/GraphQLClient';
 import {
   OrgAppQueryResponse,
+  CodeScanAlertsQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
 } from '../client/RESTClient/types';
@@ -122,6 +124,38 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   };
   setRawData(appEntity, { name: 'default', rawData: data });
   return appEntity;
+}
+
+export function createCodeScanAlertsEntity(
+  data: CodeScanAlertsQueryResponse,
+  orgLogin: string,
+  baseUrl: string,
+): CodeScanAlertsEntity {
+  const codeScanAlertsEntity: CodeScanAlertsEntity = {
+    _class: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._class,
+    _type: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._type,
+    _key: '',
+    number: data.number,
+    name: data.rule.id,
+    displayName: data.rule.name,
+    summary: data.rule.description,
+    status: data.state,
+    severity: data.rule.security_severity_level,
+    priority: data.rule.severity,
+    state: data.state,
+    weblink: data.html_url,
+    createdOn: data.created_at,
+    dismissedOn: data.dismissed_at,
+    dismisserLogin: data.dismissed_by?.login,
+    dismissReason: data.dismissed_reason,
+    fixedOn: data.fixed_at,
+    toolName: data.tool.name,
+    toolVersion: data.tool.version,
+    repository: data.repository.name,
+    path: data.most_recent_instance.location.path
+  }
+
+  return codeScanAlertsEntity;
 }
 
 export function toOrgSecretEntity(

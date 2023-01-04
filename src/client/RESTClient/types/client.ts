@@ -14,6 +14,41 @@ export interface OrgSecretRepoQueryResponse {
   url: string;
 }
 
+export interface CodeScanAlertsQueryResponse {
+  number: number;
+  created_at: string;
+  updated_at: string;  
+  html_url: string;
+  state: string;
+  fixed_at?: string;
+  dismissed_by?: {
+    login: string;
+  };
+  dismissed_at?: string;
+  dismissed_reason?: string;
+  rule: {
+    id: string;
+    name: string;
+    severity: string;
+    description: string;
+    tags: Array<string> | undefined;
+    security_severity_level: string;
+  }
+  tool: {
+    name: string;
+    version: string;
+  }
+  repository: {
+    name: string;
+  }
+  most_recent_instance: {
+    location: {
+      path: string;
+    }
+  }
+
+}
+
 export interface OrgAppQueryResponse {
   id: string; //the installation id
   respository_selection: string;

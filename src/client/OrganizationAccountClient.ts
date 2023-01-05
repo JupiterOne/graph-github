@@ -20,6 +20,7 @@ import {
   SecretQueryResponse,
   OrgSecretRepoQueryResponse,
   RepoEnvironmentQueryResponse,
+  CodeScanningAlertsQueryResponse,
 } from './RESTClient/types';
 import {
   RepoEntity,
@@ -301,6 +302,29 @@ export default class OrganizationAccountClient {
       return orgSecrets || [];
     } catch (err) {
       this.logger.warn('Error while attempting to ingest organization secrets');
+      throw new IntegrationError(err);
+    }
+  }
+
+  async getCodeScanningAlerts(): Promise<CodeScanningAlertsQueryResponse[]> {
+    try {
+      const codeScanningAlerts = await this.v3.paginate(
+        'GET /orgs/{org}/code-scanning/alerts',
+        {
+          org: this.login,
+          per_page: 100,
+        },
+        (response) => {
+          this.logger.info('Fetched page of code scanning alerts');
+          this.v3RateLimitConsumed++;
+          return response.data;
+        },
+      );
+      return codeScanningAlerts || [];
+    } catch (err) {
+      this.logger.warn(
+        'Error while attempting to ingest organization code scanning alerts',
+      );
       throw new IntegrationError(err);
     }
   }

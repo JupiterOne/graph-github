@@ -60,7 +60,7 @@ import {
 } from '../client/GraphQLClient';
 import {
   OrgAppQueryResponse,
-  CodeScanAlertsQueryResponse,
+  CodeScanningAlertsQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
 } from '../client/RESTClient/types';
@@ -127,7 +127,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
 }
 
 export function createCodeScanAlertsEntity(
-  data: CodeScanAlertsQueryResponse,
+  data: CodeScanningAlertsQueryResponse,
   orgLogin: string,
   baseUrl: string,
 ): CodeScanAlertsEntity {
@@ -136,24 +136,22 @@ export function createCodeScanAlertsEntity(
     _type: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._type,
     _key: '',
     number: data.number,
-    name: data.rule.id,
-    displayName: data.rule.name,
-    summary: data.rule.description,
+    name: data.rule.id || '',
+    displayName: data.rule.name || '',
+    summary: data.rule.description || '',
     status: data.state,
-    severity: data.rule.security_severity_level,
-    priority: data.rule.severity,
+    severity: data.rule.security_severity_level || '',
+    priority: data.rule.severity || '',
     state: data.state,
     weblink: data.html_url,
     createdOn: data.created_at,
     dismissedOn: data.dismissed_at,
-    dismisserLogin: data.dismissed_by?.login,
-    dismissReason: data.dismissed_reason,
     fixedOn: data.fixed_at,
-    toolName: data.tool.name,
-    toolVersion: data.tool.version,
-    repository: data.repository.name,
-    path: data.most_recent_instance.location.path
-  }
+    toolName: data.tool.name || '',
+    toolVersion: data.tool.version || '',
+    repository: data.repository.name || '',
+    path: data.most_recent_instance.location?.path || '',
+  };
 
   return codeScanAlertsEntity;
 }

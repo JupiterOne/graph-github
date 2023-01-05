@@ -9,7 +9,7 @@ import {
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import { AccountEntity, RepoKeyAndName, SecretEntity } from '../types';
+import { AccountEntity, CodeScanAlertsEntity, RepoKeyAndName } from '../types';
 import {
   GithubEntities,
   GITHUB_REPO_FINDING_RELATIONSHIP_TYPE,
@@ -17,9 +17,9 @@ import {
   GITHUB_FINDING_CWE_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
-import { toOrgSecretEntity } from '../sync/converters';
+import { createCodeScanAlertsEntity } from '../sync/converters';
 
-export async function fetchOrgSecrets({
+export async function fetchCodeScanAlerts({
   instance,
   logger,
   jobState,
@@ -44,20 +44,20 @@ export async function fetchOrgSecrets({
     );
   }
 
-  await apiClient.iterateOrgSecrets(repoTags, async (secret) => {
-    const secretEntity = (await jobState.addEntity(
-      toOrgSecretEntity(
-        secret,
+  await apiClient.iterateCodeScanningAlerts(repoTags, async (alerts) => {
+    const codeScanAlertsEntity = (await jobState.addEntity(
+      createCodeScanAlertsEntity(
+        alerts,
         apiClient.graphQLClient.login || '',
         config.githubApiBaseUrl,
       ),
-    )) as SecretEntity;
+    )) as CodeScanAlertsEntity;
 
     await jobState.addRelationship(
       createDirectRelationship({
         _class: RelationshipClass.HAS,
         from: accountEntity,
-        to: secretEntity,
+        to: codeScanAlertsEntity,
       }),
     );
 

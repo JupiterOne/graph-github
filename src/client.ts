@@ -30,6 +30,7 @@ import {
   BranchProtectionRuleResponse,
 } from './client/GraphQLClient';
 import {
+  CodeScanningAlertsQueryResponse,
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
@@ -481,6 +482,21 @@ export class APIClient {
       { rateLimit },
       'Rate limit consumed while fetching Pull Requests.',
     );
+  }
+
+  /**
+   * Iterates each Github organization code scanning alerts.
+   *
+   * @param allRepos
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateCodeScanningAlerts(
+    allRepos: RepoKeyAndName[],
+    iteratee: ResourceIteratee<CodeScanningAlertsQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
   }
 
   /**

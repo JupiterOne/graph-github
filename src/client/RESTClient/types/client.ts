@@ -14,39 +14,40 @@ export interface OrgSecretRepoQueryResponse {
   url: string;
 }
 
-export interface CodeScanAlertsQueryResponse {
+export interface CodeScanningAlertsQueryResponse {
   number: number;
   created_at: string;
-  updated_at: string;  
+  updated_at?: string | undefined;
   html_url: string;
   state: string;
-  fixed_at?: string;
-  dismissed_by?: {
-    login: string;
-  };
-  dismissed_at?: string;
-  dismissed_reason?: string;
+  fixed_at?: string | null | undefined;
+  dismissed_at?: string | null | undefined;
   rule: {
-    id: string;
-    name: string;
-    severity: string;
-    description: string;
-    tags: Array<string> | undefined;
-    security_severity_level: string;
-  }
+    id?: string | null | undefined;
+    name?: string;
+    severity?: string | null;
+    description?: string;
+    tags?: Array<string> | null | undefined;
+    security_severity_level?:
+      | 'low'
+      | 'medium'
+      | 'high'
+      | 'critical'
+      | null
+      | undefined;
+  };
   tool: {
-    name: string;
-    version: string;
-  }
+    name?: string | undefined;
+    version?: string | null | undefined;
+  };
   repository: {
-    name: string;
-  }
+    name?: string | undefined;
+  };
   most_recent_instance: {
-    location: {
-      path: string;
-    }
-  }
-
+    location?: {
+      path?: string;
+    };
+  };
 }
 
 export interface OrgAppQueryResponse {

@@ -156,6 +156,7 @@ The following entities are created:
 | CVE                            | `cve`                           | `Vulnerability` |
 | CWE                            | `cwe`                           | `Weakness`      |
 | GitHub Branch Protection Rules | `github_branch_protection_rule` | `Rule`          |
+| GitHub Code Scanning Alerts    | `github_finding`                | `Finding`       |
 | GitHub Env Secret              | `github_env_secret`             | `Secret`        |
 | GitHub Environment             | `github_environment`            | `Configuration` |
 | GitHub Issue                   | `github_issue`                  | `Issue`         |
@@ -163,7 +164,6 @@ The following entities are created:
 | GitHub Pull Request            | `github_pullrequest`            | `PR`            |
 | GitHub Repo Secret             | `github_repo_secret`            | `Secret`        |
 | GitHub Team                    | `github_team`                   | `UserGroup`     |
-| GitHub Vulnerability Alerts    | `github_finding`                | `Finding`       |
 | Github App                     | `github_app`                    | `Application`   |
 | Github Repo                    | `github_repo`                   | `CodeRepo`      |
 | Github User                    | `github_user`                   | `User`          |
@@ -184,6 +184,7 @@ The following relationships are created:
 | `github_env_secret`   | **OVERRIDES**         | `github_repo_secret`            |
 | `github_environment`  | **HAS**               | `github_env_secret`             |
 | `github_finding`      | **EXPLOITS**          | `cwe`                           |
+| `github_repo`         | **HAS**               | `github_finding`                |
 | `github_finding`      | **IS**                | `cve`                           |
 | `github_pullrequest`  | **CONTAINS**          | `github_pullrequest`            |
 | `github_repo`         | **ALLOWS**            | `github_team`                   |

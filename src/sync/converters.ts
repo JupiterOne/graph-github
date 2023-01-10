@@ -68,6 +68,7 @@ import {
 import { compact, last, omit, uniq } from 'lodash';
 import getCommitsToDestination from '../util/getCommitsToDestination';
 import {
+  buildCodeScanningAlertId,
   buildVulnAlertId,
   buildVulnAlertRecommendation,
 } from './converterUtils';
@@ -134,7 +135,7 @@ export function createCodeScanAlertsEntity(
   const codeScanAlertsEntity: CodeScanAlertsEntity = {
     _class: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._class,
     _type: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._type,
-    _key: '',
+    _key: buildCodeScanningAlertId(data),
     number: data.number,
     name: data.rule.id || '',
     displayName: data.rule.name || '',

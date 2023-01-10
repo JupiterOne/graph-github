@@ -12,9 +12,7 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import { AccountEntity, CodeScanAlertsEntity, RepoKeyAndName } from '../types';
 import {
   GithubEntities,
-  GITHUB_REPO_FINDING_RELATIONSHIP_TYPE,
   GITHUB_FINDING_ALERT_RULE_RELATIONSHIP_TYPE,
-  GITHUB_FINDING_CWE_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
 import { createCodeScanAlertsEntity } from '../sync/converters';
@@ -61,9 +59,10 @@ export async function fetchCodeScanAlerts({
       }),
     );
 
-    //for every org secret, add a USES relationship for all repos with access to secret
-    if (secret.repos) {
-      for (const repoTag of secret.repos) {
+    /*
+    //for every org code scanner alert, add a USES relationship for all repos with access to secret
+    if (alerts) {
+      for (const repoTag of alerts.repos) {
         await jobState.addRelationship(
           createDirectRelationship({
             _class: RelationshipClass.USES,
@@ -75,35 +74,30 @@ export async function fetchCodeScanAlerts({
         );
       }
     }
+    */
   });
 }
 
-export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [
+export const codeScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-org-secrets',
-    name: 'Fetch Organization Secrets',
+    id: 'fetch-codescanning-alerts',
+    name: 'Fetch Code Scanning Alerts',
     entities: [
       {
-        resourceName: 'GitHub Org Secret',
-        _type: GithubEntities.GITHUB_ORG_SECRET._type,
-        _class: GithubEntities.GITHUB_ORG_SECRET._class,
+        resourceName: 'GitHub Code Scanning Alerts',
+        _type: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._type,
+        _class: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._class,
       },
     ],
     relationships: [
       {
-        _type: GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GithubEntities.GITHUB_ACCOUNT._type,
-        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
-      },
-      {
-        _type: GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.USES,
+        _type: GITHUB_FINDING_ALERT_RULE_RELATIONSHIP_TYPE,
         sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
+        _class: RelationshipClass.HAS,
+        targetType: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._type,
       },
     ],
     dependsOn: ['fetch-account', 'fetch-repos'],
-    executionHandler: fetchOrgSecrets,
+    executionHandler: fetchCodeScanAlerts,
   },
 ];

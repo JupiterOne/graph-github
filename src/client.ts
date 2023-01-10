@@ -65,6 +65,7 @@ export class APIClient {
     orgAdmin: boolean;
     orgSecrets: boolean;
     repoAdmin: boolean;
+    codeScanningAlerts: boolean;
     repoSecrets: boolean;
     repoEnvironments: boolean;
     repoIssues: boolean;
@@ -497,6 +498,11 @@ export class APIClient {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
+    if (this.scopes.codeScanningAlerts) {
+      const codeScanningAlerts: CodeScanningAlertsQueryResponse[] =
+        await this.graphQLClient.getCodeScanningAlerts();
+      //not sure what goes here
+    }
   }
 
   /**
@@ -654,6 +660,7 @@ export class APIClient {
   private processScopes(perms: TokenPermissions) {
     if (!this.scopes) {
       this.scopes = {
+        codeScanningAlerts: false,
         orgAdmin: false,
         orgSecrets: false,
         repoAdmin: false,
@@ -754,6 +761,16 @@ export class APIClient {
         "Token does not have 'vulnerability_alerts' (aka dependabot alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
       );
       this.scopes.dependabotAlerts = false;
+    }
+
+    //ingesting codeScanning alerts requires scope security_events:read
+    if (['read', 'write'].includes(perms.security_events!)) {
+      this.scopes.codeScanningAlerts = true;
+    } else {
+      this.logger.info(
+        "Token does not have 'security_events' (aka codeScanning alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
+      );
+      this.scopes.codeScanningAlerts = false;
     }
 
     //ingesting github pages requires scope repo pages:read

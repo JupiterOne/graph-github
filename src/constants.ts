@@ -35,7 +35,6 @@ export const GithubEntities = {
       required: ['name', 'displayName', 'webLink', 'createdOn'],
     },
   },
-
   GITHUB_BRANCH_PROTECITON_RULE: {
     _type: 'github_branch_protection_rule',
     _class: ['Rule'],
@@ -51,6 +50,35 @@ export const GithubEntities = {
         },
       },
       required: ['name', 'displayName'],
+    },
+  },
+  GITHUB_CODE_SCANNER_ALERTS: {
+    _type: 'github_finding',
+    _class: ['Finding'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_finding' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        severity: { type: 'string' },
+        priority: { type: 'string' },
+        state: { type: 'string' },
+        webLink: { type: 'string' },
+        createdOn: { type: 'number' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: [
+        'severity',
+        'state',
+        'displayName',
+        'name',
+        'weblink',
+        'createdOn',
+      ],
     },
   },
   GITHUB_COLLABORATOR: {
@@ -347,7 +375,8 @@ export const GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE =
   'github_user_assigned_issue';
 
 //codeScanning alerts
-export const GITHUB_FINDING_ALERT_RULE_RELATIONSHIP_TYPE = 'github_finding_is_alert_rule';
+export const GITHUB_FINDING_ALERT_RULE_RELATIONSHIP_TYPE =
+  'github_finding_is_alert_rule';
 
 // vuln alerts
 export const GITHUB_REPO_FINDING_RELATIONSHIP_TYPE = 'github_repo_has_finding';

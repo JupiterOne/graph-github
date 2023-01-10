@@ -108,11 +108,9 @@ export interface CodeScanAlertsEntity extends Entity {
   priority: string;
   state: string;
   weblink: string;
-  createdOn;
-  dismissedOn;
-  dismisserLogin;
-  dismissReason;
-  fixedOn;
+  createdOn: string;
+  dismissedOn: string | null | undefined;
+  fixedOn: string | null | undefined;
   toolName: string;
   toolVersion?: string;
   repository: string;

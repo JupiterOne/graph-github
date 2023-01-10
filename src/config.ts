@@ -116,6 +116,7 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
 export async function validateInvocation(
   context: IntegrationExecutionContext<IntegrationConfig>,
 ): Promise<{
+  codeScanningAlerts: boolean;
   orgAdmin: boolean;
   orgSecrets: boolean;
   repoAdmin: boolean;

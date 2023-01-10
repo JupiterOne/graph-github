@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "j1-integration collect --disable-schema-validation",
-    "start:step": "j1-integration collect --step fetch-prs --disable-schema-validation --no-cache",
+    "start:step": "j1-integration collect --step fetch-codescanning-alerts --disable-schema-validation --no-cache",
     "graph": "j1-integration visualize",
     "graph:types": "j1-integration visualize-types",
     "graph:dependencies": "j1-integration visualize-dependencies",

@@ -114,6 +114,8 @@ export interface CodeScanAlertsEntity extends Entity {
   toolName: string;
   toolVersion?: string;
   repository: string;
+  repositoryId: string;
+  repositoryName: string;
 }
 
 export interface IssueEntity extends Entity {

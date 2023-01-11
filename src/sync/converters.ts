@@ -149,6 +149,8 @@ export function createCodeScanAlertsEntity(
     toolName: data.tool.name || '',
     toolVersion: data.tool.version || '',
     repository: data.repository.name || '',
+    repositoryId: data.repository.node_id || '',
+    repositoryName: data.repository.name || '',
     path: data.most_recent_instance.location?.path || '',
   };
 

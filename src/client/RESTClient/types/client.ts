@@ -41,6 +41,7 @@ export interface CodeScanningAlertsQueryResponse {
     version?: string | null | undefined;
   };
   repository: {
+    node_id?: string | undefined;
     name?: string | undefined;
   };
   most_recent_instance: {

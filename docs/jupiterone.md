@@ -184,7 +184,6 @@ The following relationships are created:
 | `github_env_secret`   | **OVERRIDES**         | `github_repo_secret`            |
 | `github_environment`  | **HAS**               | `github_env_secret`             |
 | `github_finding`      | **EXPLOITS**          | `cwe`                           |
-| `github_repo`         | **HAS**               | `github_finding`                |
 | `github_finding`      | **IS**                | `cve`                           |
 | `github_pullrequest`  | **CONTAINS**          | `github_pullrequest`            |
 | `github_repo`         | **ALLOWS**            | `github_team`                   |

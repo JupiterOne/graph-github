@@ -488,11 +488,9 @@ export class APIClient {
   /**
    * Iterates each Github organization code scanning alerts.
    *
-   * @param allRepos
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateCodeScanningAlerts(
-    allRepos: RepoKeyAndName[],
     iteratee: ResourceIteratee<CodeScanningAlertsQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
@@ -501,7 +499,10 @@ export class APIClient {
     if (this.scopes.codeScanningAlerts) {
       const codeScanningAlerts: CodeScanningAlertsQueryResponse[] =
         await this.graphQLClient.getCodeScanningAlerts();
-      //not sure what goes here
+
+      for (const alert of codeScanningAlerts) {
+        await iteratee(alert);
+      }
     }
   }
 

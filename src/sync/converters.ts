@@ -129,8 +129,6 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
 
 export function createCodeScanAlertsEntity(
   data: CodeScanningAlertsQueryResponse,
-  orgLogin: string,
-  baseUrl: string,
 ): CodeScanAlertsEntity {
   const codeScanAlertsEntity: CodeScanAlertsEntity = {
     _class: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._class,

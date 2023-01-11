@@ -1,19 +1,18 @@
 import {
+  createDirectRelationship,
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
   IntegrationMissingKeyError,
-  createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import { AccountEntity, CodeScanAlertsEntity, RepoKeyAndName } from '../types';
+import { AccountEntity, CodeScanAlertsEntity, RepoEntity } from '../types';
 import {
   GithubEntities,
-  GITHUB_FINDING_ALERT_RULE_RELATIONSHIP_TYPE,
-  GITHUB_REPO_TAGS_ARRAY,
+  GITHUB_REPO_FINDING_RELATIONSHIP_TYPE,
 } from '../constants';
 import { createCodeScanAlertsEntity } from '../sync/converters';
 
@@ -33,48 +32,26 @@ export async function fetchCodeScanAlerts({
       `Expected to find Account entity in jobState.`,
     );
   }
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(
-    GITHUB_REPO_TAGS_ARRAY,
-  );
-  if (!repoTags) {
-    throw new IntegrationMissingKeyError(
-      `Expected repos.ts to have set ${GITHUB_REPO_TAGS_ARRAY} in jobState.`,
-    );
-  }
 
-  await apiClient.iterateCodeScanningAlerts(repoTags, async (alerts) => {
+  await apiClient.iterateCodeScanningAlerts(async (alerts) => {
     const codeScanAlertsEntity = (await jobState.addEntity(
-      createCodeScanAlertsEntity(
-        alerts,
-        apiClient.graphQLClient.login || '',
-        config.githubApiBaseUrl,
-      ),
+      createCodeScanAlertsEntity(alerts),
     )) as CodeScanAlertsEntity;
 
-    await jobState.addRelationship(
-      createDirectRelationship({
-        _class: RelationshipClass.HAS,
-        from: accountEntity,
-        to: codeScanAlertsEntity,
-      }),
+    await jobState.iterateEntities<RepoEntity>(
+      { _type: GithubEntities.GITHUB_REPO._type },
+      async (repoEntity) => {
+        if (repoEntity.displayName === codeScanAlertsEntity.repository) {
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.HAS,
+              from: repoEntity,
+              to: codeScanAlertsEntity,
+            }),
+          );
+        }
+      },
     );
-
-    /*
-    //for every org code scanner alert, add a USES relationship for all repos with access to secret
-    if (alerts) {
-      for (const repoTag of alerts.repos) {
-        await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.USES,
-            fromType: GithubEntities.GITHUB_REPO._type,
-            toType: GithubEntities.GITHUB_ORG_SECRET._type,
-            fromKey: repoTag._key,
-            toKey: secretEntity._key,
-          }),
-        );
-      }
-    }
-    */
   });
 }
 
@@ -91,7 +68,7 @@ export const codeScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
     ],
     relationships: [
       {
-        _type: GITHUB_FINDING_ALERT_RULE_RELATIONSHIP_TYPE,
+        _type: GITHUB_REPO_FINDING_RELATIONSHIP_TYPE,
         sourceType: GithubEntities.GITHUB_REPO._type,
         _class: RelationshipClass.HAS,
         targetType: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._type,

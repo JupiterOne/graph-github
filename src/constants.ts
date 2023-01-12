@@ -53,12 +53,12 @@ export const GithubEntities = {
     },
   },
   GITHUB_CODE_SCANNER_ALERTS: {
-    _type: 'github_finding',
+    _type: 'github_code_finding',
     _class: ['Finding'],
     schema: {
       additionalProperties: true,
       properties: {
-        _type: { const: 'github_finding' },
+        _type: { const: 'github_code_finding' },
         name: { type: 'string' },
         displayName: { type: 'string' },
         severity: { type: 'string' },
@@ -76,6 +76,7 @@ export const GithubEntities = {
         'severity',
         'state',
         'displayName',
+        'category',
         'name',
         'weblink',
         'createdOn',

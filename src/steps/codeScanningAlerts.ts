@@ -9,7 +9,7 @@ import {
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import { AccountEntity, CodeScanAlertsEntity, RepoEntity } from '../types';
+import { AccountEntity, CodeScanAlertsEntity } from '../types';
 import {
   GithubEntities,
   GITHUB_REPO_FINDING_RELATIONSHIP_TYPE,

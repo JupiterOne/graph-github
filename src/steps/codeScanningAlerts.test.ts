@@ -48,13 +48,8 @@ test('fetchCodeScanningAlerts exec handler', async () => {
   );
 
   // relationships
-  const accountHasOrgSecretRels = collectedRelationships.filter(
+  const repoFindings = collectedRelationships.filter(
     (e) => e._type === GITHUB_REPO_FINDING_RELATIONSHIP_TYPE,
   );
-  expect(accountHasOrgSecretRels.length).toBeGreaterThan(0);
-
-  const repoUsesOrgSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_FINDING_RELATIONSHIP_TYPE,
-  );
-  expect(repoUsesOrgSecretRels.length).toBeGreaterThan(0);
+  expect(repoFindings.length).toBeGreaterThan(0);
 });

@@ -127,6 +127,16 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   return appEntity;
 }
 
+const numericSeverity = {
+  critical: 5,
+  high: 4,
+  medium: 3,
+  low: 2,
+  warning: 1,
+  error: 1,
+  note: 1,
+};
+
 export function createCodeScanAlertsEntity(
   data: CodeScanningAlertsQueryResponse,
 ): CodeScanAlertsEntity {
@@ -139,12 +149,15 @@ export function createCodeScanAlertsEntity(
     displayName: data.rule.name || '',
     summary: data.rule.description || '',
     status: data.state,
+    open: data.state === 'open',
     severity: data.rule.security_severity_level || '',
+    numericSeverity:
+      numericSeverity[data.rule.security_severity_level || 'note'],
     priority: data.rule.severity || '',
     category: 'application',
     state: data.state,
     weblink: data.html_url,
-    createdOn: data.created_at,
+    createdOn: parseTimePropertyValue(data.created_at),
     dismissedOn: data.dismissed_at,
     fixedOn: data.fixed_at,
     toolName: data.tool.name || '',
@@ -154,7 +167,6 @@ export function createCodeScanAlertsEntity(
     repositoryName: data.repository.name || '',
     path: data.most_recent_instance.location?.path || '',
   };
-
   return codeScanAlertsEntity;
 }
 

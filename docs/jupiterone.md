@@ -156,7 +156,7 @@ The following entities are created:
 | CVE                            | `cve`                           | `Vulnerability` |
 | CWE                            | `cwe`                           | `Weakness`      |
 | GitHub Branch Protection Rules | `github_branch_protection_rule` | `Rule`          |
-| GitHub Code Scanning Alerts    | `github_code_finding`           | `Finding`       |
+| GitHub Code Scanning Alerts    | `github_finding`                | `Finding`       |
 | GitHub Env Secret              | `github_env_secret`             | `Secret`        |
 | GitHub Environment             | `github_environment`            | `Configuration` |
 | GitHub Issue                   | `github_issue`                  | `Issue`         |
@@ -164,7 +164,6 @@ The following entities are created:
 | GitHub Pull Request            | `github_pullrequest`            | `PR`            |
 | GitHub Repo Secret             | `github_repo_secret`            | `Secret`        |
 | GitHub Team                    | `github_team`                   | `UserGroup`     |
-| GitHub Vulnerability Alerts    | `github_finding`                | `Finding`       |
 | Github App                     | `github_app`                    | `Application`   |
 | Github Repo                    | `github_repo`                   | `CodeRepo`      |
 | Github User                    | `github_user`                   | `User`          |
@@ -191,7 +190,7 @@ The following relationships are created:
 | `github_repo`         | **ALLOWS**            | `github_user`                   |
 | `github_repo`         | **HAS**               | `github_branch_protection_rule` |
 | `github_repo`         | **HAS**               | `github_environment`            |
-| `github_repo`         | **HAS**               | `github_code_finding`           |
+| `github_repo`         | **HAS**               | `github_finding`                |
 | `github_repo`         | **HAS**               | `github_issue`                  |
 | `github_repo`         | **HAS**               | `github_pullrequest`            |
 | `github_repo`         | **HAS**               | `github_repo_secret`            |

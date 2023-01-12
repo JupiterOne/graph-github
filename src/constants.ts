@@ -63,6 +63,7 @@ export const GithubEntities = {
         displayName: { type: 'string' },
         severity: { type: 'string' },
         priority: { type: 'string' },
+        category: { const: 'application' },
         state: { type: 'string' },
         webLink: { type: 'string' },
         createdOn: { type: 'number' },

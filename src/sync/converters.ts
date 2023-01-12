@@ -141,6 +141,7 @@ export function createCodeScanAlertsEntity(
     status: data.state,
     severity: data.rule.security_severity_level || '',
     priority: data.rule.severity || '',
+    category: 'application',
     state: data.state,
     weblink: data.html_url,
     createdOn: data.created_at,

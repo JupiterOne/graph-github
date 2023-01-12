@@ -38,20 +38,19 @@ export async function fetchCodeScanAlerts({
       createCodeScanAlertsEntity(alerts),
     )) as CodeScanAlertsEntity;
 
-    await jobState.iterateEntities<RepoEntity>(
-      { _type: GithubEntities.GITHUB_REPO._type },
-      async (repoEntity) => {
-        if (repoEntity.displayName === codeScanAlertsEntity.repository) {
-          await jobState.addRelationship(
-            createDirectRelationship({
-              _class: RelationshipClass.HAS,
-              from: repoEntity,
-              to: codeScanAlertsEntity,
-            }),
-          );
-        }
-      },
+    const repoEntity = await jobState.findEntity(
+      codeScanAlertsEntity.repositoryId,
     );
+
+    if (repoEntity) {
+      await jobState.addRelationship(
+        createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          from: repoEntity,
+          to: codeScanAlertsEntity,
+        }),
+      );
+    }
   });
 }
 

@@ -16,6 +16,7 @@ describe('getStepStartStates', () => {
         repoSecrets: false,
         dependabotAlerts: true,
         repoDiscussions: true,
+        codeScanningAlerts: false,
       });
     const context = {
       instance: {
@@ -44,6 +45,7 @@ describe('getStepStartStates', () => {
         repoSecrets: false,
         dependabotAlerts: true,
         repoDiscussions: true,
+        codeScanningAlerts: false,
       });
 
     const context = {
@@ -73,6 +75,7 @@ describe('getStepStartStates', () => {
         repoSecrets: false,
         dependabotAlerts: false,
         repoDiscussions: true,
+        codeScanningAlerts: false,
       });
 
     const context = {
@@ -104,6 +107,7 @@ describe('getStepStartStates', () => {
         orgSecrets: false,
         repoSecrets: false,
         dependabotAlerts: false,
+        codeScanningAlerts: false,
       })
       .mockResolvedValueOnce({
         // tested permissions
@@ -116,6 +120,7 @@ describe('getStepStartStates', () => {
         orgSecrets: false,
         repoSecrets: false,
         dependabotAlerts: false,
+        codeScanningAlerts: false,
       })
       .mockResolvedValueOnce({
         // tested permissions
@@ -128,6 +133,7 @@ describe('getStepStartStates', () => {
         orgSecrets: false,
         repoSecrets: false,
         dependabotAlerts: false,
+        codeScanningAlerts: false,
       });
 
     const states = await getStepStartStates({

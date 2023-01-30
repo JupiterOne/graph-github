@@ -322,8 +322,8 @@ export function toBranchProtectionEntity(
     entityData: {
       source: data,
       assign: {
-        _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
-        _type: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+        _class: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._class,
+        _type: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
         _key: `github_${data.id}`,
         webLink: apiUrlToWebLink(
           baseUrl,

@@ -2,7 +2,7 @@ import {
   PullRequestResponse,
   VulnerabilityAlertResponse,
 } from '../client/GraphQLClient';
-import { CodeScanningAlertsQueryResponse } from '../client/RESTClient/types';
+import { CodeScanningAlertQueryResponse } from '../client/RESTClient/types';
 
 export function buildVulnAlertRecommendation(
   alert: VulnerabilityAlertResponse,
@@ -26,10 +26,10 @@ export function buildVulnAlertId(alert: VulnerabilityAlertResponse) {
   return `ghva_${alert.repository.nameWithOwner}_${alert.id}`;
 }
 
-export function buildCodeScanningAlertId(
-  alert: CodeScanningAlertsQueryResponse,
+export function buildCodeScanningFindingKey(
+  alert: CodeScanningAlertQueryResponse,
 ) {
-  return `ghva_${alert.repository.name}_${alert.number}`;
+  return `ghcsa_${alert.repository.full_name}_${alert.number}`;
 }
 
 /**

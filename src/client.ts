@@ -30,7 +30,7 @@ import {
   BranchProtectionRuleResponse,
 } from './client/GraphQLClient';
 import {
-  CodeScanningAlertsQueryResponse,
+  CodeScanningAlertQueryResponse,
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
@@ -486,18 +486,18 @@ export class APIClient {
   }
 
   /**
-   * Iterates each Github organization code scanning alerts.
+   * Iterates each GitHub organization code scanning alerts.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateCodeScanningAlerts(
-    iteratee: ResourceIteratee<CodeScanningAlertsQueryResponse>,
+    iteratee: ResourceIteratee<CodeScanningAlertQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     if (this.scopes.codeScanningAlerts) {
-      const codeScanningAlerts: CodeScanningAlertsQueryResponse[] =
+      const codeScanningAlerts: CodeScanningAlertQueryResponse[] =
         await this.graphQLClient.getCodeScanningAlerts();
 
       for (const alert of codeScanningAlerts) {

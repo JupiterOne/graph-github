@@ -24,7 +24,6 @@ import {
   AccountEntity,
   AccountType,
   AppEntity,
-  CodeScanAlertsEntity,
   EnvironmentEntity,
   IdEntityMap,
   IssueEntity,
@@ -60,7 +59,7 @@ import {
 } from '../client/GraphQLClient';
 import {
   OrgAppQueryResponse,
-  CodeScanningAlertsQueryResponse,
+  CodeScanningAlertQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
 } from '../client/RESTClient/types';
@@ -68,7 +67,7 @@ import {
 import { compact, last, omit, uniq } from 'lodash';
 import getCommitsToDestination from '../util/getCommitsToDestination';
 import {
-  buildCodeScanningAlertId,
+  buildCodeScanningFindingKey,
   buildVulnAlertId,
   buildVulnAlertRecommendation,
 } from './converterUtils';
@@ -137,37 +136,43 @@ const numericSeverity = {
   note: 1,
 };
 
-export function createCodeScanAlertsEntity(
-  data: CodeScanningAlertsQueryResponse,
-): CodeScanAlertsEntity {
-  const codeScanAlertsEntity: CodeScanAlertsEntity = {
-    _class: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._class,
-    _type: GithubEntities.GITHUB_CODE_SCANNER_ALERTS._type,
-    _key: buildCodeScanningAlertId(data),
-    number: data.number,
-    name: data.rule.id || '',
-    displayName: data.rule.name || '',
-    summary: data.rule.description || '',
-    status: data.state,
-    open: data.state === 'open',
-    severity: data.rule.security_severity_level || '',
-    numericSeverity:
-      numericSeverity[data.rule.security_severity_level || 'note'],
-    priority: data.rule.severity || '',
-    category: 'application',
-    state: data.state,
-    weblink: data.html_url,
-    createdOn: parseTimePropertyValue(data.created_at),
-    dismissedOn: data.dismissed_at,
-    fixedOn: data.fixed_at,
-    toolName: data.tool.name || '',
-    toolVersion: data.tool.version || '',
-    repository: data.repository.name || '',
-    repositoryId: data.repository.node_id || '',
-    repositoryName: data.repository.name || '',
-    path: data.most_recent_instance.location?.path || '',
-  };
-  return codeScanAlertsEntity;
+export function createCodeScanningFindingEntity(
+  data: CodeScanningAlertQueryResponse,
+) {
+  return createIntegrationEntity({
+    entityData: {
+      source: data,
+      assign: {
+        _class: GithubEntities.GITHUB_CODE_SCANNING_ALERT._class,
+        _type: GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
+        _key: buildCodeScanningFindingKey(data),
+        number: data.number,
+        name: data.rule.id || '',
+        displayName: data.rule.name || '',
+        summary: data.rule.description || '',
+        status: data.state,
+        open: data.state === 'open',
+        severity: data.rule.security_severity_level?.toLowerCase() || '',
+        numericSeverity:
+          numericSeverity[data.rule.security_severity_level || 'note'],
+        priority: data.rule.severity || '',
+        category: 'application',
+        state: data.state,
+        weblink: data.html_url,
+        createdOn: parseTimePropertyValue(data.created_at),
+        updatedOn: parseTimePropertyValue(data.updated_at),
+        dismissedOn: parseTimePropertyValue(data.dismissed_at),
+        // TODO: This should create a relationship
+        // dismissedBy: data.dismissed_by
+        fixedOn: parseTimePropertyValue(data.fixed_at),
+        dismissedReason: data.dismissed_reason,
+        dismissedComment: data.dismissed_comment,
+        toolName: data.tool.name || '',
+        toolVersion: data.tool.version || '',
+        path: data.most_recent_instance.location?.path || '',
+      },
+    },
+  });
 }
 
 export function toOrgSecretEntity(

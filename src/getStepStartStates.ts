@@ -28,7 +28,7 @@ export default async function getStepStartStates(
       disabled: !scopes.orgAdmin,
       disabledReason: DisabledStepReason.PERMISSION,
     },
-    ['fetch-codescanning-alerts']: {
+    ['fetch-code-scanning-alerts']: {
       disabled: !scopes.codeScanningAlerts,
       disabledReason: DisabledStepReason.PERMISSION,
     },

@@ -20,7 +20,7 @@ import {
   SecretQueryResponse,
   OrgSecretRepoQueryResponse,
   RepoEnvironmentQueryResponse,
-  CodeScanningAlertsQueryResponse,
+  CodeScanningAlertQueryResponse,
 } from './RESTClient/types';
 import {
   RepoEntity,
@@ -306,7 +306,7 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getCodeScanningAlerts(): Promise<CodeScanningAlertsQueryResponse[]> {
+  async getCodeScanningAlerts(): Promise<CodeScanningAlertQueryResponse[]> {
     try {
       const codeScanningAlerts = await this.v3.paginate(
         'GET /orgs/{org}/code-scanning/alerts',

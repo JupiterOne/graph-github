@@ -40,11 +40,11 @@ test('fetchCodeScanningAlerts exec handler', async () => {
   }).toMatchSnapshot();
 
   const codeScanningAlerts = collectedEntities.filter(
-    (e) => e._type === GithubEntities.GITHUB_CODE_SCANNER_ALERTS._type,
+    (e) => e._type === GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
   );
   expect(codeScanningAlerts.length).toBeGreaterThan(0);
   expect(codeScanningAlerts).toMatchGraphObjectSchema(
-    GithubEntities.GITHUB_CODE_SCANNER_ALERTS,
+    GithubEntities.GITHUB_CODE_SCANNING_ALERT,
   );
 
   // relationships

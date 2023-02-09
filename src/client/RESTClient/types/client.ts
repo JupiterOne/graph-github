@@ -14,7 +14,7 @@ export interface OrgSecretRepoQueryResponse {
   url: string;
 }
 
-export interface CodeScanningAlertsQueryResponse {
+export interface CodeScanningAlertQueryResponse {
   number: number;
   created_at: string;
   updated_at?: string | undefined;
@@ -22,6 +22,8 @@ export interface CodeScanningAlertsQueryResponse {
   state: string;
   fixed_at?: string | null | undefined;
   dismissed_at?: string | null | undefined;
+  dismissed_reason: 'false positive' | "won't fix" | 'used in tests' | null;
+  dismissed_comment?: string | null;
   rule: {
     id?: string | null | undefined;
     name?: string;
@@ -41,8 +43,9 @@ export interface CodeScanningAlertsQueryResponse {
     version?: string | null | undefined;
   };
   repository: {
-    node_id?: string | undefined;
-    name?: string | undefined;
+    node_id?: string; // The GraphQL identifier of the repo.
+    name?: string;
+    full_name?: string;
   };
   most_recent_instance: {
     location?: {

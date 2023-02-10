@@ -1,6 +1,5 @@
 import {
   createDirectRelationship,
-  IntegrationMissingKeyError,
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
@@ -8,8 +7,7 @@ import {
 
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { DATA_ACCOUNT_ENTITY } from './account';
-import { AccountEntity, CodeScanningFindingEntity } from '../types';
+import { CodeScanningFindingEntity } from '../types';
 import {
   GITHUB_REPO_HAS_CODE_SCANNING_FINDING,
   GithubEntities,
@@ -23,15 +21,6 @@ export async function fetchCodeScanAlerts({
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
-
-  const accountEntity = await jobState.getData<AccountEntity>(
-    DATA_ACCOUNT_ENTITY,
-  );
-  if (!accountEntity) {
-    throw new IntegrationMissingKeyError(
-      `Expected to find Account entity in jobState.`,
-    );
-  }
 
   await apiClient.iterateCodeScanningAlerts(async (alert) => {
     const codeScanningFinding = (await jobState.addEntity(
@@ -71,7 +60,7 @@ export const codeScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
       },
     ],
-    dependsOn: ['fetch-account', 'fetch-repos'],
+    dependsOn: ['fetch-repos'],
     executionHandler: fetchCodeScanAlerts,
   },
 ];

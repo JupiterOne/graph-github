@@ -11,7 +11,7 @@ if (process.env.LOAD_ENV) {
 
 // JupiterOne-Sandbox Account values
 const GITHUB_APP_ID = 278393;
-export const INSTALLATION_ID = 32841752;
+const INSTALLATION_ID = 32841752;
 //@octokit client instantiation requires a private RSA Key
 const APP_PRIVATE_KEY = getFakeRsaKey();
 

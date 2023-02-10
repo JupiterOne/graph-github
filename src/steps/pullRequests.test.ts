@@ -13,7 +13,7 @@ import {
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
-jest.setTimeout(30000);
+jest.setTimeout(20000);
 
 let recording: Recording;
 afterEach(async () => {
@@ -43,7 +43,7 @@ test('fetchPrs exec handler', async () => {
     collectedRelationships: collectedRelationships,
     encounteredTypes: encounteredTypes,
   }).toMatchSnapshot();
-
+  //  JUPITERONE_API_KEY=6a871d80f5054806bf0f114f075dac43e1079b41e1348baa5931363736303536333730333334 JUPITERONE_ACCOUNT=j1dev  j1-integration run --integrationInstanceId 1483f1e2-d6a7-466b-8a3a-1d6dd97f4373 --api-base-url https://api.dev.jupiterone.io -d  --api-key 6a871d80f5054806bf0f114f075dac43e1079b41e1348baa5931363736303536333730333334
   const issues = collectedEntities.filter(
     (e) => e._type === GithubEntities.GITHUB_PR._type,
   );

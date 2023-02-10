@@ -5,7 +5,7 @@ import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import {
   GithubEntities,
-  GITHUB_REPO_FINDING_RELATIONSHIP_TYPE,
+  GITHUB_REPO_HAS_CODE_SCANNING_FINDING,
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
@@ -49,7 +49,7 @@ test('fetchCodeScanningAlerts exec handler', async () => {
 
   // relationships
   const repoFindings = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_FINDING_RELATIONSHIP_TYPE,
+    (e) => e._type === GITHUB_REPO_HAS_CODE_SCANNING_FINDING,
   );
   expect(repoFindings.length).toBeGreaterThan(0);
 });

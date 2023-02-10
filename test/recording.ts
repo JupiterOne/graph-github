@@ -24,6 +24,7 @@ export function setupGithubRecording(
     options: {
       mode: recordingEnabled ? 'record' : 'replay',
       recordFailedRequests: true,
+      logLevel: 'silent',
       ...input.options,
     },
   });

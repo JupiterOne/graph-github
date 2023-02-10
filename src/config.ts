@@ -13,10 +13,7 @@ import { URL } from 'url';
  * integration for a specific account in the data provider.
  *
  * When executing the integration in a development environment, these values may
- * be provided in a `.env` file with environment variables. For example:
- *
- * - `CLIENT_ID=123` becomes `instance.config.clientId = '123'`
- * - `CLIENT_SECRET=abc` becomes `instance.config.clientSecret = 'abc'`
+ * be provided in a `.env` file with environment variables.
  *
  * Environment variables are NOT used when the integration is executing in a
  * managed environment. For example, in JupiterOne, users configure

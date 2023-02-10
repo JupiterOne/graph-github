@@ -162,6 +162,7 @@ The following entities are created:
 | GitHub Environment             | `github_environment`            | `Configuration` |
 | GitHub Issue                   | `github_issue`                  | `Issue`         |
 | GitHub Org Secret              | `github_org_secret`             | `Secret`        |
+| GitHub Outside Collaborator    | `github_user`                   | `User`          |
 | GitHub Pull Request            | `github_pullrequest`            | `PR`            |
 | GitHub Repo Secret             | `github_repo_secret`            | `Secret`        |
 | GitHub Team                    | `github_team`                   | `UserGroup`     |
@@ -189,6 +190,7 @@ The following relationships are created:
 | `github_finding`      | **IS**                | `cve`                           |
 | `github_pullrequest`  | **CONTAINS**          | `github_pullrequest`            |
 | `github_repo`         | **ALLOWS**            | `github_team`                   |
+| `github_repo`         | **ALLOWS**            | `github_user`                   |
 | `github_repo`         | **ALLOWS**            | `github_user`                   |
 | `github_repo`         | **HAS**               | `github_branch_protection_rule` |
 | `github_repo`         | **HAS**               | `github_code_scanning_finding`  |

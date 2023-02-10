@@ -617,7 +617,6 @@ export class APIClient {
       myPermissions = permissions;
       tokenExpires = parseTimePropertyValue(expiresAt) || 0;
     } catch (err) {
-      console.trace(err);
       throw new IntegrationProviderAuthenticationError({
         cause: err,
         endpoint: err.response?.url,

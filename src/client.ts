@@ -497,12 +497,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.codeScanningAlerts) {
-      const codeScanningAlerts: CodeScanningAlertQueryResponse[] =
-        await this.graphQLClient.getCodeScanningAlerts();
-
-      for (const alert of codeScanningAlerts) {
-        await iteratee(alert);
-      }
+      await this.graphQLClient.getCodeScanningAlerts(iteratee);
     }
   }
 

@@ -127,13 +127,21 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
 }
 
 const numericSeverity = {
-  critical: 5,
-  high: 4,
-  medium: 3,
-  low: 2,
-  warning: 1,
-  error: 1,
-  note: 1,
+  critical: 10,
+  high: 8,
+  medium: 6,
+  low: 4,
+  informational: 2,
+  none: 0,
+};
+
+const severityToPriorityMap = {
+  critical: 'critical',
+  high: 'high',
+  error: 'medium',
+  warning: 'low',
+  note: 'info',
+  unknown: 'unknown',
 };
 
 export function createCodeScanningFindingEntity(
@@ -147,15 +155,23 @@ export function createCodeScanningFindingEntity(
         _type: GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
         _key: buildCodeScanningFindingKey(data),
         number: data.number,
-        name: data.rule.id || '',
-        displayName: data.rule.name || '',
-        summary: data.rule.description || '',
+        name: data.rule?.name,
+        displayName: data.rule?.name,
+        summary: data.rule?.description,
         status: data.state,
         open: data.state === 'open',
-        severity: data.rule.security_severity_level?.toLowerCase() || '',
+        severity:
+          data.rule?.security_severity_level?.toLowerCase() ?? 'unknown',
         numericSeverity:
-          numericSeverity[data.rule.security_severity_level || 'note'],
-        priority: data.rule.severity || '',
+          numericSeverity[
+            data.rule.security_severity_level?.toLowerCase() ??
+              numericSeverity.none
+          ] ?? numericSeverity.none,
+        priority:
+          severityToPriorityMap[
+            data.rule?.severity?.toLowerCase() ?? severityToPriorityMap.unknown
+          ],
+        alertSeverity: data.rule?.severity?.toLowerCase(),
         category: 'application',
         state: data.state,
         weblink: data.html_url,
@@ -167,9 +183,10 @@ export function createCodeScanningFindingEntity(
         fixedOn: parseTimePropertyValue(data.fixed_at),
         dismissedReason: data.dismissed_reason,
         dismissedComment: data.dismissed_comment,
-        toolName: data.tool.name || '',
-        toolVersion: data.tool.version || '',
-        path: data.most_recent_instance.location?.path || '',
+        toolName: data.tool?.name,
+        toolVersion: data.tool?.version,
+        path: data.most_recent_instance?.location?.path,
+        ruleTags: data.rule?.tags,
       },
     },
   });

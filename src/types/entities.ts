@@ -255,6 +255,7 @@ export interface VulnerabilityAlertEntity extends Entity {
   recommendation;
   open;
   references;
+  public;
   weblink;
   createdOn;
   dismissedOn;

@@ -27,16 +27,16 @@ export interface CodeScanningAlertQueryResponse {
   rule: {
     id?: string | null | undefined;
     name?: string;
+    /**
+     * The severity of the alert
+     */
     severity?: string | null;
     description?: string;
     tags?: Array<string> | null | undefined;
-    security_severity_level?:
-      | 'low'
-      | 'medium'
-      | 'high'
-      | 'critical'
-      | null
-      | undefined;
+    /**
+     * The security severity of the alert.
+     */
+    security_severity_level?: 'low' | 'medium' | 'high' | 'critical' | null;
   };
   tool: {
     name?: string | undefined;

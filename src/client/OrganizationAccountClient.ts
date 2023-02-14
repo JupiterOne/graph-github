@@ -22,12 +22,7 @@ import {
   RepoEnvironmentQueryResponse,
   CodeScanningAlertQueryResponse,
 } from './RESTClient/types';
-import {
-  RepoEntity,
-  ReposCompareCommitsResponseItem,
-  DiffFiles,
-  ReposListCommitsResponseItem,
-} from '../types';
+import { RepoEntity } from '../types';
 import { request } from '@octokit/request';
 import { ResourceIteratee } from '../client';
 import {
@@ -306,21 +301,24 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getCodeScanningAlerts(): Promise<CodeScanningAlertQueryResponse[]> {
+  async getCodeScanningAlerts(
+    iteratee: ResourceIteratee<CodeScanningAlertQueryResponse>,
+  ): Promise<void> {
     try {
-      const codeScanningAlerts = await this.v3.paginate(
-        'GET /orgs/{org}/code-scanning/alerts',
+      for await (const response of this.v3.paginate.iterator(
+        this.v3.rest.codeScanning.listAlertsForOrg,
         {
           org: this.login,
           per_page: 100,
         },
-        (response) => {
-          this.logger.info('Fetched page of code scanning alerts');
-          this.v3RateLimitConsumed++;
-          return response.data;
-        },
-      );
-      return codeScanningAlerts || [];
+      )) {
+        this.logger.info('Fetched page of code scanning alerts');
+        this.v3RateLimitConsumed++;
+
+        for (const alert of response.data) {
+          await iteratee(alert);
+        }
+      }
     } catch (err) {
       this.logger.warn(
         'Error while attempting to ingest organization code scanning alerts',
@@ -514,101 +512,9 @@ export default class OrganizationAccountClient {
    * Helper functions
    */
 
-  async getComparison(
-    account: string,
-    repository: string,
-    base: string,
-    head: string,
-  ): Promise<ReposCompareCommitsResponseItem> {
-    try {
-      const comparison = (
-        await this.v3.repos.compareCommits({
-          owner: account,
-          repo: repository,
-          base,
-          head,
-        })
-      ).data;
-
-      this.v3RateLimitConsumed++;
-
-      return comparison;
-    } catch (err) {
-      this.logger.error({ err }, 'repos.compareCommits failed');
-
-      throw err;
-    }
-  }
-
-  // This is sometimes used by CM bot, but not in the actual integraiton.
-  async isEmptyMergeCommit(
-    account: string,
-    repository: string,
-    commit: ReposListCommitsResponseItem,
-  ): Promise<boolean> {
-    if (commit.parents.length !== 2) {
-      return false;
-    }
-
-    // Check to see if this is a simple merge where there were no parallel changes
-    // in master since the branch being merged was created
-    const diffToMergedChanges = await this.getComparison(
-      account,
-      repository,
-      commit.parents[1].sha,
-      commit.sha,
-    );
-    if (!diffToMergedChanges.files || diffToMergedChanges.files.length === 0) {
-      return true;
-    }
-
-    // Try to detect empty merges in the case of concurrent changes in master and
-    // the branch. If the changes between the branch and the latest master commit
-    // are the same as between the merge commit and the latest in master, then the
-    // merge commit did not try to sneak in any extra changes.
-    const diffMergeToMaster = await this.getComparison(
-      account,
-      repository,
-      commit.parents[0].sha,
-      commit.sha,
-    );
-    const diffBranchToMaster = await this.getComparison(
-      account,
-      repository,
-      commit.parents[0].sha,
-      commit.parents[1].sha,
-    );
-    if (
-      diffMergeToMaster.files &&
-      diffBranchToMaster.files &&
-      this.diffsEqual(diffMergeToMaster.files, diffBranchToMaster.files)
-    ) {
-      return true;
-    }
-
-    return false;
-  }
-
-  private diffsEqual(a: DiffFiles[], b: DiffFiles[]): boolean {
-    if (a.length !== b.length) {
-      return false;
-    }
-
-    const aSorted = this.sortFiles(a);
-    const bSorted = this.sortFiles(b);
-
-    return aSorted.reduce((equal: boolean, file, index) => {
-      return equal && file.patch === bSorted[index].patch;
-    }, true);
-  }
-
-  private sortFiles(files: DiffFiles[]): DiffFiles[] {
-    return files.sort((x, y) => (x.sha > y.sha ? 1 : -1));
-  }
-
   private sanitizeLastExecutionTime(lastExecutionTime: string): string {
     // defensive programming just in case of bad code changes later
-    // Github expects the query string for the updated parameter to be in format 'YYYY-MM-DD'.
+    // GitHub expects the query string for the updated parameter to be in format 'YYYY-MM-DD'.
     // It will also take a full Date.toIsoString output with time.
     // Examples: 2011-10-05 or 2011-10-05T14:48:00.000Z
     // It will NOT behave properly with a msec-since-epoch integer.

@@ -341,6 +341,7 @@ export class APIClient {
         await this.graphQLClient.iterateRepoBranchProtectionRules(
           repoName,
           iteratee,
+          this.gheServerVersion,
         );
 
       this.logger.debug(

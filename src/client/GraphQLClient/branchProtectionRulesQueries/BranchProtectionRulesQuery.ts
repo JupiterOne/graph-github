@@ -7,7 +7,7 @@ import {
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import fragments from '../fragments';
 import { MAX_REQUESTS_LIMIT } from '../paginate';
-import utils from '../utils';
+import utils, { EnterpriseFeatures } from '../utils';
 
 interface QueryState extends BaseQueryState {
   isInitialQuery?: boolean;
@@ -16,12 +16,82 @@ interface QueryState extends BaseQueryState {
 export type QueryParams = {
   repoName: string;
   repoOwner: string;
+  gheServerVersion?: string;
+};
+
+interface VersionSafeFragments {
+  additionalFields: string[];
+}
+
+/**
+ * Depending on the version of GHE Server, provide a supported query.
+ * @param gheServerVersion
+ */
+const buildVersionSafeFragments = (
+  gheServerVersion?: string,
+): VersionSafeFragments => {
+  const fragments: VersionSafeFragments = {
+    additionalFields: [],
+  };
+
+  if (
+    utils.isSupported(
+      EnterpriseFeatures.BRANCH_PROTECTION_RULES_BLOCKS_CREATIONS_FIELD,
+      gheServerVersion,
+    )
+  ) {
+    fragments.additionalFields.push('blocksCreations');
+  }
+
+  const isAppFragmentSupported = utils.isSupported(
+    EnterpriseFeatures.BRANCH_PROTECTION_RULES_APP_MEMBER,
+    gheServerVersion,
+  );
+  const actorQueryWithAppFragment = getActorQuery([
+    `... on App {
+        id
+        name
+        databaseId
+      }`,
+  ]);
+  const actorQuery = isAppFragmentSupported
+    ? actorQueryWithAppFragment
+    : getActorQuery();
+
+  fragments.additionalFields.push(
+    `bypassForcePushAllowances(first: $maxLimit) {
+        nodes {
+          ${actorQuery}
+        }
+      }
+      bypassPullRequestAllowances(first: $maxLimit) {
+        nodes {
+          ${actorQuery}
+        }
+      }
+      pushAllowances(first: $maxLimit) {
+        nodes {
+          ${actorQueryWithAppFragment}
+        }
+      }
+      reviewDismissalAllowances(first: $maxLimit)
+        nodes {
+          ${actorQuery}
+        }
+      }`,
+  );
+
+  return fragments;
 };
 
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
   queryParams,
   queryState,
 ): ExecutableQuery => {
+  const versionSafeFragments = buildVersionSafeFragments(
+    queryParams.gheServerVersion,
+  );
+
   const query = `
       query (
         $repoName: String!
@@ -41,7 +111,6 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
                 isAdminEnforced
                 allowsForcePushes
                 allowsDeletions
-                blocksCreations
                 requiresConversationResolution
                 pattern
                 allowsDeletions
@@ -62,26 +131,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
                     name
                   }
                 }
-                bypassForcePushAllowances(first: $maxLimit) {
-                  nodes {
-                    ${actorQuery}
-                  }
-                }
-                bypassPullRequestAllowances(first: $maxLimit) {
-                  nodes {
-                    ${actorQuery}
-                  }
-                }
-                pushAllowances(first: $maxLimit) {
-                  nodes {
-                    ${actorQuery}
-                  }
-                }
-                reviewDismissalAllowances(first: $maxLimit) {
-                  nodes {
-                    ${actorQuery}
-                  }
-                }
+                ${versionSafeFragments.additionalFields.join('\n')}
               }
             }
           }
@@ -102,24 +152,20 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
-const actorQuery = `
-    actor {
-      __typename
-      ... on App {
-        id
-        name
-        databaseId
-      }
-      ... on Team {
-        id
-        name
-      }
-      ... on User {
-        id
-        login
-        email
-      }
-    }`;
+const getActorQuery = (additionalFragments: string[] = []) => `
+  actor {
+    __typename
+    ... on Team {
+      id
+      name
+    }
+    ... on User {
+      id
+      login
+      email
+    }
+    ${additionalFragments.join('\n')}
+  }`;
 
 const processResponseData: ProcessResponse<
   BranchProtectionRuleResponse,

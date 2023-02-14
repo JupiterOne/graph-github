@@ -395,6 +395,7 @@ export class GitHubGraphQLClient {
   public async iterateRepoBranchProtectionRules(
     login: string,
     repoName: string,
+    gheServerVersion: string | undefined,
     iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);

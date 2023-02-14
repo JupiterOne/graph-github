@@ -289,7 +289,6 @@ export default class OrganizationAccountClient {
           per_page: 100,
         },
         (response) => {
-          this.logger.info('Fetched page of org secrets');
           this.v3RateLimitConsumed++;
           return response.data;
         },
@@ -312,7 +311,6 @@ export default class OrganizationAccountClient {
           per_page: 100,
         },
       )) {
-        this.logger.info('Fetched page of code scanning alerts');
         this.v3RateLimitConsumed++;
 
         for (const alert of response.data) {
@@ -339,7 +337,6 @@ export default class OrganizationAccountClient {
           per_page: 100,
         },
         (response) => {
-          this.logger.info('Fetched page of repos for a secret');
           this.v3RateLimitConsumed++;
           return response.data;
         },
@@ -364,7 +361,6 @@ export default class OrganizationAccountClient {
           per_page: 100,
         },
         (response) => {
-          this.logger.info('Fetched page of secrets for a repo');
           this.v3RateLimitConsumed++;
           return response.data;
         },
@@ -400,7 +396,6 @@ export default class OrganizationAccountClient {
           per_page: 100,
         },
         (response) => {
-          this.logger.info('Fetched page of environments for a repo');
           this.v3RateLimitConsumed++;
           return response.data;
         },
@@ -439,7 +434,6 @@ export default class OrganizationAccountClient {
           per_page: 100,
         },
         (response) => {
-          this.logger.info('Fetched page of secrets for a repo environment');
           this.v3RateLimitConsumed++;
           return response?.data;
         },

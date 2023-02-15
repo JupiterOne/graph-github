@@ -8,16 +8,17 @@ if (process.env.LOAD_ENV) {
     path: path.join(__dirname, '../.env'),
   });
 }
-const DEFAULT_GITHUB_APP_ID = 174703;
-const DEFAULT_INSTALLATION_ID = 23522163; // Ask for access to this Org
+
+// JupiterOne-Sandbox Account values
+const GITHUB_APP_ID = 278393;
+const INSTALLATION_ID = 32841752;
 //@octokit client instantiation requires a private RSA Key
-const DEFAULT_APP_PRIVATE_KEY = getFakeRsaKey();
+const APP_PRIVATE_KEY = getFakeRsaKey();
 
 export const integrationConfig: IntegrationConfig = {
-  githubAppId: Number(process.env.GITHUB_APP_ID) || DEFAULT_GITHUB_APP_ID,
-  githubAppPrivateKey: DEFAULT_APP_PRIVATE_KEY,
-  installationId:
-    Number(process.env.INSTALLATION_ID) || DEFAULT_INSTALLATION_ID,
+  githubAppId: Number(process.env.GITHUB_APP_ID) || GITHUB_APP_ID,
+  githubAppPrivateKey: APP_PRIVATE_KEY,
+  installationId: Number(process.env.INSTALLATION_ID) || INSTALLATION_ID,
   githubAppDefaultLogin: 'something', //can be set manually in tests
   githubApiBaseUrl: 'https://api.github.com',
 } as IntegrationConfig; // casting config instead of setting useRestForTeamRepos to imitate configs already in production

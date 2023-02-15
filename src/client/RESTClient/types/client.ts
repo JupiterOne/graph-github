@@ -14,6 +14,46 @@ export interface OrgSecretRepoQueryResponse {
   url: string;
 }
 
+export interface CodeScanningAlertQueryResponse {
+  number: number;
+  created_at: string;
+  updated_at?: string | undefined;
+  html_url: string;
+  state: string;
+  fixed_at?: string | null | undefined;
+  dismissed_at?: string | null | undefined;
+  dismissed_reason: 'false positive' | "won't fix" | 'used in tests' | null;
+  dismissed_comment?: string | null;
+  rule: {
+    id?: string | null | undefined;
+    name?: string;
+    /**
+     * The severity of the alert
+     */
+    severity?: string | null;
+    description?: string;
+    tags?: Array<string> | null | undefined;
+    /**
+     * The security severity of the alert.
+     */
+    security_severity_level?: 'low' | 'medium' | 'high' | 'critical' | null;
+  };
+  tool: {
+    name?: string | undefined;
+    version?: string | null | undefined;
+  };
+  repository: {
+    node_id?: string; // The GraphQL identifier of the repo.
+    name?: string;
+    full_name?: string;
+  };
+  most_recent_instance: {
+    location?: {
+      path?: string;
+    };
+  };
+}
+
 export interface OrgAppQueryResponse {
   id: string; //the installation id
   respository_selection: string;

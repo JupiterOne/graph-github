@@ -60,7 +60,7 @@ export async function fetchBranchProtectionRule({
           createDirectRelationship({
             _class: RelationshipClass.HAS,
             fromType: GithubEntities.GITHUB_REPO._type,
-            toType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+            toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
             fromKey: repoTag._key,
             toKey: branchProtectionRuleEntity._key,
           }),
@@ -177,8 +177,8 @@ export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
       entities: [
         {
           resourceName: 'GitHub Branch Protection Rules',
-          _type: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
-          _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
+          _type: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+          _class: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._class,
         },
       ],
       relationships: [
@@ -186,25 +186,25 @@ export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
           _type: GITHUB_REPO_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE,
           sourceType: GithubEntities.GITHUB_REPO._type,
           _class: RelationshipClass.HAS,
-          targetType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+          targetType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
         },
         {
           _type: GITHUB_REPO_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE,
           sourceType: GithubEntities.GITHUB_MEMBER._type,
           _class: RelationshipClass.OVERRIDES,
-          targetType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+          targetType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
         },
         {
           _type: GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
           sourceType: GithubEntities.GITHUB_TEAM._type,
           _class: RelationshipClass.OVERRIDES,
-          targetType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+          targetType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
         },
         {
           _type: GITHUB_REPO_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE,
           sourceType: GithubEntities.GITHUB_APP._type,
           _class: RelationshipClass.OVERRIDES,
-          targetType: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+          targetType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
         },
       ],
       dependsOn: ['fetch-repos', 'fetch-users', 'fetch-teams', 'fetch-apps'],

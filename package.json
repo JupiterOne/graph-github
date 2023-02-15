@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "j1-integration collect --disable-schema-validation",
-    "start:step": "j1-integration collect --step fetch-prs --disable-schema-validation --no-cache",
+    "start:step": "j1-integration collect --step fetch-codescanning-alerts --disable-schema-validation --no-cache",
     "graph": "j1-integration visualize",
     "graph:types": "j1-integration visualize-types",
     "graph:dependencies": "j1-integration visualize-dependencies",
@@ -41,17 +41,17 @@
     "@octokit/plugin-retry": "^3.0.9",
     "@octokit/plugin-throttling": "^3.6.2",
     "@octokit/request": "^5.6.3",
-    "@octokit/rest": "^18.12.0",
+    "@octokit/rest": "^19.0.3",
     "date-fns": "^2.29.3",
     "semver": "^7.3.7"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.18.0"
+    "@jupiterone/integration-sdk-core": "^8.30.2"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.18.0",
-    "@jupiterone/integration-sdk-dev-tools": "^8.18.0",
-    "@jupiterone/integration-sdk-testing": "^8.18.0",
+    "@jupiterone/integration-sdk-core": "^8.30.2",
+    "@jupiterone/integration-sdk-dev-tools": "^8.30.2",
+    "@jupiterone/integration-sdk-testing": "^8.30.2",
     "@types/lodash.omit": "^4.5.6",
     "@types/semver": "^7.3.13",
     "auto": "^10.36.5"

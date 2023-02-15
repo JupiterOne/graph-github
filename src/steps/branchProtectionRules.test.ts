@@ -44,12 +44,12 @@ test.skip('fetchBranchProtectionRules exec handler', async () => {
   }).toMatchSnapshot();
 
   const branchProtectionRules = collectedEntities.filter(
-    (e) => e._type === GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+    (e) => e._type === GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
   );
 
   expect(branchProtectionRules.length).toBeGreaterThan(0);
   expect(branchProtectionRules).toMatchGraphObjectSchema({
-    _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
+    _class: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._class,
   });
 
   // relationships

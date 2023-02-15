@@ -14,9 +14,11 @@ import { teamRepoSteps } from './teamRepos';
 import { teamMemberSteps } from './teamMembers';
 import { vulnerabilityAlertsSteps } from './vulnerabilityAlertsSteps';
 import { branchProtectionRulesSteps } from './branchProtectionRules';
+import { codeScanningAlertsSteps } from './codeScanningAlerts';
 
 const integrationSteps = [
   ...accountSteps,
+  ...codeScanningAlertsSteps,
   ...memberSteps,
   ...repoSteps,
   ...teamSteps,

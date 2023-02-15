@@ -99,6 +99,24 @@ export interface BranchProtectionRuleEntity extends Entity {
   requiredConversationResolution: boolean;
 }
 
+export interface CodeScanningFindingEntity extends Entity {
+  name: string;
+  displayName: string;
+  summary: string;
+  status: string;
+  severity: string;
+  priority: string;
+  state: string;
+  weblink: string;
+  createdOn: number | undefined;
+  dismissedOn?: number | null;
+  dismissedReason?: string;
+  dismissedComment?: string;
+  fixedOn?: number | null;
+  toolName: string;
+  toolVersion?: string;
+}
+
 export interface IssueEntity extends Entity {
   name: string;
   displayName: string;

@@ -59,6 +59,7 @@ import {
 } from '../client/GraphQLClient';
 import {
   OrgAppQueryResponse,
+  CodeScanningAlertQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
 } from '../client/RESTClient/types';
@@ -66,6 +67,7 @@ import {
 import { compact, last, omit, uniq } from 'lodash';
 import getCommitsToDestination from '../util/getCommitsToDestination';
 import {
+  buildCodeScanningFindingKey,
   buildVulnAlertId,
   buildVulnAlertRecommendation,
 } from './converterUtils';
@@ -122,6 +124,72 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   };
   setRawData(appEntity, { name: 'default', rawData: data });
   return appEntity;
+}
+
+const numericSeverity = {
+  critical: 10,
+  high: 8,
+  medium: 6,
+  low: 4,
+  informational: 2,
+  none: 0,
+};
+
+const severityToPriorityMap = {
+  critical: 'critical',
+  high: 'high',
+  error: 'medium',
+  warning: 'low',
+  note: 'info',
+  unknown: 'unknown',
+};
+
+export function createCodeScanningFindingEntity(
+  data: CodeScanningAlertQueryResponse,
+) {
+  return createIntegrationEntity({
+    entityData: {
+      source: data,
+      assign: {
+        _class: GithubEntities.GITHUB_CODE_SCANNING_ALERT._class,
+        _type: GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
+        _key: buildCodeScanningFindingKey(data),
+        number: data.number,
+        name: data.rule?.name,
+        displayName: data.rule?.name,
+        summary: data.rule?.description,
+        status: data.state,
+        open: data.state === 'open',
+        severity:
+          data.rule?.security_severity_level?.toLowerCase() ?? 'unknown',
+        numericSeverity:
+          numericSeverity[
+            data.rule.security_severity_level?.toLowerCase() ??
+              numericSeverity.none
+          ] ?? numericSeverity.none,
+        priority:
+          severityToPriorityMap[
+            data.rule?.severity?.toLowerCase() ?? severityToPriorityMap.unknown
+          ],
+        alertSeverity: data.rule?.severity?.toLowerCase(),
+        category: 'application',
+        state: data.state,
+        weblink: data.html_url,
+        createdOn: parseTimePropertyValue(data.created_at),
+        updatedOn: parseTimePropertyValue(data.updated_at),
+        dismissedOn: parseTimePropertyValue(data.dismissed_at),
+        // TODO: This should create a relationship
+        // dismissedBy: data.dismissed_by
+        fixedOn: parseTimePropertyValue(data.fixed_at),
+        dismissedReason: data.dismissed_reason,
+        dismissedComment: data.dismissed_comment,
+        toolName: data.tool?.name,
+        toolVersion: data.tool?.version,
+        path: data.most_recent_instance?.location?.path,
+        ruleTags: data.rule?.tags,
+      },
+    },
+  });
 }
 
 export function toOrgSecretEntity(
@@ -276,8 +344,8 @@ export function toBranchProtectionEntity(
     entityData: {
       source: data,
       assign: {
-        _class: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._class,
-        _type: GithubEntities.GITHUB_BRANCH_PROTECITON_RULE._type,
+        _class: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._class,
+        _type: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
         _key: `github_${data.id}`,
         webLink: apiUrlToWebLink(
           baseUrl,

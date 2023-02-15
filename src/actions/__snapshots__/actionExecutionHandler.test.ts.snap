@@ -17,7 +17,7 @@ Object {
               "login": "VDubber",
               "name": "Samuel Poulton",
             },
-            "authorAssociation": "MEMBER",
+            "authorAssociation": "CONTRIBUTOR",
             "baseRefName": "main",
             "baseRefOid": "ac54794815cba9b358fd062477ce7905ff7084c7",
             "baseRepository": Object {

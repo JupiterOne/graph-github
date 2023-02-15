@@ -60,6 +60,7 @@ you'll need to do the following:
       - Members: Read-only
       - Administration: Read-only
       - Secrets: Read-only (only name and creation date is collected)
+      - Events: Read-only
 
 4.  Note the App ID, and press the **Generate a private key** button. Move the
     `private-key.pem` file somewhere safe and note the complete path.

@@ -35,8 +35,7 @@ export const GithubEntities = {
       required: ['name', 'displayName', 'webLink', 'createdOn'],
     },
   },
-
-  GITHUB_BRANCH_PROTECITON_RULE: {
+  GITHUB_BRANCH_PROTECTION_RULE: {
     _type: 'github_branch_protection_rule',
     _class: ['Rule'],
     schema: {
@@ -232,6 +231,37 @@ export const GithubEntities = {
       required: ['webLink', 'displayName'],
     },
   },
+  GITHUB_CODE_SCANNING_ALERT: {
+    _type: 'github_code_scanning_finding',
+    _class: ['Finding'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_code_scanning_finding' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        severity: { type: 'string' },
+        priority: { type: 'string' },
+        category: { const: 'application' },
+        state: { type: 'string' },
+        webLink: { type: 'string' },
+        createdOn: { type: 'number' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: [
+        'severity',
+        'state',
+        'displayName',
+        'category',
+        'name',
+        'weblink',
+        'createdOn',
+      ],
+    },
+  },
   GITHUB_VULNERABILITY_ALERT: {
     _type: 'github_finding',
     _class: ['Finding'],
@@ -351,6 +381,10 @@ export const GITHUB_REPO_FINDING_RELATIONSHIP_TYPE = 'github_repo_has_finding';
 export const GITHUB_FINDING_CVE_RELATIONSHIP_TYPE = 'github_finding_is_cve';
 export const GITHUB_FINDING_CWE_RELATIONSHIP_TYPE =
   'github_finding_exploits_cwe';
+
+//code scanning alerts
+export const GITHUB_REPO_HAS_CODE_SCANNING_FINDING =
+  'github_repo_has_code_scanning_finding';
 
 //branch protection rules
 export const GITHUB_REPO_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE =

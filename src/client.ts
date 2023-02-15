@@ -30,6 +30,7 @@ import {
   BranchProtectionRuleResponse,
 } from './client/GraphQLClient';
 import {
+  CodeScanningAlertQueryResponse,
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
@@ -64,6 +65,7 @@ export class APIClient {
     orgAdmin: boolean;
     orgSecrets: boolean;
     repoAdmin: boolean;
+    codeScanningAlerts: boolean;
     repoSecrets: boolean;
     repoEnvironments: boolean;
     repoIssues: boolean;
@@ -485,6 +487,22 @@ export class APIClient {
   }
 
   /**
+   * Iterates each GitHub organization code scanning alerts.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateCodeScanningAlerts(
+    iteratee: ResourceIteratee<CodeScanningAlertQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.codeScanningAlerts) {
+      await this.graphQLClient.getCodeScanningAlerts(iteratee);
+    }
+  }
+
+  /**
    * Iterates the collaborators for a single repo.
    *
    * @param repoName name of the repository
@@ -595,7 +613,6 @@ export class APIClient {
       myPermissions = permissions;
       tokenExpires = parseTimePropertyValue(expiresAt) || 0;
     } catch (err) {
-      console.trace(err);
       throw new IntegrationProviderAuthenticationError({
         cause: err,
         endpoint: err.response?.url,
@@ -639,6 +656,7 @@ export class APIClient {
   private processScopes(perms: TokenPermissions) {
     if (!this.scopes) {
       this.scopes = {
+        codeScanningAlerts: false,
         orgAdmin: false,
         orgSecrets: false,
         repoAdmin: false,
@@ -739,6 +757,16 @@ export class APIClient {
         "Token does not have 'vulnerability_alerts' (aka dependabot alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
       );
       this.scopes.dependabotAlerts = false;
+    }
+
+    //ingesting codeScanning alerts requires scope security_events:read
+    if (['read', 'write'].includes(perms.security_events!)) {
+      this.scopes.codeScanningAlerts = true;
+    } else {
+      this.logger.info(
+        "Token does not have 'security_events' (aka codeScanning alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
+      );
+      this.scopes.codeScanningAlerts = false;
     }
 
     //ingesting github pages requires scope repo pages:read

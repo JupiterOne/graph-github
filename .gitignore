@@ -9,3 +9,4 @@ tsconfig.tsbuildinfo
 *.pem
 .DS_STORE
 .npmrc
+.vscode/*

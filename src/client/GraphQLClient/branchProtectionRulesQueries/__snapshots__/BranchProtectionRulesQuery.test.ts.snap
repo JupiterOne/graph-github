@@ -222,7 +222,7 @@ Object {
   }
         }
       }
-      reviewDismissalAllowances(first: $maxLimit)
+      reviewDismissalAllowances(first: $maxLimit) {
         nodes {
           
   actor {
@@ -484,7 +484,7 @@ bypassForcePushAllowances(first: $maxLimit) {
   }
         }
       }
-      reviewDismissalAllowances(first: $maxLimit)
+      reviewDismissalAllowances(first: $maxLimit) {
         nodes {
           
   actor {
@@ -754,7 +754,7 @@ bypassForcePushAllowances(first: $maxLimit) {
   }
         }
       }
-      reviewDismissalAllowances(first: $maxLimit)
+      reviewDismissalAllowances(first: $maxLimit) {
         nodes {
           
   actor {

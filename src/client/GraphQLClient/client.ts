@@ -402,7 +402,7 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await BranchProtectionRulesQuery.iterateBranchProtectionRules(
-        { repoOwner: login, repoName },
+        { repoOwner: login, repoName, gheServerVersion },
         executor,
         iteratee,
       ),

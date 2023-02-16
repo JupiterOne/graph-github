@@ -74,7 +74,7 @@ const buildVersionSafeFragments = (
           ${actorQueryWithAppFragment}
         }
       }
-      reviewDismissalAllowances(first: $maxLimit)
+      reviewDismissalAllowances(first: $maxLimit) {
         nodes {
           ${actorQuery}
         }

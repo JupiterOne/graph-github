@@ -13,15 +13,14 @@ import {
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
-jest.setTimeout(20000);
+jest.setTimeout(40000);
 
 let recording: Recording;
 afterEach(async () => {
   await recording.stop();
 });
 
-// TODO: enable support for jobState.getData
-test.skip('fetchBranchProtectionRules exec handler', async () => {
+test('fetchBranchProtectionRules exec handler', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
     name: 'branchProtectionRules',

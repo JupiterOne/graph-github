@@ -1,5 +1,6 @@
 import BranchProtectionRulesQuery from './BranchProtectionRulesQuery';
 import { branchProtectionRulesResponses } from './testResponses';
+import { validate } from '@octokit/graphql-schema';
 
 describe('BranchProtectionRulesQuery', () => {
   describe('#iterateBranchProtectionRules', () => {
@@ -31,6 +32,8 @@ describe('BranchProtectionRulesQuery', () => {
         expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
         expect(iteratee.mock.calls[1][0]).toMatchSnapshot();
         expect(execute).toHaveBeenCalledTimes(1);
+        expect(execute.mock.calls[0][0]).toHaveProperty('query');
+        expect(() => validate(execute.mock.calls[0][0].query)).not.toThrow();
         expect(execute.mock.calls[0][0]).toMatchSnapshot();
       }
     });

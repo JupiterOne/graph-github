@@ -13,6 +13,7 @@
     "access": "public"
   },
   "scripts": {
+    "eagleview": "LOAD_ENV=1 ts-node test/eagleview-debug.ts",
     "start": "j1-integration collect --disable-schema-validation",
     "start:step": "j1-integration collect --step fetch-codescanning-alerts --disable-schema-validation --no-cache",
     "graph": "j1-integration visualize",

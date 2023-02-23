@@ -7,6 +7,7 @@ import {
   Entity,
   IntegrationError,
   IntegrationExecutionContext,
+  IntegrationInstanceConfig,
 } from '@jupiterone/integration-sdk-core';
 import { IntegrationConfig } from '../config';
 
@@ -16,8 +17,9 @@ interface IntegrationPartialIngestAction {
   parameters: Record<string, any>;
 }
 
-export interface IntegrationActionExecutionContext<TConfig>
-  extends IntegrationExecutionContext<TConfig> {
+export interface IntegrationActionExecutionContext<
+  TConfig extends IntegrationInstanceConfig,
+> extends IntegrationExecutionContext<TConfig> {
   event: {
     accountId: string;
     integrationInstanceId: string;

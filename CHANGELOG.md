@@ -6,13 +6,60 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Added
+## 2.0.2 - 2023-02-23
+
+### Changed
+
+- Fixed type error seen in updated deployment
+- Re-enabled Branch Protection Rule test
+
+## 2.0.1 - 2023-02-17
+
+### Fixed
+
+- Branch Protection Rule query support for GitHub Enterprise versions 3.6.0 and
+  3.5.0 contained a bug and was fixed.
+
+## 2.0.0 - 2023-02-15
+
+### Added
+
+- New data collection step was added: Code Scanning Alerts
+
+The following entities were added:
+
+| Resources                   | Entity `_type`                 | Entity `_class` |
+| --------------------------- | ------------------------------ | --------------- |
+| GitHub Code Scanning Alerts | `github_code_scanning_finding` | `Finding`       |
+
+The following relationships were added:
+
+| Source Entity `_type` | Relationship `_class` | Target Entity `_type`          |
+| --------------------- | --------------------- | ------------------------------ |
+| `github_repo`         | **HAS**               | `github_code_scanning_finding` |
+
+## Changed
+
+- @octokit/rest was updated to v19.0.3
+- @jupiterone/integration-sdk-\* were updated to v8.30.2
+- Testing har and snap files now use JupiterOne-Sandbox GitHub organization
+
+## 1.23.5 - 2023-02-14
+
+### Added
+
+- Added Branch Protection Rule query support for GitHub Enterprise versions
+  3.6.0 and 3.5.0.
+
+## 1.23.4 - 2022-12-16
+
+### Added
 
 - Added `filesChangedCount` property to `github_pull_request`
 
 ## 1.23.2 - 2022-11-29
 
-## Changed
+### Changed
 
 - Add a buffer (of one polling interval) to the start datetime of PR ingestion.
   This will allow any missed updates to be re-queried and included in the next
@@ -20,7 +67,7 @@ and this project adheres to
 
 ## 1.23.1 - 2022-10-31
 
-## Changed
+### Changed
 
 - Updated permissions for branch protection rules step to include
   `repo discussions:read-only` to allow private repo rules to be ingested.

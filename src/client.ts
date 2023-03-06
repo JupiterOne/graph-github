@@ -7,7 +7,7 @@ import {
   parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
-import { IntegrationConfig } from './config';
+import { IntegrationConfig, Scopes } from './config';
 import {
   AccountType,
   EnvironmentEntity,
@@ -61,18 +61,7 @@ export class APIClient {
   restClient: Octokit;
   ghsToken: string;
   gheServerVersion?: string;
-  scopes: {
-    orgAdmin: boolean;
-    orgSecrets: boolean;
-    repoAdmin: boolean;
-    codeScanningAlerts: boolean;
-    repoSecrets: boolean;
-    repoEnvironments: boolean;
-    repoIssues: boolean;
-    dependabotAlerts: boolean;
-    repoPages: boolean;
-    repoDiscussions: boolean;
-  };
+  scopes: Scopes;
 
   readonly restApiUrl: string;
   readonly graphqlUrl: string;

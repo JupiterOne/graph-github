@@ -5,11 +5,12 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig, validateInvocation } from './config';
+import utils, { EnterpriseFeatures } from './client/GraphQLClient/utils';
 
 export default async function getStepStartStates(
   context: IntegrationExecutionContext<IntegrationConfig>,
 ): Promise<StepStartStates> {
-  const scopes = await validateInvocation(context);
+  const { scopes, gheServerVersion } = await validateInvocation(context);
 
   return {
     ['fetch-account']: { disabled: false },
@@ -29,8 +30,15 @@ export default async function getStepStartStates(
       disabledReason: DisabledStepReason.PERMISSION,
     },
     ['fetch-code-scanning-alerts']: {
-      disabled: !scopes.codeScanningAlerts,
-      disabledReason: DisabledStepReason.PERMISSION,
+      disabled:
+        !scopes.codeScanningAlerts ||
+        !utils.isSupported(
+          EnterpriseFeatures.LIST_CODE_SCANNING_ALERT_FOR_ORG,
+          gheServerVersion,
+        ),
+      disabledReason: !scopes.codeScanningAlerts
+        ? DisabledStepReason.PERMISSION
+        : DisabledStepReason.API_VERSION,
     },
     ['fetch-environments']: {
       disabled: !scopes.repoEnvironments,

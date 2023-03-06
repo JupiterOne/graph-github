@@ -110,18 +110,24 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   dependabotAlertSeverities: string[];
 }
 
-export async function validateInvocation(
-  context: IntegrationExecutionContext<IntegrationConfig>,
-): Promise<{
+export type Scopes = {
   codeScanningAlerts: boolean;
   orgAdmin: boolean;
   orgSecrets: boolean;
   repoAdmin: boolean;
   repoSecrets: boolean;
+  repoPages: boolean;
   repoEnvironments: boolean;
   repoIssues: boolean;
   dependabotAlerts: boolean;
   repoDiscussions: boolean;
+};
+
+export async function validateInvocation(
+  context: IntegrationExecutionContext<IntegrationConfig>,
+): Promise<{
+  scopes: Scopes;
+  gheServerVersion?: string;
 }> {
   const { config } = context.instance;
 
@@ -129,7 +135,11 @@ export async function validateInvocation(
 
   const apiClient = getOrCreateApiClient(config, context.logger);
   await apiClient.verifyAuthentication();
-  return apiClient.scopes;
+
+  return {
+    scopes: apiClient.scopes,
+    gheServerVersion: apiClient.gheServerVersion,
+  };
 }
 
 /**

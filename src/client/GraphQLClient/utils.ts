@@ -78,6 +78,10 @@ export enum EnterpriseFeatures {
   REPO_VULN_ALERT_FIELDS = '3.5.0', // fixReason, fixedAt, number, state were added
   BRANCH_PROTECTION_RULES_BLOCKS_CREATIONS_FIELD = '3.5.0',
   BRANCH_PROTECTION_RULES_APP_MEMBER = '3.6.0',
+  /**
+   * Docs link: https://docs.github.com/en/enterprise-server@3.5/rest/code-scanning#list-code-scanning-alerts-for-an-organization
+   */
+  LIST_CODE_SCANNING_ALERT_FOR_ORG = '3.5.0',
 }
 
 /**

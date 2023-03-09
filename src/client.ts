@@ -550,6 +550,7 @@ export class APIClient {
 
   public async iterateRepoVulnAlerts(
     repo: RepoEntity,
+    maxRequestLimit: number,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
   ) {
     if (!this.graphQLClient) {
@@ -564,6 +565,7 @@ export class APIClient {
         severities: this.config.dependabotAlertSeverities,
       },
       this.gheServerVersion,
+      maxRequestLimit,
     );
     this.logger.debug(
       { rateLimit },

@@ -183,6 +183,10 @@ export function sanitizeConfig(config: IntegrationConfig) {
     config.pullRequestMaxResourcesPerRepo ||
     process.env['PULL_REQUEST_MAX_RESOURCES_PER_REPO'];
 
+  config.dependabotAlertRequestLimit =
+    config.dependabotAlertRequestLimit ||
+    process.env['DEPENDABOT_ALERT_REQUEST_LIMIT'];
+
   if (config.enableDependabotAlerts) {
     config.dependabotAlertSeverities = config.dependabotAlertSeverities ?? [];
     config.dependabotAlertStates = config.dependabotAlertStates ?? [];

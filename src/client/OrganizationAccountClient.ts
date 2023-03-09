@@ -248,6 +248,7 @@ export default class OrganizationAccountClient {
     repoName: string,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
     filters: { severities: string[]; states: string[] },
+    maxRequestLimit: number,
     gheServerVersion?: string,
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateRepoVulnAlerts(
@@ -256,6 +257,7 @@ export default class OrganizationAccountClient {
       filters,
       gheServerVersion,
       iteratee,
+      maxRequestLimit,
     );
   }
 

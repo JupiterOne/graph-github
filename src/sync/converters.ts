@@ -159,6 +159,7 @@ export function createCodeScanningFindingEntity(
         displayName: data.rule?.name,
         summary: data.rule?.description,
         status: data.state?.toUpperCase(),
+        state: data.state?.toUpperCase(),
         open: data.state === 'open',
         severity:
           data.rule?.security_severity_level?.toUpperCase() ?? 'UNKNOWN',

@@ -136,12 +136,12 @@ const numericSeverity = {
 };
 
 const severityToPriorityMap = {
-  critical: 'critical',
-  high: 'high',
-  error: 'medium',
-  warning: 'low',
-  note: 'info',
-  unknown: 'unknown',
+  critical: 'CRITICAL',
+  high: 'HIGH',
+  error: 'MEDIUM',
+  warning: 'LOW',
+  note: 'INFO',
+  unknown: 'UNKNOWN',
 };
 
 export function createCodeScanningFindingEntity(
@@ -158,10 +158,11 @@ export function createCodeScanningFindingEntity(
         name: data.rule?.name,
         displayName: data.rule?.name,
         summary: data.rule?.description,
-        status: data.state,
+        status: data.state?.toUpperCase(),
+        state: data.state?.toUpperCase(),
         open: data.state === 'open',
         severity:
-          data.rule?.security_severity_level?.toLowerCase() ?? 'unknown',
+          data.rule?.security_severity_level?.toUpperCase() ?? 'UNKNOWN',
         numericSeverity:
           numericSeverity[
             data.rule.security_severity_level?.toLowerCase() ??
@@ -171,9 +172,8 @@ export function createCodeScanningFindingEntity(
           severityToPriorityMap[
             data.rule?.severity?.toLowerCase() ?? severityToPriorityMap.unknown
           ],
-        alertSeverity: data.rule?.severity?.toLowerCase(),
+        alertSeverity: data.rule?.severity?.toUpperCase(),
         category: 'application',
-        state: data.state,
         weblink: data.html_url,
         createdOn: parseTimePropertyValue(data.created_at),
         updatedOn: parseTimePropertyValue(data.updated_at),

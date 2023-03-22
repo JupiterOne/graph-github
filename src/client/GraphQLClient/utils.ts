@@ -75,7 +75,7 @@ const hasProperties = (object: any) => {
  */
 export enum EnterpriseFeatures {
   REPO_VULN_ALERT_STATE_ARG = '3.5.0',
-  REPO_VULN_ALERT_FIELDS = '3.5.0', // fixReason, fixedAt, number, state were added
+  REPO_VULN_ALERT_FIELDS = '3.5.0', // fixReason, number, state were added
   BRANCH_PROTECTION_RULES_BLOCKS_CREATIONS_FIELD = '3.5.0',
   BRANCH_PROTECTION_RULES_APP_MEMBER = '3.6.0',
   /**

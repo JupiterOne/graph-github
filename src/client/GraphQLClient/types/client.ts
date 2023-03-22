@@ -332,9 +332,8 @@ export interface VulnerabilityAlertResponse extends Node {
     login: string;
     email?: string;
   };
-  // fixReason, fixedAt, number, state added to GHE Server in version 3.5.0
+  // fixReason, number, state added to GHE Server in version 3.5.0
   fixReason?: string;
-  fixedAt?: string;
   number?: number;
   state?: RepositoryVulnerabilityAlertState;
   securityAdvisory?: {

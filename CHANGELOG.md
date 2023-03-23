@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.2.2 - 2023-03-23
+
+### Changed
+
+- **BREAKING**: The `fixReason` property has been removed from `github_finding`
+  entities. The `fixReason` field returned by GitHub's `vulnerabilityAlerts`
+  GraphQL API has been deprecated and is set to be removed at the end of
+  03-2023.
+
+- Revert changes released in v2.2.1. The `fixedOn` is _not_ being removed from
+  the GitHub API. Instead, the `fixReason` property is being removed.
+
 ## 2.2.1 - 2023-03-22
 
 ### Changed

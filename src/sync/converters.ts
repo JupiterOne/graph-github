@@ -552,7 +552,7 @@ export function toIssueEntity(
 
 /**
  * Maps response data to entity
- * Note: Fields state, fixReason, fixedOn, and number
+ * Note: Fields state, fixedOn, and number
  *       are not supported in GHE Server version <3.5.0.
  * @param data
  * @param baseUrl
@@ -598,7 +598,6 @@ export function createVulnerabilityAlertEntity(
         dismissedOn: parseTimePropertyValue(data.dismissedAt),
         dismisserLogin: data.dismisser?.login,
         dismissReason: data.dismissReason,
-        fixReason: data.fixReason,
         fixedOn: parseTimePropertyValue(data.fixedAt),
         number: data.number,
         databaseId: data.securityAdvisory?.databaseId,

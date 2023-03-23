@@ -261,7 +261,6 @@ export interface VulnerabilityAlertEntity extends Entity {
   dismissedOn;
   dismisserLogin;
   dismissReason;
-  fixReason;
   number;
   databaseId;
   ghsaId;

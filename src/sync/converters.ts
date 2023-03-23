@@ -599,6 +599,7 @@ export function createVulnerabilityAlertEntity(
         dismisserLogin: data.dismisser?.login,
         dismissReason: data.dismissReason,
         fixReason: data.fixReason,
+        fixedOn: parseTimePropertyValue(data.fixedAt),
         number: data.number,
         databaseId: data.securityAdvisory?.databaseId,
         ghsaId: data.securityAdvisory?.ghsaId,

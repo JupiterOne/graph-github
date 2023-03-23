@@ -6,15 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 2.2.1 - 2023-03-22
-
-### Changed
-
-- **BREAKING**: The `fixedOn` property has been removed from `github_finding`
-  entities. The `fixedAt` field returned by GitHub's `vulnerabilityAlerts`
-  GraphQL API has been deprecated and is set to be removed at the end of
-  03-2023.
-
 ## 2.0.3 - 2023-03-06
 
 ### Changed
@@ -102,8 +93,9 @@ The following relationships were added:
   This allows for discovery of pull request merges without approval given the
   following scenario:
 
-  > PR1 - Branch A -> main with commit {A} PR2 - Branch B -> main with commits
-  > {A, B} PR3 - Branch C -> main with commits {A, B, C}
+  > PR1 - Branch A -> main with commit {A}  
+  > PR2 - Branch B -> main with commits {A, B}  
+  > PR3 - Branch C -> main with commits {A, B, C}
 
   If PR3 is merged first, PR1 and PR2 will be marked as MERGED and potentially
   without approval in some circumstances. This new CONTAINS relationship will

@@ -18,6 +18,7 @@ import {
   GithubEntities,
   GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
+  INGESTION_SOURCE_IDS,
 } from '../constants';
 
 export async function fetchRepos({
@@ -88,6 +89,7 @@ export const repoSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_REPO._type,
       },
     ],
+    ingestionSourceId: INGESTION_SOURCE_IDS.FETCH_REPOS,
     dependsOn: ['fetch-account'],
     executionHandler: fetchRepos,
   },

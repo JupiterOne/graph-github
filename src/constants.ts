@@ -405,3 +405,10 @@ export const GITHUB_REPO_TAGS_ARRAY = 'GITHUB_REPO_TAGS_ARRAY';
 export const GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP =
   'GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP';
 export const GITHUB_APP_BY_APP_ID = 'GITHUB_APP_BY_APP_ID';
+
+export const INGESTION_SOURCE_IDS = {
+  FINDING_ALERTS: 'finding-alerts',
+  // .... more to be added
+  FETCH_REPOS: 'fetch-repos',
+  FETCH_ACCOUNT: 'fetch-account',
+};

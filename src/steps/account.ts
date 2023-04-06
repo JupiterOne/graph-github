@@ -6,7 +6,7 @@ import {
 import { IntegrationConfig } from '../config';
 import { getOrCreateApiClient } from '../client';
 import { toAccountEntity } from '../sync/converters';
-import { GithubEntities } from '../constants';
+import { GithubEntities, INGESTION_SOURCE_IDS } from '../constants';
 
 export const DATA_ACCOUNT_ENTITY = 'DATA_ACCOUNT_ENTITY';
 
@@ -36,6 +36,7 @@ export const accountSteps: IntegrationStep<IntegrationConfig>[] = [
     ],
     relationships: [],
     dependsOn: [],
+    ingestionSourceId: INGESTION_SOURCE_IDS.FETCH_ACCOUNT,
     executionHandler: fetchAccountDetails,
   },
 ];

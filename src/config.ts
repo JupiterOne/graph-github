@@ -3,10 +3,12 @@ import {
   IntegrationValidationError,
   IntegrationInstanceConfigFieldMap,
   IntegrationInstanceConfig,
+  IntegrationIngestionConfigFieldMap,
 } from '@jupiterone/integration-sdk-core';
 import { getOrCreateApiClient } from './client';
 const fs = require('fs');
 import { URL } from 'url';
+import { INGESTION_SOURCE_IDS } from './constants';
 
 /**
  * A type describing the configuration fields required to execute the
@@ -16,7 +18,7 @@ import { URL } from 'url';
  * be provided in a `.env` file with environment variables.
  *
  * Environment variables are NOT used when the integration is executing in a
- * managed environment. For example, in JupiterOne, users configure
+ * managed environment. For example, in JupiterOne, users configure`
  * `instance.config` in a UI.
  *
  * This integration will actually have a disparity between the instanceConfigFields
@@ -221,3 +223,22 @@ export function validateBaseUrl(baseUrl: string): string {
 
   return `${parsedUrl.protocol}//${parsedUrl.host}`;
 }
+
+export const ingestionConfig: IntegrationIngestionConfigFieldMap = {
+  [INGESTION_SOURCE_IDS.FINDING_ALERTS]: {
+    title: 'Finding Alerts',
+    description:
+      'Dependabot vulnerability alert ingestion and Code scanning alerts',
+    defaultsToDisabled: true,
+  },
+  [INGESTION_SOURCE_IDS.FETCH_REPOS]: {
+    title: 'Fetch repos',
+    description: 'Test ingestion source repos',
+    defaultsToDisabled: true,
+  },
+  [INGESTION_SOURCE_IDS.FETCH_ACCOUNT]: {
+    title: 'Fetch account',
+    description: 'Test ingestion source account',
+    defaultsToDisabled: true,
+  },
+};

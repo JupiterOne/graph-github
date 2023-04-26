@@ -25,7 +25,7 @@ jobs:
           path: target
 
       - name: Install dependencies for `main` branch
-        run: yarn install --cwd source
+        run: npm install --prefix source
 
       - name: Validate questions on target branch
         env:
@@ -34,7 +34,7 @@ jobs:
           MANAGED_QUESTIONS_JUPITERONE_API_KEY:
             ${{ secrets.MANAGED_QUESTIONS_JUPITERONE_API_KEY }}
         run:
-          yarn --cwd source j1-integration validate-question-file -a
+          npm run --prefix source j1-integration validate-question-file -a
           $MANAGED_QUESTIONS_JUPITERONE_ACCOUNT_ID -k
           $MANAGED_QUESTIONS_JUPITERONE_API_KEY -p
           ../target/jupiterone/questions/questions.yaml

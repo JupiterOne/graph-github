@@ -73,5 +73,9 @@
       "noChangelog": true,
       "prerelease": false
     }
+  },
+  "engines": {
+    "node": ">=14",
+    "npm": ">=8"
   }
 }

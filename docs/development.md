@@ -88,7 +88,7 @@ you'll need to do the following:
     INSTALLATION_ID=413407
     ```
 
-With the `.env` in place, you may run the integration with `yarn start` and see
+With the `.env` in place, you may run the integration with `npm start` and see
 that the GitHub API is invoked with authorization for the installion of your
 GitHub App in your account.
 

@@ -26,7 +26,7 @@ jobs:
           node-version: 14.x
 
       - name: Run build
-        run: yarn install
+        run: npm install
 
       - name: Get Variables
         id: get-vars

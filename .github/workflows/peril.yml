@@ -26,7 +26,7 @@ jobs:
           node-version: 14.x
 
       - name: Run build
-        run: npm install
+        run: npm ci
 
       - name: Get Variables
         id: get-vars

@@ -66,24 +66,26 @@ const buildQuery: BuildQuery<string, QueryState> = (
  * @param responseData
  * @param iteratee
  */
-const processResponseData: ProcessResponse<OrgRepoQueryResponse, QueryState> =
-  async (responseData, iteratee) => {
-    const rateLimit = responseData.rateLimit;
-    const repos = responseData.organization?.repositories?.nodes ?? [];
+const processResponseData: ProcessResponse<
+  OrgRepoQueryResponse,
+  QueryState
+> = async (responseData, iteratee) => {
+  const rateLimit = responseData.rateLimit;
+  const repos = responseData.organization?.repositories?.nodes ?? [];
 
-    for (const repo of repos) {
-      if (!utils.hasProperties(repo)) {
-        continue;
-      }
-
-      await iteratee(repo);
+  for (const repo of repos) {
+    if (!utils.hasProperties(repo)) {
+      continue;
     }
 
-    return {
-      rateLimit,
-      repos: responseData.organization?.repositories?.pageInfo,
-    };
+    await iteratee(repo);
+  }
+
+  return {
+    rateLimit,
+    repos: responseData.organization?.repositories?.pageInfo,
   };
+};
 
 /**
  * Iterates, via pagination, over all Org Repositories.
@@ -91,16 +93,18 @@ const processResponseData: ProcessResponse<OrgRepoQueryResponse, QueryState> =
  * @param iteratee
  * @param execute
  */
-const iterateRepositories: IteratePagination<string, OrgRepoQueryResponse> =
-  async (login, execute, iteratee) => {
-    return paginate(
-      login,
-      iteratee,
-      execute,
-      buildQuery,
-      processResponseData,
-      (queryState) => !queryState?.repos?.hasNextPage ?? true,
-    );
-  };
+const iterateRepositories: IteratePagination<
+  string,
+  OrgRepoQueryResponse
+> = async (login, execute, iteratee) => {
+  return paginate(
+    login,
+    iteratee,
+    execute,
+    buildQuery,
+    processResponseData,
+    (queryState) => !queryState?.repos?.hasNextPage ?? true,
+  );
+};
 
 export default { iterateRepositories };

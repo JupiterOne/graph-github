@@ -61,34 +61,35 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
-const processResponseData: ProcessResponse<CollaboratorResponse, QueryState> =
-  async (responseData, iteratee) => {
-    const rateLimit = responseData.rateLimit;
-    const collaboratorEdges =
-      responseData.repository?.collaborators?.edges ?? [];
+const processResponseData: ProcessResponse<
+  CollaboratorResponse,
+  QueryState
+> = async (responseData, iteratee) => {
+  const rateLimit = responseData.rateLimit;
+  const collaboratorEdges = responseData.repository?.collaborators?.edges ?? [];
 
-    for (const edge of collaboratorEdges) {
-      if (!utils.hasProperties(edge?.node)) {
-        continue;
-      }
-      const node = edge.node;
-
-      const collaborator: CollaboratorResponse = {
-        id: node.id,
-        name: node.name,
-        login: node.login,
-        permission: edge.permission,
-        repositoryId: responseData.repository?.id,
-      };
-
-      await iteratee(collaborator);
+  for (const edge of collaboratorEdges) {
+    if (!utils.hasProperties(edge?.node)) {
+      continue;
     }
+    const node = edge.node;
 
-    return {
-      rateLimit,
-      collaborators: responseData.repository?.collaborators?.pageInfo,
+    const collaborator: CollaboratorResponse = {
+      id: node.id,
+      name: node.name,
+      login: node.login,
+      permission: edge.permission,
+      repositoryId: responseData.repository?.id,
     };
+
+    await iteratee(collaborator);
+  }
+
+  return {
+    rateLimit,
+    collaborators: responseData.repository?.collaborators?.pageInfo,
   };
+};
 
 /**
  * Paginates over the collaborators found on the given repo.

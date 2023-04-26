@@ -10,9 +10,9 @@ with JupiterOne in the [integration documentation](docs/jupiterone.md).
 1. Install [Node.js](https://nodejs.org/) using the
    [installer](https://nodejs.org/en/download/) or a version manager such as
    [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm).
-2. Install [`yarn`](https://yarnpkg.com/getting-started/install) or
+2. Install [``](https://yarnpkg.com/getting-started/install) or
    [`npm`](https://github.com/npm/cli#installation) to install dependencies.
-3. Install dependencies with `yarn install`.
+3. Install dependencies with `npm install`.
 4. Register an account in the system this integration targets for ingestion and
    obtain API credentials.
 5. `cp .env.example .env` and add necessary values for runtime configuration.
@@ -26,9 +26,9 @@ with JupiterOne in the [integration documentation](docs/jupiterone.md).
 
 ### Running the integration
 
-1. `yarn start` to collect data
-2. `yarn graph` to show a visualization of the collected data
-3. `yarn j1-integration -h` for additional commands
+1. `npm start` to collect data
+2. `npm run graph` to show a visualization of the collected data
+3. `npm run j1-integration -h` for additional commands
 
 ### Making Contributions
 

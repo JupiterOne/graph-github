@@ -67,42 +67,46 @@ const buildQuery: BuildQuery<string, QueryState> = (
  * @param responseData
  * @param iteratee
  */
-const processResponseData: ProcessResponse<OrgMemberQueryResponse, QueryState> =
-  async (responseData, iteratee) => {
-    const rateLimit = responseData.rateLimit;
-    const memberEdges = responseData.organization?.membersWithRole?.edges ?? [];
+const processResponseData: ProcessResponse<
+  OrgMemberQueryResponse,
+  QueryState
+> = async (responseData, iteratee) => {
+  const rateLimit = responseData.rateLimit;
+  const memberEdges = responseData.organization?.membersWithRole?.edges ?? [];
 
-    for (const edge of memberEdges) {
-      if (!utils.hasProperties(edge?.node)) {
-        continue;
-      }
-
-      const member = {
-        ...edge.node,
-        organization: responseData.organization?.id,
-        hasTwoFactorEnabled: edge.hasTwoFactorEnabled,
-        role: edge.role,
-      };
-
-      await iteratee(member);
+  for (const edge of memberEdges) {
+    if (!utils.hasProperties(edge?.node)) {
+      continue;
     }
 
-    return {
-      rateLimit,
-      members: responseData.organization?.membersWithRole?.pageInfo,
+    const member = {
+      ...edge.node,
+      organization: responseData.organization?.id,
+      hasTwoFactorEnabled: edge.hasTwoFactorEnabled,
+      role: edge.role,
     };
-  };
 
-const iterateMembers: IteratePagination<string, OrgMemberQueryResponse> =
-  async (login, execute, iteratee) => {
-    return paginate(
-      login,
-      iteratee,
-      execute,
-      buildQuery,
-      processResponseData,
-      (queryState) => !queryState?.members?.hasNextPage ?? true,
-    );
+    await iteratee(member);
+  }
+
+  return {
+    rateLimit,
+    members: responseData.organization?.membersWithRole?.pageInfo,
   };
+};
+
+const iterateMembers: IteratePagination<
+  string,
+  OrgMemberQueryResponse
+> = async (login, execute, iteratee) => {
+  return paginate(
+    login,
+    iteratee,
+    execute,
+    buildQuery,
+    processResponseData,
+    (queryState) => !queryState?.members?.hasNextPage ?? true,
+  );
+};
 
 export default { iterateMembers };

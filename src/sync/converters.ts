@@ -403,6 +403,7 @@ export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
     lockReason: data.lockReason || '',
     mergeCommitAllowed: data.mergeCommitAllowed,
     rebaseMergeAllowed: data.rebaseMergeAllowed,
+    visibility: data.visibility,
   };
   setRawData(repoEntity, { name: 'default', rawData: data });
   return repoEntity;

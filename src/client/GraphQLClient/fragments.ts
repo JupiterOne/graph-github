@@ -40,7 +40,7 @@ export default {
   teamFields: `on Team {
     name
     url
-    slug    
+    slug
     createdAt
     updatedAt
     databaseId
@@ -83,6 +83,7 @@ export default {
     pushedAt
     rebaseMergeAllowed
     url
+    visibility
   }`,
   repositoryOwnerFields: `on RepositoryOwner {
     login
@@ -288,7 +289,7 @@ export default {
     # bodyResourcePath
     bodyText
     bodyUrl
-    closed # boolean 
+    closed # boolean
     closedAt
     # comments # probably a child object if we want these
     createdAt

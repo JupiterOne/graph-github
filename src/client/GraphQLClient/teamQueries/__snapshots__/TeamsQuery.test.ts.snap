@@ -12,7 +12,7 @@ exports[`TeamMembersQuery pagination of teams 1`] = `
               ...on Team {
     name
     url
-    slug    
+    slug
     createdAt
     updatedAt
     databaseId

@@ -173,6 +173,7 @@ export interface RepoEntity extends Entity {
   webLink: string;
   hasPages?: boolean | undefined;
   pagesUrl?: string | undefined;
+  visibility?: string;
 }
 
 //to cut down on memory usage, this type will be passed between steps for relationship building

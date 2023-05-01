@@ -75,6 +75,7 @@ Object {
       "template": false,
       "updatedOn": 1672930175000,
       "userConfigurationRepository": false,
+      "visibility": undefined,
       "webLink": "https://github.com/JupiterOne-Sandbox/test-repo1",
     },
     Object {
@@ -149,6 +150,7 @@ Object {
       "template": false,
       "updatedOn": 1672930653000,
       "userConfigurationRepository": false,
+      "visibility": undefined,
       "webLink": "https://github.com/JupiterOne-Sandbox/.github",
     },
     Object {
@@ -223,6 +225,7 @@ Object {
       "template": false,
       "updatedOn": 1673448177000,
       "userConfigurationRepository": false,
+      "visibility": undefined,
       "webLink": "https://github.com/JupiterOne-Sandbox/test-repo2",
     },
     Object {
@@ -297,6 +300,7 @@ Object {
       "template": false,
       "updatedOn": 1673797498000,
       "userConfigurationRepository": false,
+      "visibility": undefined,
       "webLink": "https://github.com/JupiterOne-Sandbox/austin-test",
     },
     Object {
@@ -371,6 +375,7 @@ Object {
       "template": false,
       "updatedOn": 1675112303000,
       "userConfigurationRepository": false,
+      "visibility": undefined,
       "webLink": "https://github.com/JupiterOne-Sandbox/intentionally-vulnerable-golang-project",
     },
     Object {
@@ -445,6 +450,7 @@ Object {
       "template": false,
       "updatedOn": 1665424496000,
       "userConfigurationRepository": false,
+      "visibility": undefined,
       "webLink": "https://github.com/JupiterOne-Sandbox/RepoWithPages",
     },
     Object {
@@ -519,6 +525,7 @@ Object {
       "template": false,
       "updatedOn": 1675121073000,
       "userConfigurationRepository": false,
+      "visibility": undefined,
       "webLink": "https://github.com/JupiterOne-Sandbox/reimagined-barnacle",
     },
     Object {
@@ -593,6 +600,7 @@ Object {
       "template": false,
       "updatedOn": 1663279520000,
       "userConfigurationRepository": false,
+      "visibility": undefined,
       "webLink": "https://github.com/JupiterOne-Sandbox/ubiquitous-umbrella",
     },
     Object {
@@ -667,6 +675,7 @@ Object {
       "template": false,
       "updatedOn": 1675983818000,
       "userConfigurationRepository": false,
+      "visibility": undefined,
       "webLink": "https://github.com/JupiterOne-Sandbox/literate-waffle",
     },
   ],

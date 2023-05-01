@@ -125,6 +125,13 @@ export interface OrgTeamMemberQueryResponse extends Node {
   role: TeamMemberRole;
 }
 
+// ref: https://docs.github.com/en/graphql/reference/enums#repositoryvisibility
+enum RepositoryVisibility {
+  INTERNAL = 'INTERNAL',
+  PRIVATE = 'PRIVATE',
+  PUBLIC = 'PUBLIC',
+}
+
 export interface OrgRepoQueryResponse extends Node {
   name: string;
   nameWithOwner: string;
@@ -154,6 +161,7 @@ export interface OrgRepoQueryResponse extends Node {
   mergeCommitAllowed?: boolean;
   pushedAt?: string;
   rebaseMergeAllowed?: boolean;
+  visibility: RepositoryVisibility;
 }
 
 /**

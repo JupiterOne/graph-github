@@ -37,6 +37,7 @@ exports[`OrgRepositoriesQuery pagination of org repos 1`] = `
     pushedAt
     rebaseMergeAllowed
     url
+    visibility
   }
             }
             pageInfo {

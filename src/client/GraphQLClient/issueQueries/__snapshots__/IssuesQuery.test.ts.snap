@@ -102,7 +102,7 @@ Object {
     # bodyResourcePath
     bodyText
     bodyUrl
-    closed # boolean 
+    closed # boolean
     closedAt
     # comments # probably a child object if we want these
     createdAt
@@ -209,7 +209,7 @@ Object {
     # bodyResourcePath
     bodyText
     bodyUrl
-    closed # boolean 
+    closed # boolean
     closedAt
     # comments # probably a child object if we want these
     createdAt

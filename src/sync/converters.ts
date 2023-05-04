@@ -576,6 +576,7 @@ export function createVulnerabilityAlertEntity(
         category: 'application',
         status: data.state,
         severity: data.securityVulnerability?.severity,
+        dependencyScope: data.dependencyScope,
         numericSeverity: data.securityAdvisory?.cvss.score,
         priority: data.securityVulnerability?.severity,
         score: data.securityAdvisory?.cvss.score,

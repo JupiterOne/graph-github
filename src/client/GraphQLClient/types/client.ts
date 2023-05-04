@@ -333,6 +333,7 @@ export interface VulnerabilityAlertResponse extends Node {
     nameWithOwner: string;
   };
   createdAt: string;
+  dependencyScope?: 'RUNTIME' | 'DEVELOPMENT';
   dismissReason?: string;
   dismissedAt?: string;
   dismisser?: {

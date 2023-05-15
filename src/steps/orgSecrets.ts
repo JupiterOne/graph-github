@@ -15,6 +15,7 @@ import {
   GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
+  Steps,
 } from '../constants';
 import { toOrgSecretEntity } from '../sync/converters';
 
@@ -79,7 +80,7 @@ export async function fetchOrgSecrets({
 
 export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-org-secrets',
+    id: Steps.FETCH_ORG_SECRETS,
     name: 'Fetch Organization Secrets',
     entities: [
       {
@@ -102,7 +103,7 @@ export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_ORG_SECRET._type,
       },
     ],
-    dependsOn: ['fetch-account', 'fetch-repos'],
+    dependsOn: [Steps.FETCH_ACCOUNT, Steps.FETCH_REPOS],
     executionHandler: fetchOrgSecrets,
   },
 ];

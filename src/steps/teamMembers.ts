@@ -13,6 +13,7 @@ import {
   GithubEntities,
   GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
+  Steps,
 } from '../constants';
 import { TeamEntity } from '../types';
 
@@ -95,7 +96,7 @@ export async function fetchTeamMembers({
 
 export const teamMemberSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-team-members',
+    id: Steps.FETCH_TEAM_MEMBERS,
     name: 'Fetch Team Members',
     entities: [],
     relationships: [
@@ -112,7 +113,7 @@ export const teamMemberSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_TEAM._type,
       },
     ],
-    dependsOn: ['fetch-teams', 'fetch-users'],
+    dependsOn: [Steps.FETCH_TEAMS, Steps.FETCH_USERS],
     executionHandler: fetchTeamMembers,
   },
 ];

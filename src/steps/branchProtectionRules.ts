@@ -24,6 +24,7 @@ import {
   GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
   GithubEntities,
+  Steps,
 } from '../constants';
 import { toBranchProtectionEntity } from '../sync/converters';
 
@@ -172,7 +173,7 @@ export async function fetchBranchProtectionRule({
 export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
   [
     {
-      id: 'fetch-branch-protection-rules',
+      id: Steps.FETCH_BRANCH_PROTECTION_RULES,
       name: 'Fetch Branch Protection Rules',
       entities: [
         {
@@ -207,7 +208,12 @@ export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
           targetType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
         },
       ],
-      dependsOn: ['fetch-repos', 'fetch-users', 'fetch-teams', 'fetch-apps'],
+      dependsOn: [
+        Steps.FETCH_REPOS,
+        Steps.FETCH_USERS,
+        Steps.FETCH_TEAMS,
+        Steps.FETCH_APPS,
+      ],
       executionHandler: fetchBranchProtectionRule,
     },
   ];

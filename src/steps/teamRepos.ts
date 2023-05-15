@@ -10,6 +10,7 @@ import { createRepoAllowsTeamRelationship } from '../sync/converters';
 import {
   GithubEntities,
   GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
+  Steps,
 } from '../constants';
 import { TeamEntity } from '../types';
 
@@ -39,7 +40,7 @@ export async function fetchTeamRepos({
 
 export const teamRepoSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-team-repos',
+    id: Steps.FETCH_TEAM_REPOS,
     name: 'Fetch Team Repos',
     entities: [],
     relationships: [
@@ -50,7 +51,7 @@ export const teamRepoSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_TEAM._type,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-teams'],
+    dependsOn: [Steps.FETCH_REPOS, Steps.FETCH_TEAMS],
     executionHandler: fetchTeamRepos,
   },
 ];

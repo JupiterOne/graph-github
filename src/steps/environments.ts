@@ -13,6 +13,7 @@ import {
   GithubEntities,
   GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
+  Steps,
 } from '../constants';
 import { toEnvironmentEntity } from '../sync/converters';
 
@@ -58,7 +59,7 @@ export async function fetchEnvironments({
 
 export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-environments',
+    id: Steps.FETCH_ENVIRONMENTS,
     name: 'Fetch Environments',
     entities: [
       {
@@ -75,7 +76,7 @@ export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_ENVIRONMENT._type,
       },
     ],
-    dependsOn: ['fetch-repos'],
+    dependsOn: [Steps.FETCH_REPOS],
     executionHandler: fetchEnvironments,
   },
 ];

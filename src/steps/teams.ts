@@ -14,6 +14,7 @@ import { AccountEntity, TeamEntity } from '../types';
 import {
   GithubEntities,
   GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
+  Steps,
 } from '../constants';
 
 export async function fetchTeams({
@@ -50,7 +51,7 @@ export async function fetchTeams({
 
 export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-teams',
+    id: Steps.FETCH_TEAMS,
     name: 'Fetch Teams',
     entities: [
       {
@@ -67,7 +68,7 @@ export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_TEAM._type,
       },
     ],
-    dependsOn: ['fetch-account'],
+    dependsOn: [Steps.FETCH_ACCOUNT],
     executionHandler: fetchTeams,
   },
 ];

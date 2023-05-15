@@ -4,6 +4,7 @@ import {
   IntegrationConfig,
   instanceConfigFields,
   validateInvocation,
+  ingestionConfig,
 } from './config';
 import getStepStartStates from './getStepStartStates';
 import actionExecutionHandler from './actions/actionExecutionHandler';
@@ -13,6 +14,7 @@ export const invocationConfig: IntegrationInvocationConfig<IntegrationConfig> =
     instanceConfigFields,
     getStepStartStates,
     integrationSteps,
+    ingestionConfig,
   };
 
 export { validateInvocation, actionExecutionHandler };

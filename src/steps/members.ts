@@ -17,6 +17,7 @@ import {
   GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
   GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
+  Steps,
 } from '../constants';
 
 export async function fetchMembers({
@@ -70,7 +71,7 @@ export async function fetchMembers({
 
 export const memberSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-users',
+    id: Steps.FETCH_USERS,
     name: 'Fetch Users',
     entities: [
       {
@@ -93,7 +94,7 @@ export const memberSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_ACCOUNT._type,
       },
     ],
-    dependsOn: ['fetch-account'],
+    dependsOn: [Steps.FETCH_ACCOUNT],
     executionHandler: fetchMembers,
   },
 ];

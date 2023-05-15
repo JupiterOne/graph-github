@@ -3,10 +3,12 @@ import {
   IntegrationValidationError,
   IntegrationInstanceConfigFieldMap,
   IntegrationInstanceConfig,
+  IntegrationIngestionConfigFieldMap,
 } from '@jupiterone/integration-sdk-core';
 import { getOrCreateApiClient } from './client';
 const fs = require('fs');
 import { URL } from 'url';
+import { Steps } from './constants';
 
 /**
  * A type describing the configuration fields required to execute the
@@ -221,3 +223,16 @@ export function validateBaseUrl(baseUrl: string): string {
 
   return `${parsedUrl.protocol}//${parsedUrl.host}`;
 }
+
+export const ingestionConfig: IntegrationIngestionConfigFieldMap = {
+  [Steps.FETCH_ORG_SECRETS]: {
+    title: 'Organization Secrets',
+  },
+  [Steps.FETCH_ENV_SECRETS]: {
+    title: 'Environment Secrets',
+    description: '',
+  },
+  [Steps.FETCH_REPO_SECRETS]: {
+    title: 'Repository Secrets',
+  },
+};

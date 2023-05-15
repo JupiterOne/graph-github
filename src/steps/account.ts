@@ -6,7 +6,7 @@ import {
 import { IntegrationConfig } from '../config';
 import { getOrCreateApiClient } from '../client';
 import { toAccountEntity } from '../sync/converters';
-import { GithubEntities } from '../constants';
+import { GithubEntities, Steps } from '../constants';
 
 export const DATA_ACCOUNT_ENTITY = 'DATA_ACCOUNT_ENTITY';
 
@@ -25,7 +25,7 @@ export async function fetchAccountDetails({
 
 export const accountSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-account',
+    id: Steps.FETCH_ACCOUNT,
     name: 'Fetch Account Details',
     entities: [
       {

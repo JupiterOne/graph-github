@@ -19,6 +19,7 @@ import {
   GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  Steps,
 } from '../constants';
 
 export async function fetchIssues(
@@ -139,7 +140,7 @@ export async function fetchIssues(
 
 export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-issues',
+    id: Steps.FETCH_ISSUES,
     name: 'Fetch Issues',
     entities: [
       {
@@ -172,7 +173,11 @@ export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
         partial: true,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-collaborators'],
+    dependsOn: [
+      Steps.FETCH_REPOS,
+      Steps.FETCH_USERS,
+      Steps.FETCH_COLLABORATORS,
+    ],
     executionHandler: fetchIssues,
   },
 ];

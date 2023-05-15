@@ -27,6 +27,7 @@ import {
   GITHUB_PR_CONTAINS_PR_RELATIONSHIP_TYPE,
   GITHUB_REPO_PR_RELATIONSHIP_TYPE,
   GithubEntities,
+  Steps,
 } from '../constants';
 import {
   createAssociatedMergePullRequestRelationship,
@@ -273,7 +274,7 @@ export const determineIngestStartDatetime = (
 
 export const prSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-prs',
+    id: Steps.FETCH_PRS,
     name: 'Fetch Pull Requests',
     entities: [
       {
@@ -319,7 +320,11 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_PR._type,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users', 'fetch-collaborators'],
+    dependsOn: [
+      Steps.FETCH_REPOS,
+      Steps.FETCH_USERS,
+      Steps.FETCH_COLLABORATORS,
+    ],
     executionHandler: fetchPrs,
   },
 ];

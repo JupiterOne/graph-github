@@ -18,6 +18,7 @@ import {
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
   GITHUB_REPO_TAGS_ARRAY,
+  Steps,
 } from '../constants';
 
 export async function fetchCollaborators({
@@ -101,7 +102,7 @@ export async function fetchCollaborators({
 
 export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-collaborators',
+    id: Steps.FETCH_COLLABORATORS,
     name: 'Fetch Collaborators',
     entities: [
       {
@@ -124,7 +125,7 @@ export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_COLLABORATOR._type,
       },
     ],
-    dependsOn: ['fetch-repos', 'fetch-users'],
+    dependsOn: [Steps.FETCH_REPOS, Steps.FETCH_USERS],
     executionHandler: fetchCollaborators,
   },
 ];

@@ -16,6 +16,7 @@ import {
   GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
   Steps,
+  IngestionSources,
 } from '../constants';
 import { toOrgSecretEntity } from '../sync/converters';
 
@@ -81,6 +82,7 @@ export async function fetchOrgSecrets({
 export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_ORG_SECRETS,
+    ingestionSourceId: IngestionSources.ORG_SECRETS,
     name: 'Fetch Organization Secrets',
     entities: [
       {

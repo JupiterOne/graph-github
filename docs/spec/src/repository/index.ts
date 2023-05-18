@@ -5,6 +5,7 @@ import { Steps } from '../../../../src/constants';
 export const repositorySpec: StepSpec<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_REPOS,
+    ingestionSourceId: Steps.FETCH_REPOS,
     name: 'Fetch Repos',
     entities: [
       {

@@ -20,6 +20,7 @@ import {
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
   Steps,
+  IngestionSources,
 } from '../constants';
 
 export async function fetchIssues(
@@ -141,6 +142,7 @@ export async function fetchIssues(
 export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_ISSUES,
+    ingestionSourceId: IngestionSources.ISSUES,
     name: 'Fetch Issues',
     entities: [
       {

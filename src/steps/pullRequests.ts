@@ -27,6 +27,7 @@ import {
   GITHUB_PR_CONTAINS_PR_RELATIONSHIP_TYPE,
   GITHUB_REPO_PR_RELATIONSHIP_TYPE,
   GithubEntities,
+  IngestionSources,
   Steps,
 } from '../constants';
 import {
@@ -275,6 +276,7 @@ export const determineIngestStartDatetime = (
 export const prSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_PRS,
+    ingestionSourceId: IngestionSources.PRS,
     name: 'Fetch Pull Requests',
     entities: [
       {

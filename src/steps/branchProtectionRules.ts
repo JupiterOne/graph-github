@@ -24,6 +24,7 @@ import {
   GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
   GithubEntities,
+  IngestionSources,
   Steps,
 } from '../constants';
 import { toBranchProtectionEntity } from '../sync/converters';
@@ -174,6 +175,7 @@ export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
   [
     {
       id: Steps.FETCH_BRANCH_PROTECTION_RULES,
+      ingestionSourceId: IngestionSources.BRANCH_PROTECTION_RULES,
       name: 'Fetch Branch Protection Rules',
       entities: [
         {

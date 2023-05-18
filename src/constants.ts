@@ -18,6 +18,19 @@ export const Steps = {
   FETCH_VULNERABILITY_ALERTS: 'fetch-vulnerability-alerts',
 };
 
+export const IngestionSources = {
+  APPS: 'apps',
+  BRANCH_PROTECTION_RULES: 'branch-protection-rules',
+  CODE_SCANNING_ALERTS: 'code-scanning-alerts',
+  ENVIRONMENTS: 'environments',
+  ENV_SECRETS: 'env-secrets',
+  ISSUES: 'issues',
+  ORG_SECRETS: 'org-secrets',
+  REPO_SECRETS: 'repo-secrets',
+  VULNERABILITY_ALERTS: 'vulnerability-alerts',
+  PRS: 'prs',
+};
+
 export const GithubEntities = {
   GITHUB_ACCOUNT: {
     _type: 'github_account',

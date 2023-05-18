@@ -17,6 +17,7 @@ import {
   GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
   Steps,
+  IngestionSources,
 } from '../constants';
 import { toEnvSecretEntity } from '../sync/converters';
 import { getSecretEntityKey } from '../util/propertyHelpers';
@@ -105,6 +106,7 @@ export async function fetchEnvSecrets({
 export const envSecretSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_ENV_SECRETS,
+    ingestionSourceId: IngestionSources.ENV_SECRETS,
     name: 'Fetch Environment Secrets',
     entities: [
       {

@@ -16,6 +16,7 @@ import {
   GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
   GITHUB_APP_BY_APP_ID,
   Steps,
+  IngestionSources,
 } from '../constants';
 
 export async function fetchApps({
@@ -57,6 +58,7 @@ export async function fetchApps({
 export const appSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_APPS,
+    ingestionSourceId: IngestionSources.APPS,
     name: 'Fetch Apps',
     entities: [
       {

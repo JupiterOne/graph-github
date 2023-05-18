@@ -14,6 +14,7 @@ import {
   GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
   Steps,
+  IngestionSources,
 } from '../constants';
 import { toEnvironmentEntity } from '../sync/converters';
 
@@ -60,6 +61,7 @@ export async function fetchEnvironments({
 export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_ENVIRONMENTS,
+    ingestionSourceId: IngestionSources.ENVIRONMENTS,
     name: 'Fetch Environments',
     entities: [
       {

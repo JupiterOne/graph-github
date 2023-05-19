@@ -1,3 +1,36 @@
+export const Steps = {
+  FETCH_ACCOUNT: 'fetch-account',
+  FETCH_APPS: 'fetch-apps',
+  FETCH_BRANCH_PROTECTION_RULES: 'fetch-branch-protection-rules',
+  FETCH_CODE_SCANNING_ALERTS: 'fetch-code-scanning-alerts',
+  FETCH_COLLABORATORS: 'fetch-collaborators',
+  FETCH_ENVIRONMENTS: 'fetch-environments',
+  FETCH_ENV_SECRETS: 'fetch-env-secrets',
+  FETCH_ISSUES: 'fetch-issues',
+  FETCH_USERS: 'fetch-users',
+  FETCH_ORG_SECRETS: 'fetch-org-secrets',
+  FETCH_PRS: 'fetch-prs',
+  FETCH_REPOS: 'fetch-repos',
+  FETCH_REPO_SECRETS: 'fetch-repo-secrets',
+  FETCH_TEAM_MEMBERS: 'fetch-team-members',
+  FETCH_TEAM_REPOS: 'fetch-team-repos',
+  FETCH_TEAMS: 'fetch-teams',
+  FETCH_VULNERABILITY_ALERTS: 'fetch-vulnerability-alerts',
+};
+
+export const IngestionSources = {
+  APPS: 'apps',
+  BRANCH_PROTECTION_RULES: 'branch-protection-rules',
+  CODE_SCANNING_ALERTS: 'code-scanning-alerts',
+  ENVIRONMENTS: 'environments',
+  ENV_SECRETS: 'env-secrets',
+  ISSUES: 'issues',
+  ORG_SECRETS: 'org-secrets',
+  REPO_SECRETS: 'repo-secrets',
+  VULNERABILITY_ALERTS: 'vulnerability-alerts',
+  PRS: 'prs',
+};
+
 export const GithubEntities = {
   GITHUB_ACCOUNT: {
     _type: 'github_account',

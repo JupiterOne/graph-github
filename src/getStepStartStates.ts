@@ -6,6 +6,7 @@ import {
 
 import { IntegrationConfig, validateInvocation } from './config';
 import utils, { EnterpriseFeatures } from './client/GraphQLClient/utils';
+import { Steps } from './constants';
 
 export default async function getStepStartStates(
   context: IntegrationExecutionContext<IntegrationConfig>,
@@ -13,23 +14,23 @@ export default async function getStepStartStates(
   const { scopes, gheServerVersion } = await validateInvocation(context);
 
   return {
-    ['fetch-account']: { disabled: false },
-    ['fetch-users']: { disabled: false },
-    ['fetch-repos']: { disabled: false },
-    ['fetch-teams']: { disabled: false },
-    ['fetch-team-members']: { disabled: false },
-    ['fetch-team-repos']: { disabled: false },
-    ['fetch-collaborators']: { disabled: false },
-    ['fetch-prs']: { disabled: false },
-    ['fetch-issues']: {
+    [Steps.FETCH_ACCOUNT]: { disabled: false },
+    [Steps.FETCH_USERS]: { disabled: false },
+    [Steps.FETCH_REPOS]: { disabled: false },
+    [Steps.FETCH_TEAMS]: { disabled: false },
+    [Steps.FETCH_TEAM_MEMBERS]: { disabled: false },
+    [Steps.FETCH_TEAM_REPOS]: { disabled: false },
+    [Steps.FETCH_COLLABORATORS]: { disabled: false },
+    [Steps.FETCH_PRS]: { disabled: false },
+    [Steps.FETCH_ISSUES]: {
       disabled: !scopes.repoIssues,
       disabledReason: DisabledStepReason.PERMISSION,
     },
-    ['fetch-apps']: {
+    [Steps.FETCH_APPS]: {
       disabled: !scopes.orgAdmin,
       disabledReason: DisabledStepReason.PERMISSION,
     },
-    ['fetch-code-scanning-alerts']: {
+    [Steps.FETCH_CODE_SCANNING_ALERTS]: {
       disabled:
         !scopes.codeScanningAlerts ||
         !utils.isSupported(
@@ -40,23 +41,23 @@ export default async function getStepStartStates(
         ? DisabledStepReason.PERMISSION
         : DisabledStepReason.API_VERSION,
     },
-    ['fetch-environments']: {
+    [Steps.FETCH_ENVIRONMENTS]: {
       disabled: !scopes.repoEnvironments,
       disabledReason: DisabledStepReason.PERMISSION,
     },
-    ['fetch-org-secrets']: {
+    [Steps.FETCH_ORG_SECRETS]: {
       disabled: !scopes.orgSecrets,
       disabledReason: DisabledStepReason.PERMISSION,
     },
-    ['fetch-repo-secrets']: {
+    [Steps.FETCH_REPO_SECRETS]: {
       disabled: !scopes.repoSecrets,
       disabledReason: DisabledStepReason.PERMISSION,
     },
-    ['fetch-env-secrets']: {
+    [Steps.FETCH_ENV_SECRETS]: {
       disabled: !scopes.repoSecrets || !scopes.repoEnvironments,
       disabledReason: DisabledStepReason.PERMISSION,
     },
-    ['fetch-vulnerability-alerts']: {
+    [Steps.FETCH_VULNERABILITY_ALERTS]: {
       disabled:
         !scopes.dependabotAlerts ||
         !context.instance.config.enableDependabotAlerts,
@@ -64,7 +65,7 @@ export default async function getStepStartStates(
         ? DisabledStepReason.CONFIG
         : DisabledStepReason.PERMISSION,
     },
-    ['fetch-branch-protection-rules']: {
+    [Steps.FETCH_BRANCH_PROTECTION_RULES]: {
       disabled: !scopes.repoAdmin && !scopes.repoDiscussions,
       disabledReason: DisabledStepReason.PERMISSION,
     },

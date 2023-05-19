@@ -15,6 +15,8 @@ import {
   GithubEntities,
   GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
   GITHUB_APP_BY_APP_ID,
+  Steps,
+  IngestionSources,
 } from '../constants';
 
 export async function fetchApps({
@@ -55,7 +57,8 @@ export async function fetchApps({
 
 export const appSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-apps',
+    id: Steps.FETCH_APPS,
+    ingestionSourceId: IngestionSources.APPS,
     name: 'Fetch Apps',
     entities: [
       {
@@ -72,7 +75,7 @@ export const appSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_APP._type,
       },
     ],
-    dependsOn: ['fetch-account'],
+    dependsOn: [Steps.FETCH_ACCOUNT],
     executionHandler: fetchApps,
   },
 ];

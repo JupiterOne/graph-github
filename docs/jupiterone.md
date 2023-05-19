@@ -191,7 +191,6 @@ The following relationships are created:
 | `github_pullrequest`  | **CONTAINS**          | `github_pullrequest`            |
 | `github_repo`         | **ALLOWS**            | `github_team`                   |
 | `github_repo`         | **ALLOWS**            | `github_user`                   |
-| `github_repo`         | **ALLOWS**            | `github_user`                   |
 | `github_repo`         | **HAS**               | `github_branch_protection_rule` |
 | `github_repo`         | **HAS**               | `github_code_scanning_finding`  |
 | `github_repo`         | **HAS**               | `github_environment`            |

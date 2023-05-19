@@ -11,6 +11,8 @@ import { CodeScanningFindingEntity } from '../types';
 import {
   GITHUB_REPO_HAS_CODE_SCANNING_FINDING,
   GithubEntities,
+  IngestionSources,
+  Steps,
 } from '../constants';
 import { createCodeScanningFindingEntity } from '../sync/converters';
 
@@ -43,7 +45,8 @@ export async function fetchCodeScanAlerts({
 
 export const codeScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: 'fetch-code-scanning-alerts',
+    id: Steps.FETCH_CODE_SCANNING_ALERTS,
+    ingestionSourceId: IngestionSources.CODE_SCANNING_ALERTS,
     name: 'Fetch Code Scanning Alerts',
     entities: [
       {
@@ -60,7 +63,7 @@ export const codeScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
         targetType: GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
       },
     ],
-    dependsOn: ['fetch-repos'],
+    dependsOn: [Steps.FETCH_REPOS],
     executionHandler: fetchCodeScanAlerts,
   },
 ];

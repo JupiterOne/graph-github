@@ -3,10 +3,12 @@ import {
   IntegrationValidationError,
   IntegrationInstanceConfigFieldMap,
   IntegrationInstanceConfig,
+  IntegrationIngestionConfigFieldMap,
 } from '@jupiterone/integration-sdk-core';
 import { getOrCreateApiClient } from './client';
 const fs = require('fs');
 import { URL } from 'url';
+import { IngestionSources } from './constants';
 
 /**
  * A type describing the configuration fields required to execute the
@@ -221,3 +223,45 @@ export function validateBaseUrl(baseUrl: string): string {
 
   return `${parsedUrl.protocol}//${parsedUrl.host}`;
 }
+
+export const ingestionConfig: IntegrationIngestionConfigFieldMap = {
+  [IngestionSources.CODE_SCANNING_ALERTS]: {
+    title: 'Code Scanning Alerts',
+    description: 'Alerts from CodeQL analysis or a third-party analysis.',
+  },
+  [IngestionSources.BRANCH_PROTECTION_RULES]: {
+    title: 'Branch Protection Rules',
+  },
+  [IngestionSources.VULNERABILITY_ALERTS]: {
+    title: 'Dependabot Vulnerability Alerts',
+    defaultsToDisabled: true,
+    description: 'May increase job runtimes.',
+  },
+  [IngestionSources.PRS]: {
+    title: 'Pull Requests',
+  },
+  [IngestionSources.ISSUES]: {
+    title: 'Repository Issues',
+  },
+  [IngestionSources.APPS]: {
+    title: 'Applications',
+    description: 'Apps installed within an organization',
+  },
+  [IngestionSources.ENVIRONMENTS]: {
+    title: 'Environments',
+    description:
+      'Used to describe a general deployment target like production, staging, or development',
+  },
+  [IngestionSources.ORG_SECRETS]: {
+    title: 'Organization Secrets',
+    description: 'Organizational wide secrets metadata.',
+  },
+  [IngestionSources.ENV_SECRETS]: {
+    title: 'Environment Secrets',
+    description: 'Secrets metadata stored in an environment.',
+  },
+  [IngestionSources.REPO_SECRETS]: {
+    title: 'Repository Secrets',
+    description: 'Secrets metadata configured in repository settings.',
+  },
+};

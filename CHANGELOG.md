@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.5.1 - 2023-05-22
+
+- Upgraded to SDK packages 8.41.0
+
+## 2.5.0 - 2023-05-18
+
+### Added
+
+- Introduced Ingestion Sources to enable the Data Config feature
+- Upgraded to SDK packages 8.40.0
+
 ## 2.4.0 - 2023-05-04
 
 ### Added

@@ -8,17 +8,17 @@ jobs:
     steps:
       - id: setup-node
         name: Setup Node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
-          node-version: 14.x
+          node-version: 18.x
 
       - name: Check out `main` branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: source
 
       - name: Check out target branch questions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{github.event.pull_request.head.ref}}
           repository: ${{github.event.pull_request.head.repo.full_name}}

@@ -29,7 +29,7 @@ export async function fetchTeamMembers({
     { _type: GithubEntities.GITHUB_TEAM._type },
     async (teamEntity: TeamEntity) => {
       await apiClient.iterateTeamMembers(teamEntity, async (user) => {
-        if (!(await jobState.hasKey(user.id))) {
+        if (!jobState.hasKey(user.id)) {
           //somehow this team has a user we didn't know about
           //shouldn't happen, except through weird timing, but we'll make an entry
           await jobState.addEntity(

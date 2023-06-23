@@ -23,6 +23,9 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
 
+      - name: Lowercase the repo name
+        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
+
       # Login against a Docker registry
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
@@ -56,6 +59,5 @@ jobs:
       # https://github.com/sigstore/cosign-installer
       - name: Sign the images with GH OIDC Token
         run:
-          COSIGN_REPOSITORY=ghcr.io/${{ github.repository }}-signatures cosign
-          sign -y ghcr.io/${{ github.repository }}@${{
-          steps.build-and-push.outputs.DIGEST }}
+          COSIGN_REPOSITORY=ghcr.io/${{ env.REPO }}-signatures cosign sign -y
+          ghcr.io/${{ env.REPO }}@${{ steps.build-and-push.outputs.DIGEST }}

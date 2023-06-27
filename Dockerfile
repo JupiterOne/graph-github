@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:18-alpine
 
 ENV JUPITERONE_INTEGRATION_DIR=/opt/jupiterone/integration
 

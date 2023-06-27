@@ -226,42 +226,48 @@ export function validateBaseUrl(baseUrl: string): string {
 
 export const ingestionConfig: IntegrationIngestionConfigFieldMap = {
   [IngestionSources.CODE_SCANNING_ALERTS]: {
-    title: 'Code Scanning Alerts',
+    title: 'GitHub Code Scanning Alerts',
     description: 'Alerts from CodeQL analysis or a third-party analysis.',
   },
   [IngestionSources.BRANCH_PROTECTION_RULES]: {
-    title: 'Branch Protection Rules',
+    title: 'GitHub Branch Protection Rules',
+    description:
+      'Configurable restrictions and requirements imposed on a branch.',
   },
   [IngestionSources.VULNERABILITY_ALERTS]: {
-    title: 'Dependabot Vulnerability Alerts',
+    title: 'GitHub Dependabot Vulnerability Alerts',
     defaultsToDisabled: true,
-    description: 'May increase job runtimes.',
+    description:
+      'Automated notifications about security vulnerabilities present in code dependencies.',
   },
   [IngestionSources.PRS]: {
-    title: 'Pull Requests',
+    title: 'GitHub Pull Requests',
+    description:
+      'Proposed changes to a codebase allowing reviews and discussion.',
   },
   [IngestionSources.ISSUES]: {
-    title: 'Repository Issues',
+    title: 'GitHub Repository Issues',
+    description: 'Used for tracking and discussing problems, ideas, and more.',
   },
   [IngestionSources.APPS]: {
-    title: 'Applications',
-    description: 'Apps installed within an organization',
+    title: 'GitHub Applications',
+    description: 'Applications installed within an organization.',
   },
   [IngestionSources.ENVIRONMENTS]: {
-    title: 'Environments',
+    title: 'GitHub Environments',
     description:
       'Used to describe a general deployment target like production, staging, or development',
   },
   [IngestionSources.ORG_SECRETS]: {
-    title: 'Organization Secrets',
-    description: 'Organizational wide secrets metadata.',
+    title: 'GitHub Organization Secrets',
+    description: 'Secrets metadata available in an organization.',
   },
   [IngestionSources.ENV_SECRETS]: {
-    title: 'Environment Secrets',
-    description: 'Secrets metadata stored in an environment.',
+    title: 'GitHub Environment Secrets',
+    description: 'Secrets metadata available in an environment.',
   },
   [IngestionSources.REPO_SECRETS]: {
-    title: 'Repository Secrets',
-    description: 'Secrets metadata configured in repository settings.',
+    title: 'GitHub Repository Secrets',
+    description: 'Secrets metadata available in a repository.',
   },
 };

@@ -1,10 +1,13 @@
 {
   "name": "@jupiterone/graph-github",
-  "version": "2.5.1",
+  "version": "3.0.1",
   "description": "A JupiterOne Integration",
   "license": "MPL-2.0",
   "main": "src/index.js",
   "types": "src/index.d.ts",
+  "engines": {
+    "node": ">=18.0.0 <19.x"
+  },
   "files": [
     "src",
     "jupiterone"
@@ -46,12 +49,12 @@
     "semver": "^7.3.7"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.41.0"
+    "@jupiterone/integration-sdk-core": "^9.5.0"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.41.0",
-    "@jupiterone/integration-sdk-dev-tools": "^8.41.0",
-    "@jupiterone/integration-sdk-testing": "^8.41.0",
+    "@jupiterone/integration-sdk-core": "^9.5.0",
+    "@jupiterone/integration-sdk-dev-tools": "^9.5.0",
+    "@jupiterone/integration-sdk-testing": "^9.5.0",
     "@octokit/graphql-schema": "^13.4.0",
     "@types/lodash.omit": "^4.5.6",
     "@types/semver": "^7.3.13",

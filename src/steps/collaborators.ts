@@ -62,7 +62,7 @@ export async function fetchCollaborators({
         userEntity = memberByLoginMap[collab.login];
       } else {
         //retrieve or create outside collaborator entity
-        if (await jobState.hasKey(collab.id)) {
+        if (jobState.hasKey(collab.id)) {
           userEntity = outsideCollaboratorsByLoginMap[collab.login];
         } else {
           userEntity = (await jobState.addEntity(
@@ -76,7 +76,7 @@ export async function fetchCollaborators({
       if (
         collab.repositoryId &&
         userEntity &&
-        (await jobState.hasKey(collab.repositoryId))
+        jobState.hasKey(collab.repositoryId)
       ) {
         const repoUserRelationship = createRepoAllowsUserRelationship(
           collab.repositoryId,

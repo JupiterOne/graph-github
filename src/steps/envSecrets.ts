@@ -75,7 +75,7 @@ export async function fetchEnvSecrets({
           secretOwnerType: 'Org',
           secretOwnerName: apiClient.graphQLClient.login,
         });
-        if (await jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
+        if (jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
           await jobState.addRelationship(
             createDirectRelationship({
               _class: RelationshipClass.OVERRIDES,

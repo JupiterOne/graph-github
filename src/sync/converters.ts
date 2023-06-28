@@ -976,6 +976,9 @@ export function toPullRequestEntity(
         source: pullRequest.headRefName,
         target: pullRequest.baseRefName,
 
+        sourceRefOid: pullRequest.headRefOid,
+        targetRefOid: pullRequest.baseRefOid,
+
         createdOn: parseTimePropertyValue(pullRequest.createdAt),
         updatedOn: parseTimePropertyValue(pullRequest.updatedAt),
         mergedOn: parseTimePropertyValue(pullRequest.mergedAt),

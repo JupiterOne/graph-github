@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.1.0 - 2023-06-28
+
+### Changed
+
+- Add `sourceRefOid` and `targetRefOid` properties to the PullRequest entity.
+
+## 3.0.1 - 2023-06-21
+
+### Changed
+
+- Improved labels/descriptions for ingestion sources.
+
+## 3.0.0 - 2023-06-21
+
+### Changed
+
+- Upgraded to Node 18
+
 ## 2.5.1 - 2023-05-22
 
 - Upgraded to SDK packages 8.41.0

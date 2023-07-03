@@ -1,8 +1,9 @@
 name: Build and Package
 
 on:
-  push:
-    tags: '*'
+  release:
+    types:
+      - published
 
 env:
   REGISTRY: ghcr.io

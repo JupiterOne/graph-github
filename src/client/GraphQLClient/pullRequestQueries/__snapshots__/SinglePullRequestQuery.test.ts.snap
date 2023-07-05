@@ -16,96 +16,49 @@ Object {
             pullRequest(number: $pullRequestNumber) {
               ...
   on PullRequest {
-    additions
     author {
       ...on User {
     name
     login
   }
     }
-    authorAssociation
     baseRefName
     baseRefOid
     baseRepository {
       name
-      url
       owner {
         ...on RepositoryOwner {
-    login
-    id
-    url
-  }
+          login
+        }
       }
     }
     body
     changedFiles
-    checksUrl
-    closed
-    closedAt
-    # comments  # Maybe someday
     createdAt
     databaseId
-    deletions
-    editor {
-      ...on User {
-    login
-    name
-    isSiteAdmin
-    company
-    createdAt
-    databaseId
-    email
-    isEmployee
-    location
-    updatedAt
-    url
-    websiteUrl
-  }
-    }
-    # files # Maybe someday
     headRefName
     headRefOid
     headRepository {
       name
       owner {
         ...on RepositoryOwner {
-    login
-    id
-    url
-  }
+          login
+        }
       }
     }
     id
-    isDraft
-    lastEditedAt
-    locked
     mergeCommit {
       ...on Commit {
-    id
-    oid
-    message
-    authoredDate
-    changedFiles
-    commitUrl
-    author {
-      date
-      user {
-        login # this used to be ...userFields
+        commitUrl
+        oid
+      }
+      associatedPullRequests(first: 1) {
+        nodes {
+          id
+          number
+        }
       }
     }
-  }
-      
-    associatedPullRequests(first: 1) {
-      nodes {
-        id
-        number
-        state
-        reviewDecision
-        url
-      }
-    }
-    }
-    mergeable
     merged
     mergedAt
     mergedBy {
@@ -115,12 +68,8 @@ Object {
   }
     }
     number
-    permalink
-    publishedAt
     reviewDecision
-    # reviewRequests  # Maybe someday
     state
-    # suggestedReviewers  # Maybe someday
     title
     updatedAt
     url
@@ -131,14 +80,10 @@ Object {
       nodes {
         commit {
           ...on Commit {
-    id
     oid
     message
     authoredDate
-    changedFiles
-    commitUrl
     author {
-      date
       user {
         login # this used to be ...userFields
       }
@@ -157,7 +102,6 @@ Object {
       totalCount
       nodes {
         ...on PullRequestReview {
-    id
     commit {
       oid
     }
@@ -168,9 +112,6 @@ Object {
         }
     }
     state
-    submittedAt
-    updatedAt
-    url
   }
       }
       pageInfo {
@@ -182,7 +123,6 @@ Object {
     labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
-        id
         name
       }
       pageInfo {
@@ -226,96 +166,49 @@ Object {
             pullRequest(number: $pullRequestNumber) {
               ...
   on PullRequest {
-    additions
     author {
       ...on User {
     name
     login
   }
     }
-    authorAssociation
     baseRefName
     baseRefOid
     baseRepository {
       name
-      url
       owner {
         ...on RepositoryOwner {
-    login
-    id
-    url
-  }
+          login
+        }
       }
     }
     body
     changedFiles
-    checksUrl
-    closed
-    closedAt
-    # comments  # Maybe someday
     createdAt
     databaseId
-    deletions
-    editor {
-      ...on User {
-    login
-    name
-    isSiteAdmin
-    company
-    createdAt
-    databaseId
-    email
-    isEmployee
-    location
-    updatedAt
-    url
-    websiteUrl
-  }
-    }
-    # files # Maybe someday
     headRefName
     headRefOid
     headRepository {
       name
       owner {
         ...on RepositoryOwner {
-    login
-    id
-    url
-  }
+          login
+        }
       }
     }
     id
-    isDraft
-    lastEditedAt
-    locked
     mergeCommit {
       ...on Commit {
-    id
-    oid
-    message
-    authoredDate
-    changedFiles
-    commitUrl
-    author {
-      date
-      user {
-        login # this used to be ...userFields
+        commitUrl
+        oid
+      }
+      associatedPullRequests(first: 1) {
+        nodes {
+          id
+          number
+        }
       }
     }
-  }
-      
-    associatedPullRequests(first: 1) {
-      nodes {
-        id
-        number
-        state
-        reviewDecision
-        url
-      }
-    }
-    }
-    mergeable
     merged
     mergedAt
     mergedBy {
@@ -325,12 +218,8 @@ Object {
   }
     }
     number
-    permalink
-    publishedAt
     reviewDecision
-    # reviewRequests  # Maybe someday
     state
-    # suggestedReviewers  # Maybe someday
     title
     updatedAt
     url
@@ -341,7 +230,6 @@ Object {
     labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
-        id
         name
       }
       pageInfo {
@@ -386,96 +274,49 @@ Object {
             pullRequest(number: $pullRequestNumber) {
               ...
   on PullRequest {
-    additions
     author {
       ...on User {
     name
     login
   }
     }
-    authorAssociation
     baseRefName
     baseRefOid
     baseRepository {
       name
-      url
       owner {
         ...on RepositoryOwner {
-    login
-    id
-    url
-  }
+          login
+        }
       }
     }
     body
     changedFiles
-    checksUrl
-    closed
-    closedAt
-    # comments  # Maybe someday
     createdAt
     databaseId
-    deletions
-    editor {
-      ...on User {
-    login
-    name
-    isSiteAdmin
-    company
-    createdAt
-    databaseId
-    email
-    isEmployee
-    location
-    updatedAt
-    url
-    websiteUrl
-  }
-    }
-    # files # Maybe someday
     headRefName
     headRefOid
     headRepository {
       name
       owner {
         ...on RepositoryOwner {
-    login
-    id
-    url
-  }
+          login
+        }
       }
     }
     id
-    isDraft
-    lastEditedAt
-    locked
     mergeCommit {
       ...on Commit {
-    id
-    oid
-    message
-    authoredDate
-    changedFiles
-    commitUrl
-    author {
-      date
-      user {
-        login # this used to be ...userFields
+        commitUrl
+        oid
+      }
+      associatedPullRequests(first: 1) {
+        nodes {
+          id
+          number
+        }
       }
     }
-  }
-      
-    associatedPullRequests(first: 1) {
-      nodes {
-        id
-        number
-        state
-        reviewDecision
-        url
-      }
-    }
-    }
-    mergeable
     merged
     mergedAt
     mergedBy {
@@ -485,12 +326,8 @@ Object {
   }
     }
     number
-    permalink
-    publishedAt
     reviewDecision
-    # reviewRequests  # Maybe someday
     state
-    # suggestedReviewers  # Maybe someday
     title
     updatedAt
     url
@@ -501,7 +338,6 @@ Object {
     labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
-        id
         name
       }
       pageInfo {

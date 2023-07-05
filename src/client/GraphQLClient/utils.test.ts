@@ -14,14 +14,14 @@ describe('utils', () => {
     expect(utils.innerResourcePaginationRequired({})).toBeFalsy();
     expect(
       utils.innerResourcePaginationRequired({
-        commits: { pageInfo: { hasNextPage: true } },
+        commits: { totalCount: 10 },
       }),
     ).toBeTruthy();
     expect(utils.innerResourcePaginationRequired({ commits: {} })).toBeFalsy();
     expect(
       utils.innerResourcePaginationRequired({
-        labels: { pageInfo: { hasNextPage: true } },
-        commits: { pageInfo: {} },
+        labels: { totalCount: 10 },
+        commits: { totalCount: 0 },
         reviews: {},
       }),
     ).toBeTruthy();
@@ -29,7 +29,7 @@ describe('utils', () => {
       utils.innerResourcePaginationRequired({
         labels: undefined,
         commits: null,
-        reviews: { pageInfo: { hasNextPage: true } },
+        reviews: { totalCount: 10 },
       }),
     ).toBeTruthy();
   });

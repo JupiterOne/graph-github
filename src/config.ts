@@ -97,11 +97,6 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   githubApiBaseUrl: string;
 
   /**
-   * Boolean indicating if dependabot alerts should be ingested.
-   */
-  enableDependabotAlerts: boolean;
-
-  /**
    * Array of alert states used to filter alerts.
    */
   dependabotAlertStates: string[];
@@ -173,10 +168,6 @@ export function sanitizeConfig(config: IntegrationConfig) {
       'https://api.github.com',
   );
 
-  config.enableDependabotAlerts =
-    config.enableDependabotAlerts ||
-    Boolean(process.env['ENABLE_DEPENDABOT_ALERTS']);
-
   config.pullRequestIngestStartDatetime =
     config.pullRequestIngestStartDatetime ||
     process.env['PULL_REQUEST_INGEST_START_DATETIME']; // Expects Date.toISOString format
@@ -189,10 +180,8 @@ export function sanitizeConfig(config: IntegrationConfig) {
     config.dependabotAlertRequestLimit ||
     process.env['DEPENDABOT_ALERT_REQUEST_LIMIT'];
 
-  if (config.enableDependabotAlerts) {
-    config.dependabotAlertSeverities = config.dependabotAlertSeverities ?? [];
-    config.dependabotAlertStates = config.dependabotAlertStates ?? [];
-  }
+  config.dependabotAlertSeverities = config.dependabotAlertSeverities ?? [];
+  config.dependabotAlertStates = config.dependabotAlertStates ?? [];
 
   if (
     !config.githubAppId ||

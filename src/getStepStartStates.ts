@@ -58,12 +58,8 @@ export default async function getStepStartStates(
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_VULNERABILITY_ALERTS]: {
-      disabled:
-        !scopes.dependabotAlerts ||
-        !context.instance.config.enableDependabotAlerts,
-      disabledReason: !context.instance.config.enableDependabotAlerts
-        ? DisabledStepReason.CONFIG
-        : DisabledStepReason.PERMISSION,
+      disabled: !scopes.dependabotAlerts,
+      disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_BRANCH_PROTECTION_RULES]: {
       disabled: !scopes.repoAdmin && !scopes.repoDiscussions,

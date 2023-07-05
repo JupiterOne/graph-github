@@ -130,7 +130,11 @@ export class APIClient {
    * @param repoName e.g. - graph-github
    * @param pullRequestNumber e.g. - 5
    */
-  public async fetchPullRequest(repoOwner, repoName, pullRequestNumber) {
+  public async fetchPullRequest(
+    repoOwner: string,
+    repoName: string,
+    pullRequestNumber: number,
+  ) {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }

@@ -172,18 +172,18 @@ export class GitHubGraphQLClient {
    * @param pullRequestNumber
    */
   public async fetchPullRequest(
-    repoOwner,
-    repoName,
-    pullRequestNumber,
-  ): Promise<PullRequestResponse | null> {
+    repoOwner: string,
+    repoName: string,
+    pullRequestNumber: number,
+  ): Promise<PullRequestResponse | undefined> {
     const executor = createQueryExecutor(this, this.logger);
 
-    let pullRequest: PullRequestResponse | null = null;
+    let pullRequest: PullRequestResponse | undefined;
     await SinglePullRequestQuery.iteratePullRequest(
       { pullRequestNumber, repoName, repoOwner },
       executor,
       (pr) => {
-        pullRequest = pr;
+        pullRequest = pr as PullRequestResponse;
       },
       this.logger,
     );

@@ -5,6 +5,7 @@ import {
   CursorState,
   IteratePagination,
   ProcessedData,
+  PullRequestConnections,
   PullRequestResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
@@ -21,6 +22,7 @@ export type QueryParams = {
   pullRequestNumber: number;
   repoName: string;
   repoOwner: string;
+  onlyConnections?: boolean;
 };
 
 const MAX_REQUESTS_LIMIT = 100;
@@ -62,7 +64,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
       ) {
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
-              ...${pullRequestFields}
+              ${!queryParams.onlyConnections ? `...${pullRequestFields}` : ''}
               ${
                 queryState?.isInitialQuery ||
                 queryState?.commits?.hasNextPage === true
@@ -111,62 +113,54 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
 
 const pullRequestFields = `
   on PullRequest {
-    additions
     author {
       ...${fragments.teamMemberFields}
     }
-    authorAssociation
     baseRefName
     baseRefOid
     baseRepository {
       name
-      url
       owner {
-        ...${fragments.repositoryOwnerFields}
+        ...on RepositoryOwner {
+          login
+        }
       }
     }
     body
     changedFiles
-    checksUrl
-    closed
-    closedAt
-    # comments  # Maybe someday
     createdAt
     databaseId
-    deletions
-    editor {
-      ...${fragments.userFields}
-    }
-    # files # Maybe someday
     headRefName
     headRefOid
     headRepository {
       name
       owner {
-        ...${fragments.repositoryOwnerFields}
+        ...on RepositoryOwner {
+          login
+        }
       }
     }
     id
-    isDraft
-    lastEditedAt
-    locked
     mergeCommit {
-      ...${fragments.commitFields}
-      ${fragments.associatedPullRequest}
+      ...on Commit {
+        commitUrl
+        oid
+      }
+      associatedPullRequests(first: 1) {
+        nodes {
+          id
+          number
+        }
+      }
     }
-    mergeable
     merged
     mergedAt
     mergedBy {
       ...${fragments.teamMemberFields}
     }
     number
-    permalink
-    publishedAt
     reviewDecision
-    # reviewRequests  # Maybe someday
     state
-    # suggestedReviewers  # Maybe someday
     title
     updatedAt
     url
@@ -203,7 +197,6 @@ const labelsQuery = `
     labels(first: $maxLimit, after: $labelsCursor) {
       totalCount
       nodes {
-        id
         name
       }
       pageInfo {
@@ -237,38 +230,40 @@ export const processResponseData = (
  * @param iteratee
  * @param execute
  */
-const iteratePullRequest: IteratePagination<QueryParams, PullRequestResponse> =
-  async (queryParams, execute, iteratee) => {
-    let finalResource: PullRequestResponse | undefined = undefined;
-    let queryCost = 0;
-    let queryState: QueryState = { isInitialQuery: true };
-    let paginationComplete = false;
+const iteratePullRequest: IteratePagination<
+  QueryParams,
+  PullRequestResponse | PullRequestConnections
+> = async (queryParams, execute, iteratee) => {
+  let finalResource: PullRequestResponse | undefined = undefined;
+  let queryCost = 0;
+  let queryState: QueryState = { isInitialQuery: true };
+  let paginationComplete = false;
 
-    while (!paginationComplete) {
-      const executable = buildQuery(queryParams, queryState);
+  while (!paginationComplete) {
+    const executable = buildQuery(queryParams, queryState);
 
-      const response = await execute(executable);
+    const response = await execute(executable);
 
-      const { resource: processedResource, queryState: processedQueryState } =
-        processResponseData(response);
+    const { resource: processedResource, queryState: processedQueryState } =
+      processResponseData(response);
 
-      finalResource = joinInnerResources(processedResource, finalResource);
-      queryCost += processedQueryState.rateLimit?.cost ?? 0;
-      queryState = processedQueryState;
-      paginationComplete = isPaginationComplete(processedQueryState);
-    }
+    finalResource = joinInnerResources(processedResource, finalResource);
+    queryCost += processedQueryState.rateLimit?.cost ?? 0;
+    queryState = processedQueryState;
+    paginationComplete = isPaginationComplete(processedQueryState);
+  }
 
-    if (finalResource) {
-      await iteratee(finalResource);
-    }
+  if (finalResource) {
+    await iteratee(finalResource);
+  }
 
-    return {
-      totalCost: queryCost,
-      limit: queryState?.rateLimit?.limit,
-      remaining: queryState?.rateLimit?.remaining,
-      resetAt: queryState?.rateLimit?.resetAt,
-    };
+  return {
+    totalCost: queryCost,
+    limit: queryState?.rateLimit?.limit,
+    remaining: queryState?.rateLimit?.remaining,
+    resetAt: queryState?.rateLimit?.resetAt,
   };
+};
 
 /**
  * Combines the Pull Request resource as

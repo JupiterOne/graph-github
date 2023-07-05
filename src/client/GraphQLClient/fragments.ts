@@ -102,14 +102,10 @@ export default {
     }
   }`,
   commitFields: `on Commit {
-    id
     oid
     message
     authoredDate
-    changedFiles
-    commitUrl
     author {
-      date
       user {
         login # this used to be ...userFields
       }
@@ -126,7 +122,6 @@ export default {
       }
     }`,
   reviewFields: `on PullRequestReview {
-    id
     commit {
       oid
     }
@@ -137,9 +132,6 @@ export default {
         }
     }
     state
-    submittedAt
-    updatedAt
-    url
   }`,
   privateRepoPRReviewFields: `on PullRequestReview {
     id

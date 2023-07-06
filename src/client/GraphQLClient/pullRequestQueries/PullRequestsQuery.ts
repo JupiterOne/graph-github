@@ -7,6 +7,8 @@ import {
   BaseQueryState,
   BuildQuery,
   RateLimitStepSummary,
+  PullRequestConnections,
+  PullRequestFields,
 } from '../types';
 import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
@@ -19,7 +21,7 @@ interface QueryState extends BaseQueryState {
 }
 
 type InnerResourcePullRequestQuery = {
-  pullRequestNumber: number;
+  pullRequest: PullRequestFields;
   repoName: string;
   repoOwner: string;
 };
@@ -30,8 +32,6 @@ type QueryParams = {
   ingestStartDatetime: string;
   maxResourceIngestion: number;
 };
-
-const MAX_INNER_RESOURCE_LIMIT = 100;
 
 /**
  * Builds the leanest query possible
@@ -49,7 +49,6 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
       query (
         $issueQuery: String!, 
         $maxSearchLimit: Int!,
-        $maxLimit: Int!,
         $pullRequestsCursor: String
       ) {
         search(first: $maxSearchLimit, after: $pullRequestsCursor, type: ISSUE, query: $issueQuery) {
@@ -78,7 +77,6 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
     queryVariables: {
       issueQuery: `is:pr repo:${queryParams.fullName} updated:>=${queryParams.ingestStartDatetime}`,
       maxSearchLimit: MAX_SEARCH_LIMIT,
-      maxLimit: MAX_INNER_RESOURCE_LIMIT,
       ...(queryState?.pullRequests?.hasNextPage && {
         pullRequestsCursor: queryState?.pullRequests.endCursor,
       }),
@@ -88,66 +86,58 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
 
 const pullRequestFields = (isPublicRepo) => {
   return `...on PullRequest {
-    additions
     author {
       ...${fragments.teamMemberFields}
     }
-    authorAssociation
     baseRefName
     baseRefOid
     baseRepository {
       name
-      url
       owner {
-        ...${fragments.repositoryOwnerFields}
+        ...on RepositoryOwner {
+          login
+        }
       }
     }
     body
     changedFiles
-    checksUrl
-    closed
-    closedAt
-    # comments  # Maybe someday
     createdAt
     databaseId
-    deletions
-    editor {
-      ...${fragments.userFields}
-    }
-    # files # Maybe someday
     headRefName
     headRefOid
     headRepository {
       name
       owner {
-        ...${fragments.repositoryOwnerFields}
+        ...on RepositoryOwner {
+          login
+        }
       }
     }
     id
-    isDraft
-    lastEditedAt
-    locked
     ${
       isPublicRepo
         ? `mergeCommit {
-              ...${fragments.commitFields}
-              ${fragments.associatedPullRequest}
-            }`
+              ...on Commit {
+                commitUrl
+                oid
+              }
+              associatedPullRequests(first: 1) {
+                nodes {
+                  id
+                  number
+                }
+              }
+           }`
         : ''
     }
-    mergeable
     merged
     mergedAt
     mergedBy {
       ...${fragments.teamMemberFields}
     }
     number
-    permalink
-    publishedAt
     reviewDecision
-    # reviewRequests  # Maybe someday
     state
-    # suggestedReviewers  # Maybe someday
     title
     updatedAt
     url
@@ -165,17 +155,8 @@ const commitsQuery = (isPublic) => {
 
   return `
     ... on PullRequest {
-      commits(first: $maxLimit) {
+      commits(first: 1) {
         totalCount
-        nodes {
-          commit {
-            ...${fragments.commitFields}
-          }
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
       }
     }`;
 };
@@ -187,35 +168,16 @@ const commitsQuery = (isPublic) => {
 const reviewsQuery = (isPublic) => {
   return `
     ... on PullRequest {
-      reviews(first: $maxLimit) {
+      reviews(first: 1) {
         totalCount
-        nodes {
-          ${
-            isPublic
-              ? `...${fragments.reviewFields}`
-              : `...${fragments.privateRepoPRReviewFields}`
-          }
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
       }
     }`;
 };
 
 const labelsQuery = `
   ... on PullRequest {
-    labels(first: $maxLimit) {
+    labels(first: 1) {
       totalCount
-      nodes {
-        id
-        name
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
     }
   }`;
 
@@ -230,7 +192,7 @@ const labelsQuery = `
  * @param logger
  */
 export const processResponseData = async (
-  responseData,
+  responseData: any,
   iteratee: ResourceIteratee<PullRequestResponse>,
   onInnerResourceQueryRequired: InnerResourceQuery<InnerResourcePullRequestQuery>,
 ): Promise<QueryState> => {
@@ -256,12 +218,12 @@ export const processResponseData = async (
       // Add pull request to queue allowing process to continue without
       // pausing for subsequent requests. This path is not as common.
       onInnerResourceQueryRequired({
-        pullRequestNumber: pullRequest.number,
+        pullRequest: utils.responseToResource(pullRequest),
         repoName: repoOwnerAndName.repoName!,
         repoOwner: repoOwnerAndName.repoOwner!,
       });
     } else {
-      await iteratee(utils.responseToResource(edge.node));
+      await iteratee(utils.responseToResource(pullRequest));
     }
   }
 
@@ -316,10 +278,18 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
       queryCost += queryState.rateLimit?.cost ?? 0;
 
       for (const pullRequestQuery of innerResourceQueries) {
+        const { repoName, repoOwner } = pullRequestQuery;
+        const { number: pullRequestNumber } = pullRequestQuery.pullRequest;
         const { totalCost } = await SinglePullRequestQuery.iteratePullRequest(
-          pullRequestQuery,
+          { pullRequestNumber, repoName, repoOwner, onlyConnections: true },
           execute,
-          countIteratee,
+          async (connections: PullRequestConnections) => {
+            pullRequestFetched++;
+            await iteratee({
+              ...pullRequestQuery.pullRequest,
+              ...connections,
+            });
+          },
         );
 
         queryCost += totalCost;

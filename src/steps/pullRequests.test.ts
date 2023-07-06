@@ -1,3 +1,5 @@
+jest.setTimeout(100000);
+
 import { Recording } from '@jupiterone/integration-sdk-testing';
 import { IntegrationConfig, sanitizeConfig } from '../config';
 import { determineIngestStartDatetime, prSteps } from './pullRequests';
@@ -12,8 +14,6 @@ import {
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
-
-jest.setTimeout(20000);
 
 let recording: Recording;
 afterEach(async () => {

@@ -118,7 +118,11 @@ export default class OrganizationAccountClient {
    * @param repoName
    * @param pullRequestNumber
    */
-  async fetchPullRequest(repoOwner, repoName, pullRequestNumber) {
+  async fetchPullRequest(
+    repoOwner: string,
+    repoName: string,
+    pullRequestNumber: number,
+  ) {
     return await this.v4.fetchPullRequest(
       repoOwner,
       repoName,

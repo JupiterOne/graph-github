@@ -185,106 +185,89 @@ export interface OrgTeamRepoQueryResponse extends Node {
 export interface PullRequestUser {
   login: string;
   name?: string;
-  isSiteAdmin: boolean;
 }
 
 export interface RepositoryOwner {
   login: string;
-  id: string;
-  url: string;
 }
 
-export interface Commit extends Node {
-  id: string;
-  oid: string; // This is the sha
+export interface Commit {
+  oid: string;
   message: string;
   authoredDate: string;
-  changedFiles: number;
-  commitUrl: string;
   author: {
-    date?: string;
     user?: PullRequestUser;
   };
 }
 
-export interface MergeCommit extends Commit {
+export interface MergeCommit {
+  commitUrl: string;
+  oid: string;
   associatedPullRequest?: AssociatedPullRequest;
 }
 
 export interface AssociatedPullRequest {
   id: string;
-  number: number;
+  number?: number;
 }
 
-export interface Label extends Node {
-  id: string;
+export interface Label {
   name: string;
 }
 
-export interface Review extends Node {
-  id: string;
-  commit?: {
-    oid: string; // This is the sha
-  };
-  author?: PullRequestUser;
+export interface Review {
   state:
     | 'PENDING'
     | 'COMMENTED'
     | 'APPROVED'
     | 'CHANGES_REQUESTED'
     | 'DISMISSED';
-  submittedAt?: string;
-  updatedAt: string;
-  url: string;
+  author?: PullRequestUser;
+  commit?: {
+    oid: string; // This is the sha
+  };
 }
 
-export interface PullRequestResponse extends Node {
+export interface PullRequestConnections {
+  commits?: Commit[];
+  reviews?: Review[];
+  labels?: Label[];
+}
+
+export interface PullRequestFields {
   id: string;
-  additions: number;
-  author?: PullRequestUser;
-  authorAssociation: string;
+  title: string;
+  number: number;
+  body?: string;
+  databaseId?: string;
+  url: string;
+  changedFiles: number;
+  state: 'OPEN' | 'CLOSED' | 'MERGED';
+  merged: boolean;
+  mergedBy?: PullRequestUser;
+  reviewDecision?: 'CHANGES_REQUESTED' | 'APPROVED' | 'REVIEW_REQUIRED';
+  headRefName: string;
   baseRefName: string;
+  headRefOid: string;
   baseRefOid: string;
+  createdAt: string;
+  updatedAt: string;
+  mergedAt?: string;
+  author?: PullRequestUser;
+  mergeCommit?: MergeCommit;
   baseRepository: {
     name: string;
     owner: RepositoryOwner;
   };
-  body?: string;
-  changedFiles: number;
-  checksUrl: string;
-  closed: boolean;
-  closedAt?: string;
-  createdAt: string;
-  databaseId?: string;
-  deletions: number;
-  editor?: PullRequestUser;
-  headRefName: string;
-  headRefOid: string;
   headRepository: {
     name: string;
     owner: RepositoryOwner;
   };
-  isDraft: boolean;
-  lastEditedAt?: string;
-  locked: boolean;
-  mergeCommit?: MergeCommit;
-  mergeable: 'MERGEABLE' | 'CONFLICTING' | 'UNKNOWN';
-  merged: boolean;
-  mergedAt?: string;
-  mergedBy?: PullRequestUser;
-  number: number;
-  permalink: string;
-  publishedAt?: string;
-  reviewDecision?: 'CHANGES_REQUESTED' | 'APPROVED' | 'REVIEW_REQUIRED';
-  state: 'OPEN' | 'CLOSED' | 'MERGED';
-  title: string;
-  updatedAt: string;
-  url: string;
-  // Optional extra traversals
-  commits?: Commit[];
-  labels?: Label[];
-  reviews?: Review[];
 }
+
+export type PullRequestResponse = Node &
+  PullRequestFields &
+  PullRequestConnections;
 
 export interface IssueResponse extends Node {
   id: string;

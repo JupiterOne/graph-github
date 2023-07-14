@@ -55,6 +55,7 @@ import {
   PullRequestResponse,
   RepositoryVulnerabilityAlertState,
   Review,
+  TagQueryResponse,
   VulnerabilityAlertResponse,
 } from '../client/GraphQLClient';
 import {
@@ -1088,4 +1089,26 @@ function apiUrlToWebLink(apiBaseUrl: string, path: string): string {
   } else {
     return apiBaseUrl + path;
   }
+}
+
+export function toTagEntity(tag: TagQueryResponse) {
+  return createIntegrationEntity({
+    entityData: {
+      source: tag,
+      assign: {
+        _type: GithubEntities.GITHUB_REPO_TAG._type,
+        _class: GithubEntities.GITHUB_REPO_TAG._class,
+        _key: tag.id,
+        displayName: tag.name,
+        id: tag.id,
+        oid: tag.target.oid,
+        name: tag.name,
+        url: tag.commitUrl,
+        message: tag.target.message,
+        authorName: tag.target.author?.name,
+        authorEmail: tag.target.author?.email,
+        authoredDate: parseTimePropertyValue(tag.target.author?.date),
+      },
+    },
+  });
 }

@@ -16,6 +16,7 @@ export const Steps = {
   FETCH_TEAM_REPOS: 'fetch-team-repos',
   FETCH_TEAMS: 'fetch-teams',
   FETCH_VULNERABILITY_ALERTS: 'fetch-vulnerability-alerts',
+  FETCH_TAGS: 'fetch-tags',
 };
 
 export const IngestionSources = {
@@ -228,6 +229,22 @@ export const GithubEntities = {
       required: ['webLink', 'displayName'],
     },
   },
+  GITHUB_REPO_TAG: {
+    _type: 'github_repo_tag',
+    _class: ['Record'],
+    schema: {
+      additionalProperties: true,
+      properties: {
+        _type: { const: 'github_repo_tag' },
+        displayName: { type: 'string' },
+        _rawData: {
+          type: 'array',
+          items: { type: 'object' },
+        },
+      },
+      required: ['displayName'],
+    },
+  },
   GITHUB_REPO_SECRET: {
     _type: 'github_repo_secret',
     _class: ['Secret'],
@@ -361,6 +378,7 @@ export const GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE =
   'github_account_has_user';
 export const GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE = 'github_account_has_team';
 export const GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE = 'github_account_owns_repo';
+export const GITHUB_REPO_HAS_TAG_RELATIONSHIP_TYPE = 'github_repo_has_repo_tag';
 export const GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE =
   'github_user_manages_account';
 export const GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE = 'github_user_manages_team';

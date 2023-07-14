@@ -15,6 +15,7 @@ import { teamMemberSteps } from './teamMembers';
 import { vulnerabilityAlertsSteps } from './vulnerabilityAlertsSteps';
 import { branchProtectionRulesSteps } from './branchProtectionRules';
 import { codeScanningAlertsSteps } from './codeScanningAlerts';
+import { tagSteps } from './tags';
 
 const integrationSteps = [
   ...accountSteps,
@@ -34,6 +35,7 @@ const integrationSteps = [
   ...teamRepoSteps,
   ...vulnerabilityAlertsSteps,
   ...branchProtectionRulesSteps,
+  ...tagSteps,
 ];
 
 export { integrationSteps };

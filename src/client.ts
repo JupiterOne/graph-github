@@ -28,6 +28,7 @@ import {
   OrgTeamRepoQueryResponse,
   VulnerabilityAlertResponse,
   BranchProtectionRuleResponse,
+  TagQueryResponse,
 } from './client/GraphQLClient';
 import {
   CodeScanningAlertQueryResponse,
@@ -162,6 +163,22 @@ export class APIClient {
     this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Org Members.',
+    );
+  }
+
+  public async iterateTags(
+    repoName: string,
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ) {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.graphQLClient.iterateTags(repoName, iteratee);
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Repository Tags.',
     );
   }
 

@@ -22,6 +22,7 @@ export default async function getStepStartStates(
     [Steps.FETCH_TEAM_REPOS]: { disabled: false },
     [Steps.FETCH_COLLABORATORS]: { disabled: false },
     [Steps.FETCH_PRS]: { disabled: false },
+    [Steps.FETCH_TAGS]: { disabled: false },
     [Steps.FETCH_ISSUES]: {
       disabled: !scopes.repoIssues,
       disabledReason: DisabledStepReason.PERMISSION,

@@ -30,6 +30,7 @@ import {
   IssueResponse,
   CollaboratorResponse,
   RateLimitStepSummary,
+  TagQueryResponse,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -138,6 +139,13 @@ export default class OrganizationAccountClient {
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateOrgRepositories(this.login, iteratee);
+  }
+
+  async iterateTags(
+    repoName: string,
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ) {
+    return await this.v4.iterateTags(this.login, repoName, iteratee);
   }
 
   /**

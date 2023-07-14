@@ -2,6 +2,9 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import { IntegrationConfig } from '../src/config';
 import { getFakeRsaKey } from '../src/util/sha';
+import { invocationConfig } from '../src';
+import { IntegrationInvocationConfig } from '@jupiterone/integration-sdk-core';
+import { StepTestConfig } from '@jupiterone/integration-sdk-testing';
 
 if (process.env.LOAD_ENV) {
   dotenv.config({
@@ -22,3 +25,11 @@ export const integrationConfig: IntegrationConfig = {
   githubAppDefaultLogin: 'something', //can be set manually in tests
   githubApiBaseUrl: 'https://api.github.com',
 } as IntegrationConfig; // casting config instead of setting useRestForTeamRepos to imitate configs already in production
+
+export function buildStepTestConfig(stepId: string): StepTestConfig {
+  return {
+    stepId,
+    instanceConfig: integrationConfig,
+    invocationConfig: invocationConfig as IntegrationInvocationConfig,
+  };
+}

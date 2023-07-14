@@ -197,8 +197,8 @@ The following relationships are created:
 | `github_repo`         | **HAS**               | `github_finding`                |
 | `github_repo`         | **HAS**               | `github_issue`                  |
 | `github_repo`         | **HAS**               | `github_pullrequest`            |
-| `github_repo`         | **HAS**               | `github_repo_tag`               |
 | `github_repo`         | **HAS**               | `github_repo_secret`            |
+| `github_repo`         | **HAS**               | `github_repo_tag`               |
 | `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`             |
 | `github_repo`         | **USES**              | `github_env_secret`             |
 | `github_repo`         | **USES**              | `github_org_secret`             |

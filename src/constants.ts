@@ -378,7 +378,7 @@ export const GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE =
   'github_account_has_user';
 export const GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE = 'github_account_has_team';
 export const GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE = 'github_account_owns_repo';
-export const GITHUB_REPO_HAS_TAG_RELATIONSHIP_TYPE = 'github_repo_has_repo_tag';
+export const GITHUB_REPO_HAS_TAG_RELATIONSHIP_TYPE = 'github_repo_has_tag';
 export const GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE =
   'github_user_manages_account';
 export const GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE = 'github_user_manages_team';

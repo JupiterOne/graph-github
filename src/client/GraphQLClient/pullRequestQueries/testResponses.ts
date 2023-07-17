@@ -12,61 +12,6 @@ const pullRequestsPublic = [
             id: 'MDExOlB1bGxSZXF1ZXN0MTA=',
             title: 'Update CHANGELOG.md',
             closed: false,
-            commits: {
-              totalCount: 1,
-              nodes: [
-                {
-                  commit: {
-                    id: 'MDY6Q29tbWl0MjE6YmVkZDliNDIzNmY3NzNlMTAxNDIwYzVjNzU3OWIyMDNmODVkNmVkNw==',
-                  },
-                },
-              ],
-              pageInfo: {
-                endCursor: 'MQ',
-                hasNextPage: false,
-              },
-            },
-            reviews: {
-              totalCount: 2,
-              nodes: [
-                {
-                  id: 'MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mg==',
-                },
-                {
-                  id: 'MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mw==',
-                },
-              ],
-              pageInfo: {
-                endCursor:
-                  'Y3Vyc29yOnYyOpO0MjAyMi0wMy0wNFQyMjo1NDozMVq0MjAyMi0wMy0wNFQyMjo1NDozMVoD',
-                hasNextPage: false,
-              },
-            },
-            labels: {
-              totalCount: 4,
-              nodes: [
-                {
-                  id: 'MDU6TGFiZWwxODE=',
-                  name: 'bug',
-                },
-                {
-                  id: 'MDU6TGFiZWwxODI=',
-                  name: 'documentation',
-                },
-                {
-                  id: 'MDU6TGFiZWwxODM=',
-                  name: 'duplicate',
-                },
-                {
-                  id: 'MDU6TGFiZWwxODU=',
-                  name: 'good first issue',
-                },
-              ],
-              pageInfo: {
-                endCursor: 'Y3Vyc29yOnYyOpK0MjAyMi0wMi0yNFQxMzozOToyNFrMuQ==',
-                hasNextPage: false,
-              },
-            },
           },
         },
         {
@@ -87,36 +32,6 @@ const pullRequestsPublic = [
                     url: 'https://github.com/j1-ingest/ubiquitous-umbrella/pull/2',
                   },
                 ],
-              },
-            },
-            commits: {
-              totalCount: 1,
-              nodes: [
-                {
-                  commit: {
-                    id: 'MDY6Q29tbWl0MjE6Y2FmNWNjYzA2MjYyMzAxYzFiNjg4NWJkYjc2NzllNTQ0NjVkZmQ5ZA==',
-                  },
-                },
-              ],
-              pageInfo: {
-                endCursor: 'MQ',
-                hasNextPage: false,
-              },
-            },
-            reviews: {
-              totalCount: 0,
-              nodes: [],
-              pageInfo: {
-                endCursor: null,
-                hasNextPage: false,
-              },
-            },
-            labels: {
-              totalCount: 0,
-              nodes: [],
-              pageInfo: {
-                endCursor: null,
-                hasNextPage: false,
               },
             },
           },
@@ -140,52 +55,6 @@ const pullRequestsPublic = [
             id: 'pr3',
             title: 'Update CHANGELOG.md - page 2',
             closed: false,
-            commits: {
-              totalCount: 1,
-              nodes: [
-                {
-                  commit: {
-                    id: 'pr3-commit1==',
-                  },
-                },
-              ],
-              pageInfo: {
-                endCursor: 'MQ',
-                hasNextPage: false,
-              },
-            },
-            reviews: {
-              totalCount: 2,
-              nodes: [
-                {
-                  id: 'pr3-review1==',
-                },
-                {
-                  id: 'pr3-review2==',
-                },
-              ],
-              pageInfo: {
-                endCursor: 'sdflkj',
-                hasNextPage: false,
-              },
-            },
-            labels: {
-              totalCount: 2,
-              nodes: [
-                {
-                  id: 'MDU6TGFiZWwxODE=',
-                  name: 'bug',
-                },
-                {
-                  id: 'MDU6TGFiZWwxODI=',
-                  name: 'documentation',
-                },
-              ],
-              pageInfo: {
-                endCursor: 'pom==',
-                hasNextPage: false,
-              },
-            },
           },
         },
       ],
@@ -212,36 +81,6 @@ const pullRequestsPublicInnerPagination = {
             name: 'musical-palm-tree',
             owner: {
               login: 'J1-Test',
-            },
-          },
-          commits: {
-            totalCount: 2,
-            nodes: [
-              {
-                commit: {
-                  id: 'MDY6Q29tbWl0MjE6Y2FmNWNjYzA2MjYyMzAxYzFiNjg4NWJkYjc2NzllNTQ0NjVkZmQ5ZA==',
-                },
-              },
-            ],
-            pageInfo: {
-              endCursor: 'commitEndCursor',
-              hasNextPage: true,
-            },
-          },
-          reviews: {
-            totalCount: 0,
-            nodes: [],
-            pageInfo: {
-              endCursor: null,
-              hasNextPage: false,
-            },
-          },
-          labels: {
-            totalCount: 0,
-            nodes: [],
-            pageInfo: {
-              endCursor: null,
-              hasNextPage: false,
             },
           },
         },
@@ -456,8 +295,172 @@ const singleQueryInnerResourcePaginationComplete = {
   },
 };
 
+const commitsQueryResponse = [
+  {
+    repository: {
+      pullRequest: {
+        commits: {
+          totalCount: 3,
+          nodes: [
+            {
+              commit: {
+                oid: 'f5294eb2f1545eb113d3d3d5a7f3977934a13798',
+                message: 'README Update',
+                authoredDate: '2023-05-15T14:05:06Z',
+                author: { user: { login: 'nealajpatel' } },
+              },
+            },
+            {
+              commit: {
+                oid: '3b00cc1814bc8e93d2676f48494118a339d41839',
+                message: 'README Update',
+                authoredDate: '2023-05-15T14:04:53Z',
+                author: { user: { login: 'nealajpatel' } },
+              },
+            },
+          ],
+          pageInfo: { endCursor: 'MQ', hasNextPage: true },
+        },
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 2,
+      remaining: 5000,
+      resetAt: '2023-07-17T21:41:33Z',
+    },
+  },
+  {
+    repository: {
+      pullRequest: {
+        commits: {
+          totalCount: 3,
+          nodes: [
+            {
+              commit: {
+                oid: 'c3d5ca5b1a7e39d8f541e815c437d04579677b67',
+                message: 'test PR',
+                authoredDate: '2023-07-10T20:54:45Z',
+                author: { user: null },
+              },
+            },
+          ],
+          pageInfo: { endCursor: null, hasNextPage: false },
+        },
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 1,
+      remaining: 4998,
+      resetAt: '2023-07-17T21:41:33Z',
+    },
+  },
+];
+
+const labelsQueryResponse = [
+  {
+    repository: {
+      pullRequest: {
+        labels: {
+          totalCount: 1,
+          nodes: [{ name: 'dependencies' }, { name: 'automation' }],
+          pageInfo: { endCursor: 'MQ', hasNextPage: true },
+        },
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 2,
+      remaining: 5000,
+      resetAt: '2023-07-17T22:41:34Z',
+    },
+  },
+  {
+    repository: {
+      pullRequest: {
+        labels: {
+          totalCount: 1,
+          nodes: [{ name: 'release' }],
+          pageInfo: { endCursor: null, hasNextPage: false },
+        },
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 1,
+      remaining: 4998,
+      resetAt: '2023-07-17T22:41:34Z',
+    },
+  },
+];
+
+const reviewsQueryResponse = [
+  {
+    repository: {
+      pullRequest: {
+        reviews: {
+          totalCount: 1,
+          nodes: [
+            {
+              commit: { oid: 'a4c090f614f3b3ed4707c549bcb2d4d5afa76805' },
+              author: { name: 'Neal Patel', login: 'nealajpatel' },
+              state: 'APPROVED',
+            },
+            {
+              commit: null,
+              author: { name: 'Neal Patel', login: 'nealajpatel' },
+              state: 'APPROVED',
+            },
+          ],
+          pageInfo: {
+            endCursor:
+              'Y3Vyc29yOnYyOpO0MjAyMy0wNS0yMFQwMzo0OTo1Nlq0MjAyMy0wNS0yMFQwMzo0OTo1NlrOVY2pjA==',
+            hasNextPage: true,
+          },
+        },
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 2,
+      remaining: 5000,
+      resetAt: '2023-07-17T22:41:34Z',
+    },
+  },
+  {
+    repository: {
+      pullRequest: {
+        reviews: {
+          totalCount: 1,
+          nodes: [
+            {
+              commit: null,
+              author: { name: 'Neal Patel', login: 'nealajpatel' },
+              state: 'APPROVED',
+            },
+          ],
+          pageInfo: {
+            endCursor: null,
+            hasNextPage: false,
+          },
+        },
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 1,
+      remaining: 4998,
+      resetAt: '2023-07-17T22:41:34Z',
+    },
+  },
+];
+
 export {
   singleQueryFullResponse,
   singleQueryWithPartialInnerResources,
   singleQueryInnerResourcePaginationComplete,
+  commitsQueryResponse,
+  labelsQueryResponse,
+  reviewsQueryResponse,
 };

@@ -2,13 +2,7 @@ import PullRequestsQuery, {
   buildQuery,
   processResponseData,
 } from './PullRequestsQuery';
-import {
-  emptyPullRequest,
-  pullRequestsPublic,
-  pullRequestsPublicInnerPagination,
-  singleQueryFullResponse,
-  singleQueryInnerResourcePaginationComplete,
-} from './testResponses';
+import { emptyPullRequest, pullRequestsPublic } from './testResponses';
 
 describe('PullRequestsQuery', () => {
   describe('#buildQuery', () => {
@@ -61,46 +55,23 @@ describe('PullRequestsQuery', () => {
   });
 
   describe('#processResponseData', () => {
-    test('Pulling data out with no inner resource pagination', async () => {
+    test('Pulling data out', async () => {
       // Arrange
       const iteratee = jest.fn();
-      const addToQueue = jest.fn();
 
       // Act
-      const result = await processResponseData(
-        pullRequestsPublic[0],
-        iteratee,
-        addToQueue,
-      );
+      const result = await processResponseData(pullRequestsPublic[0], iteratee);
 
       // Assert
       expect(result).toMatchSnapshot();
       expect(iteratee).toHaveBeenCalledTimes(2);
       expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
       expect(iteratee.mock.calls[1][0]).toMatchSnapshot();
-      expect(addToQueue).not.toHaveBeenCalled();
-    });
-    test('Skips resources with inner resource pagination', async () => {
-      // Arrange
-      const iteratee = jest.fn();
-      const addToQueue = jest.fn();
-
-      // Act
-      const result = await processResponseData(
-        pullRequestsPublicInnerPagination,
-        iteratee,
-        addToQueue,
-      );
-
-      // Assert
-      expect(result).toMatchSnapshot();
-      expect(iteratee).toHaveBeenCalledTimes(0);
-      expect(addToQueue).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('#iteratePullRequests', () => {
-    test('Pulling data out with no inner resource pagination', async () => {
+    test('Pulling data out', async () => {
       // Arrange
       const iteratee = jest.fn();
       const execute = jest
@@ -127,42 +98,6 @@ describe('PullRequestsQuery', () => {
       expect(execute).toHaveBeenCalledTimes(2);
       expect(execute.mock.calls[0][0]).toMatchSnapshot();
       expect(execute.mock.calls[1][0]).toMatchSnapshot();
-    });
-
-    test('Pulling data out with inner resource pagination', async () => {
-      // Arrange
-      const iteratee = jest.fn();
-      const execute = jest
-        .fn()
-        .mockResolvedValueOnce(pullRequestsPublicInnerPagination) // Entity is not used, but queued for single query
-        .mockResolvedValueOnce(singleQueryFullResponse) // Part 1 of inner resources single query
-        .mockResolvedValueOnce(singleQueryInnerResourcePaginationComplete) // Part 2 of inner resources single query
-        .mockRejectedValue(
-          new Error(
-            'Pagination failed to stop! This response should never be reached.',
-          ),
-        );
-
-      // Act
-      const { totalCost } = await PullRequestsQuery.iteratePullRequests(
-        {
-          fullName: 'J1-Test/happy-sunshine',
-          public: true,
-          ingestStartDatetime: '2011-10-05T14:48:00.000Z',
-          maxResourceIngestion: 500,
-        },
-        execute,
-        iteratee,
-      );
-
-      // Assert
-      expect(totalCost).toBe(3);
-      expect(iteratee).toHaveBeenCalledTimes(1);
-      expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
-      expect(execute).toHaveBeenCalledTimes(3);
-      expect(execute.mock.calls[0][0]).toMatchSnapshot();
-      expect(execute.mock.calls[1][0]).toMatchSnapshot();
-      expect(execute.mock.calls[2][0]).toMatchSnapshot();
     });
 
     test('handle empty/partial responses', async () => {

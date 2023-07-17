@@ -30,6 +30,9 @@ import {
   IssueResponse,
   CollaboratorResponse,
   RateLimitStepSummary,
+  Review,
+  Label,
+  Commit,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -215,6 +218,81 @@ export default class OrganizationAccountClient {
       },
       ingestStartDatetime,
       maxResourceIngestion,
+      iteratee,
+    );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over review entities.
+   * @param repo
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  async iterateReviewEntities(
+    repo: RepoEntity,
+    pullRequestNumber: number,
+    iteratee: ResourceIteratee<Review>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting Reviews.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateReviews(
+      {
+        name: repo.name,
+        owner: repo.owner,
+      },
+      pullRequestNumber,
+      iteratee,
+    );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over label entities.
+   * @param repo
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  async iterateLabelEntities(
+    repo: RepoEntity,
+    pullRequestNumber: number,
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting Labels.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateLabels(
+      {
+        name: repo.name,
+        owner: repo.owner,
+      },
+      pullRequestNumber,
+      iteratee,
+    );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over commit entities.
+   * @param repo
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  async iterateCommitEntities(
+    repo: RepoEntity,
+    pullRequestNumber: number,
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting Commit.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateCommits(
+      {
+        name: repo.name,
+        owner: repo.owner,
+      },
+      pullRequestNumber,
       iteratee,
     );
   }

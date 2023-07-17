@@ -102,11 +102,14 @@ const buildEntity = async (
   const { memberByLoginMap, allCollaboratorsByLoginMap } =
     await buildUserLoginMaps(client, repoName);
 
-  return toPullRequestEntity(
+  return toPullRequestEntity({
     pullRequest,
-    memberByLoginMap,
-    allCollaboratorsByLoginMap,
-  );
+    commits: pullRequest.commits ?? [],
+    reviews: pullRequest.reviews ?? [],
+    labels: pullRequest.labels ?? [],
+    teamMembersByLoginMap: memberByLoginMap,
+    allKnownUsersByLoginMap: allCollaboratorsByLoginMap,
+  });
 };
 
 const buildUserLoginMaps = async (client: APIClient, repoName: string) => {

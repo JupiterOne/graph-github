@@ -1,0 +1,149 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ReviewsQuery #iterateReviews Pulling data out 1`] = `
+Object {
+  "author": Object {
+    "login": "nealajpatel",
+    "name": "Neal Patel",
+  },
+  "commit": Object {
+    "oid": "a4c090f614f3b3ed4707c549bcb2d4d5afa76805",
+  },
+  "state": "APPROVED",
+}
+`;
+
+exports[`ReviewsQuery #iterateReviews Pulling data out 2`] = `
+Object {
+  "author": Object {
+    "login": "nealajpatel",
+    "name": "Neal Patel",
+  },
+  "commit": null,
+  "state": "APPROVED",
+}
+`;
+
+exports[`ReviewsQuery #iterateReviews Pulling data out 3`] = `
+Object {
+  "author": Object {
+    "login": "nealajpatel",
+    "name": "Neal Patel",
+  },
+  "commit": null,
+  "state": "APPROVED",
+}
+`;
+
+exports[`ReviewsQuery #iterateReviews Pulling data out 4`] = `
+Object {
+  "query": "
+    query (
+      $pullRequestNumber: Int!
+      $repoName: String!
+      $repoOwner: String!
+      $maxLimit: Int!
+      $reviewsCursor: String
+    ) {
+      repository(name: $repoName, owner: $repoOwner) {
+        pullRequest(number: $pullRequestNumber) {
+          reviews(first: $maxLimit, after: $reviewsCursor) {
+            totalCount
+            nodes {
+              ...on PullRequestReview {
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+  }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      }
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
+    }",
+  "queryVariables": Object {
+    "maxLimit": 25,
+    "pullRequestNumber": 2,
+    "repoName": "happy-sunshine",
+    "repoOwner": "J1-Test",
+  },
+}
+`;
+
+exports[`ReviewsQuery #iterateReviews Pulling data out 5`] = `
+Object {
+  "query": "
+    query (
+      $pullRequestNumber: Int!
+      $repoName: String!
+      $repoOwner: String!
+      $maxLimit: Int!
+      $reviewsCursor: String
+    ) {
+      repository(name: $repoName, owner: $repoOwner) {
+        pullRequest(number: $pullRequestNumber) {
+          reviews(first: $maxLimit, after: $reviewsCursor) {
+            totalCount
+            nodes {
+              ...on PullRequestReview {
+    commit {
+      oid
+    }
+    author {
+      ...on User {
+          name
+          login
+        }
+    }
+    state
+  }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      }
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
+    }",
+  "queryVariables": Object {
+    "maxLimit": 25,
+    "pullRequestNumber": 2,
+    "repoName": "happy-sunshine",
+    "repoOwner": "J1-Test",
+    "reviewsCursor": "Y3Vyc29yOnYyOpO0MjAyMy0wNS0yMFQwMzo0OTo1Nlq0MjAyMy0wNS0yMFQwMzo0OTo1NlrOVY2pjA==",
+  },
+  "rateLimit": Object {
+    "cost": 2,
+    "limit": 5000,
+    "remaining": 5000,
+    "resetAt": "2023-07-17T22:41:34Z",
+  },
+}
+`;

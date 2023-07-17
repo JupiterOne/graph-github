@@ -38,6 +38,7 @@ import {
 import { cloneDeep } from 'lodash';
 import { hasAssociatedMergePullRequest } from '../sync/converterUtils';
 import { sub } from 'date-fns';
+import { Commit, Label, Review } from '../client/GraphQLClient';
 
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
 
@@ -109,11 +110,45 @@ export async function fetchPrs(
           ingestStartDatetime,
           maxResourceIngestion,
           async (pullRequest) => {
-            const pr = toPullRequestEntity(
-              pullRequest,
-              teamMembersByLoginMap,
-              usersByLoginMap!,
+            const pullRequestReviews: Review[] = [];
+            await apiClient.iterateReviews(
+              repoEntity,
+              pullRequest.number,
+              logger,
+              (review) => {
+                pullRequestReviews.push(review);
+              },
             );
+            const pullRequestLabels: Label[] = [];
+            await apiClient.iterateLabels(
+              repoEntity,
+              pullRequest.number,
+              logger,
+              (label) => {
+                pullRequestLabels.push(label);
+              },
+            );
+            const pullRequestCommits: Commit[] = [];
+            if (repoEntity.public) {
+              await apiClient.iterateCommits(
+                repoEntity,
+                pullRequest.number,
+                logger,
+                (commit) => {
+                  pullRequestCommits.push(commit);
+                },
+              );
+            }
+
+            const pr = toPullRequestEntity({
+              pullRequest,
+              reviews: pullRequestReviews,
+              labels: pullRequestLabels,
+              commits: pullRequestCommits,
+              teamMembersByLoginMap,
+              allKnownUsersByLoginMap: usersByLoginMap!,
+            });
+
             // If we receive a new PR into a repo while paginating, the
             // results will shift and cause us to see a PR twice.
             // We should skip both entity and relationship creation as we

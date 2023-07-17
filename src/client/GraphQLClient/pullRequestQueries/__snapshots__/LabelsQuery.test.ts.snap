@@ -1,0 +1,110 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LabelsQuery #iterateLabels Pulling data out 1`] = `
+Object {
+  "name": "dependencies",
+}
+`;
+
+exports[`LabelsQuery #iterateLabels Pulling data out 2`] = `
+Object {
+  "name": "automation",
+}
+`;
+
+exports[`LabelsQuery #iterateLabels Pulling data out 3`] = `
+Object {
+  "name": "release",
+}
+`;
+
+exports[`LabelsQuery #iterateLabels Pulling data out 4`] = `
+Object {
+  "query": "
+    query (
+      $pullRequestNumber: Int!
+      $repoName: String!
+      $repoOwner: String!
+      $maxLimit: Int!
+      $labelsCursor: String
+    ) {
+      repository(name: $repoName, owner: $repoOwner) {
+        pullRequest(number: $pullRequestNumber) {
+          labels(first: $maxLimit, after: $labelsCursor) {
+            totalCount
+            nodes {
+              name
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      }
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
+    }",
+  "queryVariables": Object {
+    "maxLimit": 25,
+    "pullRequestNumber": 2,
+    "repoName": "happy-sunshine",
+    "repoOwner": "J1-Test",
+  },
+}
+`;
+
+exports[`LabelsQuery #iterateLabels Pulling data out 5`] = `
+Object {
+  "query": "
+    query (
+      $pullRequestNumber: Int!
+      $repoName: String!
+      $repoOwner: String!
+      $maxLimit: Int!
+      $labelsCursor: String
+    ) {
+      repository(name: $repoName, owner: $repoOwner) {
+        pullRequest(number: $pullRequestNumber) {
+          labels(first: $maxLimit, after: $labelsCursor) {
+            totalCount
+            nodes {
+              name
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      }
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
+    }",
+  "queryVariables": Object {
+    "labelsCursor": "MQ",
+    "maxLimit": 25,
+    "pullRequestNumber": 2,
+    "repoName": "happy-sunshine",
+    "repoOwner": "J1-Test",
+  },
+  "rateLimit": Object {
+    "cost": 2,
+    "limit": 5000,
+    "remaining": 5000,
+    "resetAt": "2023-07-17T22:41:34Z",
+  },
+}
+`;

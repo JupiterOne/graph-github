@@ -3,28 +3,18 @@ import {
   PullRequestResponse,
   IteratePagination,
   CursorState,
-  InnerResourceQuery,
   BaseQueryState,
   BuildQuery,
   RateLimitStepSummary,
-  PullRequestConnections,
-  PullRequestFields,
 } from '../types';
 import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import SinglePullRequestQuery from './SinglePullRequestQuery';
 import { MAX_SEARCH_LIMIT } from '../paginate';
 import fragments from '../fragments';
 
 interface QueryState extends BaseQueryState {
   pullRequests: CursorState;
 }
-
-type InnerResourcePullRequestQuery = {
-  pullRequest: PullRequestFields;
-  repoName: string;
-  repoOwner: string;
-};
 
 type QueryParams = {
   fullName: string;
@@ -56,9 +46,6 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
           edges {
             node {
               ${pullRequestFields(queryParams.public)}
-              ${commitsQuery(queryParams.public)}
-              ${reviewsQuery(queryParams.public)}
-              ${labelsQuery} 
             }
           }
           pageInfo {
@@ -84,7 +71,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
-const pullRequestFields = (isPublicRepo) => {
+const pullRequestFields = (isPublicRepo: boolean) => {
   return `...on PullRequest {
     author {
       ...${fragments.teamMemberFields}
@@ -145,43 +132,6 @@ const pullRequestFields = (isPublicRepo) => {
 };
 
 /**
- * Builds commits sub-query if repo is public.
- * @param isPublic
- */
-const commitsQuery = (isPublic) => {
-  if (!isPublic) {
-    return '';
-  }
-
-  return `
-    ... on PullRequest {
-      commits(first: 1) {
-        totalCount
-      }
-    }`;
-};
-
-/**
- * Builds reviews sub-query.
- * @param isPublic
- */
-const reviewsQuery = (isPublic) => {
-  return `
-    ... on PullRequest {
-      reviews(first: 1) {
-        totalCount
-      }
-    }`;
-};
-
-const labelsQuery = `
-  ... on PullRequest {
-    labels(first: 1) {
-      totalCount
-    }
-  }`;
-
-/**
  * Processes the data, iterating over each pull request.
  * If inner resources of the pull request have multiple
  * pages, the pull request is added to a InnerResourceQuery queue
@@ -194,7 +144,6 @@ const labelsQuery = `
 export const processResponseData = async (
   responseData: any,
   iteratee: ResourceIteratee<PullRequestResponse>,
-  onInnerResourceQueryRequired: InnerResourceQuery<InnerResourcePullRequestQuery>,
 ): Promise<QueryState> => {
   if (!responseData) {
     throw new Error('responseData param is required.');
@@ -210,21 +159,7 @@ export const processResponseData = async (
       continue;
     }
 
-    if (
-      utils.innerResourcePaginationRequired(pullRequest) &&
-      utils.hasRepoOwnerAndName(pullRequest)
-    ) {
-      const repoOwnerAndName = utils.findRepoOwnerAndName(pullRequest);
-      // Add pull request to queue allowing process to continue without
-      // pausing for subsequent requests. This path is not as common.
-      onInnerResourceQueryRequired({
-        pullRequest: utils.responseToResource(pullRequest),
-        repoName: repoOwnerAndName.repoName!,
-        repoOwner: repoOwnerAndName.repoOwner!,
-      });
-    } else {
-      await iteratee(utils.responseToResource(pullRequest));
-    }
+    await iteratee(utils.responseToResource(pullRequest));
   }
 
   return {
@@ -263,37 +198,13 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
     };
 
     while (!paginationComplete) {
-      // Queue of pull requests that have inner resources
-      // and require a separate query to gather complete data.
-      const innerResourceQueries: InnerResourcePullRequestQuery[] = [];
-
       const executable = buildQuery(queryParams, queryState);
 
       const response = await execute(executable);
 
-      queryState = await processResponseData(response, countIteratee, (query) =>
-        innerResourceQueries.push(query),
-      );
+      queryState = await processResponseData(response, countIteratee);
 
       queryCost += queryState.rateLimit?.cost ?? 0;
-
-      for (const pullRequestQuery of innerResourceQueries) {
-        const { repoName, repoOwner } = pullRequestQuery;
-        const { number: pullRequestNumber } = pullRequestQuery.pullRequest;
-        const { totalCost } = await SinglePullRequestQuery.iteratePullRequest(
-          { pullRequestNumber, repoName, repoOwner, onlyConnections: true },
-          execute,
-          async (connections: PullRequestConnections) => {
-            pullRequestFetched++;
-            await iteratee({
-              ...pullRequestQuery.pullRequest,
-              ...connections,
-            });
-          },
-        );
-
-        queryCost += totalCost;
-      }
 
       const exceededMaxResourceLimit =
         pullRequestFetched >= queryParams.maxResourceIngestion;

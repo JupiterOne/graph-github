@@ -16,7 +16,9 @@ import { ResourceIteratee } from '../../client';
 import {
   BranchProtectionRuleResponse,
   CollaboratorResponse,
+  Commit,
   IssueResponse,
+  Label,
   OrgMemberQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamMemberQueryResponse,
@@ -24,6 +26,8 @@ import {
   OrgTeamRepoQueryResponse,
   PullRequestResponse,
   RateLimitStepSummary,
+  Review,
+  SinglePullRequestResponse,
   VulnerabilityAlertResponse,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
@@ -47,6 +51,9 @@ import { graphql } from '@octokit/graphql/dist-types/types';
 import SinglePullRequestQuery from './pullRequestQueries/SinglePullRequestQuery';
 import RepoVulnAlertsQuery from './vulnerabilityAlertQueries/RepoVulnAlertsQuery';
 import BranchProtectionRulesQuery from './branchProtectionRulesQueries/BranchProtectionRulesQuery';
+import ReviewsQuery from './pullRequestQueries/ReviewsQuery';
+import LabelsQuery from './pullRequestQueries/LabelsQuery';
+import CommitsQuery from './pullRequestQueries/CommitsQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300000;
 
@@ -143,7 +150,10 @@ export class GitHubGraphQLClient {
    * @param queryString
    * @param queryVariables
    */
-  public async query(queryString: string, queryVariables) {
+  public async query(
+    queryString: string,
+    queryVariables: Record<string, unknown>,
+  ) {
     if (this.tokenExpires - FIVE_MINUTES_IN_MILLIS < Date.now()) {
       await this.refreshToken();
     }
@@ -175,15 +185,15 @@ export class GitHubGraphQLClient {
     repoOwner: string,
     repoName: string,
     pullRequestNumber: number,
-  ): Promise<PullRequestResponse | undefined> {
+  ): Promise<SinglePullRequestResponse | undefined> {
     const executor = createQueryExecutor(this, this.logger);
 
-    let pullRequest: PullRequestResponse | undefined;
+    let pullRequest: SinglePullRequestResponse | undefined;
     await SinglePullRequestQuery.iteratePullRequest(
       { pullRequestNumber, repoName, repoOwner },
       executor,
       (pr) => {
-        pullRequest = pr as PullRequestResponse;
+        pullRequest = pr as SinglePullRequestResponse;
       },
       this.logger,
     );
@@ -221,6 +231,87 @@ export class GitHubGraphQLClient {
   }
 
   /**
+   * Iterates over reviews for the given pull request.
+   * @param repository
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  public async iterateReviews(
+    repository: { name: string; owner: string },
+    pullRequestNumber: number,
+    iteratee: ResourceIteratee<Review>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await ReviewsQuery.iterateReviews(
+        {
+          repoName: repository.name,
+          repoOwner: repository.owner,
+          pullRequestNumber,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over labels for the given pull request.
+   * @param repository
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  public async iterateLabels(
+    repository: { name: string; owner: string },
+    pullRequestNumber: number,
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await LabelsQuery.iterateLabels(
+        {
+          repoName: repository.name,
+          repoOwner: repository.owner,
+          pullRequestNumber,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over commits for the given pull request.
+   * @param repository
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  public async iterateCommits(
+    repository: { name: string; owner: string },
+    pullRequestNumber: number,
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await CommitsQuery.iterateCommits(
+        {
+          repoName: repository.name,
+          repoOwner: repository.owner,
+          pullRequestNumber,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  /**
    * Iterates over issues for the given repository.
    * @param repoFullName
    * @param lastExecutionTime
@@ -248,7 +339,7 @@ export class GitHubGraphQLClient {
    * @param iteratee
    */
   public async iterateOrgRepositories(
-    login,
+    login: string,
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
@@ -281,8 +372,8 @@ export class GitHubGraphQLClient {
    * @param iteratee
    */
   public async iterateRepoCollaborators(
-    login,
-    repoName,
+    login: string,
+    repoName: string,
     iteratee: ResourceIteratee<CollaboratorResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
@@ -330,7 +421,7 @@ export class GitHubGraphQLClient {
    * @param iteratee
    */
   public async iterateOrgMembers(
-    login,
+    login: string,
     iteratee: ResourceIteratee<OrgMemberQueryResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
@@ -422,7 +513,7 @@ export class GitHubGraphQLClient {
    */
   private async retryGraphQL(
     queryString: string,
-    queryVariables,
+    queryVariables: Record<string, unknown>,
     timeoutRetryAttempt = 0,
   ) {
     const { logger } = this;

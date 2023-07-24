@@ -352,18 +352,14 @@ export class GitHubGraphQLClient {
   }
 
   public async iterateTags(
-    login: string,
+    repoOwner: string,
     repoName: string,
     iteratee: ResourceIteratee<TagQueryResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
-      await TagsQuery.iterateTags(
-        { repoName, repoOwner: login },
-        executor,
-        iteratee,
-      ),
+      await TagsQuery.iterateTags({ repoName, repoOwner }, executor, iteratee),
     );
   }
 

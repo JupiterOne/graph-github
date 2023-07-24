@@ -145,10 +145,11 @@ export default class OrganizationAccountClient {
   }
 
   async iterateTags(
+    repoOwner: string,
     repoName: string,
     iteratee: ResourceIteratee<TagQueryResponse>,
   ) {
-    return await this.v4.iterateTags(this.login, repoName, iteratee);
+    return await this.v4.iterateTags(repoOwner, repoName, iteratee);
   }
 
   /**

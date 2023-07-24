@@ -170,6 +170,7 @@ export class APIClient {
   }
 
   public async iterateTags(
+    repoOwner: string,
     repoName: string,
     iteratee: ResourceIteratee<TagQueryResponse>,
   ) {
@@ -177,7 +178,11 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    const rateLimit = await this.graphQLClient.iterateTags(repoName, iteratee);
+    const rateLimit = await this.graphQLClient.iterateTags(
+      repoOwner,
+      repoName,
+      iteratee,
+    );
 
     this.logger.debug(
       { rateLimit },

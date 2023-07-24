@@ -21,6 +21,8 @@ import {
   fixturePullRequest,
   fixtureUser,
   fixtureReviewerUser,
+  fixtureCommits,
+  fixtureReviews,
 } from './fixtures/pullRequest';
 import { GithubPagesInfo } from '../client';
 
@@ -905,17 +907,20 @@ describe('toIssue', () => {
 
 describe('toPullRequestEntity', () => {
   test('with all commits approved', () => {
-    const entity = toPullRequestEntity(
-      fixturePullRequest,
-      {
+    const entity = toPullRequestEntity({
+      pullRequest: fixturePullRequest,
+      commits: fixtureCommits,
+      reviews: fixtureReviews,
+      labels: [],
+      teamMembersByLoginMap: {
         [fixtureUser.login!]: fixtureUser,
         [fixtureReviewerUser.login!]: fixtureReviewerUser,
       },
-      {
+      allKnownUsersByLoginMap: {
         [fixtureUser.login!]: fixtureUser,
         [fixtureReviewerUser.login!]: fixtureReviewerUser,
       },
-    );
+    });
     expect(entity).toMatchSnapshot();
   });
 
@@ -927,17 +932,20 @@ describe('toPullRequestEntity', () => {
       mergedAt: undefined,
       mergeCommit: undefined,
     };
-    const entity = toPullRequestEntity(
-      declinedPullRequest,
-      {
+    const entity = toPullRequestEntity({
+      pullRequest: declinedPullRequest,
+      commits: fixtureCommits,
+      reviews: fixtureReviews,
+      labels: [],
+      teamMembersByLoginMap: {
         [fixtureUser.login]: fixtureUser as UserEntity,
         [fixtureReviewerUser.login]: fixtureReviewerUser as UserEntity,
       },
-      {
+      allKnownUsersByLoginMap: {
         [fixtureUser.login!]: fixtureUser,
         [fixtureReviewerUser.login!]: fixtureReviewerUser,
       },
-    );
+    });
     expect(entity).toMatchObject({
       state: 'CLOSED',
       open: false,
@@ -949,15 +957,22 @@ describe('toPullRequestEntity', () => {
   });
 
   test('with no known user approvals', () => {
-    const entity = toPullRequestEntity(fixturePullRequest, {}, {});
+    const entity = toPullRequestEntity({
+      pullRequest: fixturePullRequest,
+      commits: fixtureCommits,
+      reviews: fixtureReviews,
+      labels: [],
+      teamMembersByLoginMap: {},
+      allKnownUsersByLoginMap: {},
+    });
     expect(entity).toMatchObject({
       allCommitsApproved: false,
       validated: false,
-      commits: fixturePullRequest.commits?.map((c) => c.oid),
-      commitMessages: fixturePullRequest.commits?.map((c) => c.message),
+      commits: fixtureCommits.map((c) => c.oid),
+      commitMessages: fixtureCommits.map((c) => c.message),
       commitsApproved: [],
-      commitsNotApproved: fixturePullRequest.commits?.map((c) => c.oid),
-      commitsByUnknownAuthor: fixturePullRequest.commits?.map((c) => c.oid),
+      commitsNotApproved: fixtureCommits.map((c) => c.oid),
+      commitsByUnknownAuthor: fixtureCommits.map((c) => c.oid),
       approvers: [fixtureReviewerUser.displayName],
       approverLogins: [fixtureReviewerUser.login],
       author: fixtureUser.displayName,
@@ -972,21 +987,24 @@ describe('toPullRequestEntity', () => {
   });
 
   test('with commits and reviews from users that are contributors but not team members', () => {
-    const entity = toPullRequestEntity(
-      fixturePullRequest,
-      {},
-      {
+    const entity = toPullRequestEntity({
+      pullRequest: fixturePullRequest,
+      commits: fixtureCommits,
+      reviews: fixtureReviews,
+      labels: [],
+      teamMembersByLoginMap: {},
+      allKnownUsersByLoginMap: {
         [fixtureUser.login!]: fixtureUser,
         [fixtureReviewerUser.login!]: fixtureReviewerUser,
       },
-    );
+    });
     expect(entity).toMatchObject({
       allCommitsApproved: false,
       validated: true,
-      commits: fixturePullRequest.commits?.map((c) => c.oid),
-      commitMessages: fixturePullRequest.commits?.map((c) => c.message),
+      commits: fixtureCommits.map((c) => c.oid),
+      commitMessages: fixtureCommits.map((c) => c.message),
       commitsApproved: [],
-      commitsNotApproved: fixturePullRequest.commits?.map((c) => c.oid),
+      commitsNotApproved: fixtureCommits.map((c) => c.oid),
       commitsByUnknownAuthor: [],
       approvers: [fixtureReviewerUser.displayName],
       approverLogins: [fixtureReviewerUser.login],

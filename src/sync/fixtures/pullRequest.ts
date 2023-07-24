@@ -1,6 +1,8 @@
 import {
+  Commit,
   PullRequestResponse,
   PullRequestUser,
+  Review,
 } from '../../client/GraphQLClient/types';
 import { UserEntity } from '../../types';
 
@@ -61,42 +63,41 @@ export const fixturePullRequest: PullRequestResponse = {
   title: 'Ingest AutoScaling Policies and build relationships',
   updatedAt: '2021-09-01T01:53:35Z',
   url: 'https://github.com/JupiterOne/jupiter-integration-aws/pull/45',
-  commits: [
-    {
-      message:
-        'Ingest AutoScaling Policies and build `aws_autoscaling_group` `USES` `aws_autoscaling_policy` relationships',
-      authoredDate: '2021-08-31T22:14:45Z',
-      oid: '890af24d913107194e9ce9439b7e71ea2b1b17c4',
-      author: {
-        user: pullRequestUser,
-      },
-    },
-    {
-      message:
-        "Merge branch 'main' of github.com:jupiterone/jupiter-integration-aws into autoscaling-policies",
-      authoredDate: '2021-08-31T22:17:46Z',
-      oid: '69b3d5771a50752acf9310fd93b7a176d6cffaa2',
-      author: {
-        user: pullRequestUser,
-      },
-    },
-    {
-      message: 'fix _type and _class',
-      authoredDate: '2021-08-31T22:19:39Z',
-      oid: '1103a7a2e976439ca184f775196759084f16e42f',
-      author: {
-        user: pullRequestUser,
-      },
-    },
-  ],
-  reviews: [
-    {
-      commit: {
-        oid: '1103a7a2e976439ca184f775196759084f16e42f',
-      },
-      author: pullRequestReviewer,
-      state: 'APPROVED',
-    },
-  ],
-  labels: [],
 };
+export const fixtureCommits: Commit[] = [
+  {
+    message:
+      'Ingest AutoScaling Policies and build `aws_autoscaling_group` `USES` `aws_autoscaling_policy` relationships',
+    authoredDate: '2021-08-31T22:14:45Z',
+    oid: '890af24d913107194e9ce9439b7e71ea2b1b17c4',
+    author: {
+      user: pullRequestUser,
+    },
+  },
+  {
+    message:
+      "Merge branch 'main' of github.com:jupiterone/jupiter-integration-aws into autoscaling-policies",
+    authoredDate: '2021-08-31T22:17:46Z',
+    oid: '69b3d5771a50752acf9310fd93b7a176d6cffaa2',
+    author: {
+      user: pullRequestUser,
+    },
+  },
+  {
+    message: 'fix _type and _class',
+    authoredDate: '2021-08-31T22:19:39Z',
+    oid: '1103a7a2e976439ca184f775196759084f16e42f',
+    author: {
+      user: pullRequestUser,
+    },
+  },
+];
+export const fixtureReviews: Review[] = [
+  {
+    commit: {
+      oid: '1103a7a2e976439ca184f775196759084f16e42f',
+    },
+    author: pullRequestReviewer,
+    state: 'APPROVED',
+  },
+];

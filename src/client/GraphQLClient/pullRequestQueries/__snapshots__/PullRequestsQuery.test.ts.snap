@@ -60,19 +60,6 @@ Object {
     updatedAt
     url
   }
-              
-              
-    ... on PullRequest {
-      reviews(first: 1) {
-        totalCount
-      }
-    }
-              
-  ... on PullRequest {
-    labels(first: 1) {
-      totalCount
-    }
-  } 
             }
           }
           pageInfo {
@@ -167,24 +154,6 @@ Object {
     updatedAt
     url
   }
-              
-    ... on PullRequest {
-      commits(first: 1) {
-        totalCount
-      }
-    }
-              
-    ... on PullRequest {
-      reviews(first: 1) {
-        totalCount
-      }
-    }
-              
-  ... on PullRequest {
-    labels(first: 1) {
-      totalCount
-    }
-  } 
             }
           }
           pageInfo {
@@ -279,24 +248,6 @@ Object {
     updatedAt
     url
   }
-              
-    ... on PullRequest {
-      commits(first: 1) {
-        totalCount
-      }
-    }
-              
-    ... on PullRequest {
-      reviews(first: 1) {
-        totalCount
-      }
-    }
-              
-  ... on PullRequest {
-    labels(first: 1) {
-      totalCount
-    }
-  } 
             }
           }
           pageInfo {
@@ -321,383 +272,15 @@ Object {
 }
 `;
 
-exports[`PullRequestsQuery #iteratePullRequests Pulling data out with inner resource pagination 1`] = `
-Object {
-  "commits": Array [
-    Object {
-      "id": "commit1",
-    },
-  ],
-  "headRepository": Object {
-    "name": "musical-palm-tree",
-    "owner": Object {
-      "login": "J1-Test",
-    },
-  },
-  "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
-  "labels": Array [
-    Object {
-      "id": "label1=",
-      "name": "bug",
-    },
-    Object {
-      "id": "label2=",
-      "name": "documentation",
-    },
-    Object {
-      "id": "label3=",
-      "name": "first-task",
-    },
-    Object {
-      "id": "label4=",
-      "name": "feature",
-    },
-  ],
-  "mergeCommit": Object {
-    "associatedPullRequest": Object {
-      "id": "PR_kwDOIAVVA84_DshD",
-      "number": 2,
-      "reviewDecision": null,
-      "state": "MERGED",
-      "url": "https://github.com/j1-ingest/ubiquitous-umbrella/pull/2",
-    },
-    "id": "C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI",
-  },
-  "reviews": Array [
-    Object {
-      "id": "review1",
-    },
-    Object {
-      "id": "review2",
-    },
-    Object {
-      "id": "review3==",
-    },
-  ],
-  "title": "Update CHANGELOG.md",
-}
-`;
-
-exports[`PullRequestsQuery #iteratePullRequests Pulling data out with inner resource pagination 2`] = `
-Object {
-  "query": "
-      query (
-        $issueQuery: String!, 
-        $maxSearchLimit: Int!,
-        $pullRequestsCursor: String
-      ) {
-        search(first: $maxSearchLimit, after: $pullRequestsCursor, type: ISSUE, query: $issueQuery) {
-          issueCount
-          edges {
-            node {
-              ...on PullRequest {
-    author {
-      ...on User {
-    name
-    login
-  }
-    }
-    baseRefName
-    baseRefOid
-    baseRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    body
-    changedFiles
-    createdAt
-    databaseId
-    headRefName
-    headRefOid
-    headRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    id
-    mergeCommit {
-              ...on Commit {
-                commitUrl
-                oid
-              }
-              associatedPullRequests(first: 1) {
-                nodes {
-                  id
-                  number
-                }
-              }
-           }
-    merged
-    mergedAt
-    mergedBy {
-      ...on User {
-    name
-    login
-  }
-    }
-    number
-    reviewDecision
-    state
-    title
-    updatedAt
-    url
-  }
-              
-    ... on PullRequest {
-      commits(first: 1) {
-        totalCount
-      }
-    }
-              
-    ... on PullRequest {
-      reviews(first: 1) {
-        totalCount
-      }
-    }
-              
-  ... on PullRequest {
-    labels(first: 1) {
-      totalCount
-    }
-  } 
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-        ...on Query {
-    rateLimit {
-      limit
-      cost
-      remaining
-      resetAt
-    }
-  }
-      }",
-  "queryVariables": Object {
-    "issueQuery": "is:pr repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
-    "maxSearchLimit": 25,
-  },
-}
-`;
-
-exports[`PullRequestsQuery #iteratePullRequests Pulling data out with inner resource pagination 3`] = `
-Object {
-  "query": "
-      query (
-        $pullRequestNumber: Int!
-        $repoName: String!
-        $repoOwner: String!
-        $maxLimit: Int!
-        $commitsCursor: String
-        $reviewsCursor: String
-        $labelsCursor: String
-      ) {
-          repository(name: $repoName, owner: $repoOwner) {
-            pullRequest(number: $pullRequestNumber) {
-              
-              
-    commits(first: $maxLimit, after: $commitsCursor) {
-      totalCount
-      nodes {
-        commit {
-          ...on Commit {
-    oid
-    message
-    authoredDate
-    author {
-      user {
-        login # this used to be ...userFields
-      }
-    }
-  }
-        }
-      }
-      
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-              
-    reviews(first: $maxLimit, after: $reviewsCursor) {
-      totalCount
-      nodes {
-        ...on PullRequestReview {
-    commit {
-      oid
-    }
-    author {
-      ...on User {
-          name
-          login
-        }
-    }
-    state
-  }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-              
-    labels(first: $maxLimit, after: $labelsCursor) {
-      totalCount
-      nodes {
-        name
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    } 
-            }
-          }
-          ...on Query {
-    rateLimit {
-      limit
-      cost
-      remaining
-      resetAt
-    }
-  }
-      }",
-  "queryVariables": Object {
-    "maxLimit": 100,
-    "pullRequestNumber": undefined,
-    "repoName": "musical-palm-tree",
-    "repoOwner": "J1-Test",
-  },
-}
-`;
-
-exports[`PullRequestsQuery #iteratePullRequests Pulling data out with inner resource pagination 4`] = `
-Object {
-  "query": "
-      query (
-        $pullRequestNumber: Int!
-        $repoName: String!
-        $repoOwner: String!
-        $maxLimit: Int!
-        
-        $reviewsCursor: String
-        $labelsCursor: String
-      ) {
-          repository(name: $repoName, owner: $repoOwner) {
-            pullRequest(number: $pullRequestNumber) {
-              
-              
-              
-    reviews(first: $maxLimit, after: $reviewsCursor) {
-      totalCount
-      nodes {
-        ...on PullRequestReview {
-    commit {
-      oid
-    }
-    author {
-      ...on User {
-          name
-          login
-        }
-    }
-    state
-  }
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    }
-              
-    labels(first: $maxLimit, after: $labelsCursor) {
-      totalCount
-      nodes {
-        name
-      }
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-    } 
-            }
-          }
-          ...on Query {
-    rateLimit {
-      limit
-      cost
-      remaining
-      resetAt
-    }
-  }
-      }",
-  "queryVariables": Object {
-    "labelsCursor": "Y3Vyc2==",
-    "maxLimit": 100,
-    "pullRequestNumber": undefined,
-    "repoName": "musical-palm-tree",
-    "repoOwner": "J1-Test",
-    "reviewsCursor": "Y3Vyc29yOnYyOpO0M",
-  },
-  "rateLimit": Object {
-    "cost": 1,
-    "limit": 5000,
-    "remaining": 4998,
-    "resetAt": "2022-03-07T22:04:07Z",
-  },
-}
-`;
-
-exports[`PullRequestsQuery #iteratePullRequests Pulling data out with no inner resource pagination 1`] = `
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out 1`] = `
 Object {
   "closed": false,
-  "commits": Array [
-    Object {
-      "id": "MDY6Q29tbWl0MjE6YmVkZDliNDIzNmY3NzNlMTAxNDIwYzVjNzU3OWIyMDNmODVkNmVkNw==",
-    },
-  ],
   "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
-  "labels": Array [
-    Object {
-      "id": "MDU6TGFiZWwxODE=",
-      "name": "bug",
-    },
-    Object {
-      "id": "MDU6TGFiZWwxODI=",
-      "name": "documentation",
-    },
-    Object {
-      "id": "MDU6TGFiZWwxODM=",
-      "name": "duplicate",
-    },
-    Object {
-      "id": "MDU6TGFiZWwxODU=",
-      "name": "good first issue",
-    },
-  ],
-  "reviews": Array [
-    Object {
-      "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mg==",
-    },
-    Object {
-      "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mw==",
-    },
-  ],
   "title": "Update CHANGELOG.md",
 }
 `;
 
-exports[`PullRequestsQuery #iteratePullRequests Pulling data out with no inner resource pagination 2`] = `
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out 2`] = `
 Object {
   "query": "
       query (
@@ -768,24 +351,6 @@ Object {
     updatedAt
     url
   }
-              
-    ... on PullRequest {
-      commits(first: 1) {
-        totalCount
-      }
-    }
-              
-    ... on PullRequest {
-      reviews(first: 1) {
-        totalCount
-      }
-    }
-              
-  ... on PullRequest {
-    labels(first: 1) {
-      totalCount
-    }
-  } 
             }
           }
           pageInfo {
@@ -809,7 +374,7 @@ Object {
 }
 `;
 
-exports[`PullRequestsQuery #iteratePullRequests Pulling data out with no inner resource pagination 3`] = `
+exports[`PullRequestsQuery #iteratePullRequests Pulling data out 3`] = `
 Object {
   "query": "
       query (
@@ -880,24 +445,6 @@ Object {
     updatedAt
     url
   }
-              
-    ... on PullRequest {
-      commits(first: 1) {
-        totalCount
-      }
-    }
-              
-    ... on PullRequest {
-      reviews(first: 1) {
-        totalCount
-      }
-    }
-              
-  ... on PullRequest {
-    labels(first: 1) {
-      totalCount
-    }
-  } 
             }
           }
           pageInfo {
@@ -925,7 +472,7 @@ Object {
 }
 `;
 
-exports[`PullRequestsQuery #processResponseData Pulling data out with no inner resource pagination 1`] = `
+exports[`PullRequestsQuery #processResponseData Pulling data out 1`] = `
 Object {
   "pullRequests": Object {
     "endCursor": "Y3Vyc29yOjI=",
@@ -937,55 +484,18 @@ Object {
 }
 `;
 
-exports[`PullRequestsQuery #processResponseData Pulling data out with no inner resource pagination 2`] = `
+exports[`PullRequestsQuery #processResponseData Pulling data out 2`] = `
 Object {
   "closed": false,
-  "commits": Array [
-    Object {
-      "id": "MDY6Q29tbWl0MjE6YmVkZDliNDIzNmY3NzNlMTAxNDIwYzVjNzU3OWIyMDNmODVkNmVkNw==",
-    },
-  ],
   "id": "MDExOlB1bGxSZXF1ZXN0MTA=",
-  "labels": Array [
-    Object {
-      "id": "MDU6TGFiZWwxODE=",
-      "name": "bug",
-    },
-    Object {
-      "id": "MDU6TGFiZWwxODI=",
-      "name": "documentation",
-    },
-    Object {
-      "id": "MDU6TGFiZWwxODM=",
-      "name": "duplicate",
-    },
-    Object {
-      "id": "MDU6TGFiZWwxODU=",
-      "name": "good first issue",
-    },
-  ],
-  "reviews": Array [
-    Object {
-      "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mg==",
-    },
-    Object {
-      "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mw==",
-    },
-  ],
   "title": "Update CHANGELOG.md",
 }
 `;
 
-exports[`PullRequestsQuery #processResponseData Pulling data out with no inner resource pagination 3`] = `
+exports[`PullRequestsQuery #processResponseData Pulling data out 3`] = `
 Object {
   "closed": false,
-  "commits": Array [
-    Object {
-      "id": "MDY6Q29tbWl0MjE6Y2FmNWNjYzA2MjYyMzAxYzFiNjg4NWJkYjc2NzllNTQ0NjVkZmQ5ZA==",
-    },
-  ],
   "id": "MDExOlB1bGxSZXF1ZXN0OQ==",
-  "labels": Array [],
   "mergeCommit": Object {
     "associatedPullRequest": Object {
       "id": "PR_kwDOIAVVA84_DshD",
@@ -997,19 +507,6 @@ Object {
     "id": "C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI",
     "oid": "8563e9b2d6334b750f8f7b630858188950d2ab92",
   },
-  "reviews": Array [],
   "title": "Create CHANGELOG.md #2",
-}
-`;
-
-exports[`PullRequestsQuery #processResponseData Skips resources with inner resource pagination 1`] = `
-Object {
-  "pullRequests": Object {
-    "endCursor": "Y3Vyc29yOjI=",
-    "hasNextPage": false,
-  },
-  "rateLimit": Object {
-    "cost": 1,
-  },
 }
 `;

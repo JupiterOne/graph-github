@@ -91,7 +91,6 @@ Object {
   }
         }
       }
-      
       pageInfo {
         endCursor
         hasNextPage
@@ -509,7 +508,6 @@ Object {
         "name": "documentation",
       },
     ],
-    "reviews": Array [],
     "title": "singleQueryWithPartialInnerResources",
   },
 }

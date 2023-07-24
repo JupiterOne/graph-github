@@ -28,6 +28,9 @@ import {
   OrgTeamRepoQueryResponse,
   VulnerabilityAlertResponse,
   BranchProtectionRuleResponse,
+  Review,
+  Label,
+  Commit,
 } from './client/GraphQLClient';
 import {
   CodeScanningAlertQueryResponse,
@@ -477,6 +480,81 @@ export class APIClient {
       { rateLimit },
       'Rate limit consumed while fetching Pull Requests.',
     );
+  }
+
+  /**
+   * Fetch all reviews from pull request resource in the provider.
+   *
+   * @param repo entity
+   * @param pullRequestNumber number
+   * @param logger logger
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateReviews(
+    repo: RepoEntity,
+    pullRequestNumber: number,
+    logger: IntegrationLogger,
+    iteratee: ResourceIteratee<Review>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateReviewEntities(
+      repo,
+      pullRequestNumber,
+      iteratee,
+    );
+    logger.debug({ rateLimit }, 'Rate limit consumed while fetching Reviews.');
+  }
+
+  /**
+   * Fetch all labels from pull request resource in the provider.
+   *
+   * @param repo entity
+   * @param pullRequestNumber number
+   * @param logger logger
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateLabels(
+    repo: RepoEntity,
+    pullRequestNumber: number,
+    logger: IntegrationLogger,
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateLabelEntities(
+      repo,
+      pullRequestNumber,
+      iteratee,
+    );
+    logger.debug({ rateLimit }, 'Rate limit consumed while fetching Labels.');
+  }
+
+  /**
+   * Fetch all commits from pull request resource in the provider.
+   *
+   * @param repo entity
+   * @param pullRequestNumber number
+   * @param logger logger
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateCommits(
+    repo: RepoEntity,
+    pullRequestNumber: number,
+    logger: IntegrationLogger,
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateCommitEntities(
+      repo,
+      pullRequestNumber,
+      iteratee,
+    );
+    logger.debug({ rateLimit }, 'Rate limit consumed while fetching Commits.');
   }
 
   /**

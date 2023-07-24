@@ -6,6 +6,20 @@ Object {
   "collectedRelationships": Array [
     Object {
       "_class": "ALLOWS",
+      "_fromEntityKey": "R_kgDOHNYdzQ",
+      "_key": "R_kgDOHNYdzQ|allows|T_kwDOB0VI3c4Ab0na",
+      "_toEntityKey": "T_kwDOB0VI3c4Ab0na",
+      "_type": "github_repo_allows_team",
+      "adminPermission": false,
+      "displayName": "ALLOWS",
+      "maintainPermission": false,
+      "pullPermission": true,
+      "pushPermission": false,
+      "role": "READ",
+      "triagePermission": false,
+    },
+    Object {
+      "_class": "ALLOWS",
       "_fromEntityKey": "R_kgDOIudGfA",
       "_key": "R_kgDOIudGfA|allows|T_kwDOB0VI3c4Ab0na",
       "_toEntityKey": "T_kwDOB0VI3c4Ab0na",
@@ -32,6 +46,20 @@ Object {
       "role": "READ",
       "triagePermission": false,
     },
+    Object {
+      "_class": "ALLOWS",
+      "_fromEntityKey": "R_kgDOJjTBjA",
+      "_key": "R_kgDOJjTBjA|allows|T_kwDOB0VI3c4AeONM",
+      "_toEntityKey": "T_kwDOB0VI3c4AeONM",
+      "_type": "github_repo_allows_team",
+      "adminPermission": false,
+      "displayName": "ALLOWS",
+      "maintainPermission": true,
+      "pullPermission": true,
+      "pushPermission": true,
+      "role": "MAINTAIN",
+      "triagePermission": true,
+    },
   ],
   "encounteredTypes": Array [
     "github_account",
@@ -42,6 +70,6 @@ Object {
     "github_repo_allows_team",
   ],
   "numCollectedEntities": 0,
-  "numCollectedRelationships": 2,
+  "numCollectedRelationships": 4,
 }
 `;

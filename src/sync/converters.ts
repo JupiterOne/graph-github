@@ -432,7 +432,7 @@ export function toOrganizationMemberEntity(
     login: data.login,
     username: data.login,
     displayName: data.name || data.login,
-    name: data.name,
+    name: data.name || data.login,
     mfaEnabled: data.hasTwoFactorEnabled || undefined,
     role: data.role,
     siteAdmin: data.isSiteAdmin,

@@ -4885,6 +4885,258 @@ Removed files: ...",
       "_class": Array [
         "PR",
       ],
+      "_key": "JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull-requests/20",
+      "_rawData": Array [
+        Object {
+          "name": "default",
+          "rawData": Object {
+            "author": Object {},
+            "baseRefName": "master",
+            "baseRefOid": "a2bc64ee49b792c4fe2dc81dc64babb7ae4240d9",
+            "baseRepository": Object {
+              "name": "intentionally-vulnerable-golang-project",
+              "owner": Object {
+                "login": "JupiterOne-Sandbox",
+              },
+            },
+            "body": "Bumps [google.golang.org/grpc](https://github.com/grpc/grpc-go) from 1.23.0 to 1.53.0.
+<details>
+<summary>Release notes</summary>
+<p><em>Sourced from <a href=\\"https://github.com/grpc/grpc-go/releases\\">google.golang.org/grpc's releases</a>.</em></p>
+<blockquote>
+<h2>Release 1.53.0</h2>
+<h1>API Changes</h1>
+<ul>
+<li>balancer: support injection of per-call metadata from LB policies (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5853\\">#5853</a>)</li>
+<li>resolver: remove deprecated field <code>resolver.Target.Endpoint</code> and replace with <code>resolver.Target.Endpoint()</code> (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5852\\">#5852</a>)
+<ul>
+<li>Special Thanks: <a href=\\"https://github.com/kylejb\\"><code>@​kylejb</code></a></li>
+</ul>
+</li>
+</ul>
+<h1>New Features</h1>
+<ul>
+<li>xds/ringhash: introduce <code>GRPC_RING_HASH_CAP</code> environment variable to override the maximum ring size. (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5884\\">#5884</a>)</li>
+<li>rls: propagate headers received in RLS response to backends (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5883\\">#5883</a>)</li>
+</ul>
+<h1>Bug Fixes</h1>
+<ul>
+<li>transport: drain client transport when streamID approaches MaxStreamID (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5889\\">#5889</a>)</li>
+<li>server: after GracefulStop, ensure connections are closed when final RPC completes (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5968\\">#5968</a>)</li>
+<li>server: fix a few issues where grpc server uses RST_STREAM for non-HTTP/2 errors (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5893\\">#5893</a>)</li>
+<li>xdsclient: fix race which can happen when multiple load reporting calls are made at the same time. (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5927\\">#5927</a>)</li>
+<li>rls: fix a data race involving the LRU cache (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5925\\">#5925</a>)</li>
+<li>xds: fix panic involving double close of channel in xDS transport (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5959\\">#5959</a>)</li>
+<li>gcp/observability: update method name validation (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5951\\">#5951</a>)</li>
+</ul>
+<h1>Documentation</h1>
+<ul>
+<li>credentials/oauth: mark <code>NewOauthAccess</code> as deprecated (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5882\\">#5882</a>)
+<ul>
+<li>Special Thanks: <a href=\\"https://github.com/buzzsurfr\\"><code>@​buzzsurfr</code></a></li>
+</ul>
+</li>
+</ul>
+<h2>Release 1.52.3</h2>
+<h1>Bug Fixes</h1>
+<ul>
+<li>Fix user-agent version</li>
+</ul>
+<h2>Release 1.52.2</h2>
+<h1>Bug Fixes</h1>
+<ul>
+<li>xds: fix panic involving double close of channel in xDS transport (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5959\\">#5959</a>)</li>
+</ul>
+<h2>Release 1.52.1</h2>
+<h1>Bug Fixes</h1>
+<ul>
+<li>grpclb: rename grpclbstate package back to state (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5963\\">#5963</a>)</li>
+</ul>
+<h2>Release 1.52.0</h2>
+<h1>New Features</h1>
+<ul>
+<li>xdsclient: log node ID with verbosity INFO (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5860\\">#5860</a>)</li>
+<li>ringhash: impose cap on <code>max_ring_size</code> to reduce possibility of OOMs (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5801\\">#5801</a>)</li>
+</ul>
+<h1>Behavior Changes</h1>
+<!-- raw HTML omitted -->
+</blockquote>
+<p>... (truncated)</p>
+</details>
+<details>
+<summary>Commits</summary>
+<ul>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/dba26e15a07f43875ccf806a2dd6cbcbc1c12eab\\"><code>dba26e1</code></a> Change version to 1.53.0 (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5983\\">#5983</a>)</li>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/2a1e9348ff7b5d9f4b5039e84e6c9873b5b3e26e\\"><code>2a1e934</code></a> server: after GracefulStop, ensure connections are closed when final RPC comp...</li>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/e2d69aa076dd070e3668784c4dc8bcf7131b3f67\\"><code>e2d69aa</code></a> tests: fix spelling of variable (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5966\\">#5966</a>)</li>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/a6376c9893f56fc3819bee9ef5d71f55cc2d38dd\\"><code>a6376c9</code></a> xds/resolver: cleanup tests to use real xDS client 3/n (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5953\\">#5953</a>)</li>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/bf8fc46fa6eb913e4ed0f6dee6c6a7b75e85fbf0\\"><code>bf8fc46</code></a> xds/resolver: cleanup tests to use real xDS client 5/n (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5955\\">#5955</a>)</li>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/3930549b38c0fc4cd94a95efccf7cef5f90515fd\\"><code>3930549</code></a> resolver: replace resolver.Target.Endpoint field with Endpoint() method (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5852\\">#5852</a>)</li>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/894816c487f8dd48fc971c45a7c5baa4b86ef7de\\"><code>894816c</code></a> grpclb: rename <code>grpclbstate</code> package back to <code>state</code> (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5962\\">#5962</a>)</li>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/e5a0237a46a5f95fa571624929be10c7afebb180\\"><code>e5a0237</code></a> encoding: fix duplicate compressor names (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5958\\">#5958</a>)</li>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/4adb2a7a00d8b62df5ea34d520fe3ca13bffd31a\\"><code>4adb2a7</code></a> xds/resolver: cleanup tests to use real xDS client 2/n (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5952\\">#5952</a>)</li>
+<li><a href=\\"https://github.com/grpc/grpc-go/commit/52a8392f374b8cd60e176b67925a7f8c1605d014\\"><code>52a8392</code></a> gcp/observability: update method name validation (<a href=\\"https://redirect.github.com/grpc/grpc-go/issues/5951\\">#5951</a>)</li>
+<li>Additional commits viewable in <a href=\\"https://github.com/grpc/grpc-go/compare/v1.23.0...v1.53.0\\">compare view</a></li>
+</ul>
+</details>
+<br />
+
+
+[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=google.golang.org/grpc&package-manager=go_modules&previous-version=1.23.0&new-version=1.53.0)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)
+
+Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting \`@dependabot rebase\`.
+
+[//]: # (dependabot-automerge-start)
+[//]: # (dependabot-automerge-end)
+
+---
+
+<details>
+<summary>Dependabot commands and options</summary>
+<br />
+
+You can trigger Dependabot actions by commenting on this PR:
+- \`@dependabot rebase\` will rebase this PR
+- \`@dependabot recreate\` will recreate this PR, overwriting any edits that have been made to it
+- \`@dependabot merge\` will merge this PR after your CI passes on it
+- \`@dependabot squash and merge\` will squash and merge this PR after your CI passes on it
+- \`@dependabot cancel merge\` will cancel a previously requested merge and block automerging
+- \`@dependabot reopen\` will reopen this PR if it is closed
+- \`@dependabot close\` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually
+- \`@dependabot ignore this major version\` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)
+- \`@dependabot ignore this minor version\` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)
+- \`@dependabot ignore this dependency\` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)
+You can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/JupiterOne-Sandbox/intentionally-vulnerable-golang-project/network/alerts).
+
+</details>",
+            "changedFiles": 2,
+            "commits": Array [
+              Object {
+                "author": Object {
+                  "user": Object {
+                    "login": "dependabot[bot]",
+                  },
+                },
+                "authoredDate": "2023-07-05T20:51:44Z",
+                "message": "Bump google.golang.org/grpc from 1.23.0 to 1.53.0
+
+Bumps [google.golang.org/grpc](https://github.com/grpc/grpc-go) from 1.23.0 to 1.53.0.
+- [Release notes](https://github.com/grpc/grpc-go/releases)
+- [Commits](https://github.com/grpc/grpc-go/compare/v1.23.0...v1.53.0)
+
+---
+updated-dependencies:
+- dependency-name: google.golang.org/grpc
+  dependency-type: indirect
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>",
+                "oid": "b2d6911cd689ee26cdeb62e8e4d7d95e585f87f4",
+              },
+            ],
+            "createdAt": "2023-07-05T20:51:45Z",
+            "databaseId": 1421764209,
+            "headRefName": "dependabot/go_modules/google.golang.org/grpc-1.53.0",
+            "headRefOid": "b2d6911cd689ee26cdeb62e8e4d7d95e585f87f4",
+            "headRepository": Object {
+              "name": "intentionally-vulnerable-golang-project",
+              "owner": Object {
+                "login": "JupiterOne-Sandbox",
+              },
+            },
+            "id": "PR_kwDOI2pIIM5UvmZx",
+            "labels": Array [
+              Object {
+                "name": "dependencies",
+              },
+            ],
+            "mergeCommit": null,
+            "merged": false,
+            "mergedAt": null,
+            "mergedBy": null,
+            "number": 20,
+            "reviewDecision": null,
+            "reviews": Array [],
+            "state": "OPEN",
+            "title": "Bump google.golang.org/grpc from 1.23.0 to 1.53.0",
+            "updatedAt": "2023-07-05T20:51:47Z",
+            "url": "https://github.com/JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull/20",
+          },
+        },
+      ],
+      "_type": "github_pullrequest",
+      "accountLogin": "JupiterOne-Sandbox",
+      "allCommitsApproved": false,
+      "approvalLastAt": undefined,
+      "approvalsCount": 0,
+      "approved": false,
+      "approverLogins": Array [],
+      "approvers": Array [],
+      "author": "",
+      "authorLogin": "",
+      "commitMessages": Array [
+        "Bump google.golang.org/grpc from 1.23.0 to 1.53.0
+
+Bumps [google.golang.org/grpc](https://github.com/grpc/grpc-go) from 1.23.0 to 1.53.0.
+- [Release notes](https://github.com/grpc/grpc-go/releases)
+- [Commits](https://github.com/grpc/grpc-go/compare/v1.23.0...v1.53.0)
+
+---
+updated-dependencies:
+- dependency-name: google.golang.org/grpc
+  dependency-type: indirect
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>",
+      ],
+      "commits": Array [
+        "b2d6911cd689ee26cdeb62e8e4d7d95e585f87f4",
+      ],
+      "commitsApproved": Array [],
+      "commitsByUnknownAuthor": Array [
+        "b2d6911cd689ee26cdeb62e8e4d7d95e585f87f4",
+      ],
+      "commitsCount": 1,
+      "commitsNotApproved": Array [
+        "b2d6911cd689ee26cdeb62e8e4d7d95e585f87f4",
+      ],
+      "createdOn": 1688590305000,
+      "databaseId": 1421764209,
+      "declined": false,
+      "description": "Bumps [google.golang.org/grpc](https://github.com/grpc/grpc-go) from 1.23.0 to 1...",
+      "displayName": "intentionally-vulnerable-golang-project/20",
+      "filesChangedCount": 2,
+      "id": "20",
+      "labels": Array [
+        "dependencies",
+      ],
+      "mergeCommitHash": undefined,
+      "merged": false,
+      "mergedBy": undefined,
+      "mergedByLogin": undefined,
+      "mergedOn": undefined,
+      "name": "Bump google.golang.org/grpc from 1.23.0 to 1.53.0",
+      "node": "PR_kwDOI2pIIM5UvmZx",
+      "number": 20,
+      "open": true,
+      "pullRequestId": "PR_kwDOI2pIIM5UvmZx",
+      "repository": "intentionally-vulnerable-golang-project",
+      "reviewerLogins": Array [],
+      "reviewers": Array [],
+      "source": "dependabot/go_modules/google.golang.org/grpc-1.53.0",
+      "sourceRefOid": "b2d6911cd689ee26cdeb62e8e4d7d95e585f87f4",
+      "state": "OPEN",
+      "target": "master",
+      "targetRefOid": "a2bc64ee49b792c4fe2dc81dc64babb7ae4240d9",
+      "title": "Bump google.golang.org/grpc from 1.23.0 to 1.53.0",
+      "updatedOn": 1688590307000,
+      "validated": false,
+      "webLink": "https://github.com/JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull/20",
+    },
+    Object {
+      "_class": Array [
+        "PR",
+      ],
       "_key": "JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull-requests/19",
       "_rawData": Array [
         Object {
@@ -9477,6 +9729,120 @@ Signed-off-by: dependabot[bot] <support@github.com>",
       "_class": Array [
         "PR",
       ],
+      "_key": "JupiterOne-Sandbox/reimagined-barnacle/pull-requests/14",
+      "_rawData": Array [
+        Object {
+          "name": "default",
+          "rawData": Object {
+            "author": Object {
+              "login": "RonaldEAM",
+              "name": "Ronald Arias",
+            },
+            "baseRefName": "main",
+            "baseRefOid": "6a0698aa55ec19ce3aadc8a630d17e6f7c3f095f",
+            "baseRepository": Object {
+              "name": "reimagined-barnacle",
+              "owner": Object {
+                "login": "JupiterOne-Sandbox",
+              },
+            },
+            "body": "",
+            "changedFiles": 1,
+            "commits": Array [
+              Object {
+                "author": Object {
+                  "user": null,
+                },
+                "authoredDate": "2023-07-10T20:54:45Z",
+                "message": "test PR ronald",
+                "oid": "c3d5ca5b1a7e39d8f541e815c437d04579677b67",
+              },
+            ],
+            "createdAt": "2023-07-10T20:55:13Z",
+            "databaseId": 1428233510,
+            "headRefName": "ronald-test-1",
+            "headRefOid": "c3d5ca5b1a7e39d8f541e815c437d04579677b67",
+            "headRepository": Object {
+              "name": "reimagined-barnacle",
+              "owner": Object {
+                "login": "JupiterOne-Sandbox",
+              },
+            },
+            "id": "PR_kwDOI2pL-M5VIR0m",
+            "labels": Array [],
+            "mergeCommit": null,
+            "merged": false,
+            "mergedAt": null,
+            "mergedBy": null,
+            "number": 14,
+            "reviewDecision": "REVIEW_REQUIRED",
+            "reviews": Array [],
+            "state": "CLOSED",
+            "title": "test PR ronald",
+            "updatedAt": "2023-07-10T21:05:10Z",
+            "url": "https://github.com/JupiterOne-Sandbox/reimagined-barnacle/pull/14",
+          },
+        },
+      ],
+      "_type": "github_pullrequest",
+      "accountLogin": "JupiterOne-Sandbox",
+      "allCommitsApproved": false,
+      "approvalLastAt": undefined,
+      "approvalsCount": 0,
+      "approved": false,
+      "approverLogins": Array [],
+      "approvers": Array [],
+      "author": "Ronald Arias",
+      "authorLogin": "RonaldEAM",
+      "commitMessages": Array [
+        "test PR ronald",
+      ],
+      "commits": Array [
+        "c3d5ca5b1a7e39d8f541e815c437d04579677b67",
+      ],
+      "commitsApproved": Array [],
+      "commitsByUnknownAuthor": Array [
+        "c3d5ca5b1a7e39d8f541e815c437d04579677b67",
+      ],
+      "commitsCount": 1,
+      "commitsNotApproved": Array [
+        "c3d5ca5b1a7e39d8f541e815c437d04579677b67",
+      ],
+      "createdOn": 1689022513000,
+      "databaseId": 1428233510,
+      "declined": true,
+      "description": undefined,
+      "displayName": "reimagined-barnacle/14",
+      "filesChangedCount": 1,
+      "id": "14",
+      "labels": Array [],
+      "mergeCommitHash": undefined,
+      "merged": false,
+      "mergedBy": undefined,
+      "mergedByLogin": undefined,
+      "mergedOn": undefined,
+      "name": "test PR ronald",
+      "node": "PR_kwDOI2pL-M5VIR0m",
+      "number": 14,
+      "open": false,
+      "pullRequestId": "PR_kwDOI2pL-M5VIR0m",
+      "repository": "reimagined-barnacle",
+      "reviewerLogins": Array [],
+      "reviewers": Array [],
+      "source": "ronald-test-1",
+      "sourceRefOid": "c3d5ca5b1a7e39d8f541e815c437d04579677b67",
+      "state": "CLOSED",
+      "target": "main",
+      "targetRefOid": "6a0698aa55ec19ce3aadc8a630d17e6f7c3f095f",
+      "title": "test PR ronald",
+      "updatedOn": 1689023110000,
+      "validated": false,
+      "webLink": "https://github.com/JupiterOne-Sandbox/reimagined-barnacle/pull/14",
+    },
+    Object {
+      "_class": Array [
+        "PR",
+      ],
       "_key": "JupiterOne-Sandbox/reimagined-barnacle/pull-requests/13",
       "_rawData": Array [
         Object {
@@ -10957,7 +11323,7 @@ Signed-off-by: dependabot[bot] <support@github.com>",
             "mergedAt": "2023-05-20T03:50:27Z",
             "mergedBy": Object {},
             "number": 10,
-            "reviewDecision": "REVIEW_REQUIRED",
+            "reviewDecision": "APPROVED",
             "reviews": Array [
               Object {
                 "author": Object {
@@ -10982,7 +11348,7 @@ Signed-off-by: dependabot[bot] <support@github.com>",
       "allCommitsApproved": false,
       "approvalLastAt": undefined,
       "approvalsCount": 1,
-      "approved": false,
+      "approved": true,
       "approverLogins": Array [
         "nealajpatel",
       ],
@@ -11465,7 +11831,7 @@ Signed-off-by: dependabot[bot] <support@github.com>",
             "mergedAt": "2023-05-16T14:20:42Z",
             "mergedBy": Object {},
             "number": 6,
-            "reviewDecision": "REVIEW_REQUIRED",
+            "reviewDecision": "APPROVED",
             "reviews": Array [
               Object {
                 "author": Object {
@@ -11490,7 +11856,7 @@ Signed-off-by: dependabot[bot] <support@github.com>",
       "allCommitsApproved": false,
       "approvalLastAt": undefined,
       "approvalsCount": 1,
-      "approved": false,
+      "approved": true,
       "approverLogins": Array [
         "nealajpatel",
       ],
@@ -15999,6 +16365,36 @@ will cause that integration to be built and deployed (if on main).
     Object {
       "_class": "HAS",
       "_fromEntityKey": "R_kgDOI2pIIA",
+      "_key": "R_kgDOI2pIIA|has|JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull-requests/20",
+      "_toEntityKey": "JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull-requests/20",
+      "_type": "github_repo_has_pullrequest",
+      "displayName": "HAS",
+    },
+    Object {
+      "_class": "OPENED",
+      "_key": "|opened|JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull-requests/20",
+      "_mapping": Object {
+        "relationshipDirection": "REVERSE",
+        "skipTargetCreation": false,
+        "sourceEntityKey": "JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull-requests/20",
+        "targetEntity": Object {
+          "_class": "User",
+          "_type": "github_user",
+          "login": "",
+        },
+        "targetFilterKeys": Array [
+          Array [
+            "_type",
+            "login",
+          ],
+        ],
+      },
+      "_type": "github_user_opened_pullrequest",
+      "displayName": "OPENED",
+    },
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "R_kgDOI2pIIA",
       "_key": "R_kgDOI2pIIA|has|JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull-requests/19",
       "_toEntityKey": "JupiterOne-Sandbox/intentionally-vulnerable-golang-project/pull-requests/19",
       "_type": "github_repo_has_pullrequest",
@@ -16741,6 +17137,22 @@ will cause that integration to be built and deployed (if on main).
       "_fromEntityKey": "MDQ6VXNlcjMxMjE4NTA3",
       "_key": "MDQ6VXNlcjMxMjE4NTA3|opened|JupiterOne-Sandbox/RepoWithPages/pull-requests/1",
       "_toEntityKey": "JupiterOne-Sandbox/RepoWithPages/pull-requests/1",
+      "_type": "github_user_opened_pullrequest",
+      "displayName": "OPENED",
+    },
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "R_kgDOI2pL-A",
+      "_key": "R_kgDOI2pL-A|has|JupiterOne-Sandbox/reimagined-barnacle/pull-requests/14",
+      "_toEntityKey": "JupiterOne-Sandbox/reimagined-barnacle/pull-requests/14",
+      "_type": "github_repo_has_pullrequest",
+      "displayName": "HAS",
+    },
+    Object {
+      "_class": "OPENED",
+      "_fromEntityKey": "MDQ6VXNlcjcxOTA2OTY=",
+      "_key": "MDQ6VXNlcjcxOTA2OTY=|opened|JupiterOne-Sandbox/reimagined-barnacle/pull-requests/14",
+      "_toEntityKey": "JupiterOne-Sandbox/reimagined-barnacle/pull-requests/14",
       "_type": "github_user_opened_pullrequest",
       "displayName": "OPENED",
     },
@@ -17965,7 +18377,7 @@ will cause that integration to be built and deployed (if on main).
     "github_user_reviewed_pullrequest",
     "github_user_approved_pullrequest",
   ],
-  "numCollectedEntities": 120,
-  "numCollectedRelationships": 276,
+  "numCollectedEntities": 122,
+  "numCollectedRelationships": 280,
 }
 `;

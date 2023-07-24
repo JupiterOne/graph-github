@@ -1,17 +1,5 @@
-import { URL } from 'url';
 import { gte } from 'semver';
 import { first } from 'lodash';
-
-const innerResourcePaginationRequired = (pullRequest): boolean => {
-  if (!pullRequest) {
-    return false;
-  }
-  return (
-    pullRequest.commits?.totalCount ||
-    pullRequest.reviews?.totalCount ||
-    pullRequest.labels?.totalCount
-  );
-};
 
 const responseToResource = (node) => {
   if (!hasProperties(node)) {
@@ -32,33 +20,17 @@ const responseToResource = (node) => {
         associatedPullRequest,
       },
     }),
-    commits:
-      node.commits?.nodes?.filter((node) => node).map((node) => node.commit) ??
-      [],
-    reviews: node.reviews?.nodes?.filter((node) => node) ?? [],
-    labels: node.labels?.nodes?.filter((node) => node) ?? [],
-  };
-};
-
-const hasRepoOwnerAndName = (node) => {
-  const repoOwnerAndName = determineRepoOwnerAndName(node);
-  return repoOwnerAndName.repoOwner && repoOwnerAndName.repoName;
-};
-
-const determineRepoOwnerAndName = (
-  node,
-): { repoOwner?: string; repoName?: string } => {
-  const urlPath = node.url // ex: https://github.com/JupiterOne/graph-github/pull/1
-    ? new URL(node.url)?.pathname // ex: /JupiterOne/graph-github/pull/4"
-    : '';
-
-  // Attempt to pull repo name and owner from graphQL response. If not there, parse the pull request url.
-  const repoOwner = node.headRepository?.owner?.login ?? urlPath.split('/')[1]; // ex: JupiterOne
-  const repoName = node.headRepository?.name ?? urlPath.split('/')[2]; // ex: graph-github
-
-  return {
-    repoOwner,
-    repoName,
+    ...(node.commits && {
+      commits:
+        node.commits.nodes?.filter((node) => node).map((node) => node.commit) ??
+        [],
+    }),
+    ...(node.reviews && {
+      reviews: node.reviews.nodes?.filter((node) => node) ?? [],
+    }),
+    ...(node.labels && {
+      labels: node.labels.nodes?.filter((node) => node) ?? [],
+    }),
   };
 };
 
@@ -103,9 +75,6 @@ const isSupported = (
 
 export default {
   hasProperties,
-  innerResourcePaginationRequired,
   responseToResource,
-  findRepoOwnerAndName: determineRepoOwnerAndName,
-  hasRepoOwnerAndName,
   isSupported,
 };

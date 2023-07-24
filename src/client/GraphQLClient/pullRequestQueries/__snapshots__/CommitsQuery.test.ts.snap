@@ -1,0 +1,151 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CommitsQuery #iterateCommits Pulling data out 1`] = `
+Object {
+  "author": Object {
+    "user": Object {
+      "login": "nealajpatel",
+    },
+  },
+  "authoredDate": "2023-05-15T14:05:06Z",
+  "message": "README Update",
+  "oid": "f5294eb2f1545eb113d3d3d5a7f3977934a13798",
+}
+`;
+
+exports[`CommitsQuery #iterateCommits Pulling data out 2`] = `
+Object {
+  "author": Object {
+    "user": Object {
+      "login": "nealajpatel",
+    },
+  },
+  "authoredDate": "2023-05-15T14:04:53Z",
+  "message": "README Update",
+  "oid": "3b00cc1814bc8e93d2676f48494118a339d41839",
+}
+`;
+
+exports[`CommitsQuery #iterateCommits Pulling data out 3`] = `
+Object {
+  "author": Object {
+    "user": null,
+  },
+  "authoredDate": "2023-07-10T20:54:45Z",
+  "message": "test PR",
+  "oid": "c3d5ca5b1a7e39d8f541e815c437d04579677b67",
+}
+`;
+
+exports[`CommitsQuery #iterateCommits Pulling data out 4`] = `
+Object {
+  "query": "
+    query (
+      $pullRequestNumber: Int!
+      $repoName: String!
+      $repoOwner: String!
+      $maxLimit: Int!
+      $commitsCursor: String
+    ) {
+      repository(name: $repoName, owner: $repoOwner) {
+        pullRequest(number: $pullRequestNumber) {
+          commits(first: $maxLimit, after: $commitsCursor) {
+            totalCount
+            nodes {
+              commit {
+                ...on Commit {
+    oid
+    message
+    authoredDate
+    author {
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      }
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
+    }",
+  "queryVariables": Object {
+    "maxLimit": 25,
+    "pullRequestNumber": 2,
+    "repoName": "happy-sunshine",
+    "repoOwner": "J1-Test",
+  },
+}
+`;
+
+exports[`CommitsQuery #iterateCommits Pulling data out 5`] = `
+Object {
+  "query": "
+    query (
+      $pullRequestNumber: Int!
+      $repoName: String!
+      $repoOwner: String!
+      $maxLimit: Int!
+      $commitsCursor: String
+    ) {
+      repository(name: $repoName, owner: $repoOwner) {
+        pullRequest(number: $pullRequestNumber) {
+          commits(first: $maxLimit, after: $commitsCursor) {
+            totalCount
+            nodes {
+              commit {
+                ...on Commit {
+    oid
+    message
+    authoredDate
+    author {
+      user {
+        login # this used to be ...userFields
+      }
+    }
+  }
+              }
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
+          }
+        }
+      }
+      ...on Query {
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
+    }",
+  "queryVariables": Object {
+    "commitsCursor": "MQ",
+    "maxLimit": 25,
+    "pullRequestNumber": 2,
+    "repoName": "happy-sunshine",
+    "repoOwner": "J1-Test",
+  },
+  "rateLimit": Object {
+    "cost": 2,
+    "limit": 5000,
+    "remaining": 5000,
+    "resetAt": "2023-07-17T21:41:33Z",
+  },
+}
+`;

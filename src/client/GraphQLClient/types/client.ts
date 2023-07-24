@@ -269,8 +269,38 @@ export interface PullRequestFields {
   };
 }
 
-export type PullRequestResponse = Node &
-  PullRequestFields &
+export interface PullRequestResponse extends Node {
+  id: string;
+  title: string;
+  number: number;
+  body?: string;
+  databaseId?: string;
+  url: string;
+  changedFiles: number;
+  state: 'OPEN' | 'CLOSED' | 'MERGED';
+  merged: boolean;
+  mergedBy?: PullRequestUser;
+  reviewDecision?: 'CHANGES_REQUESTED' | 'APPROVED' | 'REVIEW_REQUIRED';
+  headRefName: string;
+  baseRefName: string;
+  headRefOid: string;
+  baseRefOid: string;
+  createdAt: string;
+  updatedAt: string;
+  mergedAt?: string;
+  author?: PullRequestUser;
+  mergeCommit?: MergeCommit;
+  baseRepository: {
+    name: string;
+    owner: RepositoryOwner;
+  };
+  headRepository: {
+    name: string;
+    owner: RepositoryOwner;
+  };
+}
+
+export type SinglePullRequestResponse = PullRequestResponse &
   PullRequestConnections;
 
 export interface IssueResponse extends Node {

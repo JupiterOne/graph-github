@@ -8,31 +8,6 @@ describe('utils', () => {
     expect(utils.hasProperties(new Object())).toBeFalsy();
     expect(utils.hasProperties({ dog: 'dog' })).toBeTruthy();
   });
-  test('innerResourcePaginationRequired', () => {
-    expect(utils.innerResourcePaginationRequired(null)).toBeFalsy();
-    expect(utils.innerResourcePaginationRequired(undefined)).toBeFalsy();
-    expect(utils.innerResourcePaginationRequired({})).toBeFalsy();
-    expect(
-      utils.innerResourcePaginationRequired({
-        commits: { totalCount: 10 },
-      }),
-    ).toBeTruthy();
-    expect(utils.innerResourcePaginationRequired({ commits: {} })).toBeFalsy();
-    expect(
-      utils.innerResourcePaginationRequired({
-        labels: { totalCount: 10 },
-        commits: { totalCount: 0 },
-        reviews: {},
-      }),
-    ).toBeTruthy();
-    expect(
-      utils.innerResourcePaginationRequired({
-        labels: undefined,
-        commits: null,
-        reviews: { totalCount: 10 },
-      }),
-    ).toBeTruthy();
-  });
 
   test('responseToResource', () => {
     expect(

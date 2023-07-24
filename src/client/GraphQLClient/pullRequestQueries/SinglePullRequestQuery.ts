@@ -5,8 +5,7 @@ import {
   CursorState,
   IteratePagination,
   ProcessedData,
-  PullRequestConnections,
-  PullRequestResponse,
+  SinglePullRequestResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import fragments from '../fragments';
@@ -22,7 +21,6 @@ export type QueryParams = {
   pullRequestNumber: number;
   repoName: string;
   repoOwner: string;
-  onlyConnections?: boolean;
 };
 
 const MAX_REQUESTS_LIMIT = 100;
@@ -64,7 +62,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
       ) {
           repository(name: $repoName, owner: $repoOwner) {
             pullRequest(number: $pullRequestNumber) {
-              ${!queryParams.onlyConnections ? `...${pullRequestFields}` : ''}
+              ...${pullRequestFields}
               ${
                 queryState?.isInitialQuery ||
                 queryState?.commits?.hasNextPage === true
@@ -174,7 +172,6 @@ const commitsQuery = `
           ...${fragments.commitFields}
         }
       }
-      
       pageInfo {
         endCursor
         hasNextPage
@@ -232,9 +229,9 @@ export const processResponseData = (
  */
 const iteratePullRequest: IteratePagination<
   QueryParams,
-  PullRequestResponse | PullRequestConnections
+  SinglePullRequestResponse
 > = async (queryParams, execute, iteratee) => {
-  let finalResource: PullRequestResponse | undefined = undefined;
+  let finalResource: SinglePullRequestResponse | undefined = undefined;
   let queryCost = 0;
   let queryState: QueryState = { isInitialQuery: true };
   let paginationComplete = false;
@@ -273,9 +270,9 @@ const iteratePullRequest: IteratePagination<
  * @private
  */
 const joinInnerResources = (
-  newResource: PullRequestResponse,
-  existingResource?: PullRequestResponse,
-): PullRequestResponse => {
+  newResource: SinglePullRequestResponse,
+  existingResource?: SinglePullRequestResponse,
+): SinglePullRequestResponse => {
   if (!existingResource) {
     return newResource;
   }

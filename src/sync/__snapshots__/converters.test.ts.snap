@@ -24,41 +24,6 @@ Object {
         },
         "body": "This is some discription or something",
         "changedFiles": 7,
-        "commits": Array [
-          Object {
-            "author": Object {
-              "user": Object {
-                "login": "somebody",
-                "name": "Some Body",
-              },
-            },
-            "authoredDate": "2021-08-31T22:14:45Z",
-            "message": "Ingest AutoScaling Policies and build \`aws_autoscaling_group\` \`USES\` \`aws_autoscaling_policy\` relationships",
-            "oid": "890af24d913107194e9ce9439b7e71ea2b1b17c4",
-          },
-          Object {
-            "author": Object {
-              "user": Object {
-                "login": "somebody",
-                "name": "Some Body",
-              },
-            },
-            "authoredDate": "2021-08-31T22:17:46Z",
-            "message": "Merge branch 'main' of github.com:jupiterone/jupiter-integration-aws into autoscaling-policies",
-            "oid": "69b3d5771a50752acf9310fd93b7a176d6cffaa2",
-          },
-          Object {
-            "author": Object {
-              "user": Object {
-                "login": "somebody",
-                "name": "Some Body",
-              },
-            },
-            "authoredDate": "2021-08-31T22:19:39Z",
-            "message": "fix _type and _class",
-            "oid": "1103a7a2e976439ca184f775196759084f16e42f",
-          },
-        ],
         "createdAt": "2021-08-31T22:15:07Z",
         "headRefName": "autoscaling-policies",
         "headRefOid": "1103a7a2e976439ca184f775196759084f16e42f",
@@ -69,7 +34,6 @@ Object {
           },
         },
         "id": "MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1",
-        "labels": Array [],
         "mergeCommit": Object {
           "commitUrl": "https://github.com/JupiterOne/jupiter-integration-aws/commit/39483af8a356b5684513bf56c044dab0ed4c0c7a",
           "oid": "39483af8a356b5684513bf56c044dab0ed4c0c7a",
@@ -82,18 +46,6 @@ Object {
         },
         "number": 45,
         "reviewDecision": "APPROVED",
-        "reviews": Array [
-          Object {
-            "author": Object {
-              "login": "reviewer-user",
-              "name": "Reviewer User",
-            },
-            "commit": Object {
-              "oid": "1103a7a2e976439ca184f775196759084f16e42f",
-            },
-            "state": "APPROVED",
-          },
-        ],
         "state": "MERGED",
         "title": "Ingest AutoScaling Policies and build relationships",
         "updatedAt": "2021-09-01T01:53:35Z",

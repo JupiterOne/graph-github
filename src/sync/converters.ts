@@ -47,6 +47,7 @@ import {
   CollaboratorResponse,
   Commit,
   IssueResponse,
+  Label,
   OrgMemberQueryResponse,
   OrgQueryResponse,
   OrgRepoQueryResponse,
@@ -875,14 +876,24 @@ export function createAssociatedMergePullRequestRelationship(
   });
 }
 
-export function toPullRequestEntity(
-  pullRequest: PullRequestResponse,
-  teamMembersByLoginMap: IdEntityMap<UserEntity>, //
-  allKnownUsersByLoginMap: IdEntityMap<UserEntity>, // Includes known collaborators
-): PullRequestEntity {
-  const commits = pullRequest.commits;
-  const reviews = pullRequest.reviews;
-  const labels = pullRequest.labels?.map((l) => l.name);
+interface PullRequestConverterParams {
+  pullRequest: PullRequestResponse;
+  commits: Commit[];
+  labels: Label[];
+  reviews: Review[];
+  teamMembersByLoginMap: IdEntityMap<UserEntity>; //
+  allKnownUsersByLoginMap: IdEntityMap<UserEntity>; // Includes known collaborators
+}
+
+export function toPullRequestEntity({
+  pullRequest,
+  commits,
+  labels: labelEntities,
+  reviews,
+  teamMembersByLoginMap,
+  allKnownUsersByLoginMap,
+}: PullRequestConverterParams): PullRequestEntity {
+  const labels = labelEntities.map((l) => l.name);
 
   // Private repo PRs don't have access to commits.
   const hasCommits = Array.isArray(commits) && commits.length > 0;

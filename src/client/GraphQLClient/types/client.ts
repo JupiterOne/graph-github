@@ -113,17 +113,6 @@ export interface OrgTeamQueryResponse extends Node {
 
 export interface TagQueryResponse extends Node {
   name: string;
-  commitUrl: string;
-  target: {
-    oid: string;
-    message: string;
-    committedDate: string;
-    author?: {
-      name: string;
-      email: string;
-      date: string;
-    };
-  };
 }
 
 //this response expresses the association between a team and a member of the team

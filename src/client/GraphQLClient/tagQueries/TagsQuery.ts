@@ -19,31 +19,6 @@ export interface QueryParams {
   repoOwner: string;
 }
 
-// ... on Tag {
-//   id
-//   message
-//   name
-//   oid
-//   commitUrl
-//   commitResourcePath
-//   abbreviatedOid
-//   tagger {
-//     name
-//     email
-//   }
-// }
-//
-//
-//           nodes {
-// id
-// name
-// target {
-//   ... on Commit {
-
-//   }
-// }
-// }
-
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
   queryParams,
   queryState,
@@ -59,31 +34,16 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
         refs(first: $maxLimit, after: $tagsCursor refPrefix: "refs/tags/") {
           edges {
             node {
-              ...refInfo
+              ...on Ref {
+                id
+                name
+              }
             }
           }
           totalCount
           pageInfo {
             endCursor
             hasNextPage
-          }
-        }
-      }
-    }
-
-    fragment refInfo on Ref {
-      id
-      name
-      target {
-        commitUrl
-        oid
-        ... on Commit {
-          message
-          committedDate
-          author {
-            name
-            email
-            date
           }
         }
       }

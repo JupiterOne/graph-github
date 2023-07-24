@@ -369,7 +369,10 @@ export function toBranchProtectionEntity(
   });
 }
 
-export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
+export function toRepositoryEntity(
+  data: OrgRepoQueryResponse,
+  tags: string[] = [],
+): RepoEntity {
   const repoEntity: RepoEntity = {
     _class: GithubEntities.GITHUB_REPO._class,
     _type: GithubEntities.GITHUB_REPO._type,
@@ -405,6 +408,7 @@ export function toRepositoryEntity(data: OrgRepoQueryResponse): RepoEntity {
     mergeCommitAllowed: data.mergeCommitAllowed,
     rebaseMergeAllowed: data.rebaseMergeAllowed,
     visibility: data.visibility,
+    tags: tags,
   };
   setRawData(repoEntity, { name: 'default', rawData: data });
   return repoEntity;

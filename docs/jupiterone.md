@@ -168,7 +168,6 @@ The following entities are created:
 | GitHub Vulnerability Alerts    | `github_finding`                | `Finding`       |
 | Github App                     | `github_app`                    | `Application`   |
 | Github Repo                    | `github_repo`                   | `CodeRepo`      |
-| Github Tag                     | `github_repo_tag`               | `Record`        |
 | Github User                    | `github_user`                   | `User`          |
 
 ### Relationships
@@ -198,7 +197,6 @@ The following relationships are created:
 | `github_repo`         | **HAS**               | `github_issue`                  |
 | `github_repo`         | **HAS**               | `github_pullrequest`            |
 | `github_repo`         | **HAS**               | `github_repo_secret`            |
-| `github_repo`         | **HAS**               | `github_repo_tag`               |
 | `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`             |
 | `github_repo`         | **USES**              | `github_env_secret`             |
 | `github_repo`         | **USES**              | `github_org_secret`             |

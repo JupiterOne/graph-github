@@ -39,6 +39,7 @@ import { cloneDeep } from 'lodash';
 import { hasAssociatedMergePullRequest } from '../sync/converterUtils';
 import { sub } from 'date-fns';
 import { Commit, Label, Review } from '../client/GraphQLClient';
+import { MAX_SEARCH_LIMIT } from '../client/GraphQLClient/paginate';
 
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
 
@@ -95,6 +96,8 @@ export async function fetchPrs(
     config.pullRequestMaxResourcesPerRepo ??
     DEFAULT_MAX_RESOURCES_PER_EXECUTION;
 
+  const maxSearchLimit = config.pullRequestMaxSearchLimit ?? MAX_SEARCH_LIMIT;
+
   logger.info(
     { ingestStartDatetime, maxResourceIngestion },
     'Pull requests will be ingested starting on the specified date with the specified max resources to ingest.',
@@ -109,6 +112,7 @@ export async function fetchPrs(
           logger,
           ingestStartDatetime,
           maxResourceIngestion,
+          maxSearchLimit,
           async (pullRequest) => {
             const pullRequestReviews: Review[] = [];
             await apiClient.iterateReviews(

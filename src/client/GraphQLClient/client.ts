@@ -212,6 +212,7 @@ export class GitHubGraphQLClient {
     repository: { fullName: string; public: boolean },
     ingestStartDatetime: string,
     maxResourceIngestion: number,
+    maxSearchLimit: number,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
@@ -222,6 +223,7 @@ export class GitHubGraphQLClient {
           ...repository,
           ingestStartDatetime,
           maxResourceIngestion,
+          maxSearchLimit,
         },
         executor,
         iteratee,
@@ -237,7 +239,7 @@ export class GitHubGraphQLClient {
    * @param iteratee
    */
   public async iterateReviews(
-    repository: { name: string; owner: string },
+    repository: { name: string; owner: string; isPublic: boolean },
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Review>,
   ): Promise<RateLimitStepSummary> {
@@ -248,6 +250,7 @@ export class GitHubGraphQLClient {
         {
           repoName: repository.name,
           repoOwner: repository.owner,
+          isPublicRepo: repository.isPublic,
           pullRequestNumber,
         },
         executor,

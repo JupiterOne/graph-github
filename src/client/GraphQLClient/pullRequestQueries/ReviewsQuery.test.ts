@@ -15,6 +15,7 @@ describe('ReviewsQuery', () => {
         {
           repoOwner: 'J1-Test',
           repoName: 'happy-sunshine',
+          isPublicRepo: true,
           pullRequestNumber: 2,
         },
         execute,

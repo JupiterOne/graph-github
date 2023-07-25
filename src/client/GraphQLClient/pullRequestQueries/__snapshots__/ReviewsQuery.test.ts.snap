@@ -51,17 +51,17 @@ Object {
             totalCount
             nodes {
               ...on PullRequestReview {
-    commit {
-      oid
-    }
-    author {
-      ...on User {
-          name
-          login
-        }
-    }
-    state
-  }
+                commit {
+                      oid
+                    }
+                author {
+                  ...on User {
+                      name
+                      login
+                    }
+                }
+                state
+              }
             }
             pageInfo {
               endCursor
@@ -104,17 +104,17 @@ Object {
             totalCount
             nodes {
               ...on PullRequestReview {
-    commit {
-      oid
-    }
-    author {
-      ...on User {
-          name
-          login
-        }
-    }
-    state
-  }
+                commit {
+                      oid
+                    }
+                author {
+                  ...on User {
+                      name
+                      login
+                    }
+                }
+                state
+              }
             }
             pageInfo {
               endCursor

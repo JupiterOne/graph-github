@@ -13,6 +13,7 @@ describe('PullRequestsQuery', () => {
         public: true,
         ingestStartDatetime: '2011-10-05T14:48:00.000Z',
         maxResourceIngestion: 500,
+        maxSearchLimit: 25,
       });
 
       // Assert
@@ -26,6 +27,7 @@ describe('PullRequestsQuery', () => {
         public: false,
         ingestStartDatetime: '2011-10-05T14:48:00.000Z',
         maxResourceIngestion: 500,
+        maxSearchLimit: 25,
       });
 
       // Assert
@@ -45,6 +47,7 @@ describe('PullRequestsQuery', () => {
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
           maxResourceIngestion: 500,
+          maxSearchLimit: 25,
         },
         queryState,
       );
@@ -86,6 +89,7 @@ describe('PullRequestsQuery', () => {
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
           maxResourceIngestion: 500,
+          maxSearchLimit: 25,
         },
         execute,
         iteratee,
@@ -112,6 +116,7 @@ describe('PullRequestsQuery', () => {
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
           maxResourceIngestion: 500,
+          maxSearchLimit: 25,
         },
         execute,
         iteratee,

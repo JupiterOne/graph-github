@@ -204,6 +204,7 @@ export default class OrganizationAccountClient {
     repo: RepoEntity,
     ingestStartDatetime: string, //expect Date.toISOString format
     maxResourceIngestion: number,
+    maxSearchLimit: number,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     if (!this.authorizedForPullRequests) {
@@ -218,6 +219,7 @@ export default class OrganizationAccountClient {
       },
       ingestStartDatetime,
       maxResourceIngestion,
+      maxSearchLimit,
       iteratee,
     );
   }
@@ -241,6 +243,7 @@ export default class OrganizationAccountClient {
       {
         name: repo.name,
         owner: repo.owner,
+        isPublic: repo.public,
       },
       pullRequestNumber,
       iteratee,

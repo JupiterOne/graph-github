@@ -487,6 +487,7 @@ export class APIClient {
     logger: IntegrationLogger,
     ingestStartDatetime: string,
     maxResourceIngestion: number,
+    maxSearchLimit: number,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
@@ -496,6 +497,7 @@ export class APIClient {
       repo,
       ingestStartDatetime,
       maxResourceIngestion,
+      maxSearchLimit,
       iteratee,
     );
     logger.debug(

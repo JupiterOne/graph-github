@@ -9,7 +9,6 @@ import {
 } from '../types';
 import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import { MAX_SEARCH_LIMIT } from '../paginate';
 import fragments from '../fragments';
 
 interface QueryState extends BaseQueryState {
@@ -21,6 +20,7 @@ type QueryParams = {
   public: boolean;
   ingestStartDatetime: string;
   maxResourceIngestion: number;
+  maxSearchLimit: number;
 };
 
 /**
@@ -63,7 +63,7 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
     }),
     queryVariables: {
       issueQuery: `is:pr repo:${queryParams.fullName} updated:>=${queryParams.ingestStartDatetime}`,
-      maxSearchLimit: MAX_SEARCH_LIMIT,
+      maxSearchLimit: queryParams.maxSearchLimit,
       ...(queryState?.pullRequests?.hasNextPage && {
         pullRequestsCursor: queryState?.pullRequests.endCursor,
       }),
@@ -192,7 +192,7 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
     let queryState: QueryState | undefined = undefined;
     let paginationComplete = false;
 
-    const countIteratee = async (pullRequest) => {
+    const countIteratee = async (pullRequest: PullRequestResponse) => {
       pullRequestFetched++;
       await iteratee(pullRequest);
     };

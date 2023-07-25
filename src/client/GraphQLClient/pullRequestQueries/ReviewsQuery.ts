@@ -18,6 +18,7 @@ interface QueryState extends BaseQueryState {
 type QueryParams = {
   repoName: string;
   repoOwner: string;
+  isPublicRepo: boolean;
   pullRequestNumber: number;
 };
 
@@ -46,7 +47,22 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
           reviews(first: $maxLimit, after: $reviewsCursor) {
             totalCount
             nodes {
-              ...${fragments.reviewFields}
+              ...on PullRequestReview {
+                ${
+                  queryParams.isPublicRepo
+                    ? `commit {
+                      oid
+                    }`
+                    : ''
+                }
+                author {
+                  ...on User {
+                      name
+                      login
+                    }
+                }
+                state
+              }
             }
             pageInfo {
               endCursor

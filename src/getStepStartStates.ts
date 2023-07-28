@@ -4,14 +4,18 @@ import {
   StepStartStates,
 } from '@jupiterone/integration-sdk-core';
 
-import { IntegrationConfig, validateInvocation } from './config';
+import {
+  IntegrationConfig,
+  validateAndReturnAuthenticationData,
+} from './config';
 import utils, { EnterpriseFeatures } from './client/GraphQLClient/utils';
 import { Steps } from './constants';
 
 export default async function getStepStartStates(
   context: IntegrationExecutionContext<IntegrationConfig>,
 ): Promise<StepStartStates> {
-  const { scopes, gheServerVersion } = await validateInvocation(context);
+  const { scopes, gheServerVersion } =
+    await validateAndReturnAuthenticationData(context);
 
   return {
     [Steps.FETCH_ACCOUNT]: { disabled: false },

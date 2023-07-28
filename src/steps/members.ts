@@ -37,12 +37,18 @@ export async function fetchMembers({
     );
   }
 
+  const externalIdentifiers: { [userId: string]: string } = {};
+
+  await apiClient.iterateOrgExternalIdentifiers((identifier) => {
+    externalIdentifiers[identifier.user.login] = identifier.samlIdentity.nameId;
+  });
+
   //for use later in other steps
   const memberByLoginMap: IdEntityMap<UserEntity> = {};
 
   await apiClient.iterateOrgMembers(async (member) => {
     const memberEntity = (await jobState.addEntity(
-      toOrganizationMemberEntity(member),
+      toOrganizationMemberEntity(member, externalIdentifiers),
     )) as UserEntity;
 
     memberByLoginMap[member.login] = memberEntity;

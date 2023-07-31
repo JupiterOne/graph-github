@@ -40,7 +40,11 @@ export async function fetchMembers({
   const externalIdentifiers: { [userId: string]: string } = {};
 
   await apiClient.iterateOrgExternalIdentifiers((identifier) => {
-    externalIdentifiers[identifier.user.login] = identifier.samlIdentity.nameId;
+    if (identifier?.user?.login) {
+      // Catch instances where this feature isn't enabled
+      externalIdentifiers[identifier.user.login] =
+        identifier.samlIdentity.nameId;
+    }
   });
 
   //for use later in other steps

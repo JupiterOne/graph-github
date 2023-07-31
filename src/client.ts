@@ -31,6 +31,7 @@ import {
   Review,
   Label,
   Commit,
+  OrgExternalIdentifierQueryResponse,
 } from './client/GraphQLClient';
 import {
   CodeScanningAlertQueryResponse,
@@ -161,6 +162,27 @@ export class APIClient {
     }
 
     const rateLimit = await this.graphQLClient.iterateOrgMembers(iteratee);
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Org Members.',
+    );
+  }
+
+  /**
+   * Iterates each external identifier in the provider.
+   *
+   * @param iteratee receives each resource to produce an identifier lookup table
+   */
+  public async iterateOrgExternalIdentifiers(
+    iteratee: ResourceIteratee<OrgExternalIdentifierQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateExternalIdentifiers(
+      iteratee,
+    );
 
     this.logger.debug(
       { rateLimit },

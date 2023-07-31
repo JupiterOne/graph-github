@@ -20,6 +20,7 @@ import {
   IssueResponse,
   Label,
   OrgMemberQueryResponse,
+  OrgExternalIdentifierQueryResponse,
   OrgRepoQueryResponse,
   OrgTeamMemberQueryResponse,
   OrgTeamQueryResponse,
@@ -36,6 +37,7 @@ import { createQueryExecutor } from './CreateQueryExecutor';
 import OrgRepositoriesQuery from './repositoryQueries/OrgRepositoriesQuery';
 import TeamRepositoriesQuery from './repositoryQueries/TeamRepositoriesQuery';
 import OrgMembersQuery from './memberQueries/OrgMembersQuery';
+import ExternalIdentifiersQuery from './memberQueries/ExternalIdentifiersQuery';
 import TeamMembersQuery from './memberQueries/TeamMembersQuery';
 import TeamsQuery from './teamQueries/TeamsQuery';
 import RepoCollaboratorsQuery from './collaboratorQueries/RepoCollaboratorsQuery';
@@ -431,6 +433,25 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await OrgMembersQuery.iterateMembers(login, executor, iteratee),
+    );
+  }
+
+  /**
+   * Iterates over external identifiers of the given org.
+   * @param login - aka organization
+   * @param iteratee
+   */
+  public async iterateExternalIdentifiers(
+    login: string,
+    iteratee: ResourceIteratee<OrgExternalIdentifierQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+    return this.collectRateLimitStatus(
+      await ExternalIdentifiersQuery.iterateExternalIdentifiers(
+        login,
+        executor,
+        iteratee,
+      ),
     );
   }
 

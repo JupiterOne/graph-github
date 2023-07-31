@@ -421,6 +421,7 @@ export function decorateRepoEntityWithPagesInfo(
 
 export function toOrganizationMemberEntity(
   data: OrgMemberQueryResponse,
+  externalIdentifiers?: { [x: string]: string | undefined } | undefined,
 ): UserEntity {
   const userEntity: UserEntity = {
     _class: GithubEntities.GITHUB_MEMBER._class,
@@ -429,7 +430,7 @@ export function toOrganizationMemberEntity(
     login: data.login,
     username: data.login,
     displayName: data.name || data.login,
-    name: data.name,
+    name: data.name || data.login,
     mfaEnabled: data.hasTwoFactorEnabled || undefined,
     role: data.role,
     siteAdmin: data.isSiteAdmin,
@@ -446,9 +447,15 @@ export function toOrganizationMemberEntity(
     active: true,
     organizationId: data.organization,
   };
-  if (data.email) {
+  // First attempt to use the org level external identifiers for email if
+  // available.  This will allow us to have a greater match percentage
+  // when looking for existing users by work email.
+  if (externalIdentifiers?.[data.login]) {
+    userEntity.email = externalIdentifiers[data.login];
+  } else if (data.email) {
     userEntity.email = data.email;
   } //don't set the property if it's not provided, because SDK input validation will fail
+
   setRawData(userEntity, { name: 'default', rawData: data });
   return userEntity;
 }

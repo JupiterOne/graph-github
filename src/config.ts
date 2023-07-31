@@ -4,6 +4,7 @@ import {
   IntegrationInstanceConfigFieldMap,
   IntegrationInstanceConfig,
   IntegrationIngestionConfigFieldMap,
+  IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
 import { getOrCreateApiClient } from './client';
 const fs = require('fs');
@@ -120,23 +121,40 @@ export type Scopes = {
   repoDiscussions: boolean;
 };
 
-export async function validateInvocation(
-  context: IntegrationExecutionContext<IntegrationConfig>,
-): Promise<{
+type AuthenticationData = {
   scopes: Scopes;
   gheServerVersion?: string;
-}> {
-  const { config } = context.instance;
+};
 
-  sanitizeConfig(config); //mutate the config as needed
+async function sanitizeAndVerifyAuthentication(
+  config: IntegrationConfig,
+  logger: IntegrationLogger,
+): Promise<AuthenticationData> {
+  sanitizeConfig(config); // Mutate the config as needed
 
-  const apiClient = getOrCreateApiClient(config, context.logger);
+  const apiClient = getOrCreateApiClient(config, logger);
   await apiClient.verifyAuthentication();
 
   return {
     scopes: apiClient.scopes,
     gheServerVersion: apiClient.gheServerVersion,
   };
+}
+
+export async function validateInvocation(
+  context: IntegrationExecutionContext<IntegrationConfig>,
+): Promise<void> {
+  const { instance, logger } = context;
+  const { config } = instance;
+  await sanitizeAndVerifyAuthentication(config, logger);
+}
+
+export async function validateAndReturnAuthenticationData(
+  context: IntegrationExecutionContext<IntegrationConfig>,
+): Promise<AuthenticationData> {
+  const { instance, logger } = context;
+  const { config } = instance;
+  return await sanitizeAndVerifyAuthentication(config, logger);
 }
 
 /**

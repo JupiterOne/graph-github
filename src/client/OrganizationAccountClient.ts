@@ -34,6 +34,7 @@ import {
   TagQueryResponse,
   Label,
   Commit,
+  OrgExternalIdentifierQueryResponse,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -176,6 +177,12 @@ export default class OrganizationAccountClient {
     iteratee: ResourceIteratee<OrgMemberQueryResponse>,
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateOrgMembers(this.login, iteratee);
+  }
+
+  async iterateExternalIdentifiers(
+    iteratee: ResourceIteratee<OrgExternalIdentifierQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateExternalIdentifiers(this.login, iteratee);
   }
 
   async iterateTeams(

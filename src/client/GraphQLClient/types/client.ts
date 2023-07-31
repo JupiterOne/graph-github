@@ -100,6 +100,16 @@ export interface OrgMemberQueryResponse extends Node, Actor {
   organization: string; // the id of the org
 }
 
+export interface OrgExternalIdentifierQueryResponse extends Node, Actor {
+  guid: string;
+  samlIdentity: {
+    nameId: string;
+  };
+  user: {
+    login: string;
+  };
+}
+
 export interface OrgTeamQueryResponse extends Node {
   url: string;
   slug: string;

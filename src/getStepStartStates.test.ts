@@ -5,8 +5,8 @@ jest.mock('./config');
 
 describe('getStepStartStates', () => {
   test('enabled fetch-vulnerability-alerts w/out permissions', async () => {
-    const validateInvocationSpy = jest
-      .spyOn(config, 'validateInvocation')
+    const validateAndReturnAuthenticationDataSpy = jest
+      .spyOn(config, 'validateAndReturnAuthenticationData')
       .mockResolvedValueOnce({
         scopes: {
           repoAdmin: true,
@@ -30,14 +30,14 @@ describe('getStepStartStates', () => {
 
     const states = await getStepStartStates(context);
 
-    expect(validateInvocationSpy).toHaveBeenCalled();
+    expect(validateAndReturnAuthenticationDataSpy).toHaveBeenCalled();
     expect(states['fetch-vulnerability-alerts'].disabled).toBeTruthy();
     expect(states['fetch-repo-secrets'].disabled).toBeTruthy();
   });
 
   test('enable fetch-branch-protection-rules', async () => {
-    const validateInvocationSpy = jest
-      .spyOn(config, 'validateInvocation')
+    const validateAndReturnAuthenticationDataSpy = jest
+      .spyOn(config, 'validateAndReturnAuthenticationData')
       .mockResolvedValueOnce({
         scopes: {
           // tested permissions
@@ -91,7 +91,7 @@ describe('getStepStartStates', () => {
       instance: { config: {} },
     } as any);
 
-    expect(validateInvocationSpy).toHaveBeenCalled();
+    expect(validateAndReturnAuthenticationDataSpy).toHaveBeenCalled();
     expect(states['fetch-branch-protection-rules'].disabled).toBeFalsy();
 
     const states2 = await getStepStartStates({
@@ -106,8 +106,8 @@ describe('getStepStartStates', () => {
   });
 
   test('enable fetch-code-scanning-alerts', async () => {
-    const validateInvocationSpy = jest
-      .spyOn(config, 'validateInvocation')
+    const validateAndReturnAuthenticationDataSpy = jest
+      .spyOn(config, 'validateAndReturnAuthenticationData')
       .mockResolvedValueOnce({
         scopes: {
           // tested permissions
@@ -147,7 +147,7 @@ describe('getStepStartStates', () => {
       instance: { config: {} },
     } as any);
 
-    expect(validateInvocationSpy).toHaveBeenCalled();
+    expect(validateAndReturnAuthenticationDataSpy).toHaveBeenCalled();
     expect(states['fetch-code-scanning-alerts'].disabled).toBeFalsy();
 
     const states2 = await getStepStartStates({

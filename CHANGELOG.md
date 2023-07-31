@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 3.6.0 - 2023-07-31
+
+### Added
+
+- Organization external identifiers are now used when available to resolve
+  member email addresses.
+
+## 3.5.1 - 2023-07-28
+
+### Added
+
+- Added validate invocation to the invocation config.
+
+## 3.5.0 - 2023-07-28
+
+### Changed
+
+- Refactored validateInvocation to support SDK changes.
+
+## 3.4.0 - 2023-07-25
+
+### Added
+
+- Introduced an additional configuration field PULL_REQUEST_MAX_SEARCH_LIMIT for
+  limiting pull request searches.
+
 ## 3.3.0 - 2023-07-05
 
 ### Changed

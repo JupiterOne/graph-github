@@ -11,6 +11,7 @@ import actionExecutionHandler from './actions/actionExecutionHandler';
 
 export const invocationConfig: IntegrationInvocationConfig<IntegrationConfig> =
   {
+    validateInvocation,
     instanceConfigFields,
     getStepStartStates,
     integrationSteps,

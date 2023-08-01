@@ -36,6 +36,39 @@ Object {
       "updatedOn": 1674846050000,
       "webLink": "https://github.com/orgs/JupiterOne-Sandbox/teams/integrations-team",
     },
+    Object {
+      "_class": Array [
+        "UserGroup",
+      ],
+      "_key": "T_kwDOB0VI3c4AeONM",
+      "_rawData": Array [
+        Object {
+          "name": "default",
+          "rawData": Object {
+            "createdAt": "2023-05-17T15:44:38Z",
+            "databaseId": 7922508,
+            "description": "Site Reliability Team",
+            "id": "T_kwDOB0VI3c4AeONM",
+            "name": "SRE",
+            "privacy": "VISIBLE",
+            "slug": "sre",
+            "updatedAt": "2023-05-17T15:44:38Z",
+            "url": "https://github.com/orgs/JupiterOne-Sandbox/teams/sre",
+          },
+        },
+      ],
+      "_type": "github_team",
+      "createdOn": 1684338278000,
+      "databaseId": 7922508,
+      "description": "Site Reliability Team",
+      "displayName": "SRE",
+      "fullName": "SRE",
+      "name": "sre",
+      "node": "T_kwDOB0VI3c4AeONM",
+      "privacy": "VISIBLE",
+      "updatedOn": 1684338278000,
+      "webLink": "https://github.com/orgs/JupiterOne-Sandbox/teams/sre",
+    },
   ],
   "collectedRelationships": Array [
     Object {
@@ -46,13 +79,21 @@ Object {
       "_type": "github_account_has_team",
       "displayName": "HAS",
     },
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "O_kgDOB0VI3Q",
+      "_key": "O_kgDOB0VI3Q|has|T_kwDOB0VI3c4AeONM",
+      "_toEntityKey": "T_kwDOB0VI3c4AeONM",
+      "_type": "github_account_has_team",
+      "displayName": "HAS",
+    },
   ],
   "encounteredTypes": Array [
     "github_account",
     "github_team",
     "github_account_has_team",
   ],
-  "numCollectedEntities": 1,
-  "numCollectedRelationships": 1,
+  "numCollectedEntities": 2,
+  "numCollectedRelationships": 2,
 }
 `;

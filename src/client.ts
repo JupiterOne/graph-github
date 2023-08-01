@@ -28,6 +28,7 @@ import {
   OrgTeamRepoQueryResponse,
   VulnerabilityAlertResponse,
   BranchProtectionRuleResponse,
+  TagQueryResponse,
   Review,
   Label,
   Commit,
@@ -166,6 +167,27 @@ export class APIClient {
     this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Org Members.',
+    );
+  }
+
+  public async iterateTags(
+    repoOwner: string,
+    repoName: string,
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ) {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.graphQLClient.iterateTags(
+      repoOwner,
+      repoName,
+      iteratee,
+    );
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Repository Tags.',
     );
   }
 

@@ -194,6 +194,7 @@ test('toRepositoryEntities', () => {
     lockReason: '',
     mergeCommitAllowed: true,
     rebaseMergeAllowed: true,
+    tags: [],
   });
 });
 
@@ -276,6 +277,7 @@ test('decorateRepoEntityWithPagesInfo', () => {
     rebaseMergeAllowed: true,
     hasPages: true,
     pagesUrl: 'thispagerocks.com',
+    tags: [],
   });
 });
 

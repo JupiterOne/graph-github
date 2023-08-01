@@ -28,6 +28,7 @@ import {
   PullRequestResponse,
   RateLimitStepSummary,
   Review,
+  TagQueryResponse,
   SinglePullRequestResponse,
   VulnerabilityAlertResponse,
 } from './types';
@@ -53,6 +54,7 @@ import { graphql } from '@octokit/graphql/dist-types/types';
 import SinglePullRequestQuery from './pullRequestQueries/SinglePullRequestQuery';
 import RepoVulnAlertsQuery from './vulnerabilityAlertQueries/RepoVulnAlertsQuery';
 import BranchProtectionRulesQuery from './branchProtectionRulesQueries/BranchProtectionRulesQuery';
+import TagsQuery from './tagQueries/TagsQuery';
 import ReviewsQuery from './pullRequestQueries/ReviewsQuery';
 import LabelsQuery from './pullRequestQueries/LabelsQuery';
 import CommitsQuery from './pullRequestQueries/CommitsQuery';
@@ -351,6 +353,18 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await OrgRepositoriesQuery.iterateRepositories(login, executor, iteratee),
+    );
+  }
+
+  public async iterateTags(
+    repoOwner: string,
+    repoName: string,
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await TagsQuery.iterateTags({ repoName, repoOwner }, executor, iteratee),
     );
   }
 

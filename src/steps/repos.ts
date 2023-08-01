@@ -42,7 +42,12 @@ export async function fetchRepos({
   const repoTags: RepoKeyAndName[] = []; //for use later in PRs
 
   await apiClient.iterateRepos(async (repo) => {
-    const repoEntity = toRepositoryEntity(repo);
+    const repoOwner = repo.nameWithOwner.toLowerCase().split('/')[0];
+    const tags: string[] = [];
+    await apiClient.iterateTags(repoOwner, repo.name, (tag) => {
+      tags.push(tag.name);
+    });
+    const repoEntity = toRepositoryEntity(repo, tags);
     if (apiClient.scopes.repoPages) {
       const pagesInfo = await apiClient.fetchPagesInfoForRepo(
         repoEntity.owner,

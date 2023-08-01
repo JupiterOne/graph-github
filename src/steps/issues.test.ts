@@ -12,7 +12,7 @@ import {
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
-jest.setTimeout(20000);
+jest.setTimeout(30000);
 
 let recording: Recording;
 afterEach(async () => {

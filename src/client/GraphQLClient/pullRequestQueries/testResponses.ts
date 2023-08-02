@@ -112,6 +112,276 @@ const emptyPullRequest = [
   },
 ];
 
+const oneByOneResponses = [
+  {
+    search: {
+      issueCount: 6,
+      edges: [
+        {
+          node: {
+            author: {},
+            baseRefName: 'main',
+            baseRefOid: 'e0c7d998fedd115d3489d67b78b0ec4351a7d231',
+            baseRepository: {
+              name: 'test-repo1',
+              owner: {
+                login: 'JupiterOne-Sandbox',
+              },
+            },
+            body: '',
+            changedFiles: 1,
+            createdAt: '2023-05-19T14:56:58Z',
+            databaseId: 1357276831,
+            headRefName: 'SRE-1001/ops-platform-jobs-readme-test',
+            headRefOid: 'c4fc20147d1440a8bea9b000320471d02d6a4397',
+            headRepository: {
+              name: 'test-repo1',
+              owner: {
+                login: 'JupiterOne-Sandbox',
+              },
+            },
+            id: 'PR_kwDOIudGfM5Q5maf',
+            merged: true,
+            mergedAt: '2023-05-20T03:50:06Z',
+            mergedBy: {},
+            number: 9,
+            reviewDecision: 'APPROVED',
+            state: 'MERGED',
+            title: 'Update README.md',
+            updatedAt: '2023-05-20T03:50:08Z',
+            url: 'https://github.com/JupiterOne-Sandbox/test-repo1/pull/9',
+          },
+        },
+        {
+          node: {
+            author: {},
+            baseRefName: 'main',
+            baseRefOid: '130e23d58c9978333776ac94e6f623bad7aeae4b',
+            baseRepository: {
+              name: 'test-repo1',
+              owner: {
+                login: 'JupiterOne-Sandbox',
+              },
+            },
+            body: '',
+            changedFiles: 1,
+            createdAt: '2023-05-17T13:09:52Z',
+            databaseId: 1354151894,
+            headRefName: 'SRE-1001/ops-platform-jobs-readme-test',
+            headRefOid: '718adb1eac4af9a45650be7e88a1af3c0e1a7afe',
+            headRepository: {
+              name: 'test-repo1',
+              owner: {
+                login: 'JupiterOne-Sandbox',
+              },
+            },
+            id: 'PR_kwDOIudGfM5QtrfW',
+            merged: true,
+            mergedAt: '2023-05-17T16:08:22Z',
+            mergedBy: {},
+            number: 8,
+            reviewDecision: null,
+            state: 'MERGED',
+            title: 'Update README.md',
+            updatedAt: '2023-05-17T16:08:24Z',
+            url: 'https://github.com/JupiterOne-Sandbox/test-repo1/pull/8',
+          },
+        },
+      ],
+      pageInfo: {
+        endCursor: 'Y3Vyc29yOjI=',
+        hasNextPage: true,
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 1,
+      remaining: 5000,
+      resetAt: '2023-08-01T22:45:39Z',
+    },
+  },
+  {
+    search: {
+      issueCount: 6,
+      edges: [
+        {
+          node: {
+            author: {},
+            baseRefName: 'main',
+            baseRefOid: '130e23d58c9978333776ac94e6f623bad7aeae4b',
+            baseRepository: {
+              name: 'test-repo1',
+              owner: {
+                login: 'JupiterOne-Sandbox',
+              },
+            },
+            body: '',
+            changedFiles: 1,
+            createdAt: '2023-05-16T14:38:58Z',
+            databaseId: 1352636957,
+            headRefName: 'SRE-1001/ops-platform-jobs-readme-undo',
+            headRefOid: 'd54f0613b2f2efbac213a9a120c965c412c69ba1',
+            headRepository: {
+              name: 'test-repo1',
+              owner: {
+                login: 'JupiterOne-Sandbox',
+              },
+            },
+            id: 'PR_kwDOIudGfM5Qn5od',
+            merged: false,
+            mergedAt: null,
+            mergedBy: null,
+            number: 7,
+            reviewDecision: null,
+            state: 'CLOSED',
+            title: 'Update README.md',
+            updatedAt: '2023-05-17T13:14:09Z',
+            url: 'https://github.com/JupiterOne-Sandbox/test-repo1/pull/7',
+          },
+        },
+      ],
+      pageInfo: {
+        endCursor: 'Y3Vyc29yOjM=',
+        hasNextPage: true,
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 1,
+      remaining: 5000,
+      resetAt: '2023-08-01T22:45:39Z',
+    },
+  },
+  {
+    search: {
+      issueCount: 6,
+      edges: [
+        {
+          node: {
+            author: {},
+            baseRefName: 'main',
+            baseRefOid: '01df5f40c5bf0dfc62d972e517989ce6c3cd99b9',
+            baseRepository: {
+              name: 'test-repo1',
+              owner: {
+                login: 'JupiterOne-Sandbox',
+              },
+            },
+            body: '',
+            changedFiles: 1,
+            createdAt: '2023-05-16T14:12:55Z',
+            databaseId: 1352592779,
+            headRefName: 'SRE-1001/ops-platform-jobs-readme-test',
+            headRefOid: 'abfadd770deb8eefb5ce073c87fbe7a80b1b82f2',
+            headRepository: {
+              name: 'test-repo1',
+              owner: {
+                login: 'JupiterOne-Sandbox',
+              },
+            },
+            id: 'PR_kwDOIudGfM5Qnu2L',
+            merged: true,
+            mergedAt: '2023-05-16T14:20:33Z',
+            mergedBy: {},
+            number: 6,
+            reviewDecision: null,
+            state: 'MERGED',
+            title: 'Update README.md',
+            updatedAt: '2023-05-16T14:20:35Z',
+            url: 'https://github.com/JupiterOne-Sandbox/test-repo1/pull/6',
+          },
+        },
+      ],
+      pageInfo: {
+        endCursor: 'Y3Vyc29yOjQ=',
+        hasNextPage: true,
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 1,
+      remaining: 5000,
+      resetAt: '2023-08-01T22:45:39Z',
+    },
+  },
+  {
+    search: {
+      issueCount: 6,
+      edges: [
+        {
+          node: {
+            author: { name: 'Neal Patel', login: 'nealajpatel' },
+            baseRefName: 'main',
+            baseRefOid: '47db50a18856176ab10b706076f2c9dfacfda261',
+            baseRepository: {
+              name: 'test-repo1',
+              owner: { login: 'JupiterOne-Sandbox' },
+            },
+            body: '',
+            changedFiles: 1,
+            createdAt: '2023-05-15T14:43:37Z',
+            databaseId: 1350939546,
+            headRefName: 'readme-update',
+            headRefOid: '728b0b8f49a324315a2fbe07222bb43df02aa7c9',
+            headRepository: {
+              name: 'test-repo1',
+              owner: { login: 'JupiterOne-Sandbox' },
+            },
+            id: 'PR_kwDOIudGfM5QhbOa',
+            merged: true,
+            mergedAt: '2023-05-15T16:17:53Z',
+            mergedBy: { name: 'Neal Patel', login: 'nealajpatel' },
+            number: 3,
+            reviewDecision: null,
+            state: 'MERGED',
+            title: 'README Update',
+            updatedAt: '2023-05-15T16:17:53Z',
+            url: 'https://github.com/JupiterOne-Sandbox/test-repo1/pull/3',
+          },
+        },
+        {
+          node: {
+            author: { name: 'Neal Patel', login: 'nealajpatel' },
+            baseRefName: 'main',
+            baseRefOid: '47db50a18856176ab10b706076f2c9dfacfda261',
+            baseRepository: {
+              name: 'test-repo1',
+              owner: { login: 'JupiterOne-Sandbox' },
+            },
+            body: '',
+            changedFiles: 1,
+            createdAt: '2023-05-15T14:27:55Z',
+            databaseId: 1350916055,
+            headRefName: 'readme-update',
+            headRefOid: '74c0d116477dc28a51696e3dcbb84cd02dfe381a',
+            headRepository: {
+              name: 'test-repo1',
+              owner: { login: 'JupiterOne-Sandbox' },
+            },
+            id: 'PR_kwDOIudGfM5QhVfX',
+            merged: false,
+            mergedAt: null,
+            mergedBy: null,
+            number: 2,
+            reviewDecision: null,
+            state: 'CLOSED',
+            title: 'README Update',
+            updatedAt: '2023-05-15T14:28:50Z',
+            url: 'https://github.com/JupiterOne-Sandbox/test-repo1/pull/2',
+          },
+        },
+      ],
+      pageInfo: { endCursor: 'Y3Vyc29yOjg=', hasNextPage: false },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 1,
+      remaining: 5000,
+      resetAt: '2023-08-01T22:45:39Z',
+    },
+  },
+];
+
 export {
   pullRequestsPublic,
   pullRequestsPublicInnerPagination,
@@ -463,4 +733,5 @@ export {
   commitsQueryResponse,
   labelsQueryResponse,
   reviewsQueryResponse,
+  oneByOneResponses,
 };

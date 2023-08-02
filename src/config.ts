@@ -196,7 +196,7 @@ export function sanitizeConfig(config: IntegrationConfig) {
 
   config.pullRequestMaxSearchLimit =
     config.pullRequestMaxSearchLimit ||
-    process.env['PULL_REQUEST_MAX_SEARCH_LIMIT'];
+    Number(process.env['PULL_REQUEST_MAX_SEARCH_LIMIT']);
 
   config.dependabotAlertRequestLimit =
     config.dependabotAlertRequestLimit ||

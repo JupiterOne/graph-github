@@ -187,6 +187,11 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
     iteratee,
     logger,
   ): Promise<RateLimitStepSummary> => {
+    const originalMaxSearchLimit = queryParams.maxSearchLimit;
+    const fetchBySinglePRState = {
+      isActive: false,
+      count: originalMaxSearchLimit,
+    };
     let pullRequestFetched = 0;
     let queryCost = 0;
     let queryState: QueryState | undefined = undefined;
@@ -194,13 +199,44 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
 
     const countIteratee = async (pullRequest: PullRequestResponse) => {
       pullRequestFetched++;
+      if (fetchBySinglePRState.isActive) {
+        fetchBySinglePRState.count--;
+        if (fetchBySinglePRState.count === 0) {
+          // reset state to continue requesting as default
+          fetchBySinglePRState.isActive = false;
+          fetchBySinglePRState.count = originalMaxSearchLimit;
+          queryParams.maxSearchLimit = originalMaxSearchLimit;
+          logger?.info(
+            { queryParams, queryState },
+            'Finish querying page by single PR.',
+          );
+        }
+      }
       await iteratee(pullRequest);
     };
 
     while (!paginationComplete) {
       const executable = buildQuery(queryParams, queryState);
 
-      const response = await execute(executable);
+      let response: any;
+      try {
+        response = await execute(executable);
+      } catch (err) {
+        if (
+          err.message?.includes('This may be the result of a timeout') &&
+          !fetchBySinglePRState.isActive
+        ) {
+          fetchBySinglePRState.isActive = true;
+          queryParams.maxSearchLimit = 1;
+          logger?.info(
+            { queryParams, queryState },
+            'Search Pull Requests timeout. Start querying by single PR.',
+          );
+          continue;
+        } else {
+          throw err;
+        }
+      }
 
       queryState = await processResponseData(response, countIteratee);
 

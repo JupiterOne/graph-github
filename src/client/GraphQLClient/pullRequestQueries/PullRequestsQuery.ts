@@ -206,6 +206,10 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
           fetchBySinglePRState.isActive = false;
           fetchBySinglePRState.count = originalMaxSearchLimit;
           queryParams.maxSearchLimit = originalMaxSearchLimit;
+          logger?.info(
+            { queryParams, queryState },
+            'Finish querying page by single PR.',
+          );
         }
       }
       await iteratee(pullRequest);
@@ -224,6 +228,10 @@ const iteratePullRequests: IteratePagination<QueryParams, PullRequestResponse> =
         ) {
           fetchBySinglePRState.isActive = true;
           queryParams.maxSearchLimit = 1;
+          logger?.info(
+            { queryParams, queryState },
+            'Search Pull Requests timeout. Start querying by single PR.',
+          );
           continue;
         } else {
           throw err;

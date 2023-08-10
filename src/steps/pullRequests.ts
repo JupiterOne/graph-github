@@ -96,7 +96,9 @@ export async function fetchPrs(
     config.pullRequestMaxResourcesPerRepo ??
     DEFAULT_MAX_RESOURCES_PER_EXECUTION;
 
-  const maxSearchLimit = config.pullRequestMaxSearchLimit ?? MAX_SEARCH_LIMIT;
+  const maxSearchLimit = Number(
+    config.pullRequestMaxSearchLimit ?? MAX_SEARCH_LIMIT,
+  );
 
   logger.info(
     { ingestStartDatetime, maxResourceIngestion },

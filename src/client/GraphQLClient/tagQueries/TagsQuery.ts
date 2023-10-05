@@ -65,26 +65,28 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
-const processResponseData: ProcessResponse<TagQueryResponse, QueryState> =
-  async (responseData, iteratee) => {
-    const rateLimit = responseData.rateLimit;
-    const tagEdges = responseData.repository?.refs?.edges ?? [];
+const processResponseData: ProcessResponse<
+  TagQueryResponse,
+  QueryState
+> = async (responseData, iteratee) => {
+  const rateLimit = responseData.rateLimit;
+  const tagEdges = responseData.repository?.refs?.edges ?? [];
 
-    for (const edge of tagEdges) {
-      if (!utils.hasProperties(edge?.node)) {
-        continue;
-      }
-
-      const tag = edge.node;
-
-      await iteratee(tag);
+  for (const edge of tagEdges) {
+    if (!utils.hasProperties(edge?.node)) {
+      continue;
     }
 
-    return {
-      rateLimit,
-      tags: responseData.repository?.refs?.pageInfo,
-    };
+    const tag = edge.node;
+
+    await iteratee(tag);
+  }
+
+  return {
+    rateLimit,
+    tags: responseData.repository?.refs?.pageInfo,
   };
+};
 
 /**
  * Iterates over teams found within an organization

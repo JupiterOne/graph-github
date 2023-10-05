@@ -176,41 +176,41 @@ The following relationships are created:
 
 | Source Entity `_type` | Relationship `_class` | Target Entity `_type`           |
 | --------------------- | --------------------- | ------------------------------- |
+| `github_account`      | **INSTALLED**         | `github_app`                    |
 | `github_account`      | **HAS**               | `github_org_secret`             |
+| `github_account`      | **OWNS**              | `github_repo`                   |
 | `github_account`      | **HAS**               | `github_team`                   |
 | `github_account`      | **HAS**               | `github_user`                   |
-| `github_account`      | **INSTALLED**         | `github_app`                    |
-| `github_account`      | **OWNS**              | `github_repo`                   |
 | `github_app`          | **OVERRIDES**         | `github_branch_protection_rule` |
 | `github_env_secret`   | **OVERRIDES**         | `github_org_secret`             |
 | `github_env_secret`   | **OVERRIDES**         | `github_repo_secret`            |
 | `github_environment`  | **HAS**               | `github_env_secret`             |
-| `github_finding`      | **EXPLOITS**          | `cwe`                           |
 | `github_finding`      | **IS**                | `cve`                           |
+| `github_finding`      | **EXPLOITS**          | `cwe`                           |
 | `github_pullrequest`  | **CONTAINS**          | `github_pullrequest`            |
-| `github_repo`         | **ALLOWS**            | `github_team`                   |
-| `github_repo`         | **ALLOWS**            | `github_user`                   |
 | `github_repo`         | **HAS**               | `github_branch_protection_rule` |
 | `github_repo`         | **HAS**               | `github_code_scanning_finding`  |
+| `github_repo`         | **USES**              | `github_env_secret`             |
 | `github_repo`         | **HAS**               | `github_environment`            |
 | `github_repo`         | **HAS**               | `github_finding`                |
 | `github_repo`         | **HAS**               | `github_issue`                  |
+| `github_repo`         | **USES**              | `github_org_secret`             |
 | `github_repo`         | **HAS**               | `github_pullrequest`            |
 | `github_repo`         | **HAS**               | `github_repo_secret`            |
-| `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`             |
-| `github_repo`         | **USES**              | `github_env_secret`             |
-| `github_repo`         | **USES**              | `github_org_secret`             |
 | `github_repo`         | **USES**              | `github_repo_secret`            |
-| `github_team`         | **HAS**               | `github_user`                   |
+| `github_repo`         | **ALLOWS**            | `github_team`                   |
+| `github_repo`         | **ALLOWS**            | `github_user`                   |
+| `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`             |
 | `github_team`         | **OVERRIDES**         | `github_branch_protection_rule` |
-| `github_user`         | **APPROVED**          | `github_pullrequest`            |
+| `github_team`         | **HAS**               | `github_user`                   |
+| `github_user`         | **MANAGES**           | `github_account`                |
+| `github_user`         | **OVERRIDES**         | `github_branch_protection_rule` |
 | `github_user`         | **ASSIGNED**          | `github_issue`                  |
 | `github_user`         | **CREATED**           | `github_issue`                  |
-| `github_user`         | **MANAGES**           | `github_account`                |
-| `github_user`         | **MANAGES**           | `github_team`                   |
+| `github_user`         | **APPROVED**          | `github_pullrequest`            |
 | `github_user`         | **OPENED**            | `github_pullrequest`            |
-| `github_user`         | **OVERRIDES**         | `github_branch_protection_rule` |
 | `github_user`         | **REVIEWED**          | `github_pullrequest`            |
+| `github_user`         | **MANAGES**           | `github_team`                   |
 
 <!--
 ********************************************************************************

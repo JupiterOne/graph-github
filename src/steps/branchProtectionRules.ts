@@ -135,9 +135,10 @@ export async function fetchBranchProtectionRule({
         if (
           Array.isArray(branchProtectionRule.bypassPullRequestAllowances?.apps)
         ) {
-          const appsById = await jobState.getData<IdEntityMap<AppEntity>>(
-            GITHUB_APP_BY_APP_ID,
-          );
+          const appsById =
+            await jobState.getData<IdEntityMap<AppEntity>>(
+              GITHUB_APP_BY_APP_ID,
+            );
 
           if (appsById) {
             await Promise.all(

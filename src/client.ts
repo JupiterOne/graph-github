@@ -202,9 +202,8 @@ export class APIClient {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.graphQLClient.iterateExternalIdentifiers(
-      iteratee,
-    );
+    const rateLimit =
+      await this.graphQLClient.iterateExternalIdentifiers(iteratee);
 
     this.logger.debug(
       { rateLimit },

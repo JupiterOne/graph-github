@@ -52,9 +52,8 @@ export async function fetchPrs(
 
   const apiClient = getOrCreateApiClient(config, logger);
 
-  const accountEntity = await jobState.getData<AccountEntity>(
-    DATA_ACCOUNT_ENTITY,
-  );
+  const accountEntity =
+    await jobState.getData<AccountEntity>(DATA_ACCOUNT_ENTITY);
   if (!accountEntity) {
     throw new IntegrationMissingKeyError(
       `Expected to find Account entity in jobState.`,

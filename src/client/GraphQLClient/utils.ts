@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values */
 import { gte } from 'semver';
 import { first } from 'lodash';
 

@@ -1,6 +1,8 @@
 import {
   RelationshipClass,
+  RelationshipDirection,
   StepEntityMetadata,
+  StepMappedRelationshipMetadata,
   StepRelationshipMetadata,
 } from '@jupiterone/integration-sdk-core';
 
@@ -441,8 +443,6 @@ export const Relationships: Record<
   | 'ACCOUNT_OWNS_REPO'
   | 'REPO_HAS_ENVIRONMENT'
   | 'REPO_HAS_FINDING'
-  | 'FINDING_IS_CVE'
-  | 'FINDING_EXPLOITS_CWE'
   | 'ACCOUNT_HAS_ORG_SECRET'
   | 'REPO_USES_ORG_SECRET'
   | 'ACCOUNT_HAS_ORG_SECRET'
@@ -642,18 +642,6 @@ export const Relationships: Record<
     _class: RelationshipClass.HAS,
     targetType: GithubEntities.GITHUB_VULNERABILITY_ALERT._type,
   },
-  FINDING_IS_CVE: {
-    _type: 'github_finding_is_cve',
-    sourceType: GithubEntities.GITHUB_VULNERABILITY_ALERT._type,
-    _class: RelationshipClass.IS,
-    targetType: GithubEntities.CVE._type,
-  },
-  FINDING_EXPLOITS_CWE: {
-    _type: 'github_finding_exploits_cwe',
-    sourceType: GithubEntities.GITHUB_VULNERABILITY_ALERT._type,
-    _class: RelationshipClass.EXPLOITS,
-    targetType: GithubEntities.CWE._type,
-  },
   ACCOUNT_HAS_ORG_SECRET: {
     _type: 'github_account_has_org_secret',
     sourceType: GithubEntities.GITHUB_ACCOUNT._type,
@@ -665,5 +653,25 @@ export const Relationships: Record<
     sourceType: GithubEntities.GITHUB_REPO._type,
     _class: RelationshipClass.USES,
     targetType: GithubEntities.GITHUB_ORG_SECRET._type,
+  },
+};
+
+export const MappedRelationships: Record<
+  'FINDING_IS_CVE' | 'FINDING_EXPLOITS_CWE',
+  StepMappedRelationshipMetadata
+> = {
+  FINDING_IS_CVE: {
+    _type: 'github_finding_is_cve',
+    sourceType: GithubEntities.GITHUB_VULNERABILITY_ALERT._type,
+    _class: RelationshipClass.IS,
+    targetType: GithubEntities.CVE._type,
+    direction: RelationshipDirection.FORWARD,
+  },
+  FINDING_EXPLOITS_CWE: {
+    _type: 'github_finding_exploits_cwe',
+    sourceType: GithubEntities.GITHUB_VULNERABILITY_ALERT._type,
+    _class: RelationshipClass.EXPLOITS,
+    targetType: GithubEntities.CWE._type,
+    direction: RelationshipDirection.FORWARD,
   },
 };

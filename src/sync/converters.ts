@@ -12,7 +12,11 @@ import {
   truncateEntityPropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
-import { GithubEntities, Relationships } from '../constants';
+import {
+  GithubEntities,
+  MappedRelationships,
+  Relationships,
+} from '../constants';
 
 import {
   AccountEntity,
@@ -695,7 +699,7 @@ export function createFindingCveRelationship(
   return createMappedRelationship({
     source: findingEntity,
     _class: RelationshipClass.IS,
-    _type: Relationships.FINDING_IS_CVE._type,
+    _type: MappedRelationships.FINDING_IS_CVE._type,
     target: {
       _key: cveEntity._key,
       _type: cveEntity._type,
@@ -719,7 +723,7 @@ export function createFindingCweRelationship(
   return createMappedRelationship({
     source: findingEntity,
     _class: RelationshipClass.EXPLOITS,
-    _type: Relationships.FINDING_EXPLOITS_CWE._type,
+    _type: MappedRelationships.FINDING_EXPLOITS_CWE._type,
     target: {
       _key: cweEntity._key,
       _type: cweEntity._type,

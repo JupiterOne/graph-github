@@ -3,10 +3,7 @@ import { sanitizeConfig } from '../config';
 import { teamMemberSteps } from './teamMembers';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import {
-  GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
-} from '../constants';
+import { Relationships } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
@@ -41,12 +38,12 @@ test('fetchTeamMembers exec handler', async () => {
 
   // this step only makes relationships
   const teamHasMemberRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.TEAM_HAS_USER._type,
   );
   expect(teamHasMemberRels.length).toBeGreaterThan(0);
 
   const memberManagesTeamRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.USER_MANAGES_TEAM._type,
   );
   expect(memberManagesTeamRels.length).toBeGreaterThan(0);
 });

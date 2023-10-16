@@ -3,11 +3,7 @@ import { sanitizeConfig } from '../config';
 import { orgSecretSteps } from './orgSecrets';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import {
-  GithubEntities,
-  GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
-} from '../constants';
+import { GithubEntities, Relationships } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
@@ -48,12 +44,12 @@ test('fetchOrgSecrets exec handler', async () => {
 
   // relationships
   const accountHasOrgSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.ACCOUNT_HAS_ORG_SECRET._type,
   );
   expect(accountHasOrgSecretRels.length).toBeGreaterThan(0);
 
   const repoUsesOrgSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_USES_ORG_SECRET._type,
   );
   expect(repoUsesOrgSecretRels.length).toBeGreaterThan(0);
 });

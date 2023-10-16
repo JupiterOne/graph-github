@@ -9,9 +9,9 @@ import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { CodeScanningFindingEntity } from '../types';
 import {
-  GITHUB_REPO_HAS_CODE_SCANNING_FINDING,
   GithubEntities,
   IngestionSources,
+  Relationships,
   Steps,
 } from '../constants';
 import { createCodeScanningFindingEntity } from '../sync/converters';
@@ -48,21 +48,8 @@ export const codeScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
     id: Steps.FETCH_CODE_SCANNING_ALERTS,
     ingestionSourceId: IngestionSources.CODE_SCANNING_ALERTS,
     name: 'Fetch Code Scanning Alerts',
-    entities: [
-      {
-        resourceName: 'GitHub Code Scanning Alerts',
-        _type: GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
-        _class: GithubEntities.GITHUB_CODE_SCANNING_ALERT._class,
-      },
-    ],
-    relationships: [
-      {
-        _type: GITHUB_REPO_HAS_CODE_SCANNING_FINDING,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        _class: RelationshipClass.HAS,
-        targetType: GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_CODE_SCANNING_ALERT],
+    relationships: [Relationships.REPO_HAS_CODE_SCANNING_FINDING],
     dependsOn: [Steps.FETCH_REPOS],
     executionHandler: fetchCodeScanAlerts,
   },

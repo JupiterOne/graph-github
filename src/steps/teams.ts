@@ -11,11 +11,7 @@ import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toTeamEntity } from '../sync/converters';
 import { AccountEntity, TeamEntity } from '../types';
-import {
-  GithubEntities,
-  GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
-  Steps,
-} from '../constants';
+import { GithubEntities, Steps, Relationships } from '../constants';
 
 export async function fetchTeams({
   instance,
@@ -25,8 +21,9 @@ export async function fetchTeams({
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
 
-  const accountEntity =
-    await jobState.getData<AccountEntity>(DATA_ACCOUNT_ENTITY);
+  const accountEntity = await jobState.getData<AccountEntity>(
+    DATA_ACCOUNT_ENTITY,
+  );
   if (!accountEntity) {
     throw new IntegrationMissingKeyError(
       `Expected to find Account entity in jobState.`,
@@ -52,21 +49,8 @@ export const teamSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_TEAMS,
     name: 'Fetch Teams',
-    entities: [
-      {
-        resourceName: 'GitHub Team',
-        _type: GithubEntities.GITHUB_TEAM._type,
-        _class: GithubEntities.GITHUB_TEAM._class,
-      },
-    ],
-    relationships: [
-      {
-        _type: GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GithubEntities.GITHUB_ACCOUNT._type,
-        targetType: GithubEntities.GITHUB_TEAM._type,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_TEAM],
+    relationships: [Relationships.ACCOUNT_HAS_TEAM],
     dependsOn: [Steps.FETCH_ACCOUNT],
     executionHandler: fetchTeams,
   },

@@ -3,10 +3,7 @@ import { sanitizeConfig } from '../config';
 import { environmentSteps } from './environments';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import {
-  GithubEntities,
-  GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
-} from '../constants';
+import { GithubEntities, Relationships } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
@@ -48,7 +45,7 @@ test('fetchEnvironments exec handler', async () => {
   );
   // relationships
   const relationships = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_HAS_ENVIRONMENT._type,
   );
   expect(relationships.length).toBeGreaterThan(0);
 });

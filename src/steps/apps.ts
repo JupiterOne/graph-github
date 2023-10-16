@@ -13,10 +13,10 @@ import { toAppEntity } from '../sync/converters';
 import { AccountEntity, AppEntity } from '../types';
 import {
   GithubEntities,
-  GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
   GITHUB_APP_BY_APP_ID,
   Steps,
   IngestionSources,
+  Relationships,
 } from '../constants';
 
 export async function fetchApps({
@@ -27,8 +27,9 @@ export async function fetchApps({
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
 
-  const accountEntity =
-    await jobState.getData<AccountEntity>(DATA_ACCOUNT_ENTITY);
+  const accountEntity = await jobState.getData<AccountEntity>(
+    DATA_ACCOUNT_ENTITY,
+  );
 
   if (!accountEntity) {
     throw new IntegrationMissingKeyError(
@@ -59,21 +60,8 @@ export const appSteps: IntegrationStep<IntegrationConfig>[] = [
     id: Steps.FETCH_APPS,
     ingestionSourceId: IngestionSources.APPS,
     name: 'Fetch Apps',
-    entities: [
-      {
-        resourceName: 'Github App',
-        _type: GithubEntities.GITHUB_APP._type,
-        _class: GithubEntities.GITHUB_APP._class,
-      },
-    ],
-    relationships: [
-      {
-        _type: GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.INSTALLED,
-        sourceType: GithubEntities.GITHUB_ACCOUNT._type,
-        targetType: GithubEntities.GITHUB_APP._type,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_APP],
+    relationships: [Relationships.ACCOUNT_INSTALLED_APP],
     dependsOn: [Steps.FETCH_ACCOUNT],
     executionHandler: fetchApps,
   },

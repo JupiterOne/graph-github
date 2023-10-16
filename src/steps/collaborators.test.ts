@@ -5,8 +5,8 @@ import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import {
   GithubEntities,
-  GITHUB_REPO_USER_RELATIONSHIP_TYPE,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  Relationships,
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
@@ -55,7 +55,7 @@ test('fetchCollaborators exec handler', async () => {
   );
   // relationships
   const relationships = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_ALLOWS_USER._type,
   );
   expect(relationships.length).toBeGreaterThan(0);
 

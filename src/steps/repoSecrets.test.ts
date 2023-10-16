@@ -5,10 +5,8 @@ import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import {
   GithubEntities,
-  GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
+  Relationships,
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
@@ -56,17 +54,17 @@ test('fetchRepoSecrets exec handler', async () => {
 
   // relationships
   const repoHasRepoSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_HAS_SECRET._type,
   );
   expect(repoHasRepoSecretRels.length).toBeGreaterThan(0);
 
   const repoUsesRepoSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_USES_SECRET._type,
   );
   expect(repoUsesRepoSecretRels.length).toBeGreaterThan(0);
 
   const repoUsesOrgSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_SECRET_OVERRIDES_ORG_SECRET._type,
   );
   expect(repoUsesOrgSecretRels.length).toBeGreaterThan(0);
 

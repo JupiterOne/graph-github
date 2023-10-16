@@ -5,8 +5,8 @@ import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import {
   GithubEntities,
-  GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
+  Relationships,
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
@@ -52,7 +52,7 @@ test('fetchRepos exec handler', async () => {
 
   // relationships
   const accountHasRepoRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.ACCOUNT_OWNS_REPO._type,
   );
   expect(accountHasRepoRels.length).toBeGreaterThan(0);
 

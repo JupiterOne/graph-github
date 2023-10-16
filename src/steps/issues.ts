@@ -14,13 +14,11 @@ import {
 import { UserEntity, IdEntityMap, RepoEntity, IssueEntity } from '../types';
 import {
   GithubEntities,
-  GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
   Steps,
   IngestionSources,
+  Relationships,
 } from '../constants';
 
 export async function fetchIssues(
@@ -96,7 +94,7 @@ export async function fetchIssues(
                 await jobState.addRelationship(
                   createUnknownUserIssueRelationship(
                     issue.author.login,
-                    GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
+                    Relationships.USER_CREATED_ISSUE._type,
                     RelationshipClass.CREATED,
                     issueEntity._key,
                   ),
@@ -119,7 +117,7 @@ export async function fetchIssues(
                   await jobState.addRelationship(
                     createUnknownUserIssueRelationship(
                       assignee.login,
-                      GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
+                      Relationships.USER_ASSIGNED_ISSUE._type,
                       RelationshipClass.ASSIGNED,
                       issueEntity._key,
                     ),
@@ -144,36 +142,11 @@ export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
     id: Steps.FETCH_ISSUES,
     ingestionSourceId: IngestionSources.ISSUES,
     name: 'Fetch Issues',
-    entities: [
-      {
-        resourceName: 'GitHub Issue',
-        _type: GithubEntities.GITHUB_ISSUE._type,
-        _class: GithubEntities.GITHUB_ISSUE._class,
-        partial: true,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_ISSUE],
     relationships: [
-      {
-        _type: GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_ISSUE._type,
-        partial: true,
-      },
-      {
-        _type: GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.CREATED,
-        sourceType: GithubEntities.GITHUB_MEMBER._type,
-        targetType: GithubEntities.GITHUB_ISSUE._type,
-        partial: true,
-      },
-      {
-        _type: GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.ASSIGNED,
-        sourceType: GithubEntities.GITHUB_MEMBER._type,
-        targetType: GithubEntities.GITHUB_ISSUE._type,
-        partial: true,
-      },
+      Relationships.REPO_HAS_ISSUE,
+      Relationships.USER_CREATED_ISSUE,
+      Relationships.USER_ASSIGNED_ISSUE,
     ],
     dependsOn: [
       Steps.FETCH_REPOS,

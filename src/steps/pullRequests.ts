@@ -19,15 +19,11 @@ import {
   UserEntity,
 } from '../types';
 import {
-  GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
-  GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
-  GITHUB_PR_CONTAINS_PR_RELATIONSHIP_TYPE,
-  GITHUB_REPO_PR_RELATIONSHIP_TYPE,
   GithubEntities,
   IngestionSources,
+  Relationships,
   Steps,
 } from '../constants';
 import {
@@ -52,8 +48,9 @@ export async function fetchPrs(
 
   const apiClient = getOrCreateApiClient(config, logger);
 
-  const accountEntity =
-    await jobState.getData<AccountEntity>(DATA_ACCOUNT_ENTITY);
+  const accountEntity = await jobState.getData<AccountEntity>(
+    DATA_ACCOUNT_ENTITY,
+  );
   if (!accountEntity) {
     throw new IntegrationMissingKeyError(
       `Expected to find Account entity in jobState.`,
@@ -194,7 +191,7 @@ export async function fetchPrs(
               await jobState.addRelationship(
                 createUnknownUserIssueRelationship(
                   pr.authorLogin,
-                  GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
+                  Relationships.USER_OPENED_PULLREQUEST._type,
                   RelationshipClass.OPENED,
                   prEntity._key,
                 ),
@@ -216,7 +213,7 @@ export async function fetchPrs(
                   await jobState.addRelationship(
                     createUnknownUserIssueRelationship(
                       reviewer,
-                      GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
+                      Relationships.USER_REVIEWED_PULLREQUEST._type,
                       RelationshipClass.REVIEWED,
                       prEntity._key,
                     ),
@@ -240,7 +237,7 @@ export async function fetchPrs(
                   await jobState.addRelationship(
                     createUnknownUserIssueRelationship(
                       approver,
-                      GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
+                      Relationships.USER_APPROVED_PULLREQUEST._type,
                       RelationshipClass.APPROVED,
                       prEntity._key,
                     ),
@@ -318,49 +315,13 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
     id: Steps.FETCH_PRS,
     ingestionSourceId: IngestionSources.PRS,
     name: 'Fetch Pull Requests',
-    entities: [
-      {
-        resourceName: 'GitHub Pull Request',
-        _type: GithubEntities.GITHUB_PR._type,
-        _class: GithubEntities.GITHUB_PR._class,
-        partial: true,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_PR],
     relationships: [
-      {
-        _type: GITHUB_REPO_PR_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_PR._type,
-        partial: true,
-      },
-      {
-        _type: GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.APPROVED,
-        sourceType: GithubEntities.GITHUB_MEMBER._type,
-        targetType: GithubEntities.GITHUB_PR._type,
-        partial: true,
-      },
-      {
-        _type: GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.OPENED,
-        sourceType: GithubEntities.GITHUB_MEMBER._type,
-        targetType: GithubEntities.GITHUB_PR._type,
-        partial: true,
-      },
-      {
-        _type: GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.REVIEWED,
-        sourceType: GithubEntities.GITHUB_MEMBER._type,
-        targetType: GithubEntities.GITHUB_PR._type,
-        partial: true,
-      },
-      {
-        _type: GITHUB_PR_CONTAINS_PR_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.CONTAINS,
-        sourceType: GithubEntities.GITHUB_PR._type,
-        targetType: GithubEntities.GITHUB_PR._type,
-      },
+      Relationships.REPO_HAS_PULLREQUEST,
+      Relationships.USER_APPROVED_PULLREQUEST,
+      Relationships.USER_OPENED_PULLREQUEST,
+      Relationships.USER_REVIEWED_PULLREQUEST,
+      Relationships.PULLREQUEST_CONTAINS_PULLREQUEST,
     ],
     dependsOn: [
       Steps.FETCH_REPOS,

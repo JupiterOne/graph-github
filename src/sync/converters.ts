@@ -12,13 +12,7 @@ import {
   truncateEntityPropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
-import {
-  GITHUB_FINDING_CVE_RELATIONSHIP_TYPE,
-  GITHUB_FINDING_CWE_RELATIONSHIP_TYPE,
-  GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
-  GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-  GithubEntities,
-} from '../constants';
+import { GithubEntities, Relationships } from '../constants';
 
 import {
   AccountEntity,
@@ -701,7 +695,7 @@ export function createFindingCveRelationship(
   return createMappedRelationship({
     source: findingEntity,
     _class: RelationshipClass.IS,
-    _type: GITHUB_FINDING_CVE_RELATIONSHIP_TYPE,
+    _type: Relationships.FINDING_IS_CVE._type,
     target: {
       _key: cveEntity._key,
       _type: cveEntity._type,
@@ -725,7 +719,7 @@ export function createFindingCweRelationship(
   return createMappedRelationship({
     source: findingEntity,
     _class: RelationshipClass.EXPLOITS,
-    _type: GITHUB_FINDING_CWE_RELATIONSHIP_TYPE,
+    _type: Relationships.FINDING_EXPLOITS_CWE._type,
     target: {
       _key: cweEntity._key,
       _type: cweEntity._type,
@@ -772,7 +766,7 @@ export function createRepoAllowsTeamRelationship(
   return {
     _key: `${repoId}|allows|${teamKey}`,
     _class: RelationshipClass.ALLOWS,
-    _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
+    _type: Relationships.REPO_ALLOWS_TEAM._type,
     _fromEntityKey: repoId,
     _toEntityKey: teamKey,
     displayName: RelationshipClass.ALLOWS,
@@ -797,7 +791,7 @@ export function createRepoAllowsUserRelationship(
   return {
     _key: `${repoId}|allows|${user._key}`,
     _class: RelationshipClass.ALLOWS,
-    _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
+    _type: Relationships.REPO_ALLOWS_USER._type,
     _fromEntityKey: repoId,
     _toEntityKey: user._key,
     displayName: RelationshipClass.ALLOWS,

@@ -11,10 +11,10 @@ import { IntegrationConfig } from '../config';
 import { RepoKeyAndName, EnvironmentEntity } from '../types';
 import {
   GithubEntities,
-  GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
   Steps,
   IngestionSources,
+  Relationships,
 } from '../constants';
 import { toEnvironmentEntity } from '../sync/converters';
 
@@ -63,21 +63,8 @@ export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
     id: Steps.FETCH_ENVIRONMENTS,
     ingestionSourceId: IngestionSources.ENVIRONMENTS,
     name: 'Fetch Environments',
-    entities: [
-      {
-        resourceName: 'GitHub Environment',
-        _type: GithubEntities.GITHUB_ENVIRONMENT._type,
-        _class: GithubEntities.GITHUB_ENVIRONMENT._class,
-      },
-    ],
-    relationships: [
-      {
-        _type: GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_ENVIRONMENT._type,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_ENVIRONMENT],
+    relationships: [Relationships.REPO_HAS_ENVIRONMENT],
     dependsOn: [Steps.FETCH_REPOS],
     executionHandler: fetchEnvironments,
   },

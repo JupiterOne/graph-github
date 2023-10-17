@@ -16,9 +16,9 @@ import {
 import { AccountEntity, RepoKeyAndName } from '../types';
 import {
   GithubEntities,
-  GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
   Steps,
+  Relationships,
 } from '../constants';
 
 export async function fetchRepos({
@@ -78,21 +78,8 @@ export const repoSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_REPOS,
     name: 'Fetch Repos',
-    entities: [
-      {
-        resourceName: 'Github Repo',
-        _type: GithubEntities.GITHUB_REPO._type,
-        _class: GithubEntities.GITHUB_REPO._class,
-      },
-    ],
-    relationships: [
-      {
-        _type: GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.OWNS,
-        sourceType: GithubEntities.GITHUB_ACCOUNT._type,
-        targetType: GithubEntities.GITHUB_REPO._type,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_REPO],
+    relationships: [Relationships.ACCOUNT_OWNS_REPO],
     dependsOn: [Steps.FETCH_ACCOUNT],
     executionHandler: fetchRepos,
   },

@@ -3,10 +3,7 @@ import { sanitizeConfig } from '../config';
 import { teamSteps } from './teams';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import {
-  GithubEntities,
-  GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
-} from '../constants';
+import { GithubEntities, Relationships } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
@@ -47,7 +44,7 @@ test('fetchTeams exec handler', async () => {
 
   // relationships
   const accountHasTeamRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.ACCOUNT_HAS_TEAM._type,
   );
   expect(accountHasTeamRels.length).toBeGreaterThan(0);
 });

@@ -3,12 +3,7 @@ import { sanitizeConfig } from '../config';
 import { issueSteps } from './issues';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import {
-  GithubEntities,
-  GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
-} from '../constants';
+import { GithubEntities, Relationships } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
@@ -49,17 +44,17 @@ test('fetchIssues exec handler', async () => {
 
   // relationships
   const repoHasIssueRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_HAS_ISSUE._type,
   );
   expect(repoHasIssueRels.length).toBeGreaterThan(0);
 
   const memberCreatedIssueRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.USER_CREATED_ISSUE._type,
   );
   expect(memberCreatedIssueRels.length).toBeGreaterThan(0);
 
   const memberAssignedIssueRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.USER_ASSIGNED_ISSUE._type,
   );
   expect(memberAssignedIssueRels.length).toBeGreaterThan(0);
 });

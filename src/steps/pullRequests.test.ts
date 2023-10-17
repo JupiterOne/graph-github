@@ -5,13 +5,7 @@ import { IntegrationConfig, sanitizeConfig } from '../config';
 import { determineIngestStartDatetime, prSteps } from './pullRequests';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import {
-  GithubEntities,
-  GITHUB_REPO_PR_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
-} from '../constants';
+import { GithubEntities, Relationships } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
@@ -51,22 +45,22 @@ test('fetchPrs exec handler', async () => {
 
   // relationships
   const repoHasPrRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_PR_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_HAS_PULLREQUEST._type,
   );
   expect(repoHasPrRels.length).toBeGreaterThan(0);
 
   const memberApprovedPrRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.USER_APPROVED_PULLREQUEST._type,
   );
   expect(memberApprovedPrRels.length).toBeGreaterThan(0);
 
   const memberOpenedPrRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.USER_OPENED_PULLREQUEST._type,
   );
   expect(memberOpenedPrRels.length).toBeGreaterThan(0);
 
   const memberReviewedPrRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.USER_REVIEWED_PULLREQUEST._type,
   );
   expect(memberReviewedPrRels.length).toBeGreaterThan(0);
 });

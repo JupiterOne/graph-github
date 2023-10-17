@@ -11,13 +11,11 @@ import { IntegrationConfig } from '../config';
 import { RepoKeyAndName, SecretEntity } from '../types';
 import {
   GithubEntities,
-  GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
-  GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
   Steps,
   IngestionSources,
+  Relationships,
 } from '../constants';
 import { toRepoSecretEntity } from '../sync/converters';
 import { getSecretEntityKey } from '../util/propertyHelpers';
@@ -105,32 +103,11 @@ export const repoSecretSteps: IntegrationStep<IntegrationConfig>[] = [
     id: Steps.FETCH_REPO_SECRETS,
     ingestionSourceId: IngestionSources.REPO_SECRETS,
     name: 'Fetch Repo Secrets',
-    entities: [
-      {
-        resourceName: 'GitHub Repo Secret',
-        _type: GithubEntities.GITHUB_REPO_SECRET._type,
-        _class: GithubEntities.GITHUB_REPO_SECRET._class,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_REPO_SECRET],
     relationships: [
-      {
-        _type: GITHUB_REPO_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_REPO_SECRET._type,
-      },
-      {
-        _type: GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.USES,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_REPO_SECRET._type,
-      },
-      {
-        _type: GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.OVERRIDES,
-        sourceType: GithubEntities.GITHUB_REPO_SECRET._type,
-        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
-      },
+      Relationships.REPO_HAS_SECRET,
+      Relationships.REPO_USES_SECRET,
+      Relationships.REPO_SECRET_OVERRIDES_ORG_SECRET,
     ],
     dependsOn: [Steps.FETCH_ORG_SECRETS, Steps.FETCH_REPOS],
     executionHandler: fetchRepoSecrets,

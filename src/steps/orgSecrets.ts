@@ -12,11 +12,10 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import { AccountEntity, RepoKeyAndName, SecretEntity } from '../types';
 import {
   GithubEntities,
-  GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_TAGS_ARRAY,
   Steps,
   IngestionSources,
+  Relationships,
 } from '../constants';
 import { toOrgSecretEntity } from '../sync/converters';
 
@@ -83,26 +82,10 @@ export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [
     id: Steps.FETCH_ORG_SECRETS,
     ingestionSourceId: IngestionSources.ORG_SECRETS,
     name: 'Fetch Organization Secrets',
-    entities: [
-      {
-        resourceName: 'GitHub Org Secret',
-        _type: GithubEntities.GITHUB_ORG_SECRET._type,
-        _class: GithubEntities.GITHUB_ORG_SECRET._class,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_ORG_SECRET],
     relationships: [
-      {
-        _type: GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GithubEntities.GITHUB_ACCOUNT._type,
-        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
-      },
-      {
-        _type: GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.USES,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
-      },
+      Relationships.ACCOUNT_HAS_ORG_SECRET,
+      Relationships.REPO_USES_ORG_SECRET,
     ],
     dependsOn: [Steps.FETCH_ACCOUNT, Steps.FETCH_REPOS],
     executionHandler: fetchOrgSecrets,

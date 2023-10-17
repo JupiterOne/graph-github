@@ -1,7 +1,6 @@
 import {
   IntegrationStep,
   IntegrationStepExecutionContext,
-  RelationshipClass,
   IntegrationMissingKeyError,
 } from '@jupiterone/integration-sdk-core';
 
@@ -14,11 +13,11 @@ import {
 import { UserEntity, IdEntityMap, RepoKeyAndName } from '../types';
 import {
   GithubEntities,
-  GITHUB_REPO_USER_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
   GITHUB_REPO_TAGS_ARRAY,
   Steps,
+  Relationships,
 } from '../constants';
 
 export async function fetchCollaborators({
@@ -104,27 +103,8 @@ export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_COLLABORATORS,
     name: 'Fetch Collaborators',
-    entities: [
-      {
-        resourceName: 'GitHub Outside Collaborator',
-        _type: GithubEntities.GITHUB_COLLABORATOR._type,
-        _class: GithubEntities.GITHUB_COLLABORATOR._class,
-      },
-    ],
-    relationships: [
-      {
-        _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.ALLOWS,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_MEMBER._type,
-      },
-      {
-        _type: GITHUB_REPO_USER_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.ALLOWS,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_COLLABORATOR._type,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_COLLABORATOR],
+    relationships: [Relationships.REPO_ALLOWS_USER],
     dependsOn: [Steps.FETCH_REPOS, Steps.FETCH_USERS],
     executionHandler: fetchCollaborators,
   },

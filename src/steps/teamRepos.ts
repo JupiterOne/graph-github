@@ -1,17 +1,12 @@
 import {
   IntegrationStep,
   IntegrationStepExecutionContext,
-  RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { createRepoAllowsTeamRelationship } from '../sync/converters';
-import {
-  GithubEntities,
-  GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
-  Steps,
-} from '../constants';
+import { GithubEntities, Steps, Relationships } from '../constants';
 import { TeamEntity } from '../types';
 
 export async function fetchTeamRepos({
@@ -43,14 +38,7 @@ export const teamRepoSteps: IntegrationStep<IntegrationConfig>[] = [
     id: Steps.FETCH_TEAM_REPOS,
     name: 'Fetch Team Repos',
     entities: [],
-    relationships: [
-      {
-        _type: GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.ALLOWS,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_TEAM._type,
-      },
-    ],
+    relationships: [Relationships.REPO_ALLOWS_TEAM],
     dependsOn: [Steps.FETCH_REPOS, Steps.FETCH_TEAMS],
     executionHandler: fetchTeamRepos,
   },

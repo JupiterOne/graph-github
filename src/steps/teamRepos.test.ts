@@ -3,9 +3,9 @@ import { sanitizeConfig } from '../config';
 import { teamRepoSteps } from './teamRepos';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import { GITHUB_REPO_TEAM_RELATIONSHIP_TYPE } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
+import { Relationships } from '../constants';
 
 jest.setTimeout(20000);
 
@@ -38,7 +38,7 @@ test('fetchTeamRepos exec handler', async () => {
 
   // this step only makes relationships
   const repoAllowsTeamRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_TEAM_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_ALLOWS_TEAM._type,
   );
   expect(repoAllowsTeamRels.length).toBeGreaterThan(0);
 });

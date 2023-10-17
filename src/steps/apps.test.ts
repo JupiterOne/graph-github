@@ -3,10 +3,7 @@ import { sanitizeConfig } from '../config';
 import { appSteps } from './apps';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import {
-  GithubEntities,
-  GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
-} from '../constants';
+import { GithubEntities, Relationships } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
@@ -43,7 +40,7 @@ test('fetchApps exec handler', async () => {
   expect(apps).toMatchGraphObjectSchema(GithubEntities.GITHUB_APP);
 
   const relationships = collectedRelationships.filter(
-    (e) => e._type === GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.ACCOUNT_INSTALLED_APP._type,
   );
   expect(relationships.length).toBeGreaterThan(0);
 });

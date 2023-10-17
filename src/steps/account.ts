@@ -27,13 +27,7 @@ export const accountSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_ACCOUNT,
     name: 'Fetch Account Details',
-    entities: [
-      {
-        resourceName: 'Account',
-        _type: GithubEntities.GITHUB_ACCOUNT._type,
-        _class: GithubEntities.GITHUB_ACCOUNT._class,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_ACCOUNT],
     relationships: [],
     dependsOn: [],
     executionHandler: fetchAccountDetails,

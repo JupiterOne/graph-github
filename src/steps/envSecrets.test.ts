@@ -3,13 +3,7 @@ import { sanitizeConfig } from '../config';
 import { envSecretSteps } from './envSecrets';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import {
-  GithubEntities,
-  GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
-} from '../constants';
+import { GithubEntities, Relationships } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
@@ -50,22 +44,22 @@ test('fetchEnvSecrets exec handler', async () => {
 
   // relationships
   const environmentHasEnvSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.ENVIRONMENT_HAS_ENV_SECRET._type,
   );
   expect(environmentHasEnvSecretRels.length).toBeGreaterThan(0);
 
   const repoUsesEnvSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.REPO_USES_ENV_SECRET._type,
   );
   expect(repoUsesEnvSecretRels.length).toBeGreaterThan(0);
 
   const envSecretOverridesOrgSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.ENV_SECRET_OVERRIDES_ORG_SECRET._type,
   );
   expect(envSecretOverridesOrgSecretRels.length).toBeGreaterThan(0);
 
   const envSecretOverridesRepoSecretRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.ENV_SECRET_OVERRIDES_REPO_SECRET._type,
   );
   expect(envSecretOverridesRepoSecretRels.length).toBeGreaterThan(0);
 });

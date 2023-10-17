@@ -3,10 +3,7 @@ import { sanitizeConfig } from '../config';
 import { codeScanningAlertsSteps } from './codeScanningAlerts';
 import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import {
-  GithubEntities,
-  GITHUB_REPO_HAS_CODE_SCANNING_FINDING,
-} from '../constants';
+import { GithubEntities, Relationships } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
 
@@ -49,7 +46,7 @@ test('fetchCodeScanningAlerts exec handler', async () => {
 
   // relationships
   const repoFindings = collectedRelationships.filter(
-    (e) => e._type === GITHUB_REPO_HAS_CODE_SCANNING_FINDING,
+    (e) => e._type === Relationships.REPO_HAS_CODE_SCANNING_FINDING._type,
   );
   expect(repoFindings.length).toBeGreaterThan(0);
 });

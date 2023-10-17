@@ -5,9 +5,8 @@ import { integrationConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import {
   GithubEntities,
-  GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
-  GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
   GITHUB_MEMBER_BY_LOGIN_MAP,
+  Relationships,
 } from '../constants';
 import { invocationConfig } from '..';
 import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
@@ -53,12 +52,12 @@ test('fetchMembers exec handler', async () => {
 
   // relationships
   const accountHasUserRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.ACCOUNT_HAS_USER._type,
   );
   expect(accountHasUserRels.length).toBeGreaterThan(0);
 
   const userManagesAccountRels = collectedRelationships.filter(
-    (e) => e._type === GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE,
+    (e) => e._type === Relationships.USER_MANAGES_ACCOUNT._type,
   );
   expect(userManagesAccountRels.length).toBeGreaterThan(0);
 

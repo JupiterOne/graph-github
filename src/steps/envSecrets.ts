@@ -11,13 +11,10 @@ import { IntegrationConfig } from '../config';
 import { EnvironmentEntity, SecretEntity, IdEntityMap } from '../types';
 import {
   GithubEntities,
-  GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-  GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
   GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,
   Steps,
   IngestionSources,
+  Relationships,
 } from '../constants';
 import { toEnvSecretEntity } from '../sync/converters';
 import { getSecretEntityKey } from '../util/propertyHelpers';
@@ -108,38 +105,12 @@ export const envSecretSteps: IntegrationStep<IntegrationConfig>[] = [
     id: Steps.FETCH_ENV_SECRETS,
     ingestionSourceId: IngestionSources.ENV_SECRETS,
     name: 'Fetch Environment Secrets',
-    entities: [
-      {
-        resourceName: 'GitHub Env Secret',
-        _type: GithubEntities.GITHUB_ENV_SECRET._type,
-        _class: GithubEntities.GITHUB_ENV_SECRET._class,
-      },
-    ],
+    entities: [GithubEntities.GITHUB_ENV_SECRET],
     relationships: [
-      {
-        _type: GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.HAS,
-        sourceType: GithubEntities.GITHUB_ENVIRONMENT._type,
-        targetType: GithubEntities.GITHUB_ENV_SECRET._type,
-      },
-      {
-        _type: GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.USES,
-        sourceType: GithubEntities.GITHUB_REPO._type,
-        targetType: GithubEntities.GITHUB_ENV_SECRET._type,
-      },
-      {
-        _type: GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.OVERRIDES,
-        sourceType: GithubEntities.GITHUB_ENV_SECRET._type,
-        targetType: GithubEntities.GITHUB_ORG_SECRET._type,
-      },
-      {
-        _type: GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE,
-        _class: RelationshipClass.OVERRIDES,
-        sourceType: GithubEntities.GITHUB_ENV_SECRET._type,
-        targetType: GithubEntities.GITHUB_REPO_SECRET._type,
-      },
+      Relationships.ENVIRONMENT_HAS_ENV_SECRET,
+      Relationships.REPO_USES_ENV_SECRET,
+      Relationships.ENV_SECRET_OVERRIDES_ORG_SECRET,
+      Relationships.ENV_SECRET_OVERRIDES_REPO_SECRET,
     ],
     dependsOn: [
       Steps.FETCH_ENVIRONMENTS,

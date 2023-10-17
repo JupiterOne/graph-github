@@ -1,3 +1,21 @@
+import {
+  RelationshipClass,
+  RelationshipDirection,
+  StepEntityMetadata,
+  StepMappedRelationshipMetadata,
+  StepRelationshipMetadata,
+} from '@jupiterone/integration-sdk-core';
+
+//these constants are names used to save and retrieve data between steps
+//they are constants instead of strings so that TypeScript will detect spelling errors
+export const GITHUB_MEMBER_BY_LOGIN_MAP = 'GITHUB_MEMBER_BY_LOGIN_MAP';
+export const GITHUB_OUTSIDE_COLLABORATOR_ARRAY =
+  'GITHUB_OUTSIDE_COLLABORATOR_ARRAY';
+export const GITHUB_REPO_TAGS_ARRAY = 'GITHUB_REPO_TAGS_ARRAY';
+export const GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP =
+  'GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP';
+export const GITHUB_APP_BY_APP_ID = 'GITHUB_APP_BY_APP_ID';
+
 export const Steps = {
   FETCH_ACCOUNT: 'fetch-account',
   FETCH_APPS: 'fetch-apps',
@@ -31,8 +49,28 @@ export const IngestionSources = {
   PRS: 'prs',
 };
 
-export const GithubEntities = {
+export const GithubEntities: Record<
+  | 'GITHUB_ACCOUNT'
+  | 'GITHUB_APP'
+  | 'GITHUB_BRANCH_PROTECTION_RULE'
+  | 'GITHUB_COLLABORATOR'
+  | 'GITHUB_ENV_SECRET'
+  | 'GITHUB_ENVIRONMENT'
+  | 'GITHUB_ISSUE'
+  | 'GITHUB_MEMBER'
+  | 'GITHUB_ORG_SECRET'
+  | 'GITHUB_PR'
+  | 'GITHUB_REPO'
+  | 'GITHUB_REPO_SECRET'
+  | 'GITHUB_TEAM'
+  | 'GITHUB_CODE_SCANNING_ALERT'
+  | 'GITHUB_VULNERABILITY_ALERT'
+  | 'CVE'
+  | 'CWE',
+  StepEntityMetadata
+> = {
   GITHUB_ACCOUNT: {
+    resourceName: 'Account',
     _type: 'github_account',
     _class: ['Account'],
     schema: {
@@ -51,6 +89,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_APP: {
+    resourceName: 'Github App',
     _type: 'github_app',
     _class: ['Application'],
     schema: {
@@ -69,6 +108,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_BRANCH_PROTECTION_RULE: {
+    resourceName: 'Github Branch Protection Rule',
     _type: 'github_branch_protection_rule',
     _class: ['Rule'],
     schema: {
@@ -86,6 +126,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_COLLABORATOR: {
+    resourceName: 'GitHub Outside Collaborator',
     _type: 'github_user',
     _class: ['User'],
     schema: {
@@ -103,6 +144,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_ENV_SECRET: {
+    resourceName: 'GitHub Env Secret',
     _type: 'github_env_secret',
     _class: ['Secret'],
     schema: {
@@ -122,6 +164,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_ENVIRONMENT: {
+    resourceName: 'Github Environment',
     _type: 'github_environment',
     _class: ['Configuration'],
     schema: {
@@ -140,6 +183,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_ISSUE: {
+    resourceName: 'Github Issue',
     _type: 'github_issue',
     _class: ['Issue'],
     schema: {
@@ -159,6 +203,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_MEMBER: {
+    resourceName: 'Github User',
     _type: 'github_user',
     _class: ['User'],
     schema: {
@@ -176,6 +221,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_ORG_SECRET: {
+    resourceName: 'Github Org Secret',
     _type: 'github_org_secret',
     _class: ['Secret'],
     schema: {
@@ -195,6 +241,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_PR: {
+    resourceName: 'Github Pull Request',
     _type: 'github_pullrequest',
     _class: ['PR'],
     schema: {
@@ -212,6 +259,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_REPO: {
+    resourceName: 'Github Repo',
     _type: 'github_repo',
     _class: ['CodeRepo'],
     schema: {
@@ -229,6 +277,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_REPO_SECRET: {
+    resourceName: 'Github Repo Secret',
     _type: 'github_repo_secret',
     _class: ['Secret'],
     schema: {
@@ -248,6 +297,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_TEAM: {
+    resourceName: 'Github Team',
     _type: 'github_team',
     _class: ['UserGroup'],
     schema: {
@@ -265,6 +315,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_CODE_SCANNING_ALERT: {
+    resourceName: 'GitHub Code Scanning Alerts',
     _type: 'github_code_scanning_finding',
     _class: ['Finding'],
     schema: {
@@ -296,6 +347,7 @@ export const GithubEntities = {
     },
   },
   GITHUB_VULNERABILITY_ALERT: {
+    resourceName: 'GitHub Vulnerability Alert',
     _type: 'github_finding',
     _class: ['Finding'],
     schema: {
@@ -328,6 +380,7 @@ export const GithubEntities = {
     },
   },
   CVE: {
+    resourceName: 'CVE',
     _type: 'cve',
     _class: 'Vulnerability',
     schema: {
@@ -342,6 +395,7 @@ export const GithubEntities = {
     },
   },
   CWE: {
+    resourceName: 'CWE',
     _type: 'cwe',
     _class: 'Weakness',
     schema: {
@@ -357,84 +411,267 @@ export const GithubEntities = {
   },
 };
 
-export const GITHUB_ACCOUNT_MEMBER_RELATIONSHIP_TYPE =
-  'github_account_has_user';
-export const GITHUB_ACCOUNT_TEAM_RELATIONSHIP_TYPE = 'github_account_has_team';
-export const GITHUB_ACCOUNT_REPO_RELATIONSHIP_TYPE = 'github_account_owns_repo';
-export const GITHUB_MEMBER_ACCOUNT_RELATIONSHIP_TYPE =
-  'github_user_manages_account';
-export const GITHUB_MEMBER_TEAM_RELATIONSHIP_TYPE = 'github_user_manages_team';
-export const GITHUB_MEMBER_REVIEWED_PR_RELATIONSHIP_TYPE =
-  'github_user_reviewed_pullrequest';
-export const GITHUB_MEMBER_APPROVED_PR_RELATIONSHIP_TYPE =
-  'github_user_approved_pullrequest';
-export const GITHUB_MEMBER_OPENED_PR_RELATIONSHIP_TYPE =
-  'github_user_opened_pullrequest';
-export const GITHUB_REPO_PR_RELATIONSHIP_TYPE = 'github_repo_has_pullrequest';
-export const GITHUB_TEAM_MEMBER_RELATIONSHIP_TYPE = 'github_team_has_user';
-export const GITHUB_REPO_TEAM_RELATIONSHIP_TYPE = 'github_repo_allows_team';
-export const GITHUB_REPO_USER_RELATIONSHIP_TYPE = 'github_repo_allows_user';
-export const GITHUB_ACCOUNT_APP_RELATIONSHIP_TYPE =
-  'github_account_installed_app';
-export const GITHUB_PR_CONTAINS_PR_RELATIONSHIP_TYPE =
-  'github_pullrequest_contains_pullrequest';
+export const Relationships: Record<
+  | 'TEAM_HAS_USER'
+  | 'USER_MANAGES_TEAM'
+  | 'REPO_HAS_PULLREQUEST'
+  | 'USER_APPROVED_PULLREQUEST'
+  | 'USER_OPENED_PULLREQUEST'
+  | 'USER_REVIEWED_PULLREQUEST'
+  | 'PULLREQUEST_CONTAINS_PULLREQUEST'
+  | 'REPO_HAS_SECRET'
+  | 'REPO_USES_SECRET'
+  | 'REPO_SECRET_OVERRIDES_ORG_SECRET'
+  | 'REPO_HAS_BRANCH_PROTECTION_RULE'
+  | 'USER_OVERRIDES_BRANCH_PROTECTION_RULE'
+  | 'TEAM_OVERRIDES_BRANCH_PROTECTION_RULE'
+  | 'APP_OVERRIDES_BRANCH_PROTECTION_RULE'
+  | 'REPO_ALLOWS_TEAM'
+  | 'REPO_ALLOWS_USER'
+  | 'REPO_HAS_ISSUE'
+  | 'USER_CREATED_ISSUE'
+  | 'USER_ASSIGNED_ISSUE'
+  | 'ENV_SECRET_OVERRIDES_REPO_SECRET'
+  | 'ENV_SECRET_OVERRIDES_ORG_SECRET'
+  | 'REPO_USES_ENV_SECRET'
+  | 'ENVIRONMENT_HAS_ENV_SECRET'
+  | 'REPO_HAS_CODE_SCANNING_FINDING'
+  | 'ACCOUNT_HAS_USER'
+  | 'USER_MANAGES_ACCOUNT'
+  | 'ACCOUNT_HAS_TEAM'
+  | 'ACCOUNT_INSTALLED_APP'
+  | 'ACCOUNT_OWNS_REPO'
+  | 'REPO_HAS_ENVIRONMENT'
+  | 'REPO_HAS_FINDING'
+  | 'ACCOUNT_HAS_ORG_SECRET'
+  | 'REPO_USES_ORG_SECRET'
+  | 'ACCOUNT_HAS_ORG_SECRET'
+  | 'REPO_USES_ORG_SECRET',
+  StepRelationshipMetadata
+> = {
+  TEAM_HAS_USER: {
+    _type: 'github_team_has_user',
+    sourceType: GithubEntities.GITHUB_TEAM._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_MEMBER._type,
+  },
+  USER_MANAGES_TEAM: {
+    _type: 'github_user_manages_team',
+    sourceType: GithubEntities.GITHUB_MEMBER._type,
+    _class: RelationshipClass.MANAGES,
+    targetType: GithubEntities.GITHUB_TEAM._type,
+  },
+  REPO_HAS_PULLREQUEST: {
+    _type: 'github_repo_has_pullrequest',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_PR._type,
+    partial: true,
+  },
+  USER_APPROVED_PULLREQUEST: {
+    _type: 'github_user_approved_pullrequest',
+    sourceType: GithubEntities.GITHUB_MEMBER._type,
+    _class: RelationshipClass.APPROVED,
+    targetType: GithubEntities.GITHUB_PR._type,
+    partial: true,
+  },
+  USER_OPENED_PULLREQUEST: {
+    _type: 'github_user_opened_pullrequest',
+    sourceType: GithubEntities.GITHUB_MEMBER._type,
+    _class: RelationshipClass.OPENED,
+    targetType: GithubEntities.GITHUB_PR._type,
+    partial: true,
+  },
+  USER_REVIEWED_PULLREQUEST: {
+    _type: 'github_user_reviewed_pullrequest',
+    sourceType: GithubEntities.GITHUB_MEMBER._type,
+    _class: RelationshipClass.REVIEWED,
+    targetType: GithubEntities.GITHUB_PR._type,
+    partial: true,
+  },
+  PULLREQUEST_CONTAINS_PULLREQUEST: {
+    _type: 'github_pullrequest_contains_pullrequest',
+    sourceType: GithubEntities.GITHUB_PR._type,
+    _class: RelationshipClass.CONTAINS,
+    targetType: GithubEntities.GITHUB_PR._type,
+  },
+  REPO_HAS_SECRET: {
+    _type: 'github_repo_has_secret',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_REPO_SECRET._type,
+  },
+  REPO_USES_SECRET: {
+    _type: 'github_repo_uses_secret',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.USES,
+    targetType: GithubEntities.GITHUB_REPO_SECRET._type,
+  },
+  REPO_SECRET_OVERRIDES_ORG_SECRET: {
+    _type: 'github_repo_secret_overrides_org_secret',
+    sourceType: GithubEntities.GITHUB_REPO_SECRET._type,
+    _class: RelationshipClass.OVERRIDES,
+    targetType: GithubEntities.GITHUB_ORG_SECRET._type,
+  },
+  REPO_HAS_BRANCH_PROTECTION_RULE: {
+    _type: 'github_repo_has_branch_protection_rule',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+  },
+  USER_OVERRIDES_BRANCH_PROTECTION_RULE: {
+    _type: 'github_user_overrides_branch_protection_rule',
+    sourceType: GithubEntities.GITHUB_MEMBER._type,
+    _class: RelationshipClass.OVERRIDES,
+    targetType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+  },
+  TEAM_OVERRIDES_BRANCH_PROTECTION_RULE: {
+    _type: 'github_team_overrides_branch_protection_rule',
+    sourceType: GithubEntities.GITHUB_TEAM._type,
+    _class: RelationshipClass.OVERRIDES,
+    targetType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+  },
+  APP_OVERRIDES_BRANCH_PROTECTION_RULE: {
+    _type: 'github_app_overrides_branch_protection_rule',
+    sourceType: GithubEntities.GITHUB_APP._type,
+    _class: RelationshipClass.OVERRIDES,
+    targetType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+  },
+  REPO_ALLOWS_TEAM: {
+    _type: 'github_repo_allows_team',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.ALLOWS,
+    targetType: GithubEntities.GITHUB_TEAM._type,
+  },
+  REPO_ALLOWS_USER: {
+    _type: 'github_repo_allows_user',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.ALLOWS,
+    targetType: 'github_user',
+  },
+  REPO_HAS_ISSUE: {
+    _type: 'github_repo_has_issue',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_ISSUE._type,
+    partial: true,
+  },
+  USER_CREATED_ISSUE: {
+    _type: 'github_user_created_issue',
+    sourceType: GithubEntities.GITHUB_MEMBER._type,
+    _class: RelationshipClass.CREATED,
+    targetType: GithubEntities.GITHUB_ISSUE._type,
+    partial: true,
+  },
+  USER_ASSIGNED_ISSUE: {
+    _type: 'github_user_assigned_issue',
+    sourceType: GithubEntities.GITHUB_MEMBER._type,
+    _class: RelationshipClass.ASSIGNED,
+    targetType: GithubEntities.GITHUB_ISSUE._type,
+    partial: true,
+  },
+  ENVIRONMENT_HAS_ENV_SECRET: {
+    _type: 'github_environment_has_env_secret',
+    sourceType: GithubEntities.GITHUB_ENVIRONMENT._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_ENV_SECRET._type,
+  },
+  REPO_USES_ENV_SECRET: {
+    _type: 'github_repo_uses_env_secret',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.USES,
+    targetType: GithubEntities.GITHUB_ENV_SECRET._type,
+  },
+  ENV_SECRET_OVERRIDES_ORG_SECRET: {
+    _type: 'github_env_secret_overrides_org_secret',
+    sourceType: GithubEntities.GITHUB_ENV_SECRET._type,
+    _class: RelationshipClass.OVERRIDES,
+    targetType: GithubEntities.GITHUB_ORG_SECRET._type,
+  },
+  ENV_SECRET_OVERRIDES_REPO_SECRET: {
+    _type: 'github_env_secret_overrides_repo_secret',
+    sourceType: GithubEntities.GITHUB_ENV_SECRET._type,
+    _class: RelationshipClass.OVERRIDES,
+    targetType: GithubEntities.GITHUB_REPO_SECRET._type,
+  },
+  REPO_HAS_CODE_SCANNING_FINDING: {
+    _type: 'github_repo_has_code_scanning_finding',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
+  },
+  ACCOUNT_HAS_USER: {
+    _type: 'github_account_has_user',
+    sourceType: GithubEntities.GITHUB_ACCOUNT._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_MEMBER._type,
+  },
+  USER_MANAGES_ACCOUNT: {
+    _type: 'github_user_manages_account',
+    sourceType: GithubEntities.GITHUB_MEMBER._type,
+    _class: RelationshipClass.MANAGES,
+    targetType: GithubEntities.GITHUB_ACCOUNT._type,
+  },
+  ACCOUNT_HAS_TEAM: {
+    _type: 'github_account_has_team',
+    sourceType: GithubEntities.GITHUB_ACCOUNT._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_TEAM._type,
+  },
+  ACCOUNT_INSTALLED_APP: {
+    _type: 'github_account_installed_app',
+    sourceType: GithubEntities.GITHUB_ACCOUNT._type,
+    _class: RelationshipClass.INSTALLED,
+    targetType: GithubEntities.GITHUB_APP._type,
+  },
+  ACCOUNT_OWNS_REPO: {
+    _type: 'github_account_owns_repo',
+    sourceType: GithubEntities.GITHUB_ACCOUNT._type,
+    _class: RelationshipClass.OWNS,
+    targetType: GithubEntities.GITHUB_REPO._type,
+  },
+  REPO_HAS_ENVIRONMENT: {
+    _type: 'github_repo_has_environment',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_ENVIRONMENT._type,
+  },
+  REPO_HAS_FINDING: {
+    _type: 'github_repo_has_finding',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_VULNERABILITY_ALERT._type,
+  },
+  ACCOUNT_HAS_ORG_SECRET: {
+    _type: 'github_account_has_org_secret',
+    sourceType: GithubEntities.GITHUB_ACCOUNT._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_ORG_SECRET._type,
+  },
+  REPO_USES_ORG_SECRET: {
+    _type: 'github_repo_uses_org_secret',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.USES,
+    targetType: GithubEntities.GITHUB_ORG_SECRET._type,
+  },
+};
 
-//org secrets
-export const GITHUB_ACCOUNT_SECRET_RELATIONSHIP_TYPE =
-  'github_account_has_org_secret';
-export const GITHUB_REPO_ORG_SECRET_RELATIONSHIP_TYPE =
-  'github_repo_uses_org_secret';
-//repo secrets
-export const GITHUB_REPO_SECRET_RELATIONSHIP_TYPE = 'github_repo_has_secret'; //apparently `github_repo HAS github_repo_secret` reduces to 'github_repo_has_secret' and not 'github_repo_has_repo_secret'
-export const GITHUB_REPO_REPO_SECRET_RELATIONSHIP_TYPE =
-  'github_repo_uses_secret'; //see 'github_repo_has_secret'
-export const GITHUB_REPO_SECRET_ORG_SECRET_RELATIONSHIP_TYPE =
-  'github_repo_secret_overrides_org_secret';
-//environments and env secrets
-export const GITHUB_REPO_ENVIRONMENT_RELATIONSHIP_TYPE =
-  'github_repo_has_environment';
-export const GITHUB_ENVIRONMENT_SECRET_RELATIONSHIP_TYPE =
-  'github_environment_has_env_secret';
-export const GITHUB_REPO_ENV_SECRET_RELATIONSHIP_TYPE =
-  'github_repo_uses_env_secret';
-export const GITHUB_ENV_SECRET_ORG_SECRET_RELATIONSHIP_TYPE =
-  'github_env_secret_overrides_org_secret';
-export const GITHUB_ENV_SECRET_REPO_SECRET_RELATIONSHIP_TYPE =
-  'github_env_secret_overrides_repo_secret';
-
-//issues
-export const GITHUB_REPO_ISSUE_RELATIONSHIP_TYPE = 'github_repo_has_issue';
-export const GITHUB_MEMBER_CREATED_ISSUE_RELATIONSHIP_TYPE =
-  'github_user_created_issue';
-export const GITHUB_MEMBER_ASSIGNED_ISSUE_RELATIONSHIP_TYPE =
-  'github_user_assigned_issue';
-
-// vuln alerts
-export const GITHUB_REPO_FINDING_RELATIONSHIP_TYPE = 'github_repo_has_finding';
-export const GITHUB_FINDING_CVE_RELATIONSHIP_TYPE = 'github_finding_is_cve';
-export const GITHUB_FINDING_CWE_RELATIONSHIP_TYPE =
-  'github_finding_exploits_cwe';
-
-//code scanning alerts
-export const GITHUB_REPO_HAS_CODE_SCANNING_FINDING =
-  'github_repo_has_code_scanning_finding';
-
-//branch protection rules
-export const GITHUB_REPO_BRANCH_PROTECTION_RULE_RELATIONSHIP_TYPE =
-  'github_repo_has_branch_protection_rule';
-export const GITHUB_REPO_BRANCH_PROTECTION_RULE_MEMBER_OVERRIDE_TYPE =
-  'github_user_overrides_branch_protection_rule';
-export const GITHUB_REPO_BRANCH_PROTECTION_RULE_TEAM_OVERRIDE_TYPE =
-  'github_team_overrides_branch_protection_rule';
-export const GITHUB_REPO_BRANCH_PROTECTION_RULE_APP_OVERRIDE_TYPE =
-  'github_app_overrides_branch_protection_rule';
-
-//these constants are names used to save and retrieve data between steps
-//they are constants instead of strings so that TypeScript will detect spelling errors
-export const GITHUB_MEMBER_BY_LOGIN_MAP = 'GITHUB_MEMBER_BY_LOGIN_MAP';
-export const GITHUB_OUTSIDE_COLLABORATOR_ARRAY =
-  'GITHUB_OUTSIDE_COLLABORATOR_ARRAY';
-export const GITHUB_REPO_TAGS_ARRAY = 'GITHUB_REPO_TAGS_ARRAY';
-export const GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP =
-  'GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP';
-export const GITHUB_APP_BY_APP_ID = 'GITHUB_APP_BY_APP_ID';
+export const MappedRelationships: Record<
+  'FINDING_IS_CVE' | 'FINDING_EXPLOITS_CWE',
+  StepMappedRelationshipMetadata
+> = {
+  FINDING_IS_CVE: {
+    _type: 'github_finding_is_cve',
+    sourceType: GithubEntities.GITHUB_VULNERABILITY_ALERT._type,
+    _class: RelationshipClass.IS,
+    targetType: GithubEntities.CVE._type,
+    direction: RelationshipDirection.FORWARD,
+  },
+  FINDING_EXPLOITS_CWE: {
+    _type: 'github_finding_exploits_cwe',
+    sourceType: GithubEntities.GITHUB_VULNERABILITY_ALERT._type,
+    _class: RelationshipClass.EXPLOITS,
+    targetType: GithubEntities.CWE._type,
+    direction: RelationshipDirection.FORWARD,
+  },
+};

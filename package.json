@@ -2,6 +2,10 @@
   "name": "@jupiterone/graph-github",
   "version": "3.7.3",
   "description": "A JupiterOne Integration",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JupiterOne/graph-github"
+  },
   "license": "MPL-2.0",
   "main": "src/index.js",
   "types": "src/index.d.ts",

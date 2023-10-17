@@ -16,8 +16,7 @@ import {
   IngestionSources,
   Relationships,
 } from '../constants';
-import { toEnvSecretEntity } from '../sync/converters';
-import { getSecretEntityKey } from '../util/propertyHelpers';
+import { toEnvSecretEntity, getSecretEntityKey } from '../sync/converters';
 
 export async function fetchEnvSecrets({
   instance,
@@ -28,7 +27,7 @@ export async function fetchEnvSecrets({
   const apiClient = getOrCreateApiClient(config, logger);
 
   const repoSecretEntitiesByRepoNameMap = await jobState.getData<
-    IdEntityMap<IdEntityMap<SecretEntity>>
+    IdEntityMap<IdEntityMap<SecretEntity['_key']>>
   >(GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP);
   if (!repoSecretEntitiesByRepoNameMap) {
     throw new IntegrationMissingKeyError(
@@ -84,14 +83,20 @@ export async function fetchEnvSecrets({
           );
         }
 
-        const repoSecretEntities =
-          repoSecretEntitiesByRepoNameMap[envEntity.parentRepoName];
-        if (repoSecretEntities && repoSecretEntities[envSecret.name]) {
+        const repoSecretEntitiesMap = repoSecretEntitiesByRepoNameMap.get(
+          envEntity.parentRepoName,
+        );
+        if (
+          repoSecretEntitiesMap &&
+          repoSecretEntitiesMap.has(envSecret.name)
+        ) {
           await jobState.addRelationship(
             createDirectRelationship({
               _class: RelationshipClass.OVERRIDES,
-              from: secretEntity,
-              to: repoSecretEntities[envSecret.name],
+              fromType: GithubEntities.GITHUB_ENV_SECRET._type,
+              fromKey: secretEntity._key,
+              toType: GithubEntities.GITHUB_REPO_SECRET._type,
+              toKey: repoSecretEntitiesMap.get(envSecret.name) as string,
             }),
           );
         }

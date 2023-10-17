@@ -1,5 +1,6 @@
 import {
   createDirectRelationship,
+  Entity,
   Execution,
   IntegrationMissingKeyError,
   IntegrationStep,
@@ -14,9 +15,9 @@ import { DATA_ACCOUNT_ENTITY } from './account';
 import {
   AccountEntity,
   IdEntityMap,
+  OutsideCollaboratorData,
   PullRequestEntity,
   RepoEntity,
-  UserEntity,
 } from '../types';
 import {
   GITHUB_MEMBER_BY_LOGIN_MAP,
@@ -56,7 +57,7 @@ export async function fetchPrs(
     );
   }
 
-  let usersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+  let usersByLoginMap = await jobState.getData<IdEntityMap<Entity['_key']>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
   );
 
@@ -65,16 +66,16 @@ export async function fetchPrs(
       {},
       `Expected members.ts to have set ${GITHUB_MEMBER_BY_LOGIN_MAP} in jobState. Proceeding anyway.`,
     );
-    usersByLoginMap = {};
+    usersByLoginMap = new Map();
   }
-  const teamMembersByLoginMap = cloneDeep(usersByLoginMap) ?? {};
+  const teamMembersByLoginMap = cloneDeep(usersByLoginMap) ?? new Map();
 
-  const outsideCollaboratorEntities = await jobState.getData<UserEntity[]>(
-    GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
-  );
+  const outsideCollaboratorEntities = await jobState.getData<
+    OutsideCollaboratorData[]
+  >(GITHUB_OUTSIDE_COLLABORATOR_ARRAY);
   if (outsideCollaboratorEntities) {
     for (const collab of outsideCollaboratorEntities) {
-      usersByLoginMap[collab.login] = collab;
+      usersByLoginMap.set(collab.login, collab.key);
     }
   } else {
     logger.warn(
@@ -177,12 +178,14 @@ export async function fetchPrs(
               );
             }
 
-            if (usersByLoginMap![pr.authorLogin]) {
+            if (usersByLoginMap?.has(pr.authorLogin)) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.OPENED,
-                  from: usersByLoginMap![pr.authorLogin],
-                  to: prEntity,
+                  fromType: GithubEntities.GITHUB_MEMBER._type,
+                  fromKey: usersByLoginMap.get(pr.authorLogin) as string,
+                  toType: GithubEntities.GITHUB_PR._type,
+                  toKey: prEntity._key,
                 }),
               );
             } else {
@@ -199,12 +202,14 @@ export async function fetchPrs(
 
             if (pr.reviewerLogins) {
               for (const reviewer of pr.reviewerLogins) {
-                if (usersByLoginMap![reviewer]) {
+                if (usersByLoginMap?.has(reviewer)) {
                   await jobState.addRelationship(
                     createDirectRelationship({
                       _class: RelationshipClass.REVIEWED,
-                      from: usersByLoginMap![reviewer],
-                      to: prEntity,
+                      fromType: GithubEntities.GITHUB_MEMBER._type,
+                      fromKey: usersByLoginMap.get(reviewer) as string,
+                      toType: GithubEntities.GITHUB_PR._type,
+                      toKey: prEntity._key,
                     }),
                   );
                 } else {
@@ -223,12 +228,14 @@ export async function fetchPrs(
 
             if (pr.approverLogins) {
               for (const approver of pr.approverLogins) {
-                if (usersByLoginMap![approver]) {
+                if (usersByLoginMap?.has(approver)) {
                   await jobState.addRelationship(
                     createDirectRelationship({
                       _class: RelationshipClass.APPROVED,
-                      from: usersByLoginMap![approver],
-                      to: prEntity,
+                      fromType: GithubEntities.GITHUB_MEMBER._type,
+                      fromKey: usersByLoginMap.get(approver) as string,
+                      toType: GithubEntities.GITHUB_PR._type,
+                      toKey: prEntity._key,
                     }),
                   );
                 } else {

@@ -4,6 +4,7 @@ import {
   RelationshipClass,
   IntegrationMissingKeyError,
   createDirectRelationship,
+  Entity,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
@@ -47,14 +48,14 @@ export async function fetchMembers({
   });
 
   //for use later in other steps
-  const memberByLoginMap: IdEntityMap<UserEntity> = {};
+  const memberByLoginMap: IdEntityMap<Entity['_key']> = new Map();
 
   await apiClient.iterateOrgMembers(async (member) => {
     const memberEntity = (await jobState.addEntity(
       toOrganizationMemberEntity(member, externalIdentifiers),
     )) as UserEntity;
 
-    memberByLoginMap[member.login] = memberEntity;
+    memberByLoginMap.set(member.login, memberEntity._key);
 
     await jobState.addRelationship(
       createDirectRelationship({

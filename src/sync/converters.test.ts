@@ -14,8 +14,9 @@ import {
   toIssueEntity,
   createAssociatedMergePullRequestRelationship,
   decorateRepoEntityWithPagesInfo,
+  buildPullRequestKey,
 } from './converters';
-import { EnvironmentEntity, UserEntity } from '../types';
+import { EnvironmentEntity } from '../types';
 import { PullRequestResponse } from '../client/GraphQLClient/types';
 import {
   fixturePullRequest,
@@ -25,6 +26,7 @@ import {
   fixtureReviews,
 } from './fixtures/pullRequest';
 import { GithubPagesInfo } from '../client';
+import { decomposePullRequestKey } from '../util/propertyHelpers';
 
 describe('toAccountEntity', () => {
   const apiResponse = {
@@ -914,14 +916,14 @@ describe('toPullRequestEntity', () => {
       commits: fixtureCommits,
       reviews: fixtureReviews,
       labels: [],
-      teamMembersByLoginMap: {
-        [fixtureUser.login!]: fixtureUser,
-        [fixtureReviewerUser.login!]: fixtureReviewerUser,
-      },
-      allKnownUsersByLoginMap: {
-        [fixtureUser.login!]: fixtureUser,
-        [fixtureReviewerUser.login!]: fixtureReviewerUser,
-      },
+      teamMembersByLoginMap: new Map([
+        [fixtureUser.login, fixtureUser._key],
+        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+      ]),
+      allKnownUsersByLoginMap: new Map([
+        [fixtureUser.login, fixtureUser._key],
+        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+      ]),
     });
     expect(entity).toMatchSnapshot();
   });
@@ -939,14 +941,14 @@ describe('toPullRequestEntity', () => {
       commits: fixtureCommits,
       reviews: fixtureReviews,
       labels: [],
-      teamMembersByLoginMap: {
-        [fixtureUser.login]: fixtureUser as UserEntity,
-        [fixtureReviewerUser.login]: fixtureReviewerUser as UserEntity,
-      },
-      allKnownUsersByLoginMap: {
-        [fixtureUser.login!]: fixtureUser,
-        [fixtureReviewerUser.login!]: fixtureReviewerUser,
-      },
+      teamMembersByLoginMap: new Map([
+        [fixtureUser.login, fixtureUser._key],
+        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+      ]),
+      allKnownUsersByLoginMap: new Map([
+        [fixtureUser.login, fixtureUser._key],
+        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+      ]),
     });
     expect(entity).toMatchObject({
       state: 'CLOSED',
@@ -964,8 +966,8 @@ describe('toPullRequestEntity', () => {
       commits: fixtureCommits,
       reviews: fixtureReviews,
       labels: [],
-      teamMembersByLoginMap: {},
-      allKnownUsersByLoginMap: {},
+      teamMembersByLoginMap: new Map(),
+      allKnownUsersByLoginMap: new Map(),
     });
     expect(entity).toMatchObject({
       allCommitsApproved: false,
@@ -994,11 +996,11 @@ describe('toPullRequestEntity', () => {
       commits: fixtureCommits,
       reviews: fixtureReviews,
       labels: [],
-      teamMembersByLoginMap: {},
-      allKnownUsersByLoginMap: {
-        [fixtureUser.login!]: fixtureUser,
-        [fixtureReviewerUser.login!]: fixtureReviewerUser,
-      },
+      teamMembersByLoginMap: new Map(),
+      allKnownUsersByLoginMap: new Map([
+        [fixtureUser.login, fixtureUser._key],
+        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+      ]),
     });
     expect(entity).toMatchObject({
       allCommitsApproved: false,
@@ -1068,6 +1070,31 @@ describe('createAssociatedMergePullRequestRelationship', () => {
       } as PullRequestResponse),
     ).toThrow(
       'associated pull request must be different than source pull request.',
+    );
+  });
+});
+
+describe('pullRequestKey', () => {
+  test('buildPullRequestKey', () => {
+    expect(
+      buildPullRequestKey({
+        login: 'J1',
+        repoName: 'friendly-octokit',
+        pullRequestNumber: 4,
+      }),
+    ).toBe('J1/friendly-octokit/pull-requests/4');
+  });
+  test('decomposePullRequestKey', () => {
+    expect(
+      decomposePullRequestKey('J1/friendly-octokit/pull-requests/4'),
+    ).toEqual({
+      login: 'J1',
+      repoName: 'friendly-octokit',
+      pullRequestNumber: 4,
+    });
+
+    expect(() => decomposePullRequestKey('J1/friendly-octokit/4')).toThrowError(
+      'provided key is invalid',
     );
   });
 });

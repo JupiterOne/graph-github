@@ -34,12 +34,7 @@ import {
   UserEntity,
   VulnerabilityAlertEntity,
 } from '../types';
-import {
-  buildPullRequestKey,
-  decomposePermissions,
-  getAppEntityKey,
-  getSecretEntityKey,
-} from '../util/propertyHelpers';
+import { decomposePermissions } from '../util/propertyHelpers';
 import {
   BranchProtectionRuleResponse,
   CollaboratorResponse,
@@ -95,6 +90,10 @@ export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   };
   setRawData(accountEntity, { name: 'default', rawData: data });
   return accountEntity;
+}
+
+export function getAppEntityKey(installId: string): string {
+  return 'GitHubAppInstallation_' + installId;
 }
 
 export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
@@ -189,6 +188,16 @@ export function createCodeScanningFindingEntity(
       },
     },
   });
+}
+
+export function getSecretEntityKey({
+  name,
+  secretOwnerType,
+  secretOwnerName,
+}): string {
+  return (
+    'GitHub_' + secretOwnerType + '_' + secretOwnerName + '_Secret_' + name
+  );
 }
 
 export function toOrgSecretEntity(
@@ -311,11 +320,15 @@ export function toEnvSecretEntity(
   return secretEntity;
 }
 
+export function getTeamEntityKey(id: string) {
+  return id;
+}
+
 export function toTeamEntity(data: OrgTeamQueryResponse): TeamEntity {
   const teamEntity: TeamEntity = {
     _class: GithubEntities.GITHUB_TEAM._class,
     _type: GithubEntities.GITHUB_TEAM._type,
-    _key: data.id,
+    _key: getTeamEntityKey(data.id),
     webLink: data.url,
     name: data.slug,
     displayName: data.name,
@@ -367,6 +380,10 @@ export function toBranchProtectionEntity(
   });
 }
 
+export function getRepositoryEntityKey(id: string) {
+  return id;
+}
+
 export function toRepositoryEntity(
   data: OrgRepoQueryResponse,
   tags: string[] = [],
@@ -374,7 +391,7 @@ export function toRepositoryEntity(
   const repoEntity: RepoEntity = {
     _class: GithubEntities.GITHUB_REPO._class,
     _type: GithubEntities.GITHUB_REPO._type,
-    _key: data.id,
+    _key: getRepositoryEntityKey(data.id),
     webLink: data.url,
     name: data.name,
     displayName: data.name,
@@ -785,7 +802,7 @@ export function createRepoAllowsTeamRelationship(
 
 export function createRepoAllowsUserRelationship(
   repoId: string,
-  user: UserEntity,
+  userEntityKey: string,
   permission: string,
 ): RepoAllowRelationship {
   const adminPermission = permission === 'ADMIN';
@@ -793,11 +810,11 @@ export function createRepoAllowsUserRelationship(
   const pushPermission = maintainPermission || permission === 'WRITE';
   const triagePermission = pushPermission || permission === 'TRIAGE';
   return {
-    _key: `${repoId}|allows|${user._key}`,
+    _key: `${repoId}|allows|${userEntityKey}`,
     _class: RelationshipClass.ALLOWS,
     _type: Relationships.REPO_ALLOWS_USER._type,
     _fromEntityKey: repoId,
-    _toEntityKey: user._key,
+    _toEntityKey: userEntityKey,
     displayName: RelationshipClass.ALLOWS,
     role: permission,
     adminPermission: adminPermission,
@@ -836,6 +853,20 @@ export function createUnknownUserIssueRelationship(
     },
     displayName: relationshipClass,
   };
+}
+
+export type PullRequestKey = {
+  login: string;
+  repoName: string;
+  pullRequestNumber: number;
+};
+
+export function buildPullRequestKey({
+  login,
+  repoName,
+  pullRequestNumber,
+}: PullRequestKey): string {
+  return `${login}/${repoName}/pull-requests/${pullRequestNumber}`;
 }
 
 /**
@@ -886,8 +917,8 @@ interface PullRequestConverterParams {
   commits: Commit[];
   labels: Label[];
   reviews: Review[];
-  teamMembersByLoginMap: IdEntityMap<UserEntity>; //
-  allKnownUsersByLoginMap: IdEntityMap<UserEntity>; // Includes known collaborators
+  teamMembersByLoginMap: IdEntityMap<Entity['_key']>; //
+  allKnownUsersByLoginMap: IdEntityMap<Entity['_key']>; // Includes known collaborators
 }
 
 export function toPullRequestEntity({
@@ -1059,20 +1090,20 @@ function noSelfApprovals(approval: Approval, commits: Commit[]) {
 
 function hasTeamMemberApprovals(
   approval: Approval,
-  teamMembersByLoginMap: IdEntityMap<UserEntity>,
+  teamMembersByLoginMap: IdEntityMap<Entity['_key']>,
 ) {
-  return approval.approverUsernames.some(
-    (approver) => teamMembersByLoginMap[approver],
+  return approval.approverUsernames.some((approver) =>
+    teamMembersByLoginMap.has(approver),
   );
 }
 
 function fromUnknownAuthor(
   commit: Commit,
-  allKnownUsersByLoginMap: IdEntityMap<UserEntity>,
+  allKnownUsersByLoginMap: IdEntityMap<Entity['_key']>,
 ) {
   return (
     !commit.author?.user?.login ||
-    !allKnownUsersByLoginMap[commit.author.user?.login]
+    !allKnownUsersByLoginMap.has(commit.author.user?.login)
   );
 }
 

@@ -1,5 +1,6 @@
 import {
   createDirectRelationship,
+  Entity,
   IntegrationMissingKeyError,
   IntegrationStep,
   IntegrationStepExecutionContext,
@@ -9,11 +10,9 @@ import {
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import {
-  AppEntity,
   BranchProtectionRuleEntity,
   IdEntityMap,
   RepoKeyAndName,
-  UserEntity,
 } from '../types';
 import {
   GITHUB_APP_BY_APP_ID,
@@ -24,7 +23,7 @@ import {
   Relationships,
   Steps,
 } from '../constants';
-import { toBranchProtectionEntity } from '../sync/converters';
+import { getTeamEntityKey, toBranchProtectionEntity } from '../sync/converters';
 
 export async function fetchBranchProtectionRule({
   instance,
@@ -69,19 +68,22 @@ export async function fetchBranchProtectionRule({
           Array.isArray(branchProtectionRule.bypassPullRequestAllowances?.users)
         ) {
           const usersByLoginMap = await jobState.getData<
-            IdEntityMap<UserEntity>
+            IdEntityMap<Entity['_key']>
           >(GITHUB_MEMBER_BY_LOGIN_MAP);
 
           if (usersByLoginMap) {
             await Promise.all(
               branchProtectionRule.bypassPullRequestAllowances?.users.map(
                 async (user) => {
-                  if (usersByLoginMap[user.login]) {
+                  if (usersByLoginMap.has(user.login)) {
                     await jobState.addRelationship(
                       createDirectRelationship({
                         _class: RelationshipClass.OVERRIDES,
-                        from: usersByLoginMap[user.login],
-                        to: branchProtectionRuleEntity,
+                        fromType: GithubEntities.GITHUB_MEMBER._type,
+                        fromKey: usersByLoginMap.get(user.login) as string,
+                        toType:
+                          GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+                        toKey: branchProtectionRuleEntity._key,
                         properties: {
                           bypassPullRequestAllowance: true,
                         },
@@ -105,14 +107,17 @@ export async function fetchBranchProtectionRule({
           await Promise.all(
             branchProtectionRule.bypassPullRequestAllowances.teams.map(
               async (team) => {
-                const teamEntity = await jobState.findEntity(team.id);
+                const teamEntityKey = getTeamEntityKey(team.id);
 
-                if (teamEntity) {
+                if (jobState.hasKey(teamEntityKey)) {
                   await jobState.addRelationship(
                     createDirectRelationship({
                       _class: RelationshipClass.OVERRIDES,
-                      from: teamEntity,
-                      to: branchProtectionRuleEntity,
+                      fromType: GithubEntities.GITHUB_TEAM._type,
+                      fromKey: teamEntityKey,
+                      toType:
+                        GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+                      toKey: branchProtectionRuleEntity._key,
                       properties: {
                         bypassPullRequestAllowance: true,
                       },
@@ -133,21 +138,25 @@ export async function fetchBranchProtectionRule({
           Array.isArray(branchProtectionRule.bypassPullRequestAllowances?.apps)
         ) {
           const appsById =
-            await jobState.getData<IdEntityMap<AppEntity>>(
+            await jobState.getData<IdEntityMap<Entity['_key']>>(
               GITHUB_APP_BY_APP_ID,
             );
-
           if (appsById) {
             await Promise.all(
               branchProtectionRule.bypassPullRequestAllowances.apps.map(
                 async (app) => {
-                  if (appsById && appsById[`${app.databaseId}`]) {
-                    const appEntity = appsById[`${app.databaseId}`];
+                  if (appsById.has(`${app.databaseId}`)) {
+                    const appEntityKey = appsById.get(
+                      `${app.databaseId}`,
+                    ) as string;
                     await jobState.addRelationship(
                       createDirectRelationship({
                         _class: RelationshipClass.OVERRIDES,
-                        from: appEntity,
-                        to: branchProtectionRuleEntity,
+                        fromType: GithubEntities.GITHUB_APP._type,
+                        fromKey: appEntityKey,
+                        toType:
+                          GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+                        toKey: branchProtectionRuleEntity._key,
                         properties: {
                           bypassPullRequestAllowance: true,
                         },

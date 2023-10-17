@@ -14,7 +14,10 @@ import {
   Relationships,
   Steps,
 } from '../constants';
-import { createCodeScanningFindingEntity } from '../sync/converters';
+import {
+  createCodeScanningFindingEntity,
+  getRepositoryEntityKey,
+} from '../sync/converters';
 
 export async function fetchCodeScanAlerts({
   instance,
@@ -29,14 +32,18 @@ export async function fetchCodeScanAlerts({
       createCodeScanningFindingEntity(alert),
     )) as CodeScanningFindingEntity;
 
-    const repoEntity = await jobState.findEntity(alert.repository.node_id);
+    const repoEntityKey =
+      alert.repository.node_id &&
+      getRepositoryEntityKey(alert.repository.node_id);
 
-    if (repoEntity) {
+    if (repoEntityKey && jobState.hasKey(repoEntityKey)) {
       await jobState.addRelationship(
         createDirectRelationship({
           _class: RelationshipClass.HAS,
-          from: repoEntity,
-          to: codeScanningFinding,
+          fromType: GithubEntities.GITHUB_REPO._type,
+          fromKey: repoEntityKey,
+          toType: GithubEntities.GITHUB_CODE_SCANNING_ALERT._type,
+          toKey: codeScanningFinding._key,
         }),
       );
     }

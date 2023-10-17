@@ -10,8 +10,9 @@ import {
   toOrganizationMemberEntity,
   toPullRequestEntity,
 } from '../sync/converters';
-import { IdEntityMap, UserEntity } from '../types';
+import { IdEntityMap } from '../types';
 import {
+  Entity,
   IntegrationError,
   IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
@@ -113,22 +114,24 @@ const buildEntity = async (
 };
 
 const buildUserLoginMaps = async (client: APIClient, repoName: string) => {
-  const memberByLoginMap: IdEntityMap<UserEntity> = {};
-  const allCollaboratorsByLoginMap: IdEntityMap<UserEntity> = {};
+  const memberByLoginMap: IdEntityMap<Entity['_key']> = new Map();
+  const allCollaboratorsByLoginMap: IdEntityMap<Entity['_key']> = new Map();
 
   // Query for all members of organization
   // There's not a good way to fetch a single member from an organization
   // We can use a REST endpoint, but it pulls back different data.
   await client.iterateOrgMembers((member) => {
-    memberByLoginMap[member.login] = toOrganizationMemberEntity(member);
+    memberByLoginMap.set(member.login, toOrganizationMemberEntity(member)._key);
   });
 
   await client.iterateRepoCollaborators(repoName, (collaborator) => {
-    allCollaboratorsByLoginMap[collaborator.login] =
+    allCollaboratorsByLoginMap.set(
+      collaborator.login,
       toOrganizationCollaboratorEntity(
         collaborator,
         client.config.githubApiBaseUrl,
-      );
+      )._key,
+    );
   });
 
   return {

@@ -2,6 +2,7 @@ import {
   IntegrationStep,
   IntegrationStepExecutionContext,
   IntegrationMissingKeyError,
+  Entity,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
@@ -10,7 +11,12 @@ import {
   createRepoAllowsUserRelationship,
   toOrganizationCollaboratorEntity,
 } from '../sync/converters';
-import { UserEntity, IdEntityMap, RepoKeyAndName } from '../types';
+import {
+  UserEntity,
+  IdEntityMap,
+  RepoKeyAndName,
+  OutsideCollaboratorData,
+} from '../types';
 import {
   GithubEntities,
   GITHUB_MEMBER_BY_LOGIN_MAP,
@@ -28,7 +34,7 @@ export async function fetchCollaborators({
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
 
-  const memberByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+  const memberByLoginMap = await jobState.getData<IdEntityMap<Entity['_key']>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
   );
   if (!memberByLoginMap) {
@@ -37,8 +43,8 @@ export async function fetchCollaborators({
     );
   }
 
-  const outsideCollaboratorsByLoginMap: IdEntityMap<UserEntity> = {};
-  const outsideCollaboratorsArray: UserEntity[] = [];
+  const outsideCollaboratorsByLoginMap: IdEntityMap<Entity['_key']> = new Map();
+  const outsideCollaboratorsArray: OutsideCollaboratorData[] = [];
 
   const repoTags = await jobState.getData<RepoKeyAndName[]>(
     GITHUB_REPO_TAGS_ARRAY,
@@ -53,33 +59,39 @@ export async function fetchCollaborators({
     await apiClient.iterateRepoCollaborators(repo.name, async (collab) => {
       //a collaborator is either an organization member or an outside collaborator
       //we can tell the difference based on whether the login was discovered in members.ts
-      let userEntity;
-      if (memberByLoginMap[collab.login]) {
+      let userEntityKey: string | undefined;
+      if (memberByLoginMap.has(collab.login)) {
         //if the organization member has repo permission via both direct assignment and some team membership(s),
         //where the permissions for the repo are different between the direct assignment and team(s) assignments,
         //GitHub has already taken that into account and returned the best applicable permissions for this collaborator
-        userEntity = memberByLoginMap[collab.login];
+        userEntityKey = memberByLoginMap.get(collab.login);
       } else {
         //retrieve or create outside collaborator entity
-        if (jobState.hasKey(collab.id)) {
-          userEntity = outsideCollaboratorsByLoginMap[collab.login];
+        const userEntity = toOrganizationCollaboratorEntity(
+          collab,
+          config.githubApiBaseUrl,
+        ) as UserEntity;
+        if (jobState.hasKey(userEntity._key)) {
+          userEntityKey = outsideCollaboratorsByLoginMap.get(collab.login);
         } else {
-          userEntity = (await jobState.addEntity(
-            toOrganizationCollaboratorEntity(collab, config.githubApiBaseUrl),
-          )) as UserEntity;
-          outsideCollaboratorsByLoginMap[collab.login] = userEntity;
-          outsideCollaboratorsArray.push(userEntity);
+          await jobState.addEntity(userEntity);
+          userEntityKey = userEntity._key;
+          outsideCollaboratorsByLoginMap.set(collab.login, userEntity._key);
+          outsideCollaboratorsArray.push({
+            key: userEntity._key,
+            login: userEntity.login,
+          });
         }
       }
 
       if (
         collab.repositoryId &&
-        userEntity &&
+        userEntityKey &&
         jobState.hasKey(collab.repositoryId)
       ) {
         const repoUserRelationship = createRepoAllowsUserRelationship(
           collab.repositoryId,
-          userEntity,
+          userEntityKey,
           collab.permission,
         );
         await jobState.addRelationship(repoUserRelationship);

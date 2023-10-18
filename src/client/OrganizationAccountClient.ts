@@ -456,28 +456,26 @@ export default class OrganizationAccountClient {
     }
   }
 
-  async getRepoSecrets(repoName: string): Promise<SecretQueryResponse[]> {
+  async getRepoSecrets(
+    repoName: string,
+    iteratee: ResourceIteratee<SecretQueryResponse>,
+  ): Promise<void> {
     try {
-      const repoSecrets = await this.v3.paginate(
-        'GET /repos/{owner}/{repo}/actions/secrets', //https://docs.github.com/en/rest/reference/actions#list-repository-secrets
-        {
-          owner: this.login,
-          repo: repoName,
-          per_page: 100,
-        },
-        (response) => {
-          this.v3RateLimitConsumed++;
-          return response.data;
-        },
-      );
-      return repoSecrets || [];
+      const route = 'GET /repos/{owner}/{repo}/actions/secrets'; //https://docs.github.com/en/rest/reference/actions#list-repository-secrets
+      for await (const response of this.v3.paginate.iterator(route, {
+        owner: this.login,
+        repo: repoName,
+        per_page: 100,
+      })) {
+        this.v3RateLimitConsumed++;
+        for (const repoSecret of response.data) await iteratee(repoSecret);
+      }
     } catch (err) {
       if (err.status === 403) {
         this.logger.info(
           { repoName },
           `Repo returned a 403 unauthorized when secrets requested. This is caused by repos with more restrictive privacy settings`,
         );
-        return [];
       } else {
         this.logger.warn(
           { err },

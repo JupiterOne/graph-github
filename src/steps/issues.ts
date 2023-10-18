@@ -1,4 +1,5 @@
 import {
+  Entity,
   IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
@@ -11,7 +12,12 @@ import {
   toIssueEntity,
   createUnknownUserIssueRelationship,
 } from '../sync/converters';
-import { UserEntity, IdEntityMap, RepoEntity, IssueEntity } from '../types';
+import {
+  IdEntityMap,
+  RepoEntity,
+  IssueEntity,
+  OutsideCollaboratorData,
+} from '../types';
 import {
   GithubEntities,
   GITHUB_MEMBER_BY_LOGIN_MAP,
@@ -34,7 +40,7 @@ export async function fetchIssues(
   ).toISOString();
   const apiClient = getOrCreateApiClient(config, logger);
 
-  let usersByLoginMap = await jobState.getData<IdEntityMap<UserEntity>>(
+  let usersByLoginMap = await jobState.getData<IdEntityMap<Entity['_key']>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
   );
 
@@ -43,15 +49,15 @@ export async function fetchIssues(
       {},
       `Expected members.ts to have set ${GITHUB_MEMBER_BY_LOGIN_MAP} in jobState. Proceeding anyway.`,
     );
-    usersByLoginMap = {};
+    usersByLoginMap = new Map();
   }
 
-  const outsideCollaboratorEntities = await jobState.getData<UserEntity[]>(
-    GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
-  );
+  const outsideCollaboratorEntities = await jobState.getData<
+    OutsideCollaboratorData[]
+  >(GITHUB_OUTSIDE_COLLABORATOR_ARRAY);
   if (outsideCollaboratorEntities) {
     for (const collab of outsideCollaboratorEntities) {
-      usersByLoginMap[collab.login] = collab;
+      usersByLoginMap.set(collab.login, collab.key);
     }
   } else {
     logger.warn(
@@ -81,12 +87,14 @@ export async function fetchIssues(
             );
 
             if (issue.author) {
-              if (usersByLoginMap![issue.author.login]) {
+              if (usersByLoginMap?.has(issue.author.login)) {
                 await jobState.addRelationship(
                   createDirectRelationship({
                     _class: RelationshipClass.CREATED,
-                    from: usersByLoginMap![issue.author.login],
-                    to: issueEntity,
+                    fromType: GithubEntities.GITHUB_MEMBER._type,
+                    fromKey: usersByLoginMap.get(issue.author.login) as string,
+                    toType: GithubEntities.GITHUB_ISSUE._type,
+                    toKey: issueEntity._key,
                   }),
                 );
               } else {
@@ -104,12 +112,14 @@ export async function fetchIssues(
 
             if (issue.assignees) {
               for (const assignee of issue.assignees) {
-                if (usersByLoginMap![assignee.login]) {
+                if (usersByLoginMap?.has(assignee.login)) {
                   await jobState.addRelationship(
                     createDirectRelationship({
                       _class: RelationshipClass.ASSIGNED,
-                      from: usersByLoginMap![assignee.login],
-                      to: issueEntity,
+                      fromType: GithubEntities.GITHUB_MEMBER._type,
+                      fromKey: usersByLoginMap.get(assignee.login) as string,
+                      toType: GithubEntities.GITHUB_ISSUE._type,
+                      toKey: issueEntity._key,
                     }),
                   );
                 } else {

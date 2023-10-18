@@ -4,11 +4,12 @@ import {
   RelationshipClass,
   IntegrationMissingKeyError,
   createDirectRelationship,
+  Entity,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { RepoKeyAndName, SecretEntity } from '../types';
+import { IdEntityMap, RepoKeyAndName, SecretEntity } from '../types';
 import {
   GithubEntities,
   GITHUB_REPO_TAGS_ARRAY,
@@ -17,8 +18,7 @@ import {
   IngestionSources,
   Relationships,
 } from '../constants';
-import { toRepoSecretEntity } from '../sync/converters';
-import { getSecretEntityKey } from '../util/propertyHelpers';
+import { toRepoSecretEntity, getSecretEntityKey } from '../sync/converters';
 
 export async function fetchRepoSecrets({
   instance,
@@ -38,10 +38,12 @@ export async function fetchRepoSecrets({
   }
 
   //for use in detecting overrides by environmental secrets
-  const repoSecretEntitiesByRepoNameMap = {};
+  const repoSecretEntitiesByRepoNameMap: IdEntityMap<
+    IdEntityMap<Entity['_key']>
+  > = new Map();
 
   for (const repoTag of repoTags) {
-    const repoSecretEntities = {};
+    const repoSecretEntities: IdEntityMap<Entity['_key']> = new Map();
     await apiClient.iterateRepoSecrets(repoTag.name, async (secret) => {
       const secretEntity = (await jobState.addEntity(
         toRepoSecretEntity(
@@ -51,7 +53,7 @@ export async function fetchRepoSecrets({
           repoTag.name,
         ),
       )) as SecretEntity;
-      repoSecretEntities[secret.name] = secretEntity;
+      repoSecretEntities.set(secret.name, secretEntity._key);
 
       await jobState.addRelationship(
         createDirectRelationship({
@@ -90,7 +92,7 @@ export async function fetchRepoSecrets({
         );
       }
     });
-    repoSecretEntitiesByRepoNameMap[repoTag.name] = repoSecretEntities;
+    repoSecretEntitiesByRepoNameMap.set(repoTag.name, repoSecretEntities);
   }
   await jobState.setData(
     GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,

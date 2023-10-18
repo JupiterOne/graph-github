@@ -42,18 +42,26 @@ export async function fetchRepos({
 
   await apiClient.iterateRepos(async (repo) => {
     const repoOwner = repo.nameWithOwner.toLowerCase().split('/')[0];
-    const tags: string[] = [];
-    await apiClient.iterateTags(repoOwner, repo.name, (tag) => {
-      tags.push(tag.name);
-    });
-    const repoEntity = toRepositoryEntity(repo, tags);
-    if (apiClient.scopes.repoPages) {
-      const pagesInfo = await apiClient.fetchPagesInfoForRepo(
-        repoEntity.owner,
-        repoEntity.name,
-      );
-      decorateRepoEntityWithPagesInfo(repoEntity, pagesInfo);
-    }
+    const repoEntity = toRepositoryEntity(repo);
+
+    await Promise.all([
+      (async () => {
+        const tags: string[] = [];
+        await apiClient.iterateTags(repoOwner, repo.name, (tag) => {
+          tags.push(tag.name);
+        });
+        repoEntity.tags = tags;
+      })(),
+      (async () => {
+        if (apiClient.scopes.repoPages) {
+          const pagesInfo = await apiClient.fetchPagesInfoForRepo(
+            repoEntity.owner,
+            repoEntity.name,
+          );
+          decorateRepoEntityWithPagesInfo(repoEntity, pagesInfo);
+        }
+      })(),
+    ]);
     await jobState.addEntity(repoEntity);
 
     repoTags.push({

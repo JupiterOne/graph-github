@@ -6,9 +6,13 @@ export enum AccountType {
   User = 'User',
 }
 
-export interface IdEntityMap<V> {
-  [key: string]: V;
+export type IdEntityMap<V> = Map<string, V>;
+
+export interface OutsideCollaboratorData {
+  key: string;
+  login: string;
 }
+
 /**
  * The permissions that come back with an access token in an auth call.
  * This list is not exhaustive; if the token doesn't have access to a certain

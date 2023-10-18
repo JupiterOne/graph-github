@@ -4,13 +4,14 @@ import {
   RelationshipClass,
   IntegrationMissingKeyError,
   createDirectRelationship,
+  Entity,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toAppEntity } from '../sync/converters';
-import { AccountEntity, AppEntity } from '../types';
+import { AccountEntity, AppEntity, IdEntityMap } from '../types';
 import {
   GithubEntities,
   GITHUB_APP_BY_APP_ID,
@@ -36,11 +37,11 @@ export async function fetchApps({
     );
   }
 
-  const appIdMap = {};
+  const appIdMap: IdEntityMap<Entity['_key']> = new Map();
   await apiClient.iterateApps(async (app) => {
     const appEntity = (await jobState.addEntity(toAppEntity(app))) as AppEntity;
 
-    appIdMap[app.app_id] = appEntity;
+    appIdMap.set(`${app.app_id}`, appEntity._key);
 
     await jobState.addRelationship(
       createDirectRelationship({

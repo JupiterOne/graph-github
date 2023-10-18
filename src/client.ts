@@ -356,11 +356,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     if (this.scopes.repoSecrets) {
-      const repoSecrets: SecretQueryResponse[] =
-        await this.graphQLClient.getRepoSecrets(repoName);
-      for (const secret of repoSecrets) {
-        await iteratee(secret);
-      }
+      await this.graphQLClient.getRepoSecrets(repoName, iteratee);
     }
   }
 

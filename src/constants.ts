@@ -34,6 +34,7 @@ export const Steps = {
   FETCH_TEAM_REPOS: 'fetch-team-repos',
   FETCH_TEAMS: 'fetch-teams',
   FETCH_VULNERABILITY_ALERTS: 'fetch-vulnerability-alerts',
+  FETCH_SECRET_SCANNING_ALERTS: 'fetch-secret-scanning-alerts',
 };
 
 export const IngestionSources = {
@@ -47,6 +48,7 @@ export const IngestionSources = {
   REPO_SECRETS: 'repo-secrets',
   VULNERABILITY_ALERTS: 'vulnerability-alerts',
   PRS: 'prs',
+  SECRET_SCANNING_ALERTS: 'secret-scanning-alerts',
 };
 
 export const GithubEntities: Record<
@@ -65,6 +67,7 @@ export const GithubEntities: Record<
   | 'GITHUB_TEAM'
   | 'GITHUB_CODE_SCANNING_ALERT'
   | 'GITHUB_VULNERABILITY_ALERT'
+  | 'GITHUB_SECRET_SCANNING_ALERT'
   | 'CVE'
   | 'CWE',
   StepEntityMetadata
@@ -379,6 +382,11 @@ export const GithubEntities: Record<
       ],
     },
   },
+  GITHUB_SECRET_SCANNING_ALERT: {
+    resourceName: 'GitHub Secret Scanning Alert',
+    _type: 'github_secret_scanning_alert',
+    _class: ['Alert'],
+  },
   CVE: {
     resourceName: 'CVE',
     _type: 'cve',
@@ -446,7 +454,8 @@ export const Relationships: Record<
   | 'ACCOUNT_HAS_ORG_SECRET'
   | 'REPO_USES_ORG_SECRET'
   | 'ACCOUNT_HAS_ORG_SECRET'
-  | 'REPO_USES_ORG_SECRET',
+  | 'REPO_USES_ORG_SECRET'
+  | 'REPO_HAS_SECRET_SCANNING_ALERT',
   StepRelationshipMetadata
 > = {
   TEAM_HAS_USER: {
@@ -653,6 +662,12 @@ export const Relationships: Record<
     sourceType: GithubEntities.GITHUB_REPO._type,
     _class: RelationshipClass.USES,
     targetType: GithubEntities.GITHUB_ORG_SECRET._type,
+  },
+  REPO_HAS_SECRET_SCANNING_ALERT: {
+    _type: 'github_repo_has_secret_scanning_alert',
+    sourceType: GithubEntities.GITHUB_REPO._type,
+    _class: RelationshipClass.HAS,
+    targetType: GithubEntities.GITHUB_SECRET_SCANNING_ALERT._type,
   },
 };
 

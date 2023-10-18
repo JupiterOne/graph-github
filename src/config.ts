@@ -119,6 +119,7 @@ export type Scopes = {
   repoIssues: boolean;
   dependabotAlerts: boolean;
   repoDiscussions: boolean;
+  secretScanningAlerts: boolean;
 };
 
 type AuthenticationData = {
@@ -280,5 +281,10 @@ export const ingestionConfig: IntegrationIngestionConfigFieldMap = {
   [IngestionSources.REPO_SECRETS]: {
     title: 'GitHub Repository Secrets',
     description: 'Secrets metadata available in a repository.',
+  },
+  [IngestionSources.SECRET_SCANNING_ALERTS]: {
+    title: 'GitHub Secret Scanning Alerts',
+    description:
+      'Alerts for potential leaks of known secrets in public repositories',
   },
 };

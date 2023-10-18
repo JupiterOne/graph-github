@@ -156,6 +156,7 @@ The following entities are created:
 | Account                       | `github_account`                | `Account`       |
 | GitHub Code Scanning Alerts   | `github_code_scanning_finding`  | `Finding`       |
 | GitHub Env Secret             | `github_env_secret`             | `Secret`        |
+| GitHub Secret Scanning Alert  | `github_secret_scanning_alert`  | `Alert`         |
 | GitHub Vulnerability Alert    | `github_finding`                | `Finding`       |
 | Github App                    | `github_app`                    | `Application`   |
 | Github Branch Protection Rule | `github_branch_protection_rule` | `Rule`          |
@@ -194,6 +195,7 @@ The following relationships are created:
 | `github_repo`         | **HAS**               | `github_pullrequest`            |
 | `github_repo`         | **HAS**               | `github_repo_secret`            |
 | `github_repo`         | **USES**              | `github_repo_secret`            |
+| `github_repo`         | **HAS**               | `github_secret_scanning_alert`  |
 | `github_repo`         | **ALLOWS**            | `github_team`                   |
 | `github_repo`         | **ALLOWS**            | `github_user`                   |
 | `github_repo_secret`  | **OVERRIDES**         | `github_org_secret`             |

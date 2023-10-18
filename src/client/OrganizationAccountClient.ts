@@ -21,6 +21,7 @@ import {
   OrgSecretRepoQueryResponse,
   RepoEnvironmentQueryResponse,
   CodeScanningAlertQueryResponse,
+  SecretScanningAlertQueryResponse,
 } from './RESTClient/types';
 import { RepoEntity } from '../types';
 import { request } from '@octokit/request';
@@ -425,6 +426,30 @@ export default class OrganizationAccountClient {
     } catch (err) {
       this.logger.warn(
         'Error while attempting to ingest organization code scanning alerts',
+      );
+      throw new IntegrationError(err);
+    }
+  }
+
+  async getSecretScanningAlerts(
+    iteratee: ResourceIteratee<SecretScanningAlertQueryResponse>,
+  ): Promise<void> {
+    try {
+      const route = 'GET /orgs/{org}/secret-scanning/alerts';
+      for await (const response of this.v3.paginate.iterator(route, {
+        org: this.login,
+        per_page: 100,
+      })) {
+        this.v3RateLimitConsumed++;
+
+        for (const alert of response.data) {
+          await iteratee(alert);
+        }
+      }
+    } catch (err) {
+      this.logger.warn(
+        err,
+        'Error while attempting to ingest organization secret scanning alerts',
       );
       throw new IntegrationError(err);
     }

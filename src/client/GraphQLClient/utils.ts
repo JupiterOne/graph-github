@@ -55,6 +55,10 @@ export enum EnterpriseFeatures {
    * Docs link: https://docs.github.com/en/enterprise-server@3.5/rest/code-scanning#list-code-scanning-alerts-for-an-organization
    */
   LIST_CODE_SCANNING_ALERT_FOR_ORG = '3.5.0',
+  /**
+   * Docs link: https://docs.github.com/en/enterprise-server@3.5/rest/secret-scanning/secret-scanning#list-secret-scanning-alerts-for-an-organization
+   */
+  LIST_SECRET_SCANNING_ALERT_FOR_ORG = '3.5.0',
 }
 
 /**

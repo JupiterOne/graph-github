@@ -39,6 +39,7 @@ import {
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
+  SecretScanningAlertQueryResponse,
 } from './client/RESTClient/types';
 import {
   CollaboratorResponse,
@@ -615,6 +616,22 @@ export class APIClient {
   }
 
   /**
+   * Iterates each GitHub organization secret scanning alerts.
+   *
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateSecretScanningAlerts(
+    iteratee: ResourceIteratee<SecretScanningAlertQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.secretScanningAlerts) {
+      await this.graphQLClient.getSecretScanningAlerts(iteratee);
+    }
+  }
+
+  /**
    * Iterates the collaborators for a single repo.
    *
    * @param repoName name of the repository
@@ -780,6 +797,7 @@ export class APIClient {
         dependabotAlerts: false,
         repoPages: false,
         repoDiscussions: false,
+        secretScanningAlerts: false,
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');
@@ -876,11 +894,23 @@ export class APIClient {
     //ingesting codeScanning alerts requires scope security_events:read
     if (['read', 'write'].includes(perms.security_events!)) {
       this.scopes.codeScanningAlerts = true;
+      this.scopes.secretScanningAlerts = true;
     } else {
       this.logger.info(
         "Token does not have 'security_events' (aka codeScanning alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
       );
       this.scopes.codeScanningAlerts = false;
+      this.scopes.secretScanningAlerts = false;
+    }
+
+    //ingesting secretScanning alerts requires secret_scanning_alerts:read permission
+    if (['read', 'write'].includes(perms.secret_scanning_alerts!)) {
+      this.scopes.secretScanningAlerts = true;
+    } else {
+      this.logger.info(
+        "Token does not have 'secret_scanning_alerts' permission enabled. Secret Scanning Alerts cannot be ingested.",
+      );
+      this.scopes.secretScanningAlerts = false;
     }
 
     //ingesting github pages requires scope repo pages:read

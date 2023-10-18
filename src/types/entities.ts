@@ -117,6 +117,29 @@ export interface CodeScanningFindingEntity extends Entity {
   toolVersion?: string;
 }
 
+export interface SecretScanningFindingEntity extends Entity {
+  number?: number;
+  url?: string;
+  state?: 'open' | 'resolved';
+  resolution?:
+    | 'false_positive'
+    | 'wont_fix'
+    | 'revoked'
+    | 'used_in_tests'
+    | null;
+  secretType?: string;
+  secretTypeDisplayName?: string;
+  secret?: string;
+  resolvedBy?: string | null;
+  resolvedOn?: number;
+  resolutionComment?: string | null;
+  pushProtectionBypassed?: boolean | null;
+  pushProtectionBypassedBy?: string;
+  pushProtectionBypassedOn?: number;
+  createdOn?: number;
+  updatedOn?: number;
+}
+
 export interface IssueEntity extends Entity {
   name: string;
   displayName: string;

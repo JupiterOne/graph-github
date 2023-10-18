@@ -17,6 +17,7 @@ import {
   Relationships,
 } from '../constants';
 import { toEnvironmentEntity } from '../sync/converters';
+import pMap from 'p-map';
 
 export async function fetchEnvironments({
   instance,
@@ -35,27 +36,31 @@ export async function fetchEnvironments({
     );
   }
 
-  for (const repoTag of repoTags) {
-    await apiClient.iterateEnvironments(repoTag.name, async (env) => {
-      const envEntity = (await jobState.addEntity(
-        toEnvironmentEntity(
-          env,
-          apiClient.graphQLClient.login,
-          config.githubApiBaseUrl,
-          repoTag,
-        ),
-      )) as EnvironmentEntity;
-      await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.HAS,
-          fromType: GithubEntities.GITHUB_REPO._type,
-          toType: GithubEntities.GITHUB_ENVIRONMENT._type,
-          fromKey: repoTag._key,
-          toKey: envEntity._key,
-        }),
-      );
-    });
-  }
+  await pMap(
+    repoTags,
+    async (repoTag) => {
+      await apiClient.iterateEnvironments(repoTag.name, async (env) => {
+        const envEntity = (await jobState.addEntity(
+          toEnvironmentEntity(
+            env,
+            apiClient.graphQLClient.login,
+            config.githubApiBaseUrl,
+            repoTag,
+          ),
+        )) as EnvironmentEntity;
+        await jobState.addRelationship(
+          createDirectRelationship({
+            _class: RelationshipClass.HAS,
+            fromType: GithubEntities.GITHUB_REPO._type,
+            toType: GithubEntities.GITHUB_ENVIRONMENT._type,
+            fromKey: repoTag._key,
+            toKey: envEntity._key,
+          }),
+        );
+      });
+    },
+    { concurrency: 2 },
+  );
 }
 
 export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [

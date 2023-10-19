@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import { IntegrationConfig } from '../src/config';
+import { IntegrationConfig, sanitizeConfig } from '../src/config';
 import { getFakeRsaKey } from '../src/util/sha';
 import { invocationConfig } from '../src';
 import { IntegrationInvocationConfig } from '@jupiterone/integration-sdk-core';
@@ -27,6 +27,9 @@ export const integrationConfig: IntegrationConfig = {
 } as IntegrationConfig; // casting config instead of setting useRestForTeamRepos to imitate configs already in production
 
 export function buildStepTestConfig(stepId: string): StepTestConfig {
+  if (process.env.LOAD_ENV) {
+    sanitizeConfig(integrationConfig);
+  }
   return {
     stepId,
     instanceConfig: integrationConfig,

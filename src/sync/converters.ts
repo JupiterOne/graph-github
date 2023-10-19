@@ -56,6 +56,7 @@ import {
   CodeScanningAlertQueryResponse,
   RepoEnvironmentQueryResponse,
   SecretQueryResponse,
+  SecretScanningAlertQueryResponse,
 } from '../client/RESTClient/types';
 
 import { compact, last, omit, uniq } from 'lodash';
@@ -185,6 +186,44 @@ export function createCodeScanningFindingEntity(
         toolVersion: data.tool?.version,
         path: data.most_recent_instance?.location?.path,
         ruleTags: data.rule?.tags,
+      },
+    },
+  });
+}
+
+export function getSecretScanningAlertKey(id: string) {
+  return `github_secret_scanning_alert:${id}`;
+}
+
+export function createSecretScanningAlertEntity(
+  data: SecretScanningAlertQueryResponse,
+) {
+  return createIntegrationEntity({
+    entityData: {
+      source: data,
+      assign: {
+        _class: GithubEntities.GITHUB_SECRET_SCANNING_ALERT._class,
+        _type: GithubEntities.GITHUB_SECRET_SCANNING_ALERT._type,
+        _key: getSecretScanningAlertKey(String(data.number)),
+        displayName: data.secret_type_display_name,
+        name: data.secret_type_display_name,
+        number: data.number,
+        url: data.html_url,
+        state: data.state,
+        resolution: data.resolution,
+        secretType: data.secret_type,
+        secretTypeDisplayName: data.secret_type_display_name,
+        secret: data.secret,
+        resolvedBy: data.resolved_by?.login,
+        resolvedOn: parseTimePropertyValue(data.resolved_at),
+        resolutionComment: data.resolution_comment,
+        pushProtectionBypassed: data.push_protection_bypassed,
+        pushProtectionBypassedBy: data.push_protection_bypassed_by?.login,
+        pushProtectionBypassedOn: parseTimePropertyValue(
+          data.push_protection_bypassed_at,
+        ),
+        createdOn: parseTimePropertyValue(data.created_at),
+        updatedOn: parseTimePropertyValue(data.updated_at),
       },
     },
   });

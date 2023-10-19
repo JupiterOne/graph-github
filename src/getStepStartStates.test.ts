@@ -19,6 +19,7 @@ describe('getStepStartStates', () => {
           dependabotAlerts: false,
           repoDiscussions: true,
           codeScanningAlerts: false,
+          secretScanningAlerts: false,
         },
       });
 
@@ -52,6 +53,7 @@ describe('getStepStartStates', () => {
           repoSecrets: false,
           dependabotAlerts: false,
           codeScanningAlerts: false,
+          secretScanningAlerts: false,
         },
       })
       .mockResolvedValueOnce({
@@ -68,6 +70,7 @@ describe('getStepStartStates', () => {
           repoSecrets: false,
           dependabotAlerts: false,
           codeScanningAlerts: false,
+          secretScanningAlerts: false,
         },
       })
       .mockResolvedValueOnce({
@@ -84,6 +87,7 @@ describe('getStepStartStates', () => {
           repoSecrets: false,
           dependabotAlerts: false,
           codeScanningAlerts: false,
+          secretScanningAlerts: false,
         },
       });
 
@@ -122,6 +126,7 @@ describe('getStepStartStates', () => {
           repoSecrets: false,
           dependabotAlerts: false,
           codeScanningAlerts: true,
+          secretScanningAlerts: false,
         },
         gheServerVersion: '5.0.0',
       })
@@ -139,6 +144,7 @@ describe('getStepStartStates', () => {
           repoSecrets: false,
           dependabotAlerts: false,
           codeScanningAlerts: true,
+          secretScanningAlerts: false,
         },
         gheServerVersion: '1.0.0',
       });

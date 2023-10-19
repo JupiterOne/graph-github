@@ -54,6 +54,104 @@ export interface CodeScanningAlertQueryResponse {
   };
 }
 
+export interface SecretScanningAlertQueryResponse {
+  /**
+   * The security alert number.
+   */
+  number?: number;
+  /**
+   * The time that the alert was created in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`.
+   */
+  created_at?: string;
+  updated_at?: string | null;
+  /**
+   * The REST API URL of the alert resource.
+   */
+  url?: string;
+  /**
+   * The GitHub URL of the alert resource.
+   */
+  html_url?: string;
+  /**
+   * The REST API URL of the code locations for this alert.
+   */
+  locations_url?: string;
+  /**
+   * Sets the state of the secret scanning alert. You must provide `resolution` when you set the state to `resolved`.
+   */
+  state?: 'open' | 'resolved';
+  /**
+   * **Required when the `state` is `resolved`.** The reason for resolving the alert.
+   */
+  resolution?:
+    | 'false_positive'
+    | 'wont_fix'
+    | 'revoked'
+    | 'used_in_tests'
+    | null;
+  /**
+   * The time that the alert was resolved in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`.
+   */
+  resolved_at?: string | null;
+  resolved_by?: SimpleUser | null;
+  /**
+   * The type of secret that secret scanning detected.
+   */
+  secret_type?: string;
+  /**
+   * User-friendly name for the detected secret, matching the `secret_type`.
+   * For a list of built-in patterns, see "[Secret scanning patterns](https://docs.github.com/code-security/secret-scanning/secret-scanning-patterns#supported-secrets-for-advanced-security)."
+   */
+  secret_type_display_name?: string;
+  /**
+   * The secret that was detected.
+   */
+  secret?: string;
+  repository?: {
+    node_id: string;
+  };
+  /**
+   * Whether push protection was bypassed for the detected secret.
+   */
+  push_protection_bypassed?: boolean | null;
+  push_protection_bypassed_by?: SimpleUser | null;
+  /**
+   * The time that push protection was bypassed in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`.
+   */
+  push_protection_bypassed_at?: string | null;
+  /**
+   * The comment that was optionally added when this alert was closed
+   */
+  resolution_comment?: string | null;
+}
+
+/**
+ * A GitHub user.
+ */
+export interface SimpleUser {
+  name?: string | null;
+  email?: string | null;
+  login: string;
+  id: number;
+  node_id: string;
+  avatar_url: string;
+  gravatar_id: string | null;
+  url: string;
+  html_url: string;
+  followers_url: string;
+  following_url: string;
+  gists_url: string;
+  starred_url: string;
+  subscriptions_url: string;
+  organizations_url: string;
+  repos_url: string;
+  events_url: string;
+  received_events_url: string;
+  type: string;
+  site_admin: boolean;
+  starred_at?: string;
+}
+
 export interface OrgAppQueryResponse {
   id: string; //the installation id
   respository_selection: string;

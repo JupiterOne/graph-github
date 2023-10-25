@@ -53,9 +53,9 @@ export async function fetchSecretScanningAlerts({
 export const secretScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: Steps.FETCH_SECRET_SCANNING_ALERTS,
-    name: 'Fetch Secret Scanning Alerts',
+    name: 'Fetch Secret Scanning Findings',
     entities: [GithubEntities.GITHUB_SECRET_SCANNING_ALERT],
-    relationships: [Relationships.REPO_HAS_SECRET_SCANNING_ALERT],
+    relationships: [Relationships.REPO_HAS_SECRET_SCANNING_FINDING],
     dependsOn: [Steps.FETCH_REPOS],
     ingestionSourceId: IngestionSources.SECRET_SCANNING_ALERTS,
     executionHandler: fetchSecretScanningAlerts,

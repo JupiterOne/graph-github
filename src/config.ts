@@ -286,5 +286,6 @@ export const ingestionConfig: IntegrationIngestionConfigFieldMap = {
     title: 'GitHub Secret Scanning Alerts',
     description:
       'Alerts for potential leaks of known secrets in public repositories',
+    defaultsToDisabled: true,
   },
 };

@@ -384,8 +384,8 @@ export const GithubEntities: Record<
   },
   GITHUB_SECRET_SCANNING_ALERT: {
     resourceName: 'GitHub Secret Scanning Alert',
-    _type: 'github_secret_scanning_alert',
-    _class: ['Alert'],
+    _type: 'github_secret_scanning_finding',
+    _class: ['Finding'],
   },
   CVE: {
     resourceName: 'CVE',
@@ -455,7 +455,7 @@ export const Relationships: Record<
   | 'REPO_USES_ORG_SECRET'
   | 'ACCOUNT_HAS_ORG_SECRET'
   | 'REPO_USES_ORG_SECRET'
-  | 'REPO_HAS_SECRET_SCANNING_ALERT',
+  | 'REPO_HAS_SECRET_SCANNING_FINDING',
   StepRelationshipMetadata
 > = {
   TEAM_HAS_USER: {
@@ -663,8 +663,8 @@ export const Relationships: Record<
     _class: RelationshipClass.USES,
     targetType: GithubEntities.GITHUB_ORG_SECRET._type,
   },
-  REPO_HAS_SECRET_SCANNING_ALERT: {
-    _type: 'github_repo_has_secret_scanning_alert',
+  REPO_HAS_SECRET_SCANNING_FINDING: {
+    _type: 'github_repo_has_secret_scanning_finding',
     sourceType: GithubEntities.GITHUB_REPO._type,
     _class: RelationshipClass.HAS,
     targetType: GithubEntities.GITHUB_SECRET_SCANNING_ALERT._type,

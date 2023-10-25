@@ -192,7 +192,7 @@ export function createCodeScanningFindingEntity(
 }
 
 export function getSecretScanningAlertKey(id: string) {
-  return `github_secret_scanning_alert:${id}`;
+  return `github_secret_scanning_finding:${id}`;
 }
 
 export function createSecretScanningAlertEntity(
@@ -207,9 +207,13 @@ export function createSecretScanningAlertEntity(
         _key: getSecretScanningAlertKey(String(data.number)),
         displayName: data.secret_type_display_name,
         name: data.secret_type_display_name,
+        severity: 'CRITICAL',
+        numericSeverity: 10,
+        category: 'application',
         number: data.number,
         url: data.html_url,
         state: data.state,
+        open: data.state === 'open',
         resolution: data.resolution,
         secretType: data.secret_type,
         secretTypeDisplayName: data.secret_type_display_name,

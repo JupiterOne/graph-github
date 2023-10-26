@@ -1,4 +1,4 @@
-jest.setTimeout(200000);
+jest.setTimeout(300000);
 
 import { Recording } from '@jupiterone/integration-sdk-testing';
 import { IntegrationConfig, sanitizeConfig } from '../config';

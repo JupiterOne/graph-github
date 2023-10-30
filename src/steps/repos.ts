@@ -47,9 +47,11 @@ export async function fetchRepos({
     await Promise.all([
       (async () => {
         const tags: string[] = [];
-        await apiClient.iterateTags(repoOwner, repo.name, (tag) => {
-          tags.push(tag.name);
-        });
+        if (!repo.isPrivate) {
+          await apiClient.iterateTags(repoOwner, repo.name, (tag) => {
+            tags.push(tag.name);
+          });
+        }
         repoEntity.tags = tags;
       })(),
       (async () => {

@@ -26,6 +26,7 @@ Object {
               Object {
                 "id": 5351089,
                 "node_id": "GA_kwDOI2pL-M4AUaax",
+                "prevent_self_review": false,
                 "reviewers": Array [
                   Object {
                     "reviewer": Object {
@@ -190,6 +191,52 @@ Object {
       "url": "https://api.github.com/repos/JupiterOne-Sandbox/literate-waffle/environments/dev",
       "webLink": "https://github.com/JupiterOne-Sandbox/literate-waffle/settings/environments/854794578/edit",
     },
+    Object {
+      "_class": Array [
+        "Configuration",
+      ],
+      "_key": "EN_kwDOKN6ggM5M0Wjp",
+      "_rawData": Array [
+        Object {
+          "name": "default",
+          "rawData": Object {
+            "can_admins_bypass": false,
+            "created_at": "2023-09-02T20:57:46Z",
+            "deployment_branch_policy": Object {
+              "custom_branch_policies": true,
+              "protected_branches": false,
+            },
+            "html_url": "https://github.com/JupiterOne-Sandbox/animated-pancake/deployments/activity_log?environments_filter=production",
+            "id": 1288792297,
+            "name": "production",
+            "node_id": "EN_kwDOKN6ggM5M0Wjp",
+            "protection_rules": Array [
+              Object {
+                "id": 11156686,
+                "node_id": "GA_kwDOKN6ggM4AqjzO",
+                "type": "branch_policy",
+              },
+            ],
+            "updated_at": "2023-09-05T18:58:38Z",
+            "url": "https://api.github.com/repos/JupiterOne-Sandbox/animated-pancake/environments/production",
+          },
+        },
+      ],
+      "_type": "github_environment",
+      "createdOn": 1693688266000,
+      "displayName": "production",
+      "htmlUrl": "https://github.com/JupiterOne-Sandbox/animated-pancake/deployments/activity_log?environments_filter=production",
+      "id": "1288792297",
+      "name": "production",
+      "nodeId": "EN_kwDOKN6ggM5M0Wjp",
+      "parentRepoDatabaseId": 685678720,
+      "parentRepoKey": "R_kgDOKN6ggA",
+      "parentRepoName": "animated-pancake",
+      "protectionRulesExist": true,
+      "updatedOn": 1693940318000,
+      "url": "https://api.github.com/repos/JupiterOne-Sandbox/animated-pancake/environments/production",
+      "webLink": "https://github.com/JupiterOne-Sandbox/animated-pancake/settings/environments/1288792297/edit",
+    },
   ],
   "collectedRelationships": Array [
     Object {
@@ -224,6 +271,14 @@ Object {
       "_type": "github_repo_has_environment",
       "displayName": "HAS",
     },
+    Object {
+      "_class": "HAS",
+      "_fromEntityKey": "R_kgDOKN6ggA",
+      "_key": "R_kgDOKN6ggA|has|EN_kwDOKN6ggM5M0Wjp",
+      "_toEntityKey": "EN_kwDOKN6ggM5M0Wjp",
+      "_type": "github_repo_has_environment",
+      "displayName": "HAS",
+    },
   ],
   "encounteredTypes": Array [
     "github_account",
@@ -232,7 +287,7 @@ Object {
     "github_environment",
     "github_repo_has_environment",
   ],
-  "numCollectedEntities": 4,
-  "numCollectedRelationships": 4,
+  "numCollectedEntities": 5,
+  "numCollectedRelationships": 5,
 }
 `;

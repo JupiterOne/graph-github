@@ -672,7 +672,13 @@ export const Relationships: Record<
 };
 
 export const MappedRelationships: Record<
-  'FINDING_IS_CVE' | 'FINDING_EXPLOITS_CWE',
+  | 'FINDING_IS_CVE'
+  | 'FINDING_EXPLOITS_CWE'
+  | 'USER_CREATED_ISSUE'
+  | 'USER_ASSIGNED_ISSUE'
+  | 'USER_OPENED_PULLREQUEST'
+  | 'USER_REVIEWED_PULLREQUEST'
+  | 'USER_APPROVED_PULLREQUEST',
   StepMappedRelationshipMetadata
 > = {
   FINDING_IS_CVE: {
@@ -688,5 +694,40 @@ export const MappedRelationships: Record<
     _class: RelationshipClass.EXPLOITS,
     targetType: GithubEntities.CWE._type,
     direction: RelationshipDirection.FORWARD,
+  },
+  USER_CREATED_ISSUE: {
+    _type: 'github_user_created_issue',
+    sourceType: GithubEntities.GITHUB_ISSUE._type,
+    _class: RelationshipClass.CREATED,
+    targetType: GithubEntities.GITHUB_MEMBER._type,
+    direction: RelationshipDirection.REVERSE,
+  },
+  USER_ASSIGNED_ISSUE: {
+    _type: 'github_user_assigned_issue',
+    sourceType: GithubEntities.GITHUB_ISSUE._type,
+    _class: RelationshipClass.ASSIGNED,
+    targetType: GithubEntities.GITHUB_MEMBER._type,
+    direction: RelationshipDirection.REVERSE,
+  },
+  USER_OPENED_PULLREQUEST: {
+    _type: 'github_user_opened_pullrequest',
+    sourceType: GithubEntities.GITHUB_PR._type,
+    _class: RelationshipClass.OPENED,
+    targetType: GithubEntities.GITHUB_MEMBER._type,
+    direction: RelationshipDirection.REVERSE,
+  },
+  USER_REVIEWED_PULLREQUEST: {
+    _type: 'github_user_reviewed_pullrequest',
+    sourceType: GithubEntities.GITHUB_PR._type,
+    _class: RelationshipClass.REVIEWED,
+    targetType: GithubEntities.GITHUB_MEMBER._type,
+    direction: RelationshipDirection.REVERSE,
+  },
+  USER_APPROVED_PULLREQUEST: {
+    _type: 'github_user_approved_pullrequest',
+    sourceType: GithubEntities.GITHUB_PR._type,
+    _class: RelationshipClass.APPROVED,
+    targetType: GithubEntities.GITHUB_MEMBER._type,
+    direction: RelationshipDirection.REVERSE,
   },
 };

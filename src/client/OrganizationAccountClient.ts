@@ -468,7 +468,6 @@ export default class OrganizationAccountClient {
         },
         (response) => {
           this.v3RateLimitConsumed++;
-          console.log('response :>> ', response);
           return response.data.names;
         },
       );

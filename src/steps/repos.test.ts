@@ -1,17 +1,12 @@
-import { Recording } from '@jupiterone/integration-sdk-testing';
-import { sanitizeConfig } from '../config';
-import { repoSteps } from './repos';
-import { integrationConfig } from '../../test/config';
-import { setupGithubRecording } from '../../test/recording';
-import {
-  GithubEntities,
-  GITHUB_REPO_TAGS_ARRAY,
-  Relationships,
-} from '../constants';
-import { invocationConfig } from '..';
-import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
-
 jest.setTimeout(20000);
+
+import {
+  Recording,
+  executeStepWithDependencies,
+} from '@jupiterone/integration-sdk-testing';
+import { buildStepTestConfig } from '../../test/config';
+import { setupGithubRecording } from '../../test/recording';
+import { Steps } from '../constants';
 
 let recording: Recording;
 afterEach(async () => {
@@ -23,40 +18,10 @@ test('fetchRepos exec handler', async () => {
     directory: __dirname,
     name: 'repos',
   });
-  sanitizeConfig(integrationConfig);
 
-  const {
-    collectedEntities,
-    collectedRelationships,
-    encounteredTypes,
-    jobState,
-  } = await executeStepWithDependencies({
-    stepId: repoSteps[0].id,
-    invocationConfig: invocationConfig as any,
-    instanceConfig: integrationConfig,
-  });
+  const stepConfig = buildStepTestConfig(Steps.FETCH_REPOS);
+  const stepResults = await executeStepWithDependencies(stepConfig);
 
-  expect({
-    numCollectedEntities: collectedEntities.length,
-    numCollectedRelationships: collectedRelationships.length,
-    collectedEntities: collectedEntities,
-    collectedRelationships: collectedRelationships,
-    encounteredTypes: encounteredTypes,
-  }).toMatchSnapshot();
-
-  const repos = collectedEntities.filter(
-    (e) => e._type === GithubEntities.GITHUB_REPO._type,
-  );
-  expect(repos.length).toBeGreaterThan(0);
-  expect(repos).toMatchGraphObjectSchema(GithubEntities.GITHUB_REPO);
-
-  // relationships
-  const accountHasRepoRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.ACCOUNT_OWNS_REPO._type,
-  );
-  expect(accountHasRepoRels.length).toBeGreaterThan(0);
-
-  // ensure that we are setting the REPO_TAGS_ARRAY in the jobState as expected
-  const repoTags = await jobState.getData(GITHUB_REPO_TAGS_ARRAY);
-  expect(repoTags).toBeTruthy();
+  expect(stepResults).toMatchStepMetadata(stepConfig);
+  expect(stepResults).toMatchSnapshot();
 });

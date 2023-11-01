@@ -647,7 +647,7 @@ export function createVulnerabilityAlertEntity(
         priority: data.securityVulnerability?.severity,
         score: data.securityAdvisory?.cvss.score,
         impact: data.securityAdvisory?.summary,
-        vector: data.securityAdvisory?.cvss.vectorString,
+        vector: data.securityAdvisory?.cvss.vectorString || '',
         recommendation: buildVulnAlertRecommendation(data),
         open: data.state
           ? data.state === RepositoryVulnerabilityAlertState.Open

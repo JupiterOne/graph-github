@@ -2,6 +2,7 @@
 
 exports[`fetchTeams exec handler 1`] = `
 Object {
+  "collectedData": Object {},
   "collectedEntities": Array [
     Object {
       "_class": Array [
@@ -88,12 +89,15 @@ Object {
       "displayName": "HAS",
     },
   ],
+  "encounteredEntityKeys": Set {
+    "T_kwDOB0VI3c4Ab0na",
+    "T_kwDOB0VI3c4AeONM",
+    "O_kgDOB0VI3Q",
+  },
   "encounteredTypes": Array [
     "github_account",
     "github_team",
     "github_account_has_team",
   ],
-  "numCollectedEntities": 2,
-  "numCollectedRelationships": 2,
 }
 `;

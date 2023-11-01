@@ -8,7 +8,7 @@ exports[`OrgRepositoriesQuery pagination of org repos 1`] = `
           repositories(first: $maxLimit, after: $repoCursor) {
             nodes {
               id
-					    ...on Repository {
+              ...on Repository {
     name
     nameWithOwner
     url

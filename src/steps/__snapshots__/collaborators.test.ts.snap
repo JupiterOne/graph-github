@@ -2,6 +2,14 @@
 
 exports[`fetchCollaborators exec handler 1`] = `
 Object {
+  "collectedData": Object {
+    "GITHUB_OUTSIDE_COLLABORATOR_ARRAY": Array [
+      Object {
+        "key": "U_kgDOBhhlDg",
+        "login": "spjupiter",
+      },
+    ],
+  },
   "collectedEntities": Array [
     Object {
       "_class": Array [
@@ -2206,6 +2214,35 @@ Object {
       "triagePermission": true,
     },
   ],
+  "encounteredEntityKeys": Set {
+    "U_kgDOBhhlDg",
+    "O_kgDOB0VI3Q",
+    "R_kgDOHNYdzQ",
+    "R_kgDOIudGfA",
+    "R_kgDOIudewQ",
+    "R_kgDOIwifvQ",
+    "R_kgDOIx9bTw",
+    "R_kgDOI2pIIA",
+    "R_kgDOI2pLFA",
+    "R_kgDOI2pL-A",
+    "R_kgDOI2pNdw",
+    "R_kgDOI8BHIg",
+    "R_kgDOJjTBjA",
+    "R_kgDOJyTpow",
+    "R_kgDOJ54ckg",
+    "R_kgDOKN6ggA",
+    "MDQ6VXNlcjEyODM4ODQ=",
+    "MDQ6VXNlcjIzMzYyNjI=",
+    "MDQ6VXNlcjU5MjMwMDI=",
+    "MDQ6VXNlcjcxOTA2OTY=",
+    "MDQ6VXNlcjEwMDkwNjQ3",
+    "MDQ6VXNlcjE2NTYyMDg1",
+    "MDQ6VXNlcjMxMjE4NTA3",
+    "MDQ6VXNlcjU1NzcxODIz",
+    "MDQ6VXNlcjczODM2MDA4",
+    "U_kgDOBaVAgQ",
+    "U_kgDOB-K3TQ",
+  },
   "encounteredTypes": Array [
     "github_account",
     "github_repo",
@@ -2215,7 +2252,5 @@ Object {
     "github_user_manages_account",
     "github_repo_allows_user",
   ],
-  "numCollectedEntities": 1,
-  "numCollectedRelationships": 155,
 }
 `;

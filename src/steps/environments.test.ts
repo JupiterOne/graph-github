@@ -1,11 +1,10 @@
-import { Recording } from '@jupiterone/integration-sdk-testing';
-import { sanitizeConfig } from '../config';
-import { environmentSteps } from './environments';
-import { integrationConfig } from '../../test/config';
+import {
+  Recording,
+  executeStepWithDependencies,
+} from '@jupiterone/integration-sdk-testing';
+import { buildStepTestConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import { GithubEntities, Relationships } from '../constants';
-import { invocationConfig } from '..';
-import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
+import { Steps } from '../constants';
 
 jest.setTimeout(20000);
 
@@ -19,33 +18,10 @@ test('fetchEnvironments exec handler', async () => {
     directory: __dirname,
     name: 'environments',
   });
-  sanitizeConfig(integrationConfig);
 
-  const { collectedEntities, collectedRelationships, encounteredTypes } =
-    await executeStepWithDependencies({
-      stepId: environmentSteps[0].id,
-      invocationConfig: invocationConfig as any,
-      instanceConfig: integrationConfig,
-    });
+  const stepConfig = buildStepTestConfig(Steps.FETCH_ENVIRONMENTS);
+  const stepResults = await executeStepWithDependencies(stepConfig);
 
-  expect({
-    numCollectedEntities: collectedEntities.length,
-    numCollectedRelationships: collectedRelationships.length,
-    collectedEntities: collectedEntities,
-    collectedRelationships: collectedRelationships,
-    encounteredTypes: encounteredTypes,
-  }).toMatchSnapshot();
-
-  const environments = collectedEntities.filter(
-    (e) => e._type === GithubEntities.GITHUB_ENVIRONMENT._type,
-  );
-  expect(environments.length).toBeGreaterThan(0);
-  expect(environments).toMatchGraphObjectSchema(
-    GithubEntities.GITHUB_ENVIRONMENT,
-  );
-  // relationships
-  const relationships = collectedRelationships.filter(
-    (e) => e._type === Relationships.REPO_HAS_ENVIRONMENT._type,
-  );
-  expect(relationships.length).toBeGreaterThan(0);
+  expect(stepResults).toMatchStepMetadata(stepConfig);
+  expect(stepResults).toMatchSnapshot();
 });

@@ -2,6 +2,18 @@
 
 exports[`fetchApps exec handler 1`] = `
 Object {
+  "collectedData": Object {
+    "GITHUB_APP_BY_APP_ID": Map {
+      "278393" => "GitHubAppInstallation_32841752",
+      "157162" => "GitHubAppInstallation_33163496",
+      "164297" => "GitHubAppInstallation_33428980",
+      "19640" => "GitHubAppInstallation_37325234",
+      "334548" => "GitHubAppInstallation_37574647",
+      "336196" => "GitHubAppInstallation_37691598",
+      "367612" => "GitHubAppInstallation_40105103",
+      "384414" => "GitHubAppInstallation_41350494",
+    },
+  },
   "collectedEntities": Array [
     Object {
       "_class": Array [
@@ -784,12 +796,21 @@ Object {
       "displayName": "INSTALLED",
     },
   ],
+  "encounteredEntityKeys": Set {
+    "GitHubAppInstallation_32841752",
+    "GitHubAppInstallation_33163496",
+    "GitHubAppInstallation_33428980",
+    "GitHubAppInstallation_37325234",
+    "GitHubAppInstallation_37574647",
+    "GitHubAppInstallation_37691598",
+    "GitHubAppInstallation_40105103",
+    "GitHubAppInstallation_41350494",
+    "O_kgDOB0VI3Q",
+  },
   "encounteredTypes": Array [
     "github_account",
     "github_app",
     "github_account_installed_app",
   ],
-  "numCollectedEntities": 8,
-  "numCollectedRelationships": 8,
 }
 `;

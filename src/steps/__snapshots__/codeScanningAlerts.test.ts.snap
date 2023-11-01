@@ -2,6 +2,7 @@
 
 exports[`fetchCodeScanningAlerts exec handler 1`] = `
 Object {
+  "collectedData": Object {},
   "collectedEntities": Array [
     Object {
       "_class": Array [
@@ -4718,6 +4719,52 @@ A broken or weak cryptographic algorithm depends on sensitive data from an acces
       "displayName": "HAS",
     },
   ],
+  "encounteredEntityKeys": Set {
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_23",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_22",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_21",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_20",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_19",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_18",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_17",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_16",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_15",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_14",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_13",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_12",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_11",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_10",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_9",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_8",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_7",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_6",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_5",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_4",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_3",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_2",
+    "ghcsa_JupiterOne-Sandbox/integration-deployments-test_1",
+    "ghcsa_JupiterOne-Sandbox/test-repo2_4",
+    "ghcsa_JupiterOne-Sandbox/test-repo2_3",
+    "ghcsa_JupiterOne-Sandbox/test-repo2_2",
+    "ghcsa_JupiterOne-Sandbox/test-repo2_1",
+    "ghcsa_JupiterOne-Sandbox/test-repo1_2",
+    "ghcsa_JupiterOne-Sandbox/test-repo1_1",
+    "O_kgDOB0VI3Q",
+    "R_kgDOHNYdzQ",
+    "R_kgDOIudGfA",
+    "R_kgDOIudewQ",
+    "R_kgDOIwifvQ",
+    "R_kgDOIx9bTw",
+    "R_kgDOI2pIIA",
+    "R_kgDOI2pLFA",
+    "R_kgDOI2pL-A",
+    "R_kgDOI2pNdw",
+    "R_kgDOI8BHIg",
+    "R_kgDOJjTBjA",
+    "R_kgDOJyTpow",
+    "R_kgDOJ54ckg",
+    "R_kgDOKN6ggA",
+  },
   "encounteredTypes": Array [
     "github_account",
     "github_repo",
@@ -4725,7 +4772,5 @@ A broken or weak cryptographic algorithm depends on sensitive data from an acces
     "github_code_scanning_finding",
     "github_repo_has_code_scanning_finding",
   ],
-  "numCollectedEntities": 29,
-  "numCollectedRelationships": 29,
 }
 `;

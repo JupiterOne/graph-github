@@ -1,13 +1,15 @@
-import { Recording } from '@jupiterone/integration-sdk-testing';
-import { sanitizeConfig } from '../config';
-import { branchProtectionRulesSteps } from './branchProtectionRules';
-import { integrationConfig } from '../../test/config';
-import { setupGithubRecording } from '../../test/recording';
-import { GithubEntities, Relationships } from '../constants';
-import { invocationConfig } from '..';
-import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
-
 jest.setTimeout(40000);
+
+import {
+  Recording,
+  executeStepWithDependencies,
+} from '@jupiterone/integration-sdk-testing';
+import { buildStepTestConfig } from '../../test/config';
+import { setupGithubRecording } from '../../test/recording';
+import { Relationships, Steps } from '../constants';
+
+const filterOutAppsRelationships = (r: any) =>
+  r._type !== Relationships.APP_OVERRIDES_BRANCH_PROTECTION_RULE._type;
 
 let recording: Recording;
 afterEach(async () => {
@@ -19,59 +21,34 @@ test('fetchBranchProtectionRules exec handler', async () => {
     directory: __dirname,
     name: 'branchProtectionRules',
   });
-  sanitizeConfig(integrationConfig);
-
-  const { collectedEntities, collectedRelationships, encounteredTypes } =
-    await executeStepWithDependencies({
-      stepId: branchProtectionRulesSteps[0].id,
-      invocationConfig: invocationConfig as any,
-      instanceConfig: integrationConfig,
-    });
+  const stepConfig = buildStepTestConfig(Steps.FETCH_BRANCH_PROTECTION_RULES);
+  const stepResults = await executeStepWithDependencies(stepConfig);
 
   expect({
-    numCollectedEntities: collectedEntities.length,
-    numCollectedRelationships: collectedRelationships.length,
-    collectedEntities: collectedEntities,
-    collectedRelationships: collectedRelationships,
-    encounteredTypes: encounteredTypes,
-  }).toMatchSnapshot();
-
-  const branchProtectionRules = collectedEntities.filter(
-    (e) => e._type === GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
-  );
-
-  expect(branchProtectionRules.length).toBeGreaterThan(0);
-  expect(branchProtectionRules).toMatchGraphObjectSchema({
-    _class: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._class,
+    ...stepResults,
+    collectedRelationships: stepResults.collectedRelationships.filter(
+      filterOutAppsRelationships,
+    ),
+  }).toMatchStepMetadata({
+    ...stepConfig,
+    invocationConfig: {
+      ...stepConfig.invocationConfig,
+      integrationSteps: stepConfig.invocationConfig.integrationSteps.map(
+        (s) => ({
+          ...s,
+          relationships: s.relationships.filter(filterOutAppsRelationships),
+        }),
+      ),
+    },
   });
 
-  // relationships
-  const branchProtectionRulesType = collectedRelationships.filter(
-    (e) => e._type === Relationships.REPO_HAS_BRANCH_PROTECTION_RULE._type,
-  );
-  expect(branchProtectionRulesType.length).toBeGreaterThan(0);
-
-  //Test for users
-  const branchProtectionRulesMemberOverrideType = collectedRelationships.filter(
-    (e) =>
-      e._type === Relationships.USER_OVERRIDES_BRANCH_PROTECTION_RULE._type,
-  );
-  expect(branchProtectionRulesMemberOverrideType.length).toBeGreaterThanOrEqual(
-    0,
-  );
-
-  //Test for Teams
-  const branchProtectionRulesTeamOverrideType = collectedRelationships.filter(
-    (e) =>
-      e._type === Relationships.TEAM_OVERRIDES_BRANCH_PROTECTION_RULE._type,
-  );
-  expect(branchProtectionRulesTeamOverrideType.length).toBeGreaterThanOrEqual(
-    0,
-  );
-
-  //Test for Apps
-  const branchProtectionRulesAppOverrideType = collectedRelationships.filter(
-    (e) => e._type === Relationships.APP_OVERRIDES_BRANCH_PROTECTION_RULE._type,
-  );
+  // Test for Apps
+  const branchProtectionRulesAppOverrideType =
+    stepResults.collectedRelationships.filter(
+      (r) =>
+        r._type === Relationships.APP_OVERRIDES_BRANCH_PROTECTION_RULE._type,
+    );
   expect(branchProtectionRulesAppOverrideType.length).toBeGreaterThanOrEqual(0);
+
+  expect(stepResults).toMatchSnapshot();
 });

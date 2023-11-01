@@ -2,6 +2,7 @@
 
 exports[`fetchEnvironments exec handler 1`] = `
 Object {
+  "collectedData": Object {},
   "collectedEntities": Array [
     Object {
       "_class": Array [
@@ -280,6 +281,28 @@ Object {
       "displayName": "HAS",
     },
   ],
+  "encounteredEntityKeys": Set {
+    "EN_kwDOI2pL-M4xz9t5",
+    "EN_kwDOI2pNd84y8rzR",
+    "EN_kwDOI2pNd84y8sBg",
+    "EN_kwDOI8BHIs4y8yFS",
+    "EN_kwDOKN6ggM5M0Wjp",
+    "O_kgDOB0VI3Q",
+    "R_kgDOHNYdzQ",
+    "R_kgDOIudGfA",
+    "R_kgDOIudewQ",
+    "R_kgDOIwifvQ",
+    "R_kgDOIx9bTw",
+    "R_kgDOI2pIIA",
+    "R_kgDOI2pLFA",
+    "R_kgDOI2pL-A",
+    "R_kgDOI2pNdw",
+    "R_kgDOI8BHIg",
+    "R_kgDOJjTBjA",
+    "R_kgDOJyTpow",
+    "R_kgDOJ54ckg",
+    "R_kgDOKN6ggA",
+  },
   "encounteredTypes": Array [
     "github_account",
     "github_repo",
@@ -287,7 +310,5 @@ Object {
     "github_environment",
     "github_repo_has_environment",
   ],
-  "numCollectedEntities": 5,
-  "numCollectedRelationships": 5,
 }
 `;

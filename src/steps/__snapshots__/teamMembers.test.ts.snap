@@ -2,6 +2,7 @@
 
 exports[`fetchTeamMembers exec handler 1`] = `
 Object {
+  "collectedData": Object {},
   "collectedEntities": Array [],
   "collectedRelationships": Array [
     Object {
@@ -133,6 +134,22 @@ Object {
       "displayName": "HAS",
     },
   ],
+  "encounteredEntityKeys": Set {
+    "O_kgDOB0VI3Q",
+    "T_kwDOB0VI3c4Ab0na",
+    "T_kwDOB0VI3c4AeONM",
+    "MDQ6VXNlcjEyODM4ODQ=",
+    "MDQ6VXNlcjIzMzYyNjI=",
+    "MDQ6VXNlcjU5MjMwMDI=",
+    "MDQ6VXNlcjcxOTA2OTY=",
+    "MDQ6VXNlcjEwMDkwNjQ3",
+    "MDQ6VXNlcjE2NTYyMDg1",
+    "MDQ6VXNlcjMxMjE4NTA3",
+    "MDQ6VXNlcjU1NzcxODIz",
+    "MDQ6VXNlcjczODM2MDA4",
+    "U_kgDOBaVAgQ",
+    "U_kgDOB-K3TQ",
+  },
   "encounteredTypes": Array [
     "github_account",
     "github_team",
@@ -143,7 +160,5 @@ Object {
     "github_team_has_user",
     "github_user_manages_team",
   ],
-  "numCollectedEntities": 0,
-  "numCollectedRelationships": 16,
 }
 `;

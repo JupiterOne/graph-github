@@ -1,11 +1,10 @@
-import { Recording } from '@jupiterone/integration-sdk-testing';
-import { sanitizeConfig } from '../config';
-import { orgSecretSteps } from './orgSecrets';
-import { integrationConfig } from '../../test/config';
+import {
+  Recording,
+  executeStepWithDependencies,
+} from '@jupiterone/integration-sdk-testing';
+import { buildStepTestConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import { GithubEntities, Relationships } from '../constants';
-import { invocationConfig } from '..';
-import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
+import { Steps } from '../constants';
 
 jest.setTimeout(20000);
 
@@ -19,37 +18,10 @@ test('fetchOrgSecrets exec handler', async () => {
     directory: __dirname,
     name: 'orgSecrets',
   });
-  sanitizeConfig(integrationConfig);
 
-  const { collectedEntities, collectedRelationships, encounteredTypes } =
-    await executeStepWithDependencies({
-      stepId: orgSecretSteps[0].id,
-      invocationConfig: invocationConfig as any,
-      instanceConfig: integrationConfig,
-    });
+  const stepConfig = buildStepTestConfig(Steps.FETCH_ORG_SECRETS);
+  const stepResults = await executeStepWithDependencies(stepConfig);
 
-  expect({
-    numCollectedEntities: collectedEntities.length,
-    numCollectedRelationships: collectedRelationships.length,
-    collectedEntities: collectedEntities,
-    collectedRelationships: collectedRelationships,
-    encounteredTypes: encounteredTypes,
-  }).toMatchSnapshot();
-
-  const orgSecrets = collectedEntities.filter(
-    (e) => e._type === GithubEntities.GITHUB_ORG_SECRET._type,
-  );
-  expect(orgSecrets.length).toBeGreaterThan(0);
-  expect(orgSecrets).toMatchGraphObjectSchema(GithubEntities.GITHUB_ORG_SECRET);
-
-  // relationships
-  const accountHasOrgSecretRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.ACCOUNT_HAS_ORG_SECRET._type,
-  );
-  expect(accountHasOrgSecretRels.length).toBeGreaterThan(0);
-
-  const repoUsesOrgSecretRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.REPO_USES_ORG_SECRET._type,
-  );
-  expect(repoUsesOrgSecretRels.length).toBeGreaterThan(0);
+  expect(stepResults).toMatchStepMetadata(stepConfig);
+  expect(stepResults).toMatchSnapshot();
 });

@@ -38,6 +38,7 @@ import {
   CodeScanningAlertQueryResponse,
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
+  RepoTopicQueryResponse,
   SecretQueryResponse,
   SecretScanningAlertQueryResponse,
 } from './client/RESTClient/types';
@@ -408,6 +409,26 @@ export class APIClient {
       for (const env of environments) {
         await iteratee(env);
       }
+    }
+  }
+
+  /**
+   * Iterates each repository topic.
+   *
+   * @param repoName
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateTopics(
+    repoName: string,
+    iteratee: ResourceIteratee<RepoTopicQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const topics: RepoTopicQueryResponse[] =
+      await this.graphQLClient.getRepositoryTopics(repoName);
+    for (const topic of topics) {
+      await iteratee(topic);
     }
   }
 

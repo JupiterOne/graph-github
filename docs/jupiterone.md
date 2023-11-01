@@ -222,6 +222,11 @@ The following mapped relationships are created:
 | --------------------- | --------------------- | --------------------- | --------- |
 | `github_finding`      | **IS**                | `*cve*`               | FORWARD   |
 | `github_finding`      | **EXPLOITS**          | `*cwe*`               | FORWARD   |
+| `github_issue`        | **ASSIGNED**          | `*github_user*`       | REVERSE   |
+| `github_issue`        | **CREATED**           | `*github_user*`       | REVERSE   |
+| `github_pullrequest`  | **APPROVED**          | `*github_user*`       | REVERSE   |
+| `github_pullrequest`  | **OPENED**            | `*github_user*`       | REVERSE   |
+| `github_pullrequest`  | **REVIEWED**          | `*github_user*`       | REVERSE   |
 
 <!--
 ********************************************************************************

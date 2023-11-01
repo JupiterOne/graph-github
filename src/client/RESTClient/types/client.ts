@@ -203,6 +203,8 @@ export interface RepoEnvironmentQueryResponse {
   envSecrets?: SecretQueryResponse[];
 }
 
+export type RepoTopicQueryResponse = string;
+
 interface ProtectionRule {
   id: string;
   node_id: string;

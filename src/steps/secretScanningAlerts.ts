@@ -56,7 +56,12 @@ export const secretScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Fetch Secret Scanning Findings',
     entities: [GithubEntities.GITHUB_SECRET_SCANNING_ALERT],
     relationships: [Relationships.REPO_HAS_SECRET_SCANNING_FINDING],
-    dependsOn: [Steps.FETCH_REPOS],
+    dependsOn: [
+      Steps.FETCH_REPOS,
+      // Added to execute steps serially.
+      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
+      Steps.FETCH_ENV_SECRETS,
+    ],
     ingestionSourceId: IngestionSources.SECRET_SCANNING_ALERTS,
     executionHandler: fetchSecretScanningAlerts,
   },

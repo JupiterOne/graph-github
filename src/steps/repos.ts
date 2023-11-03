@@ -13,12 +13,14 @@ import {
   decorateRepoEntityWithPagesInfo,
   toRepositoryEntity,
 } from '../sync/converters';
-import { AccountEntity, RepoKeyAndName } from '../types';
+import { AccountEntity, RepoData } from '../types';
 import {
   GithubEntities,
   GITHUB_REPO_TAGS_ARRAY,
   Steps,
   Relationships,
+  BRANCH_PROTECTION_RULE_TOTAL_BY_REPO,
+  COLLABORATORS_TOTAL_BY_REPO,
 } from '../constants';
 
 export async function fetchRepos({
@@ -38,46 +40,54 @@ export async function fetchRepos({
     );
   }
 
-  const repoTags: RepoKeyAndName[] = []; //for use later in PRs
+  const repoTags = new Map<string, RepoData>();
+  const branchProtectionRuleTotalByRepo = new Map<string, number>();
+  const collaboratorsTotalByRepo = new Map<string, number>();
 
   await apiClient.iterateRepos(async (repo) => {
     const repoOwner = repo.nameWithOwner.toLowerCase().split('/')[0];
     const repoEntity = toRepositoryEntity(repo);
 
-    await Promise.all([
-      (async () => {
-        const tags: string[] = [];
-        if (!repo.isPrivate) {
-          await apiClient.iterateTags(repoOwner, repo.name, (tag) => {
-            tags.push(tag.name);
-          });
-        }
-        repoEntity.tags = tags;
-      })(),
-      (async () => {
-        if (apiClient.scopes.repoPages) {
-          const pagesInfo = await apiClient.fetchPagesInfoForRepo(
-            repoEntity.owner,
-            repoEntity.name,
-          );
-          decorateRepoEntityWithPagesInfo(repoEntity, pagesInfo);
-        }
-      })(),
-      (async () => {
-        const topics: string[] = [];
-        await apiClient.iterateTopics(repo.name, (topic) => {
-          topics.push(topic);
-        });
-        repoEntity.topics = topics;
-      })(),
-    ]);
+    // Fetch tags
+    const tags: string[] = [];
+    if (!repo.isPrivate) {
+      await apiClient.iterateTags(repoOwner, repo.name, (tag) => {
+        tags.push(tag.name);
+      });
+    }
+    repoEntity.tags = tags;
+
+    // Fetch Repo Pages
+    if (apiClient.scopes.repoPages) {
+      const pagesInfo = await apiClient.fetchPagesInfoForRepo(
+        repoEntity.owner,
+        repoEntity.name,
+      );
+      decorateRepoEntityWithPagesInfo(repoEntity, pagesInfo);
+    }
+
+    // Fetch Repo Topics
+    const topics: string[] = [];
+    await apiClient.iterateTopics(repo.name, (topic) => {
+      topics.push(topic);
+    });
+    repoEntity.topics = topics;
+
     await jobState.addEntity(repoEntity);
 
-    repoTags.push({
+    repoTags.set(repoEntity._key, {
       _key: repoEntity._key,
       name: repoEntity.name,
       databaseId: repoEntity.databaseId,
     });
+    branchProtectionRuleTotalByRepo.set(
+      repoEntity._key,
+      repo.branchProtectionRules.totalCount ?? 0,
+    );
+    collaboratorsTotalByRepo.set(
+      repoEntity._key,
+      repo.collaborators.totalCount ?? 0,
+    );
 
     await jobState.addRelationship(
       createDirectRelationship({
@@ -88,7 +98,14 @@ export async function fetchRepos({
     );
   });
 
-  await jobState.setData(GITHUB_REPO_TAGS_ARRAY, repoTags);
+  await Promise.all([
+    jobState.setData(GITHUB_REPO_TAGS_ARRAY, repoTags),
+    jobState.setData(
+      BRANCH_PROTECTION_RULE_TOTAL_BY_REPO,
+      branchProtectionRuleTotalByRepo,
+    ),
+    jobState.setData(COLLABORATORS_TOTAL_BY_REPO, collaboratorsTotalByRepo),
+  ]);
 }
 
 export const repoSteps: IntegrationStep<IntegrationConfig>[] = [

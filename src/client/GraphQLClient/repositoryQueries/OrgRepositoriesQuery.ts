@@ -35,6 +35,9 @@ const buildQuery: BuildQuery<string, QueryState> = (
             nodes {
               id
               ...${fragments.repositoryFields}
+              branchProtectionRules {
+                totalCount
+              }
             }
             pageInfo {
               endCursor

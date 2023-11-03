@@ -19,8 +19,7 @@ interface QueryState extends BaseQueryState {
 }
 
 export type QueryParams = {
-  repoName: string;
-  repoOwner: string;
+  repoIds: string[];
   gheServerVersion?: string;
 };
 
@@ -34,16 +33,17 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
 
   const query = `
       query (
-        $repoName: String!
-        $repoOwner: String!
+        $repoIds: [ID!]!
         $maxLimit: Int!
       ) {
-          repository(name: $repoName, owner: $repoOwner) {
-            id
-            name
-            branchProtectionRules(first: $maxLimit) {
-              nodes {
-                ${branchProtectionRuleFields(versionSafeFragments)}
+          nodes(ids: $repoIds) {
+            ...on Repository {
+              id
+              name
+              branchProtectionRules(first: $maxLimit) {
+                nodes {
+                  ${branchProtectionRuleFields(versionSafeFragments)}
+                }
               }
             }
           }
@@ -57,8 +57,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      repoName: queryParams.repoName,
-      repoOwner: queryParams.repoOwner,
+      repoIds: queryParams.repoIds,
       maxLimit: MAX_REQUESTS_LIMIT,
     },
   };
@@ -108,7 +107,7 @@ const iterateBranchProtectionRules = async (
   let queryState: QueryState = {};
   const executable = buildQuery(queryParams, queryState);
   const response = await execute(executable);
-  console.log('Executed query for branch protection rules');
+  console.log('Executed batched query for branch protection rules');
   queryState = await processResponseData(response, iteratee);
 
   const queryCost = queryState?.rateLimit?.cost ?? 0;

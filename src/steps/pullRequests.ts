@@ -339,6 +339,9 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
       Steps.FETCH_REPOS,
       Steps.FETCH_USERS,
       Steps.FETCH_COLLABORATORS,
+      // Added to execute steps serially.
+      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
+      Steps.FETCH_ISSUES,
     ],
     executionHandler: fetchPrs,
   },

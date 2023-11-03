@@ -200,7 +200,7 @@ export interface RepoEntity extends Entity {
 }
 
 //to cut down on memory usage, this type will be passed between steps for relationship building
-export interface RepoKeyAndName {
+export interface RepoData {
   _key: string; // an alphanumeric, used for most repo indexing
   name: string; // a string, used for some REST API calls
   databaseId: string; // typically an integer, used to retrieve env secrets REST API call

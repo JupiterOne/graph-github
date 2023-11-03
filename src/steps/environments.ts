@@ -8,7 +8,7 @@ import {
 
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { RepoKeyAndName, EnvironmentEntity } from '../types';
+import { RepoData, EnvironmentEntity } from '../types';
 import {
   GithubEntities,
   GITHUB_REPO_TAGS_ARRAY,
@@ -17,7 +17,6 @@ import {
   Relationships,
 } from '../constants';
 import { toEnvironmentEntity } from '../sync/converters';
-import pMap from 'p-map';
 
 export async function fetchEnvironments({
   instance,
@@ -27,7 +26,7 @@ export async function fetchEnvironments({
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
 
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+  const repoTags = await jobState.getData<Map<string, RepoData>>(
     GITHUB_REPO_TAGS_ARRAY,
   );
   if (!repoTags) {
@@ -36,31 +35,27 @@ export async function fetchEnvironments({
     );
   }
 
-  await pMap(
-    repoTags,
-    async (repoTag) => {
-      await apiClient.iterateEnvironments(repoTag.name, async (env) => {
-        const envEntity = (await jobState.addEntity(
-          toEnvironmentEntity(
-            env,
-            apiClient.graphQLClient.login,
-            config.githubApiBaseUrl,
-            repoTag,
-          ),
-        )) as EnvironmentEntity;
-        await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.HAS,
-            fromType: GithubEntities.GITHUB_REPO._type,
-            toType: GithubEntities.GITHUB_ENVIRONMENT._type,
-            fromKey: repoTag._key,
-            toKey: envEntity._key,
-          }),
-        );
-      });
-    },
-    { concurrency: 2 },
-  );
+  for (const [repoKey, repoData] of repoTags) {
+    await apiClient.iterateEnvironments(repoData.name, async (env) => {
+      const envEntity = (await jobState.addEntity(
+        toEnvironmentEntity(
+          env,
+          apiClient.graphQLClient.login,
+          config.githubApiBaseUrl,
+          repoData,
+        ),
+      )) as EnvironmentEntity;
+      await jobState.addRelationship(
+        createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          fromType: GithubEntities.GITHUB_REPO._type,
+          toType: GithubEntities.GITHUB_ENVIRONMENT._type,
+          fromKey: repoKey,
+          toKey: envEntity._key,
+        }),
+      );
+    });
+  }
 }
 
 export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
@@ -70,7 +65,12 @@ export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Fetch Environments',
     entities: [GithubEntities.GITHUB_ENVIRONMENT],
     relationships: [Relationships.REPO_HAS_ENVIRONMENT],
-    dependsOn: [Steps.FETCH_REPOS],
+    dependsOn: [
+      Steps.FETCH_REPOS,
+      // Added to execute steps serially.
+      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
+      Steps.FETCH_REPO_SECRETS,
+    ],
     executionHandler: fetchEnvironments,
   },
 ];

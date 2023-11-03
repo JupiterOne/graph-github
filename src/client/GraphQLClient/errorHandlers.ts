@@ -57,6 +57,8 @@ export const handleForbiddenErrors = (
   return handleTypeErrors(errors, logger, 'FORBIDDEN');
 };
 
+type DelayMs = number;
+
 /**
  * Handles known errors.
  * @param error
@@ -69,7 +71,8 @@ export const retryErrorHandle = async (
   logger: IntegrationLogger,
   attemptContext: AttemptContext,
   refreshToken: () => Promise<void>,
-) => {
+): Promise<DelayMs> => {
+  let delayMs = 0;
   if (error instanceof GraphqlResponseError) {
     /* GitHub has "Secondary Rate Limits" in case of excessive polling or very costly API calls.
      * GitHub guidance is to "wait a few minutes" when we get one of these errors.
@@ -82,23 +85,26 @@ export const retryErrorHandle = async (
       Array.isArray(error.errors) &&
       error.errors?.some((e) => e.type === 'RATE_LIMITED')
     ) {
-      logger.info({ attemptContext, error }, 'Rate limiting message received.');
+      logger.warn({ attemptContext, error }, 'Rate limiting message received.');
     }
   } else if (error.message?.includes('Bad credentials')) {
-    logger.info({ error }, 'Bad credentials: Refreshing token.');
+    logger.warn({ error }, 'Bad credentials: Refreshing token.');
     await refreshToken();
   } else if (error.message?.includes('exceeded a secondary rate limit')) {
-    logger.info(
+    logger.warn(
       { attemptContext, error },
       '"Secondary Rate Limit" message received. Waiting before retrying.',
     );
-    await sleep(300_000);
+    const retryAfter =
+      (error.response?.headers?.['retry-after'] || 0) * 1000 || 120_000;
+    delayMs = retryAfter;
   } else if (
     error.message?.includes('Something went wrong while executing your query')
   ) {
-    logger.info(
+    logger.warn(
       { attemptContext, error },
       `A downstream error occurred on the GitHub API. It may have been caused by a large query thus causing a timeout.`,
     );
   }
+  return delayMs;
 };

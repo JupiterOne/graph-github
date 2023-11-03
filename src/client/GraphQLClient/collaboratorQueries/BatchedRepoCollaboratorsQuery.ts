@@ -16,8 +16,7 @@ interface QueryState extends BaseQueryState {
 }
 
 type QueryParams = {
-  login: string;
-  repoName: string;
+  repoIds: string[];
 };
 
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
@@ -25,21 +24,27 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   queryState,
 ) => {
   const query = `
-    query ($login: String!, $repoName: String!, $maxLimit: Int!, $collaboratorCursor: String) {
-      repository(name: $repoName, owner: $login) {
-        id
-        collaborators(first: $maxLimit, after: $collaboratorCursor) {
-          edges {
-            node {
-              id
-              name
-              login
+    query (
+      $repoIds: [ID!]!
+      $maxLimit: Int!
+      $collaboratorCursor: String
+    ) {
+      nodes(ids: $repoIds) {
+        ...on Repository {
+          id
+          collaborators(first: $maxLimit, after: $collaboratorCursor) {
+            edges {
+              node {
+                id
+                name
+                login
+              }
+              permission
             }
-            permission
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
           }
         }
       }
@@ -67,7 +72,8 @@ const processResponseData: ProcessResponse<
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
   const collaboratorEdges = responseData.repository?.collaborators?.edges ?? [];
-  console.log('Executed query for repo collaborators');
+
+  console.log('Executed batched query for repo collaborators');
 
   for (const edge of collaboratorEdges) {
     if (!utils.hasProperties(edge?.node)) {

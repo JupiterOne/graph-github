@@ -211,6 +211,13 @@ export default class OrganizationAccountClient {
     );
   }
 
+  async iterateBatchedRepoCollaborators(
+    repoIds: string[],
+    iteratee: ResourceIteratee<CollaboratorResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedRepoCollaborators(repoIds, iteratee);
+  }
+
   /**
    * Calls the GraphQL client to iterate over pull request entities.
    * @param repo
@@ -372,6 +379,18 @@ export default class OrganizationAccountClient {
     return await this.v4.iterateRepoBranchProtectionRules(
       this.login,
       repoName,
+      gheServerVersion,
+      iteratee,
+    );
+  }
+
+  async iterateBatchedRepoBranchProtectionRules(
+    repoIds: string[],
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
+    gheServerVersion?: string,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedRepoBranchProtectionRules(
+      repoIds,
       gheServerVersion,
       iteratee,
     );

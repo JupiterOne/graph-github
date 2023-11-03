@@ -176,6 +176,12 @@ export interface OrgRepoQueryResponse extends Node {
   pushedAt?: string;
   rebaseMergeAllowed?: boolean;
   visibility: RepositoryVisibility;
+  branchProtectionRules: {
+    totalCount: number;
+  };
+  collaborators: {
+    totalCount: number;
+  };
 }
 
 /**
@@ -420,6 +426,7 @@ export interface VulnerabilityAlertResponse extends Node {
 }
 
 export interface BranchProtectionRuleResponse extends Node {
+  repoId: string;
   repoName: string;
   requiresLinearHistory: boolean;
   requiredApprovingReviewCount: number;

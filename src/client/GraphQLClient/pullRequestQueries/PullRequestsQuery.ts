@@ -190,9 +190,10 @@ const iteratePullRequests: IteratePagination<
   logger,
 ): Promise<RateLimitStepSummary> => {
   const originalMaxSearchLimit = queryParams.maxSearchLimit;
-  const fetchBySinglePRState = {
+  const requestLimitState = {
     isActive: false,
     count: originalMaxSearchLimit,
+    limit: originalMaxSearchLimit,
   };
   let pullRequestFetched = 0;
   let queryCost = 0;
@@ -201,16 +202,17 @@ const iteratePullRequests: IteratePagination<
 
   const countIteratee = async (pullRequest: PullRequestResponse) => {
     pullRequestFetched++;
-    if (fetchBySinglePRState.isActive) {
-      fetchBySinglePRState.count--;
-      if (fetchBySinglePRState.count === 0) {
+    if (requestLimitState.isActive) {
+      requestLimitState.count--;
+      if (requestLimitState.count === 0) {
         // reset state to continue requesting as default
-        fetchBySinglePRState.isActive = false;
-        fetchBySinglePRState.count = originalMaxSearchLimit;
+        requestLimitState.isActive = false;
+        requestLimitState.count = originalMaxSearchLimit;
+        requestLimitState.limit = originalMaxSearchLimit;
         queryParams.maxSearchLimit = originalMaxSearchLimit;
         logger?.info(
           { queryParams, queryState },
-          'Finish querying page by single PR.',
+          'Finish querying page by half the search limit.',
         );
       }
     }
@@ -224,15 +226,21 @@ const iteratePullRequests: IteratePagination<
     try {
       response = await execute(executable);
     } catch (err) {
-      if (
-        err.message?.includes('This may be the result of a timeout') &&
-        !fetchBySinglePRState.isActive
-      ) {
-        fetchBySinglePRState.isActive = true;
-        queryParams.maxSearchLimit = 1;
+      if (err.message?.includes('This may be the result of a timeout')) {
+        requestLimitState.isActive = true;
+        const newSearchLimit = Math.max(
+          Math.floor(requestLimitState.limit / 2),
+          1,
+        );
+        if (newSearchLimit === requestLimitState.limit) {
+          // prevent infinite loop: newSearchLimit is 1 and it already failed using 1
+          throw err;
+        }
+        requestLimitState.limit = newSearchLimit;
+        queryParams.maxSearchLimit = newSearchLimit;
         logger?.info(
           { queryParams, queryState },
-          'Search Pull Requests timeout. Start querying by single PR.',
+          'Search Pull Requests timeout. Start querying by half the search limit.',
         );
         continue;
       } else {

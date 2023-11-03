@@ -84,6 +84,12 @@ export default {
     rebaseMergeAllowed
     url
     visibility
+    branchProtectionRules {
+      totalCount
+    }
+    collaborators {
+      totalCount
+    }
   }`,
   repositoryOwnerFields: `on RepositoryOwner {
     login

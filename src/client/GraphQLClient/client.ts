@@ -58,8 +58,10 @@ import TagsQuery from './tagQueries/TagsQuery';
 import ReviewsQuery from './pullRequestQueries/ReviewsQuery';
 import LabelsQuery from './pullRequestQueries/LabelsQuery';
 import CommitsQuery from './pullRequestQueries/CommitsQuery';
+import BatchedBranchProtectionRulesQuery from './branchProtectionRulesQueries/BatchedBranchProtectionRulesQuery';
+import BatchedRepoCollaboratorsQuery from './collaboratorQueries/BatchedRepoCollaboratorsQuery';
 
-const FIVE_MINUTES_IN_MILLIS = 300000;
+const FIVE_MINUTES_IN_MILLIS = 300_000;
 
 export class GitHubGraphQLClient {
   private readonly graphqlUrl: string;
@@ -410,6 +412,29 @@ export class GitHubGraphQLClient {
   }
 
   /**
+   * Iterate repository collaborators within an organization.
+   * @param login aka organization
+   * @param repoName
+   * @param iteratee
+   */
+  public async iterateBatchedRepoCollaborators(
+    repoIds: string[],
+    iteratee: ResourceIteratee<CollaboratorResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedRepoCollaboratorsQuery.iterateCollaborators(
+        {
+          repoIds,
+        },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  /**
    * Iterates over repositories for the given org & team.
    * @param login - aka organization
    * @param teamSlug
@@ -540,6 +565,28 @@ export class GitHubGraphQLClient {
     );
   }
 
+  /**
+   * Iterates through all branch protections rules found on the provided repo.
+   * @param login - aka company
+   * @param repoName
+   * @param iteratee
+   */
+  public async iterateBatchedRepoBranchProtectionRules(
+    repoIds: string[],
+    gheServerVersion: string | undefined,
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedBranchProtectionRulesQuery.iterateBranchProtectionRules(
+        { repoIds, gheServerVersion },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
   private readonly TIMEOUT_RETRY_ATTEMPTS = 3;
 
   /**
@@ -555,9 +602,11 @@ export class GitHubGraphQLClient {
     timeoutRetryAttempt = 0,
   ) {
     const { logger } = this;
+    let retryDelay = 0;
 
     const queryWithPreRetryErrorHandling = async () => {
       try {
+        retryDelay = 30_000;
         logger.debug(
           { queryString, queryVariables, timeoutRetryAttempt },
           'Attempting GraphQL request',
@@ -593,26 +642,33 @@ export class GitHubGraphQLClient {
       // Check https://github.com/lifeomic/attempt for options on retry
       return await retry(queryWithPreRetryErrorHandling, {
         maxAttempts: 3,
-        delay: 30_000, // 30 seconds to start
+        calculateDelay: () => retryDelay,
         timeout: 180_000, // 3 min timeout. We need this in case Node hangs with ETIMEDOUT
         factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min
         handleError: async (error, attemptContext) => {
-          logger.debug('Error being handled in handleError.');
-          await retryErrorHandle(error, logger, attemptContext, () =>
-            this.refreshToken(),
-          );
-
           if (attemptContext.aborted) {
             logger.warn(
               { attemptContext, error, queryString, queryVariables },
               'Hit an unrecoverable error when attempting to query GraphQL. Aborting.',
             );
-          } else {
-            logger.warn(
-              { attemptContext, error, queryString, queryVariables },
-              `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
-            );
+            return;
           }
+
+          logger.debug('Error being handled in handleError.');
+          const delayMs = await retryErrorHandle(
+            error,
+            logger,
+            attemptContext,
+            () => this.refreshToken(),
+          );
+          if (delayMs) {
+            retryDelay = delayMs;
+          }
+
+          logger.warn(
+            { attemptContext, error, queryString, queryVariables },
+            `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
+          );
         },
         handleTimeout: (attemptContext) => {
           if (timeoutRetryAttempt < this.TIMEOUT_RETRY_ATTEMPTS) {

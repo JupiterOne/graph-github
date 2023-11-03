@@ -9,7 +9,7 @@ import {
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import { AccountEntity, RepoKeyAndName, SecretEntity } from '../types';
+import { AccountEntity, RepoData, SecretEntity } from '../types';
 import {
   GithubEntities,
   GITHUB_REPO_TAGS_ARRAY,
@@ -34,7 +34,7 @@ export async function fetchOrgSecrets({
       `Expected to find Account entity in jobState.`,
     );
   }
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+  const repoTags = await jobState.getData<Map<string, RepoData>>(
     GITHUB_REPO_TAGS_ARRAY,
   );
   if (!repoTags) {
@@ -87,7 +87,13 @@ export const orgSecretSteps: IntegrationStep<IntegrationConfig>[] = [
       Relationships.ACCOUNT_HAS_ORG_SECRET,
       Relationships.REPO_USES_ORG_SECRET,
     ],
-    dependsOn: [Steps.FETCH_ACCOUNT, Steps.FETCH_REPOS],
+    dependsOn: [
+      Steps.FETCH_ACCOUNT,
+      Steps.FETCH_REPOS,
+      // Added to execute steps serially.
+      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
+      Steps.FETCH_BRANCH_PROTECTION_RULES,
+    ],
     executionHandler: fetchOrgSecrets,
   },
 ];

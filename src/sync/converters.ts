@@ -28,7 +28,7 @@ import {
   PullRequestEntity,
   RepoAllowRelationship,
   RepoEntity,
-  RepoKeyAndName,
+  RepoData,
   SecretEntity,
   TeamEntity,
   UserEntity,
@@ -303,7 +303,7 @@ export function toEnvironmentEntity(
   data: RepoEnvironmentQueryResponse,
   orgLogin: string,
   baseUrl: string,
-  repoTag: RepoKeyAndName,
+  repoData: RepoData,
 ): EnvironmentEntity {
   let protRulesExist = false;
   if (data.protection_rules && data.protection_rules[0]) {
@@ -317,7 +317,7 @@ export function toEnvironmentEntity(
     displayName: data.name,
     webLink: apiUrlToWebLink(
       baseUrl,
-      `/${orgLogin}/${repoTag.name}/settings/environments/${data.id}/edit`,
+      `/${orgLogin}/${repoData.name}/settings/environments/${data.id}/edit`,
     ),
     id: String(data.id), //force to string to pass SDK validation
     nodeId: data.node_id,
@@ -327,9 +327,9 @@ export function toEnvironmentEntity(
     updatedOn: parseTimePropertyValue(data.updated_at),
     protectionRulesExist: protRulesExist,
     //parent properties for use in creating envSecrets entities
-    parentRepoName: repoTag.name,
-    parentRepoKey: repoTag._key,
-    parentRepoDatabaseId: repoTag.databaseId,
+    parentRepoName: repoData.name,
+    parentRepoKey: repoData._key,
+    parentRepoDatabaseId: repoData.databaseId,
   };
   setRawData(envEntity, { name: 'default', rawData: data });
   return envEntity;

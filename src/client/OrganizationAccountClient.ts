@@ -371,6 +371,22 @@ export default class OrganizationAccountClient {
     );
   }
 
+  async iterateBatchedRepoVulnAlerts(
+    repoIds: string[],
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+    filters: { severities: string[]; states: string[] },
+    maxRequestLimit: number,
+    gheServerVersion?: string,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedRepoVulnAlerts(
+      repoIds,
+      filters,
+      gheServerVersion,
+      iteratee,
+      maxRequestLimit,
+    );
+  }
+
   async iterateRepoBranchProtectionRules(
     repoName: string,
     iteratee: ResourceIteratee<BranchProtectionRuleResponse>,

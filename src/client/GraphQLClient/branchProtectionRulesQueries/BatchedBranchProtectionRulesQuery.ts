@@ -68,30 +68,37 @@ const processResponseData: ProcessResponse<
   QueryState
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
-  const rules = responseData.repository?.branchProtectionRules.nodes ?? [];
+  const repositories = responseData.nodes ?? [];
+  console.log(
+    'Executed batched branch protection rules query :>> ',
+    repositories.map((repo) => repo.id),
+  );
 
-  for (const rule of rules) {
-    if (!utils.hasProperties(rule)) {
-      continue;
+  for (const repository of repositories) {
+    const rules = repository.branchProtectionRules.nodes ?? [];
+    for (const rule of rules) {
+      if (!utils.hasProperties(rule)) {
+        continue;
+      }
+
+      const processedRule = {
+        repoId: repository.id,
+        repoName: repository.name,
+        ...rule,
+        bypassForcePushAllowances: processActors(
+          rule.bypassForcePushAllowances?.nodes,
+        ),
+        bypassPullRequestAllowances: processActors(
+          rule.bypassPullRequestAllowances?.nodes,
+        ),
+        pushAllowances: processActors(rule.pushAllowances?.nodes),
+        reviewDismissalAllowances: processActors(
+          rule.reviewDismissalAllowances?.nodes,
+        ),
+      };
+
+      await iteratee(processedRule);
     }
-
-    const processedRule = {
-      repoId: responseData.repository.id,
-      repoName: responseData.repository.name,
-      ...rule,
-      bypassForcePushAllowances: processActors(
-        rule.bypassForcePushAllowances?.nodes,
-      ),
-      bypassPullRequestAllowances: processActors(
-        rule.bypassPullRequestAllowances?.nodes,
-      ),
-      pushAllowances: processActors(rule.pushAllowances?.nodes),
-      reviewDismissalAllowances: processActors(
-        rule.reviewDismissalAllowances?.nodes,
-      ),
-    };
-
-    await iteratee(processedRule);
   }
 
   return {
@@ -107,7 +114,6 @@ const iterateBranchProtectionRules = async (
   let queryState: QueryState = {};
   const executable = buildQuery(queryParams, queryState);
   const response = await execute(executable);
-  console.log('Executed batched query for branch protection rules');
   queryState = await processResponseData(response, iteratee);
 
   const queryCost = queryState?.rateLimit?.cost ?? 0;

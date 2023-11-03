@@ -182,6 +182,9 @@ export interface OrgRepoQueryResponse extends Node {
   collaborators: {
     totalCount: number;
   };
+  vulnerabilityAlerts: {
+    totalCount: number;
+  };
 }
 
 /**
@@ -362,6 +365,7 @@ export interface CollaboratorResponse extends Node {
  * Response structure of a Repo Vulnerability Alert aka Dependabot.
  */
 export interface VulnerabilityAlertResponse extends Node {
+  repoId?: string;
   repository: {
     nameWithOwner: string;
   };

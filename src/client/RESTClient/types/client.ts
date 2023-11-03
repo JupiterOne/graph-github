@@ -1,4 +1,4 @@
-import { RepoKeyAndName, TokenPermissions } from '../../../types';
+import { RepoData, TokenPermissions } from '../../../types';
 
 export interface OrgSecretRepoQueryResponse {
   //the repos that have been granted permission to an org secret
@@ -182,7 +182,7 @@ export interface SecretQueryResponse {
   orgLogin?: string; //for use in constructing weblinks
   secretOwnerType?: string; // 'org' | 'repo' | 'env'
   secretOwnerName?: string;
-  repos?: RepoKeyAndName[]; //to help build relationships with minimal memory footprint, using RepoKeyAndName instead of RepoEntity
+  repos?: RepoData[]; //to help build relationships with minimal memory footprint, using RepoKeyAndName instead of RepoEntity
 }
 
 export interface RepoEnvironmentQueryResponse {

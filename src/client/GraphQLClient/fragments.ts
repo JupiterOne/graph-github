@@ -90,6 +90,9 @@ export default {
     collaborators {
       totalCount
     }
+    vulnerabilityAlerts {
+      totalCount
+    }
   }`,
   repositoryOwnerFields: `on RepositoryOwner {
     login

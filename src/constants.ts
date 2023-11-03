@@ -19,6 +19,7 @@ export const GITHUB_APP_BY_APP_ID = 'GITHUB_APP_BY_APP_ID';
 export const BRANCH_PROTECTION_RULE_TOTAL_BY_REPO =
   'BRANCH_PROTECTION_RULE_TOTAL_BY_REPO';
 export const COLLABORATORS_TOTAL_BY_REPO = 'COLLABORATORS_TOTAL_BY_REPO';
+export const VULN_ALERTS_TOTAL_BY_REPO = 'vuln_alerts_total_by_repo';
 
 export const Steps = {
   FETCH_ACCOUNT: 'fetch-account',

@@ -21,6 +21,7 @@ import {
   Relationships,
   BRANCH_PROTECTION_RULE_TOTAL_BY_REPO,
   COLLABORATORS_TOTAL_BY_REPO,
+  VULN_ALERTS_TOTAL_BY_REPO,
 } from '../constants';
 
 export async function fetchRepos({
@@ -43,6 +44,7 @@ export async function fetchRepos({
   const repoTags = new Map<string, RepoData>();
   const branchProtectionRuleTotalByRepo = new Map<string, number>();
   const collaboratorsTotalByRepo = new Map<string, number>();
+  const vulnAlertsTotalByRepo = new Map<string, number>();
 
   await apiClient.iterateRepos(async (repo) => {
     const repoOwner = repo.nameWithOwner.toLowerCase().split('/')[0];
@@ -88,6 +90,10 @@ export async function fetchRepos({
       repoEntity._key,
       repo.collaborators.totalCount ?? 0,
     );
+    vulnAlertsTotalByRepo.set(
+      repoEntity._key,
+      repo.vulnerabilityAlerts.totalCount ?? 0,
+    );
 
     await jobState.addRelationship(
       createDirectRelationship({
@@ -105,6 +111,7 @@ export async function fetchRepos({
       branchProtectionRuleTotalByRepo,
     ),
     jobState.setData(COLLABORATORS_TOTAL_BY_REPO, collaboratorsTotalByRepo),
+    jobState.setData(VULN_ALERTS_TOTAL_BY_REPO, vulnAlertsTotalByRepo),
   ]);
 }
 

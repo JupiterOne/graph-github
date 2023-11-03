@@ -60,6 +60,7 @@ import LabelsQuery from './pullRequestQueries/LabelsQuery';
 import CommitsQuery from './pullRequestQueries/CommitsQuery';
 import BatchedBranchProtectionRulesQuery from './branchProtectionRulesQueries/BatchedBranchProtectionRulesQuery';
 import BatchedRepoCollaboratorsQuery from './collaboratorQueries/BatchedRepoCollaboratorsQuery';
+import BatchedRepoVulnAlertsQuery from './vulnerabilityAlertQueries/BatchedRepoVulnAlertsQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -531,6 +532,30 @@ export class GitHubGraphQLClient {
         {
           login,
           repoName,
+          severityFilter: filters.severities ?? [],
+          stateFilter: filters.states ?? [],
+          gheServerVersion,
+          maxRequestLimit,
+        },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  public async iterateBatchedRepoVulnAlerts(
+    repoIds: string[],
+    filters: { severities: string[]; states: string[] },
+    gheServerVersion: string | undefined,
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+    maxRequestLimit: number,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedRepoVulnAlertsQuery.iterateVulnerabilityAlerts(
+        {
+          repoIds,
           severityFilter: filters.severities ?? [],
           stateFilter: filters.states ?? [],
           gheServerVersion,

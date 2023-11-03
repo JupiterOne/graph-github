@@ -765,7 +765,7 @@ export class APIClient {
   }
 
   public async iterateRepoVulnAlerts(
-    repo: RepoEntity,
+    repoName: string,
     maxRequestLimit: number,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
   ) {
@@ -774,7 +774,7 @@ export class APIClient {
     }
 
     const rateLimit = await this.graphQLClient.iterateRepoVulnAlerts(
-      repo.name,
+      repoName,
       iteratee,
       {
         states: this.config.dependabotAlertStates,
@@ -785,7 +785,32 @@ export class APIClient {
     );
     this.logger.info(
       { rateLimit },
-      'Rate limit consumed while fetching Issues.',
+      'Rate limit consumed while fetching Vulnerability Alerts.',
+    );
+  }
+
+  public async iterateBatchedRepoVulnAlerts(
+    repoIds: string[],
+    maxRequestLimit: number,
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+  ) {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.graphQLClient.iterateBatchedRepoVulnAlerts(
+      repoIds,
+      iteratee,
+      {
+        states: this.config.dependabotAlertStates,
+        severities: this.config.dependabotAlertSeverities,
+      },
+      maxRequestLimit,
+      this.gheServerVersion,
+    );
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Vulnerability Alerts.',
     );
   }
 

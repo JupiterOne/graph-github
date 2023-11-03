@@ -71,25 +71,31 @@ const processResponseData: ProcessResponse<
   QueryState
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
-  const collaboratorEdges = responseData.repository?.collaborators?.edges ?? [];
+  const repositories = responseData.nodes ?? [];
 
-  console.log('Executed batched query for repo collaborators');
+  console.log(
+    'Executed batched query for repo collaborators',
+    repositories.map((r) => r.id),
+  );
 
-  for (const edge of collaboratorEdges) {
-    if (!utils.hasProperties(edge?.node)) {
-      continue;
+  for (const repository of repositories) {
+    const collaboratorEdges = repository.collaborators?.edges ?? [];
+    for (const edge of collaboratorEdges) {
+      if (!utils.hasProperties(edge?.node)) {
+        continue;
+      }
+      const node = edge.node;
+
+      const collaborator: CollaboratorResponse = {
+        id: node.id,
+        name: node.name,
+        login: node.login,
+        permission: edge.permission,
+        repositoryId: repository?.id,
+      };
+
+      await iteratee(collaborator);
     }
-    const node = edge.node;
-
-    const collaborator: CollaboratorResponse = {
-      id: node.id,
-      name: node.name,
-      login: node.login,
-      permission: edge.permission,
-      repositoryId: responseData.repository?.id,
-    };
-
-    await iteratee(collaborator);
   }
 
   return {

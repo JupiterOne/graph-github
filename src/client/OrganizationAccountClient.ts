@@ -143,8 +143,15 @@ export default class OrganizationAccountClient {
    */
   async iterateOrgRepositories(
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
+    alertStates: string[],
+    gheServerVersion?: string,
   ): Promise<RateLimitStepSummary> {
-    return await this.v4.iterateOrgRepositories(this.login, iteratee);
+    return await this.v4.iterateOrgRepositories(
+      this.login,
+      iteratee,
+      alertStates,
+      gheServerVersion,
+    );
   }
 
   async iterateTags(
@@ -169,6 +176,18 @@ export default class OrganizationAccountClient {
       teamSlug,
       iteratee,
     );
+  }
+
+  /**
+   * Iterate over team repositories.
+   * @param teamSlug
+   * @param iteratee
+   */
+  async iterateBatchedTeamRepositories(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedTeamRepositories(teamIds, iteratee);
   }
 
   /**

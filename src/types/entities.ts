@@ -206,6 +206,10 @@ export interface RepoData {
   databaseId: string; // typically an integer, used to retrieve env secrets REST API call
 }
 
+export interface TeamData {
+  name: string;
+}
+
 export interface UserEntity extends Entity {
   username: string;
   login: string;

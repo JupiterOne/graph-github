@@ -11,6 +11,7 @@ import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
+import { teamReposFields } from './shared';
 
 interface QueryState extends BaseQueryState {
   teamRepos?: CursorState;
@@ -40,16 +41,8 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
             id
             team(slug: $teamSlug) {
               id
-              name
               repositories(first: $maxLimit, after: $teamRepoCursor) {
-                edges {
-                  node {
-                    id
-                  }
-                  ...on TeamRepositoryEdge {
-                    permission
-                  }
-                }
+                ${teamReposFields}
                 pageInfo {
                   endCursor
                   hasNextPage
@@ -88,6 +81,7 @@ const processResponseData: ProcessResponse<
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
   const edges = responseData.organization?.team?.repositories?.edges ?? [];
+  console.log('Executed query for team repos');
 
   for (const edge of edges) {
     if (!utils.hasProperties(edge?.node)) {
@@ -97,6 +91,7 @@ const processResponseData: ProcessResponse<
     const repo = {
       id: edge.node.id,
       permission: edge.permission,
+      teamId: responseData.organization?.team?.id,
     };
 
     await iteratee(repo);

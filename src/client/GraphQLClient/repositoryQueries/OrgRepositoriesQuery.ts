@@ -7,7 +7,7 @@ import {
   OrgRepoQueryResponse,
   ProcessResponse,
 } from '../types';
-import paginate from '../paginate';
+import paginate, { MAX_REQUESTS_LIMIT } from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -15,7 +15,11 @@ interface QueryState extends BaseQueryState {
   repos: CursorState;
 }
 
-const MAX_REQUESTS_LIMIT = 100;
+type QueryParams = {
+  login: string;
+  alertStates: string[];
+  gheServerVersion?: string;
+};
 
 /**
  * Builds query and query variables for Org Repos.
@@ -23,8 +27,8 @@ const MAX_REQUESTS_LIMIT = 100;
  * @param login
  * @param queryState
  */
-const buildQuery: BuildQuery<string, QueryState> = (
-  login: string,
+const buildQuery: BuildQuery<QueryParams, QueryState> = (
+  queryParams: QueryParams,
   queryState?: QueryState,
 ): ExecutableQuery => {
   const query = `
@@ -34,7 +38,10 @@ const buildQuery: BuildQuery<string, QueryState> = (
           repositories(first: $maxLimit, after: $repoCursor) {
             nodes {
               id
-              ...${fragments.repositoryFields}
+              ...${fragments.repositoryFields({
+                alertStates: queryParams.alertStates,
+                gheServerVersion: queryParams.gheServerVersion,
+              })}
             }
             pageInfo {
               endCursor
@@ -51,7 +58,7 @@ const buildQuery: BuildQuery<string, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      login,
+      login: queryParams.login,
       maxLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.repos?.hasNextPage && {
         repoCursor: queryState.repos.endCursor,
@@ -94,11 +101,11 @@ const processResponseData: ProcessResponse<
  * @param execute
  */
 const iterateRepositories: IteratePagination<
-  string,
+  QueryParams,
   OrgRepoQueryResponse
-> = async (login, execute, iteratee) => {
+> = async (queryParams, execute, iteratee) => {
   return paginate(
-    login,
+    queryParams,
     iteratee,
     execute,
     buildQuery,

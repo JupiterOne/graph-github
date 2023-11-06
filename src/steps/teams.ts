@@ -10,8 +10,14 @@ import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toTeamEntity } from '../sync/converters';
-import { AccountEntity, TeamEntity } from '../types';
-import { GithubEntities, Steps, Relationships } from '../constants';
+import { AccountEntity, TeamData, TeamEntity } from '../types';
+import {
+  GithubEntities,
+  Steps,
+  Relationships,
+  REPOSITORIES_TOTAL_BY_TEAM,
+  TEAM_DATA_MAP,
+} from '../constants';
 
 export async function fetchTeams({
   instance,
@@ -29,6 +35,9 @@ export async function fetchTeams({
     );
   }
 
+  const teamDataMap = new Map<string, TeamData>();
+  const repositoriesTotalByTeam = new Map<string, number>();
+
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
       toTeamEntity(team),
@@ -41,7 +50,15 @@ export async function fetchTeams({
         to: teamEntity,
       }),
     );
+
+    teamDataMap.set(teamEntity._key, { name: team.name });
+    repositoriesTotalByTeam.set(teamEntity._key, team.repositories.totalCount);
   });
+
+  await Promise.all([
+    jobState.setData(REPOSITORIES_TOTAL_BY_TEAM, repositoriesTotalByTeam),
+    jobState.setData(TEAM_DATA_MAP, teamDataMap),
+  ]);
 }
 
 export const teamSteps: IntegrationStep<IntegrationConfig>[] = [

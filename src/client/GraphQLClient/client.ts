@@ -61,6 +61,7 @@ import CommitsQuery from './pullRequestQueries/CommitsQuery';
 import BatchedBranchProtectionRulesQuery from './branchProtectionRulesQueries/BatchedBranchProtectionRulesQuery';
 import BatchedRepoCollaboratorsQuery from './collaboratorQueries/BatchedRepoCollaboratorsQuery';
 import BatchedRepoVulnAlertsQuery from './vulnerabilityAlertQueries/BatchedRepoVulnAlertsQuery';
+import BatchedTeamRepositoriesQuery from './repositoryQueries/BatchedTeamRepositoriesQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -351,11 +352,17 @@ export class GitHubGraphQLClient {
   public async iterateOrgRepositories(
     login: string,
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
+    alertStates: string[],
+    gheServerVersion: string | undefined,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
-      await OrgRepositoriesQuery.iterateRepositories(login, executor, iteratee),
+      await OrgRepositoriesQuery.iterateRepositories(
+        { login, gheServerVersion, alertStates },
+        executor,
+        iteratee,
+      ),
     );
   }
 
@@ -453,6 +460,28 @@ export class GitHubGraphQLClient {
         {
           login,
           teamSlug,
+        },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over repositories for the given team ids.
+   * @param teamIds
+   * @param iteratee
+   */
+  public async iterateBatchedTeamRepositories(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedTeamRepositoriesQuery.iterateRepositories(
+        {
+          teamIds,
         },
         executor,
         iteratee,

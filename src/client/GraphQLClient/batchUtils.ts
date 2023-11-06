@@ -1,16 +1,19 @@
-export const separateRepoKeys = (
-  reposMap: Map<string, number>,
+export const batchSeparateKeys = (
+  entitiesMap: Map<string, number>,
   threshold: number,
-): { batchedRepoKeys: string[][]; singleRepoKeys: string[] } => {
-  const { lessThanThreshold, moreThanThreshold } = Array.from(reposMap).reduce(
-    (acc, [repoKey, total]) => {
+  groupLimit = 80,
+): { batchedEntityKeys: string[][]; singleEntityKeys: string[] } => {
+  const { lessThanThreshold, moreThanThreshold } = Array.from(
+    entitiesMap,
+  ).reduce(
+    (acc, [entityKey, total]) => {
       if (total === 0) {
         return acc;
       }
       if (total < threshold) {
-        acc.lessThanThreshold.set(repoKey, total);
+        acc.lessThanThreshold.set(entityKey, total);
       } else {
-        acc.moreThanThreshold.set(repoKey, total);
+        acc.moreThanThreshold.set(entityKey, total);
       }
       return acc;
     },
@@ -19,35 +22,46 @@ export const separateRepoKeys = (
       moreThanThreshold: Map<string, number>;
     },
   );
-  const batchedRepoKeys = groupReposByTotal(lessThanThreshold, threshold);
-  const singleRepoKeys = Array.from(moreThanThreshold.keys());
-  return { batchedRepoKeys, singleRepoKeys };
+  const batchedEntityKeys = groupEntitiesByTotal(
+    lessThanThreshold,
+    threshold,
+    groupLimit,
+  );
+  const singleEntityKeys = Array.from(moreThanThreshold.keys());
+  return {
+    batchedEntityKeys: batchedEntityKeys,
+    singleEntityKeys: singleEntityKeys,
+  };
 };
 
-const groupReposByTotal = (
-  reposMap: Map<string, number>,
+const groupEntitiesByTotal = (
+  entitiesMap: Map<string, number>,
   threshold: number,
+  groupLimit: number,
 ): string[][] => {
-  const repoEntries = Array.from(reposMap);
-  repoEntries.sort((a, b) => a[1] - b[1]);
+  const entityEntries = Array.from(entitiesMap);
+  entityEntries.sort((a, b) => a[1] - b[1]);
 
-  const groupedRepoKeys: string[][] = [];
+  const groupedEntityKeys: string[][] = [];
   let currentSum = 0;
   let currentGroup: string[] = [];
 
-  for (const [repoKey, totalCount] of repoEntries) {
-    if (currentSum + totalCount > threshold) {
-      groupedRepoKeys.push(currentGroup);
+  for (const [entityKey, totalCount] of entityEntries) {
+    if (
+      currentSum + totalCount > threshold ||
+      currentGroup.length >= groupLimit
+    ) {
+      groupedEntityKeys.push(currentGroup);
       currentGroup = [];
       currentSum = 0;
     }
-    currentGroup.push(repoKey);
+    currentGroup.push(entityKey);
     currentSum += totalCount;
   }
 
   if (currentGroup.length > 0) {
-    groupedRepoKeys.push(currentGroup);
+    groupedEntityKeys.push(currentGroup);
   }
 
-  return groupedRepoKeys;
+  return groupedEntityKeys;
 };

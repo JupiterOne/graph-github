@@ -24,7 +24,7 @@ import {
 } from '../constants';
 import { getTeamEntityKey, toBranchProtectionEntity } from '../sync/converters';
 import { BranchProtectionRuleResponse } from '../client/GraphQLClient';
-import { separateRepoKeys } from '../client/GraphQLClient/batchUtils';
+import { batchSeparateKeys } from '../client/GraphQLClient/batchUtils';
 
 export async function fetchBranchProtectionRule({
   instance,
@@ -50,10 +50,10 @@ export async function fetchBranchProtectionRule({
   }
 
   const threshold = 100;
-  const { batchedRepoKeys, singleRepoKeys } = separateRepoKeys(
-    branchProtectionRuleTotalByRepo,
-    threshold,
-  );
+  const {
+    batchedEntityKeys: batchedRepoKeys,
+    singleEntityKeys: singleRepoKeys,
+  } = batchSeparateKeys(branchProtectionRuleTotalByRepo, threshold);
 
   const iteratee = buildIteratee({ jobState, config, apiClient, logger });
 

@@ -138,5 +138,4 @@ export const branchProtectionRuleFields = (
     }
   }
   ${versionSafeFragments.additionalFields.join('\n')}
-
 `;

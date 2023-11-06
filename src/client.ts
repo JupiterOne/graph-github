@@ -240,7 +240,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamRepos(
-    team: TeamEntity,
+    teamName: string,
     iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
@@ -248,13 +248,38 @@ export class APIClient {
     }
 
     const rateLimit = await this.graphQLClient.iterateTeamRepositories(
-      team.name,
+      teamName,
       iteratee,
     );
 
     this.logger.info(
       { rateLimit },
       'Rate limit consumed while fetching Team Repositories.',
+    );
+  }
+
+  /**
+   * Iterates each team-repo association from the provider.
+   *
+   * @param team
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedTeamRepos(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.graphQLClient.iterateBatchedTeamRepositories(
+      teamIds,
+      iteratee,
+    );
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Team Repositories.',
     );
   }
 
@@ -535,7 +560,11 @@ export class APIClient {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.graphQLClient.iterateOrgRepositories(iteratee);
+    const rateLimit = await this.graphQLClient.iterateOrgRepositories(
+      iteratee,
+      this.config.dependabotAlertStates,
+      this.gheServerVersion,
+    );
     this.logger.info(
       { rateLimit },
       'Rate limit consumed while fetching Org Repositories.',

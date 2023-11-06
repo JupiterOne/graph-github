@@ -5,6 +5,8 @@
 // The actual GraphQL query that hits the API will have substituted in the parameters
 // and expanded the fragments.
 
+import { vulnerabilityAlertsTotalCountFragment } from './vulnerabilityAlertQueries/shared';
+
 export default {
   organizationFields: `on Organization {
     login
@@ -46,6 +48,9 @@ export default {
     databaseId
     description
     privacy
+    repositories {
+      totalCount
+    }
   }`,
   teamMemberEdgeFields: `on TeamMemberEdge {
     role
@@ -54,7 +59,13 @@ export default {
     name
     login
   }`,
-  repositoryFields: `on Repository {
+  repositoryFields: ({
+    alertStates,
+    gheServerVersion,
+  }: {
+    alertStates: string[];
+    gheServerVersion?: string;
+  }) => `on Repository {
     name
     nameWithOwner
     url
@@ -90,9 +101,7 @@ export default {
     collaborators {
       totalCount
     }
-    vulnerabilityAlerts {
-      totalCount
-    }
+    ${vulnerabilityAlertsTotalCountFragment({ alertStates, gheServerVersion })}
   }`,
   repositoryOwnerFields: `on RepositoryOwner {
     login

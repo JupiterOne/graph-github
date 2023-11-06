@@ -1,47 +1,40 @@
+import { ExecutableQuery } from '../CreateQueryExecutor';
 import {
   BaseQueryState,
   BuildQuery,
-  CollaboratorResponse,
-  CursorState,
-  IteratePagination,
+  OrgTeamRepoQueryResponse,
   ProcessResponse,
 } from '../types';
 import { MAX_REQUESTS_LIMIT } from '../paginate';
-import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
+import { teamReposFields } from './shared';
 
 type QueryState = BaseQueryState;
 
 type QueryParams = {
-  repoIds: string[];
+  teamIds: string[];
 };
 
+/**
+ * Builds query based on params and queryState.
+ * @param queryParams
+ * @param queryState
+ */
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
   queryParams,
   queryState,
-) => {
+): ExecutableQuery => {
   const query = `
     query (
-      $repoIds: [ID!]!
+      $teamIds: [ID!]!
       $maxLimit: Int!
     ) {
-      nodes(ids: $repoIds) {
-        ...on Repository {
+      nodes(ids: $teamIds) {
+        ...on Team {
           id
-          collaborators(first: $maxLimit) {
-            edges {
-              node {
-                id
-                name
-                login
-              }
-              permission
-            }
-            pageInfo {
-              endCursor
-              hasNextPage
-            }
+          repositories(first: $maxLimit) {
+            ${teamReposFields}
           }
         }
       }
@@ -60,35 +53,36 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
+/**
+ * Processed response data and converting to
+ * object format ready for iterator.
+ * @param responseData
+ * @param iteratee
+ */
 const processResponseData: ProcessResponse<
-  CollaboratorResponse,
+  OrgTeamRepoQueryResponse,
   QueryState
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
-  const repositories = responseData.nodes ?? [];
+  const teams = responseData.nodes ?? [];
 
   console.log(
-    'Executed batched query for repo collaborators',
-    repositories.map((r) => r.id),
+    'Executed batched query for team repos',
+    teams.map((t) => t.id),
   );
 
-  for (const repository of repositories) {
-    const collaboratorEdges = repository.collaborators?.edges ?? [];
-    for (const edge of collaboratorEdges) {
+  for (const team of teams) {
+    const edges = team.repositories?.edges ?? [];
+    for (const edge of edges) {
       if (!utils.hasProperties(edge?.node)) {
         continue;
       }
-      const node = edge.node;
-
-      const collaborator: CollaboratorResponse = {
-        id: node.id,
-        name: node.name,
-        login: node.login,
+      const repo = {
+        id: edge.node.id,
         permission: edge.permission,
-        repositoryId: repository?.id,
+        teamId: team.id,
       };
-
-      await iteratee(collaborator);
+      await iteratee(repo);
     }
   }
 
@@ -98,12 +92,12 @@ const processResponseData: ProcessResponse<
 };
 
 /**
- * Paginates over the collaborators found on the given repo.
+ * Iterate over repositories assigned to a team.
  * @param queryParams
- * @param execute
  * @param iteratee
+ * @param execute
  */
-const iterateCollaborators = async (
+const iterateRepositories = async (
   queryParams: QueryParams,
   execute,
   iteratee,
@@ -123,4 +117,4 @@ const iterateCollaborators = async (
   };
 };
 
-export default { iterateCollaborators };
+export default { iterateRepositories };

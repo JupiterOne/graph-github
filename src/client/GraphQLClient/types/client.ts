@@ -119,6 +119,9 @@ export interface OrgTeamQueryResponse extends Node {
   databaseId: number;
   description: string;
   privacy: string;
+  repositories: {
+    totalCount: number;
+  };
 }
 
 export interface TagQueryResponse extends Node {
@@ -191,6 +194,7 @@ export interface OrgRepoQueryResponse extends Node {
  * Expresses the relationship between a repo and the team's permissions.
  */
 export interface OrgTeamRepoQueryResponse extends Node {
+  teamId: string;
   /**
    * The ID of the repository.
    */

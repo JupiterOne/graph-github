@@ -28,7 +28,7 @@ import {
   Relationships,
   COLLABORATORS_TOTAL_BY_REPO,
 } from '../constants';
-import { separateRepoKeys } from '../client/GraphQLClient/batchUtils';
+import { batchSeparateKeys } from '../client/GraphQLClient/batchUtils';
 import { CollaboratorResponse } from '../client/GraphQLClient';
 
 export async function fetchCollaborators({
@@ -68,10 +68,10 @@ export async function fetchCollaborators({
   }
 
   const threshold = 100;
-  const { batchedRepoKeys, singleRepoKeys } = separateRepoKeys(
-    collaboratorsTotalByRepo,
-    threshold,
-  );
+  const {
+    batchedEntityKeys: batchedRepoKeys,
+    singleEntityKeys: singleRepoKeys,
+  } = batchSeparateKeys(collaboratorsTotalByRepo, threshold);
   console.log('batchedRepoKeys :>> ', batchedRepoKeys);
   console.log('singleRepoKeys :>> ', singleRepoKeys);
 

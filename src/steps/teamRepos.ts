@@ -1,13 +1,22 @@
 import {
+  IntegrationMissingKeyError,
   IntegrationStep,
   IntegrationStepExecutionContext,
+  JobState,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { createRepoAllowsTeamRelationship } from '../sync/converters';
-import { GithubEntities, Steps, Relationships } from '../constants';
-import { TeamEntity } from '../types';
+import {
+  Steps,
+  Relationships,
+  REPOSITORIES_TOTAL_BY_TEAM,
+  TEAM_DATA_MAP,
+} from '../constants';
+import { TeamData } from '../types';
+import { batchSeparateKeys } from '../client/GraphQLClient/batchUtils';
+import { OrgTeamRepoQueryResponse } from '../client/GraphQLClient';
 
 export async function fetchTeamRepos({
   instance,
@@ -17,20 +26,56 @@ export async function fetchTeamRepos({
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
 
-  await jobState.iterateEntities(
-    { _type: GithubEntities.GITHUB_TEAM._type },
-    async (teamEntity: TeamEntity) => {
-      await apiClient.iterateTeamRepos(teamEntity, async (teamRepo) => {
-        const repoTeamRelationship = createRepoAllowsTeamRelationship(
-          teamRepo.id,
-          teamEntity._key,
-          teamRepo.permission,
-        );
+  const teamDataMap =
+    await jobState.getData<Map<string, TeamData>>(TEAM_DATA_MAP);
+  if (!teamDataMap) {
+    throw new IntegrationMissingKeyError(
+      `Expected teams.ts to have set ${TEAM_DATA_MAP} in jobState.`,
+    );
+  }
 
-        await jobState.addRelationship(repoTeamRelationship);
-      });
-    },
+  const repositoriesTotalByTeam = await jobState.getData<Map<string, number>>(
+    REPOSITORIES_TOTAL_BY_TEAM,
   );
+  if (!repositoriesTotalByTeam) {
+    return;
+  }
+
+  const threshold = 100;
+  const {
+    batchedEntityKeys: batchedTeamKeys,
+    singleEntityKeys: singleTeamKeys,
+  } = batchSeparateKeys(repositoriesTotalByTeam, threshold);
+  console.log('batchedTeamKeys :>> ', batchedTeamKeys);
+  console.log('singleTeamKeys :>> ', singleTeamKeys);
+
+  const iteratee = buildIteratee({
+    jobState,
+  });
+
+  for (const teamKeys of batchedTeamKeys) {
+    await apiClient.iterateBatchedTeamRepos(teamKeys, iteratee);
+  }
+
+  for (const teamKey of singleTeamKeys) {
+    const teamData = teamDataMap.get(teamKey);
+    if (!teamData) {
+      continue;
+    }
+    await apiClient.iterateTeamRepos(teamData.name, iteratee);
+  }
+}
+
+function buildIteratee({ jobState }: { jobState: JobState }) {
+  return async (teamRepo: OrgTeamRepoQueryResponse) => {
+    const repoTeamRelationship = createRepoAllowsTeamRelationship(
+      teamRepo.id,
+      teamRepo.teamId,
+      teamRepo.permission,
+    );
+
+    await jobState.addRelationship(repoTeamRelationship);
+  };
 }
 
 export const teamRepoSteps: IntegrationStep<IntegrationConfig>[] = [

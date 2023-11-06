@@ -149,6 +149,12 @@ enum RepositoryVisibility {
   PUBLIC = 'PUBLIC',
 }
 
+export type RepoConnectionFilters = {
+  lastSuccessfulExecution: string;
+  alertStates: string[];
+  gheServerVersion?: string;
+};
+
 export interface OrgRepoQueryResponse extends Node {
   name: string;
   nameWithOwner: string;
@@ -186,6 +192,9 @@ export interface OrgRepoQueryResponse extends Node {
     totalCount: number;
   };
   vulnerabilityAlerts: {
+    totalCount: number;
+  };
+  issues: {
     totalCount: number;
   };
 }
@@ -327,6 +336,8 @@ export type SinglePullRequestResponse = PullRequestResponse &
   PullRequestConnections;
 
 export interface IssueResponse extends Node {
+  repoId: string;
+  repoName: string;
   id: string;
   activeLockReason: string;
   author: {

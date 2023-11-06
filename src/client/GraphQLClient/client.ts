@@ -31,6 +31,7 @@ import {
   TagQueryResponse,
   SinglePullRequestResponse,
   VulnerabilityAlertResponse,
+  RepoConnectionFilters,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
@@ -62,6 +63,7 @@ import BatchedBranchProtectionRulesQuery from './branchProtectionRulesQueries/Ba
 import BatchedRepoCollaboratorsQuery from './collaboratorQueries/BatchedRepoCollaboratorsQuery';
 import BatchedRepoVulnAlertsQuery from './vulnerabilityAlertQueries/BatchedRepoVulnAlertsQuery';
 import BatchedTeamRepositoriesQuery from './repositoryQueries/BatchedTeamRepositoriesQuery';
+import BatchedIssuesQuery from './issueQueries/BatchedIssuesQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -329,7 +331,8 @@ export class GitHubGraphQLClient {
    * @param iteratee
    */
   public async iterateIssues(
-    repoFullName: string,
+    login: string,
+    repoName: string,
     lastExecutionTime: string,
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<RateLimitStepSummary> {
@@ -337,7 +340,29 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await IssuesQuery.iterateIssues(
-        { repoFullName, lastExecutionTime },
+        { login, repoName, lastExecutionTime },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over issues for the given repositories.
+   * @param repoFullName
+   * @param lastExecutionTime
+   * @param iteratee
+   */
+  public async iterateBatchedIssues(
+    repoIds: string[],
+    lastExecutionTime: string,
+    iteratee: ResourceIteratee<IssueResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedIssuesQuery.iterateIssues(
+        { repoIds, lastExecutionTime },
         executor,
         iteratee,
       ),
@@ -352,14 +377,13 @@ export class GitHubGraphQLClient {
   public async iterateOrgRepositories(
     login: string,
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
-    alertStates: string[],
-    gheServerVersion: string | undefined,
+    connectionFilters: RepoConnectionFilters,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
       await OrgRepositoriesQuery.iterateRepositories(
-        { login, gheServerVersion, alertStates },
+        { login, ...connectionFilters },
         executor,
         iteratee,
       ),
@@ -577,7 +601,6 @@ export class GitHubGraphQLClient {
     filters: { severities: string[]; states: string[] },
     gheServerVersion: string | undefined,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
-    maxRequestLimit: number,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
@@ -588,7 +611,6 @@ export class GitHubGraphQLClient {
           severityFilter: filters.severities ?? [],
           stateFilter: filters.states ?? [],
           gheServerVersion,
-          maxRequestLimit,
         },
         executor,
         iteratee,

@@ -5,6 +5,7 @@
 // The actual GraphQL query that hits the API will have substituted in the parameters
 // and expanded the fragments.
 
+import { issuesTotalCountFragment } from './issueQueries/shared';
 import { vulnerabilityAlertsTotalCountFragment } from './vulnerabilityAlertQueries/shared';
 
 export default {
@@ -60,9 +61,11 @@ export default {
     login
   }`,
   repositoryFields: ({
+    lastSuccessfulExecution,
     alertStates,
     gheServerVersion,
   }: {
+    lastSuccessfulExecution: string;
     alertStates: string[];
     gheServerVersion?: string;
   }) => `on Repository {
@@ -102,6 +105,7 @@ export default {
       totalCount
     }
     ${vulnerabilityAlertsTotalCountFragment({ alertStates, gheServerVersion })}
+    ${issuesTotalCountFragment(lastSuccessfulExecution)}
   }`,
   repositoryOwnerFields: `on RepositoryOwner {
     login
@@ -284,7 +288,7 @@ export default {
     updatedAt
     url
   }`,
-  issueFields: `on Issue {
+  issueFields: `
     id
     activeLockReason
     author {
@@ -320,5 +324,5 @@ export default {
     titleHTML
     updatedAt
     url
-  }`,
+  `,
 };

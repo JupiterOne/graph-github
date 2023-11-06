@@ -1,7 +1,9 @@
 import {
   Entity,
+  IntegrationMissingKeyError,
   IntegrationStep,
   IntegrationStepExecutionContext,
+  JobState,
   RelationshipClass,
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
@@ -17,6 +19,7 @@ import {
   RepoEntity,
   IssueEntity,
   OutsideCollaboratorData,
+  RepoData,
 } from '../types';
 import {
   GithubEntities,
@@ -26,7 +29,11 @@ import {
   IngestionSources,
   Relationships,
   MappedRelationships,
+  ISSUES_TOTAL_BY_REPO,
+  GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
+import { batchSeparateKeys } from '../client/GraphQLClient/batchUtils';
+import { IssueResponse } from '../client/GraphQLClient';
 
 export async function fetchIssues(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
@@ -40,6 +47,15 @@ export async function fetchIssues(
     lastSuccessfulSyncTime,
   ).toISOString();
   const apiClient = getOrCreateApiClient(config, logger);
+
+  const repoTags = await jobState.getData<Map<string, RepoData>>(
+    GITHUB_REPO_TAGS_ARRAY,
+  );
+  if (!repoTags) {
+    throw new IntegrationMissingKeyError(
+      `Expected repos.ts to have set ${GITHUB_REPO_TAGS_ARRAY} in jobState.`,
+    );
+  }
 
   let usersByLoginMap = await jobState.getData<IdEntityMap<Entity['_key']>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
@@ -67,85 +83,124 @@ export async function fetchIssues(
     );
   }
 
-  await jobState.iterateEntities<RepoEntity>(
-    { _type: GithubEntities.GITHUB_REPO._type },
-    async (repoEntity) => {
-      try {
-        await apiClient.iterateIssues(
-          repoEntity,
-          lastSuccessfulExecution,
-          async (issue) => {
-            const issueEntity = (await jobState.addEntity(
-              toIssueEntity(issue, repoEntity.name),
-            )) as IssueEntity;
+  const issuesTotalByRepo =
+    await jobState.getData<Map<string, number>>(ISSUES_TOTAL_BY_REPO);
+  if (!issuesTotalByRepo) {
+    return;
+  }
 
-            await jobState.addRelationship(
-              createDirectRelationship({
-                _class: RelationshipClass.HAS,
-                from: repoEntity,
-                to: issueEntity,
-              }),
-            );
+  const threshold = 100;
+  const {
+    batchedEntityKeys: batchedRepoKeys,
+    singleEntityKeys: singleRepoKeys,
+  } = batchSeparateKeys(issuesTotalByRepo, threshold);
+  console.log('batchedRepoKeys :>> ', batchedRepoKeys);
+  console.log('singleRepoKeys :>> ', singleRepoKeys);
 
-            if (issue.author) {
-              if (usersByLoginMap?.has(issue.author.login)) {
-                await jobState.addRelationship(
-                  createDirectRelationship({
-                    _class: RelationshipClass.CREATED,
-                    fromType: GithubEntities.GITHUB_MEMBER._type,
-                    fromKey: usersByLoginMap.get(issue.author.login) as string,
-                    toType: GithubEntities.GITHUB_ISSUE._type,
-                    toKey: issueEntity._key,
-                  }),
-                );
-              } else {
-                //we don't recognize this author - make a mapped relationship
-                await jobState.addRelationship(
-                  createUnknownUserIssueRelationship(
-                    issue.author.login,
-                    Relationships.USER_CREATED_ISSUE._type,
-                    RelationshipClass.CREATED,
-                    issueEntity._key,
-                  ),
-                );
-              }
-            }
+  const iteratee = buildIteratee({ jobState, usersByLoginMap });
 
-            if (issue.assignees) {
-              for (const assignee of issue.assignees) {
-                if (usersByLoginMap?.has(assignee.login)) {
-                  await jobState.addRelationship(
-                    createDirectRelationship({
-                      _class: RelationshipClass.ASSIGNED,
-                      fromType: GithubEntities.GITHUB_MEMBER._type,
-                      fromKey: usersByLoginMap.get(assignee.login) as string,
-                      toType: GithubEntities.GITHUB_ISSUE._type,
-                      toKey: issueEntity._key,
-                    }),
-                  );
-                } else {
-                  //we don't recognize this assignee - make a mapped relationship
-                  await jobState.addRelationship(
-                    createUnknownUserIssueRelationship(
-                      assignee.login,
-                      Relationships.USER_ASSIGNED_ISSUE._type,
-                      RelationshipClass.ASSIGNED,
-                      issueEntity._key,
-                    ),
-                  );
-                }
-              }
-            }
-          },
+  for (const repoKeys of batchedRepoKeys) {
+    await apiClient.iterateBatchedIssues(
+      repoKeys,
+      lastSuccessfulExecution,
+      iteratee,
+    );
+  }
+
+  for (const repoKey of singleRepoKeys) {
+    const repoData = repoTags.get(repoKey);
+    if (!repoData) {
+      continue;
+    }
+    try {
+      await apiClient.iterateIssues(
+        repoData.name,
+        lastSuccessfulExecution,
+        iteratee,
+      );
+    } catch (err) {
+      apiClient.logger.warn(
+        err,
+        `Had an error ingesting Issues for repo ${repoKey}. Skipping and continuing.`,
+      );
+    }
+  }
+}
+
+function buildIteratee({
+  jobState,
+  usersByLoginMap,
+}: {
+  jobState: JobState;
+  usersByLoginMap?: IdEntityMap<Entity['_key']>;
+}) {
+  return async (issue: IssueResponse) => {
+    const issueEntity = (await jobState.addEntity(
+      toIssueEntity(issue),
+    )) as IssueEntity;
+
+    if (jobState.hasKey(issue.repoId)) {
+      await jobState.addRelationship(
+        createDirectRelationship({
+          _class: RelationshipClass.HAS,
+          fromKey: issue.repoId,
+          fromType: GithubEntities.GITHUB_REPO._type,
+          toKey: issueEntity._key,
+          toType: GithubEntities.GITHUB_ISSUE._type,
+        }),
+      );
+    }
+
+    if (issue.author) {
+      if (usersByLoginMap?.has(issue.author.login)) {
+        await jobState.addRelationship(
+          createDirectRelationship({
+            _class: RelationshipClass.CREATED,
+            fromType: GithubEntities.GITHUB_MEMBER._type,
+            fromKey: usersByLoginMap.get(issue.author.login) as string,
+            toType: GithubEntities.GITHUB_ISSUE._type,
+            toKey: issueEntity._key,
+          }),
         );
-      } catch (err) {
-        apiClient.logger.warn(
-          err,
-          `Had an error ingesting Issues for repo ${repoEntity._key}. Skipping and continuing.`,
+      } else {
+        //we don't recognize this author - make a mapped relationship
+        await jobState.addRelationship(
+          createUnknownUserIssueRelationship(
+            issue.author.login,
+            Relationships.USER_CREATED_ISSUE._type,
+            RelationshipClass.CREATED,
+            issueEntity._key,
+          ),
         );
       }
-    },
-  );
+    }
+
+    if (issue.assignees) {
+      for (const assignee of issue.assignees) {
+        if (usersByLoginMap?.has(assignee.login)) {
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.ASSIGNED,
+              fromType: GithubEntities.GITHUB_MEMBER._type,
+              fromKey: usersByLoginMap.get(assignee.login) as string,
+              toType: GithubEntities.GITHUB_ISSUE._type,
+              toKey: issueEntity._key,
+            }),
+          );
+        } else {
+          //we don't recognize this assignee - make a mapped relationship
+          await jobState.addRelationship(
+            createUnknownUserIssueRelationship(
+              assignee.login,
+              Relationships.USER_ASSIGNED_ISSUE._type,
+              RelationshipClass.ASSIGNED,
+              issueEntity._key,
+            ),
+          );
+        }
+      }
+    }
+  };
 }
 
 export const issueSteps: IntegrationStep<IntegrationConfig>[] = [

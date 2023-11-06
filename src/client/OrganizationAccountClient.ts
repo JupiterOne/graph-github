@@ -37,6 +37,7 @@ import {
   Label,
   Commit,
   OrgExternalIdentifierQueryResponse,
+  RepoConnectionFilters,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -143,14 +144,12 @@ export default class OrganizationAccountClient {
    */
   async iterateOrgRepositories(
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
-    alertStates: string[],
-    gheServerVersion?: string,
+    connectionFilters: RepoConnectionFilters,
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateOrgRepositories(
       this.login,
       iteratee,
-      alertStates,
-      gheServerVersion,
+      connectionFilters,
     );
   }
 
@@ -347,12 +346,12 @@ export default class OrganizationAccountClient {
   /**
    * Calls the GraphQL client to iterate over issue entities.
    * Notes: issues and PRs are actually the same in the API
-   * @param repo
+   * @param repoName
    * @param lastExecutionTime
    * @param iteratee
    */
   async iterateIssueEntities(
-    repo: RepoEntity,
+    repoName: string,
     lastExecutionTime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<RateLimitStepSummary> {
@@ -367,7 +366,37 @@ export default class OrganizationAccountClient {
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
 
     return await this.v4.iterateIssues(
-      repo.fullName,
+      this.login,
+      repoName,
+      lastExecutionTime,
+      iteratee,
+    );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over issue entities.
+   * Notes: issues and PRs are actually the same in the API
+   * @param repoIds
+   * @param lastExecutionTime
+   * @param iteratee
+   */
+  async iterateBatchedIssueEntities(
+    repoIds: string[],
+    lastExecutionTime: string, //expect Date.toISOString format
+    iteratee: ResourceIteratee<IssueResponse>,
+  ): Promise<RateLimitStepSummary> {
+    //issues and PRs are actually the same in the API
+    //we just filter for is:issue instead of is:pr
+    //and remove pr-specific children from the request
+    // TODO: SP -> investigate removing pr-specific children
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting issues.');
+      return { totalCost: 0 };
+    }
+    lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
+
+    return await this.v4.iterateBatchedIssues(
+      repoIds,
       lastExecutionTime,
       iteratee,
     );
@@ -394,7 +423,6 @@ export default class OrganizationAccountClient {
     repoIds: string[],
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
     filters: { severities: string[]; states: string[] },
-    maxRequestLimit: number,
     gheServerVersion?: string,
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateBatchedRepoVulnAlerts(
@@ -402,7 +430,6 @@ export default class OrganizationAccountClient {
       filters,
       gheServerVersion,
       iteratee,
-      maxRequestLimit,
     );
   }
 

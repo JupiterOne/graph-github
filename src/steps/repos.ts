@@ -22,12 +22,14 @@ import {
   BRANCH_PROTECTION_RULE_TOTAL_BY_REPO,
   COLLABORATORS_TOTAL_BY_REPO,
   VULN_ALERTS_TOTAL_BY_REPO,
+  ISSUES_TOTAL_BY_REPO,
 } from '../constants';
 
 export async function fetchRepos({
   instance,
   logger,
   jobState,
+  executionHistory,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
@@ -41,12 +43,19 @@ export async function fetchRepos({
     );
   }
 
+  const lastSuccessfulSyncTime =
+    executionHistory.lastSuccessful?.startedOn ?? 0;
+  const lastSuccessfulExecution = new Date(
+    lastSuccessfulSyncTime,
+  ).toISOString();
+
   const repoTags = new Map<string, RepoData>();
   const branchProtectionRuleTotalByRepo = new Map<string, number>();
   const collaboratorsTotalByRepo = new Map<string, number>();
   const vulnAlertsTotalByRepo = new Map<string, number>();
+  const issuesTotalByRepo = new Map<string, number>();
 
-  await apiClient.iterateRepos(async (repo) => {
+  await apiClient.iterateRepos({ lastSuccessfulExecution }, async (repo) => {
     const repoOwner = repo.nameWithOwner.toLowerCase().split('/')[0];
     const repoEntity = toRepositoryEntity(repo);
 
@@ -82,18 +91,28 @@ export async function fetchRepos({
       name: repoEntity.name,
       databaseId: repoEntity.databaseId,
     });
-    branchProtectionRuleTotalByRepo.set(
-      repoEntity._key,
-      repo.branchProtectionRules.totalCount ?? 0,
-    );
-    collaboratorsTotalByRepo.set(
-      repoEntity._key,
-      repo.collaborators.totalCount ?? 0,
-    );
-    vulnAlertsTotalByRepo.set(
-      repoEntity._key,
-      repo.vulnerabilityAlerts.totalCount ?? 0,
-    );
+
+    if (repo.branchProtectionRules.totalCount) {
+      branchProtectionRuleTotalByRepo.set(
+        repoEntity._key,
+        repo.branchProtectionRules.totalCount,
+      );
+    }
+    if (repo.collaborators.totalCount) {
+      collaboratorsTotalByRepo.set(
+        repoEntity._key,
+        repo.collaborators.totalCount,
+      );
+    }
+    if (repo.vulnerabilityAlerts.totalCount) {
+      vulnAlertsTotalByRepo.set(
+        repoEntity._key,
+        repo.vulnerabilityAlerts.totalCount,
+      );
+    }
+    if (repo.issues.totalCount) {
+      issuesTotalByRepo.set(repoEntity._key, repo.issues.totalCount);
+    }
 
     await jobState.addRelationship(
       createDirectRelationship({
@@ -112,6 +131,7 @@ export async function fetchRepos({
     ),
     jobState.setData(COLLABORATORS_TOTAL_BY_REPO, collaboratorsTotalByRepo),
     jobState.setData(VULN_ALERTS_TOTAL_BY_REPO, vulnAlertsTotalByRepo),
+    jobState.setData(ISSUES_TOTAL_BY_REPO, issuesTotalByRepo),
   ]);
 }
 

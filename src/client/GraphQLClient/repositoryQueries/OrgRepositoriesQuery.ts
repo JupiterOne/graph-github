@@ -6,6 +6,7 @@ import {
   IteratePagination,
   OrgRepoQueryResponse,
   ProcessResponse,
+  RepoConnectionFilters,
 } from '../types';
 import paginate, { MAX_REQUESTS_LIMIT } from '../paginate';
 import utils from '../utils';
@@ -15,10 +16,8 @@ interface QueryState extends BaseQueryState {
   repos: CursorState;
 }
 
-type QueryParams = {
+type QueryParams = RepoConnectionFilters & {
   login: string;
-  alertStates: string[];
-  gheServerVersion?: string;
 };
 
 /**
@@ -38,10 +37,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
           repositories(first: $maxLimit, after: $repoCursor) {
             nodes {
               id
-              ...${fragments.repositoryFields({
-                alertStates: queryParams.alertStates,
-                gheServerVersion: queryParams.gheServerVersion,
-              })}
+              ...${fragments.repositoryFields(queryParams)}
             }
             pageInfo {
               endCursor

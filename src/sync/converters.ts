@@ -565,11 +565,8 @@ export function toOrganizationCollaboratorEntity(
   return userEntity;
 }
 
-export function toIssueEntity(
-  data: IssueResponse,
-  repoName: string,
-): IssueEntity {
-  const issueName = repoName + '/' + String(data.number); //format matches name of PRs
+export function toIssueEntity(data: IssueResponse): IssueEntity {
+  const issueName = data.repoName + '/' + String(data.number); //format matches name of PRs
   const labels = data.labels?.map((l) => l.name);
   const truncatedIssueBody = truncateEntityPropertyValue(data.body);
 

@@ -16,7 +16,8 @@ interface QueryState extends BaseQueryState {
 }
 
 type QueryParams = {
-  repoFullName: string;
+  repoName: string;
+  login: string;
   lastExecutionTime: string;
 };
 
@@ -36,48 +37,29 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
 ): ExecutableQuery => {
   const query = `
     query(
-      $issueQuery: String!, 
+      $repoName: String!,
+      $login: String!
+      $since: DateTime!,
       $maxSearchLimit: Int!, 
       $maxInnerLimit: Int!,
       $issuesCursor: String
     ) {
-      search(
-        first: $maxSearchLimit, 
-        after: $issuesCursor, 
-        type: ISSUE, 
-        query: $issueQuery
-        ) {
-          issueCount
-          edges {
-            node {
-            ... ${fragments.issueFields}
-            
-            ... on Issue {
-                assignees(first: $maxInnerLimit) {
-                  totalCount
-                  nodes {
-                    name
-                    login
-                  }
-                  pageInfo {
-                    endCursor
-                    hasNextPage
-                  }
-                }
+      repository(name: $repoName, owner: $login) {
+        id
+        name
+        issues(first: $maxSearchLimit, after: $issuesCursor, filterBy: { since: $since }) {
+          nodes {
+            ${fragments.issueFields}
+            assignees(first: $maxInnerLimit) {
+              nodes {
+                name
+                login
               }
-              
-            ... on Issue {
-                labels(first: $maxInnerLimit) {
-                  totalCount
-                  nodes {
-                    id
-                    name
-                  }
-                  pageInfo {
-                    endCursor
-                    hasNextPage
-                  }
-                }
+            }
+            labels(first: $maxInnerLimit) {
+              nodes {
+                id
+                name
               }
             }
           }
@@ -86,7 +68,8 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
             hasNextPage
           }
         }
-        ...${fragments.rateLimit}
+      }
+      ...${fragments.rateLimit}
     }`;
 
   return {
@@ -95,7 +78,9 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      issueQuery: `is:issue repo:${queryParams.repoFullName} updated:>=${queryParams.lastExecutionTime}`,
+      login: queryParams.login,
+      repoName: queryParams.repoName,
+      since: queryParams.lastExecutionTime,
       maxSearchLimit: MAX_SEARCH_LIMIT,
       maxInnerLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.issues?.hasNextPage && {
@@ -119,17 +104,20 @@ const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
     throw new Error('responseData param is required');
   }
 
-  const rateLimit = responseData.rateLimit;
-  const issueEdges = responseData.search.edges;
+  console.log('Executed query for repo collaborators');
 
-  for (const edge of issueEdges) {
-    const issue = edge.node;
-    if (!utils.hasProperties(edge?.node)) {
+  const rateLimit = responseData.rateLimit;
+  const issues = responseData.repository?.issues?.nodes ?? [];
+
+  for (const issue of issues) {
+    if (!utils.hasProperties(issue)) {
       continue;
     }
 
     const resource = {
       ...issue,
+      repoId: responseData.repository?.id,
+      repoName: responseData.repository?.name,
       assignees: issue.assignees?.nodes ?? [],
       labels: issue.labels?.nodes ?? [],
     };
@@ -139,7 +127,7 @@ const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
 
   return {
     rateLimit,
-    issues: responseData.search.pageInfo,
+    issues: responseData.repository?.issues?.pageInfo,
   };
 };
 

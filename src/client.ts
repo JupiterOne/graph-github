@@ -33,6 +33,7 @@ import {
   Label,
   Commit,
   OrgExternalIdentifierQueryResponse,
+  RepoConnectionFilters,
 } from './client/GraphQLClient';
 import {
   CodeScanningAlertQueryResponse,
@@ -555,6 +556,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateRepos(
+    connectionFilters: Pick<RepoConnectionFilters, 'lastSuccessfulExecution'>,
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
@@ -562,8 +564,11 @@ export class APIClient {
     }
     const rateLimit = await this.graphQLClient.iterateOrgRepositories(
       iteratee,
-      this.config.dependabotAlertStates,
-      this.gheServerVersion,
+      {
+        ...connectionFilters,
+        alertStates: this.config.dependabotAlertStates,
+        gheServerVersion: this.gheServerVersion,
+      },
     );
     this.logger.info(
       { rateLimit },
@@ -769,7 +774,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateIssues(
-    repo: RepoEntity,
+    repoName: string,
     lastSuccessfulExecution: string,
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<void> {
@@ -778,7 +783,7 @@ export class APIClient {
     }
     if (this.scopes.repoIssues) {
       const rateLimit = await this.graphQLClient.iterateIssueEntities(
-        repo,
+        repoName,
         lastSuccessfulExecution,
         iteratee,
       );
@@ -789,6 +794,38 @@ export class APIClient {
     } else {
       this.logger.info(
         'Repo issues scope was not provided, skipping Issue ingestion.',
+      );
+    }
+  }
+
+  /**
+   * Iterates the issues for a repo in the provider.
+   *
+   * @param repo
+   * @param lastSuccessfulExecution
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedIssues(
+    repoIds: string[],
+    lastSuccessfulExecution: string,
+    iteratee: ResourceIteratee<IssueResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.repoIssues) {
+      const rateLimit = await this.graphQLClient.iterateBatchedIssueEntities(
+        repoIds,
+        lastSuccessfulExecution,
+        iteratee,
+      );
+      this.logger.info(
+        { rateLimit },
+        'Rate limit consumed while fetching batched Issues.',
+      );
+    } else {
+      this.logger.info(
+        'Repo issues scope was not provided, skipping batched Issue ingestion.',
       );
     }
   }
@@ -820,7 +857,6 @@ export class APIClient {
 
   public async iterateBatchedRepoVulnAlerts(
     repoIds: string[],
-    maxRequestLimit: number,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
   ) {
     if (!this.graphQLClient) {
@@ -834,7 +870,6 @@ export class APIClient {
         states: this.config.dependabotAlertStates,
         severities: this.config.dependabotAlertSeverities,
       },
-      maxRequestLimit,
       this.gheServerVersion,
     );
     this.logger.info(

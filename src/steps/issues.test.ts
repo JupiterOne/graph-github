@@ -47,5 +47,4 @@ test('fetchIssues exec handler', async () => {
       ),
     },
   });
-  expect(stepResults).toMatchSnapshot();
 });

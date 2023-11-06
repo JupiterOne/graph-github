@@ -228,6 +228,7 @@ export interface RepositoryOwner {
 }
 
 export interface Commit {
+  pullRequestId: string;
   oid: string;
   message: string;
   authoredDate: string;
@@ -248,10 +249,12 @@ export interface AssociatedPullRequest {
 }
 
 export interface Label {
+  pullRequestId: string;
   name: string;
 }
 
 export interface Review {
+  pullRequestId: string;
   state:
     | 'PENDING'
     | 'COMMENTED'
@@ -329,6 +332,15 @@ export interface PullRequestResponse extends Node {
   headRepository: {
     name: string;
     owner: RepositoryOwner;
+  };
+  commits: {
+    totalCount: number;
+  };
+  labels: {
+    totalCount: number;
+  };
+  reviews: {
+    totalCount: number;
   };
 }
 

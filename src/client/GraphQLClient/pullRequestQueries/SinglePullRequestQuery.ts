@@ -209,7 +209,7 @@ export const processResponseData = (
   const pullRequest = responseData.repository?.pullRequest;
 
   return {
-    resource: utils.responseToResource(pullRequest),
+    resource: utils.singlePrResponseToResource(pullRequest),
     queryState: {
       rateLimit: rateLimit,
       commits: pullRequest?.commits?.pageInfo,

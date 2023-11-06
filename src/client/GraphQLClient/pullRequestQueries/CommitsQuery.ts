@@ -43,6 +43,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     ) {
       repository(name: $repoName, owner: $repoOwner) {
         pullRequest(number: $pullRequestNumber) {
+          id
           commits(first: $maxLimit, after: $commitsCursor) {
             totalCount
             nodes {
@@ -90,6 +91,7 @@ const processResponseData: ProcessResponse<Commit, QueryState> = async (
   if (!responseData) {
     throw new Error('responseData param is required');
   }
+  console.log('Executed commits query');
 
   const rateLimit = responseData.rateLimit;
   const commitNodes = responseData.repository.pullRequest.commits.nodes;
@@ -99,7 +101,10 @@ const processResponseData: ProcessResponse<Commit, QueryState> = async (
       continue;
     }
 
-    await iteratee(commitNode.commit);
+    await iteratee({
+      pullRequestId: responseData.repository?.pullRequest?.id,
+      ...commitNode.commit,
+    });
   }
 
   return {

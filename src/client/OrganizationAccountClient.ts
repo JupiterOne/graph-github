@@ -273,7 +273,7 @@ export default class OrganizationAccountClient {
    * @param pullRequestNumber
    * @param iteratee
    */
-  async iterateReviewEntities(
+  async iterateReviews(
     repo: RepoEntity,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Review>,
@@ -291,6 +291,23 @@ export default class OrganizationAccountClient {
       pullRequestNumber,
       iteratee,
     );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over review entities.
+   * @param pullRequestIds
+   * @param isPublicRepo
+   * @param iteratee
+   */
+  async iterateBatchedReviews(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Review>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting Reviews.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateBatchedReviews(pullRequestIds, iteratee);
   }
 
   /**
@@ -319,12 +336,28 @@ export default class OrganizationAccountClient {
   }
 
   /**
+   * Calls the GraphQL client to iterate over label entities.
+   * @param pullRequestIds
+   * @param iteratee
+   */
+  async iterateBatchedLabelEntities(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting Labels.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateBatchedLabels(pullRequestIds, iteratee);
+  }
+
+  /**
    * Calls the GraphQL client to iterate over commit entities.
    * @param repo
    * @param pullRequestNumber
    * @param iteratee
    */
-  async iterateCommitEntities(
+  async iterateCommits(
     repo: RepoEntity,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Commit>,
@@ -341,6 +374,23 @@ export default class OrganizationAccountClient {
       pullRequestNumber,
       iteratee,
     );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over commit entities.
+   * @param repo
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  async iterateBatchedCommits(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting Commit.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateBatchedCommits(pullRequestIds, iteratee);
   }
 
   /**

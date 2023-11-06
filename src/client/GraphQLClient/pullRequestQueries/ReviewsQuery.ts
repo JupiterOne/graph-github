@@ -104,6 +104,7 @@ const processResponseData: ProcessResponse<Review, QueryState> = async (
   if (!responseData) {
     throw new Error('responseData param is required');
   }
+  console.log('Executed reviews query');
 
   const rateLimit = responseData.rateLimit;
   const reviewNodes = responseData.repository.pullRequest.reviews.nodes;

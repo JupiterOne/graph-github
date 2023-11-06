@@ -128,6 +128,15 @@ const pullRequestFields = (isPublicRepo: boolean) => {
     title
     updatedAt
     url
+    commits {
+      totalCount
+    }
+    labels {
+      totalCount
+    }
+    reviews {
+      totalCount
+    }
   }`;
 };
 

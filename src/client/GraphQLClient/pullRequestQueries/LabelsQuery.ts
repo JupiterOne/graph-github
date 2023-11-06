@@ -88,6 +88,7 @@ const processResponseData: ProcessResponse<Label, QueryState> = async (
   if (!responseData) {
     throw new Error('responseData param is required');
   }
+  console.log('Executed labels query');
 
   const rateLimit = responseData.rateLimit;
   const labelNodes = responseData.repository.pullRequest.labels.nodes;

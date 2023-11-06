@@ -614,24 +614,48 @@ export class APIClient {
    *
    * @param repo entity
    * @param pullRequestNumber number
-   * @param logger logger
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateReviews(
     repo: RepoEntity,
     pullRequestNumber: number,
-    logger: IntegrationLogger,
     iteratee: ResourceIteratee<Review>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.graphQLClient.iterateReviewEntities(
+    const rateLimit = await this.graphQLClient.iterateReviews(
       repo,
       pullRequestNumber,
       iteratee,
     );
-    logger.info({ rateLimit }, 'Rate limit consumed while fetching Reviews.');
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Reviews.',
+    );
+  }
+
+  /**
+   * Fetch all reviews from pull request resource in the provider.
+   *
+   * @param pullRequestIds string[]
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedReviews(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Review>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedReviews(
+      pullRequestIds,
+      iteratee,
+    );
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Reviews.',
+    );
   }
 
   /**
@@ -645,7 +669,6 @@ export class APIClient {
   public async iterateLabels(
     repo: RepoEntity,
     pullRequestNumber: number,
-    logger: IntegrationLogger,
     iteratee: ResourceIteratee<Label>,
   ): Promise<void> {
     if (!this.graphQLClient) {
@@ -656,7 +679,33 @@ export class APIClient {
       pullRequestNumber,
       iteratee,
     );
-    logger.info({ rateLimit }, 'Rate limit consumed while fetching Labels.');
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Labels.',
+    );
+  }
+
+  /**
+   * Fetch all labels from pull request resource in the provider.
+   *
+   * @param pullRequestIds string[]
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedLabels(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedLabelEntities(
+      pullRequestIds,
+      iteratee,
+    );
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching batched Labels.',
+    );
   }
 
   /**
@@ -670,18 +719,45 @@ export class APIClient {
   public async iterateCommits(
     repo: RepoEntity,
     pullRequestNumber: number,
-    logger: IntegrationLogger,
     iteratee: ResourceIteratee<Commit>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.graphQLClient.iterateCommitEntities(
+    const rateLimit = await this.graphQLClient.iterateCommits(
       repo,
       pullRequestNumber,
       iteratee,
     );
-    logger.info({ rateLimit }, 'Rate limit consumed while fetching Commits.');
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Commits.',
+    );
+  }
+
+  /**
+   * Fetch all commits from pull request resource in the provider.
+   *
+   * @param repo entity
+   * @param pullRequestNumber number
+   * @param logger logger
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedCommits(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedCommits(
+      pullRequestIds,
+      iteratee,
+    );
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching Commits.',
+    );
   }
 
   /**

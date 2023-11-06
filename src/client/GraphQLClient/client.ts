@@ -64,6 +64,9 @@ import BatchedRepoCollaboratorsQuery from './collaboratorQueries/BatchedRepoColl
 import BatchedRepoVulnAlertsQuery from './vulnerabilityAlertQueries/BatchedRepoVulnAlertsQuery';
 import BatchedTeamRepositoriesQuery from './repositoryQueries/BatchedTeamRepositoriesQuery';
 import BatchedIssuesQuery from './issueQueries/BatchedIssuesQuery';
+import BatchedCommitsQuery from './pullRequestQueries/BatchedCommitsQuery';
+import BatchedLabelsQuery from './pullRequestQueries/BatchedLabelsQuery';
+import BatchedReviewsQuery from './pullRequestQueries/BatchedReviewsQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -271,6 +274,28 @@ export class GitHubGraphQLClient {
   }
 
   /**
+   * Iterates over reviews for the given pull request ids.
+   * @param pullRequestIds
+   * @param iteratee
+   */
+  public async iterateBatchedReviews(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Review>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedReviewsQuery.iterateReviews(
+        {
+          pullRequestIds,
+        },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  /**
    * Iterates over labels for the given pull request.
    * @param repository
    * @param pullRequestNumber
@@ -298,6 +323,29 @@ export class GitHubGraphQLClient {
   }
 
   /**
+   * Iterates over labels for the given pull request.
+   * @param repository
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  public async iterateBatchedLabels(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedLabelsQuery.iterateLabels(
+        {
+          pullRequestIds,
+        },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  /**
    * Iterates over commits for the given pull request.
    * @param repository
    * @param pullRequestNumber
@@ -320,6 +368,29 @@ export class GitHubGraphQLClient {
         executor,
         iteratee,
         this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over commits for the given pull request ids.
+   * @param repository
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  public async iterateBatchedCommits(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedCommitsQuery.iterateCommits(
+        {
+          pullRequestIds,
+        },
+        executor,
+        iteratee,
       ),
     );
   }

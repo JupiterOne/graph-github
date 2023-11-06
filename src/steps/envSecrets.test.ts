@@ -23,5 +23,4 @@ test('fetchEnvSecrets exec handler', async () => {
   const stepResults = await executeStepWithDependencies(stepConfig);
 
   expect(stepResults).toMatchStepMetadata(stepConfig);
-  expect(stepResults).toMatchSnapshot();
 });

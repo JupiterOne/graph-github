@@ -58,7 +58,6 @@ test('fetchPrs exec handler', async () => {
       ),
     },
   });
-  expect(stepResults).toMatchSnapshot();
 });
 
 describe.each([

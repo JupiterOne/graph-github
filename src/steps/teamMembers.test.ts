@@ -1,13 +1,12 @@
-import { Recording } from '@jupiterone/integration-sdk-testing';
-import { sanitizeConfig } from '../config';
-import { teamMemberSteps } from './teamMembers';
-import { integrationConfig } from '../../test/config';
-import { setupGithubRecording } from '../../test/recording';
-import { Relationships } from '../constants';
-import { invocationConfig } from '..';
-import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
-
 jest.setTimeout(20000);
+
+import {
+  Recording,
+  executeStepWithDependencies,
+} from '@jupiterone/integration-sdk-testing';
+import { buildStepTestConfig } from '../../test/config';
+import { setupGithubRecording } from '../../test/recording';
+import { Steps } from '../constants';
 
 let recording: Recording;
 afterEach(async () => {
@@ -19,31 +18,9 @@ test('fetchTeamMembers exec handler', async () => {
     directory: __dirname,
     name: 'teamMembers',
   });
-  sanitizeConfig(integrationConfig);
 
-  const { collectedEntities, collectedRelationships, encounteredTypes } =
-    await executeStepWithDependencies({
-      stepId: teamMemberSteps[0].id,
-      invocationConfig: invocationConfig as any,
-      instanceConfig: integrationConfig,
-    });
+  const stepConfig = buildStepTestConfig(Steps.FETCH_TEAM_MEMBERS);
+  const stepResults = await executeStepWithDependencies(stepConfig);
 
-  expect({
-    numCollectedEntities: collectedEntities.length,
-    numCollectedRelationships: collectedRelationships.length,
-    collectedEntities: collectedEntities,
-    collectedRelationships: collectedRelationships,
-    encounteredTypes: encounteredTypes,
-  }).toMatchSnapshot();
-
-  // this step only makes relationships
-  const teamHasMemberRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.TEAM_HAS_USER._type,
-  );
-  expect(teamHasMemberRels.length).toBeGreaterThan(0);
-
-  const memberManagesTeamRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.USER_MANAGES_TEAM._type,
-  );
-  expect(memberManagesTeamRels.length).toBeGreaterThan(0);
+  expect(stepResults).toMatchStepMetadata(stepConfig);
 });

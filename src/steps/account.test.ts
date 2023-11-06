@@ -1,11 +1,10 @@
-import { Recording } from '@jupiterone/integration-sdk-testing';
-import { sanitizeConfig } from '../config';
-import { DATA_ACCOUNT_ENTITY, accountSteps } from './account';
-import { integrationConfig } from '../../test/config';
-import { invocationConfig } from '..';
+import {
+  Recording,
+  executeStepWithDependencies,
+} from '@jupiterone/integration-sdk-testing';
+import { buildStepTestConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
-import { GithubEntities } from '../constants';
+import { Steps } from '../constants';
 
 let recording: Recording;
 afterEach(async () => {
@@ -17,32 +16,9 @@ test('fetchAccountDetails exec handler', async () => {
     directory: __dirname,
     name: 'account',
   });
-  sanitizeConfig(integrationConfig);
 
-  const {
-    collectedEntities,
-    collectedRelationships,
-    encounteredTypes,
-    jobState,
-  } = await executeStepWithDependencies({
-    stepId: accountSteps[0].id,
-    invocationConfig: invocationConfig as any,
-    instanceConfig: integrationConfig,
-  });
+  const stepConfig = buildStepTestConfig(Steps.FETCH_ACCOUNT);
+  const stepResults = await executeStepWithDependencies(stepConfig);
 
-  expect({
-    numCollectedEntities: collectedEntities.length,
-    numCollectedRelationships: collectedRelationships.length,
-    collectedEntities: collectedEntities,
-    collectedRelationships: collectedRelationships,
-    encounteredTypes: encounteredTypes,
-  }).toMatchSnapshot();
-  expect(collectedEntities.length).toEqual(1);
-  expect(collectedEntities).toMatchGraphObjectSchema(
-    GithubEntities.GITHUB_ACCOUNT,
-  );
-
-  // ensure that we are setting the account entity in the jobState as expected
-  const entityFromConstant = await jobState.getData(DATA_ACCOUNT_ENTITY);
-  expect(entityFromConstant).toEqual(collectedEntities[0]);
+  expect(stepResults).toMatchStepMetadata(stepConfig);
 });

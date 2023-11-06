@@ -22,6 +22,7 @@ import {
   RepoEnvironmentQueryResponse,
   CodeScanningAlertQueryResponse,
   SecretScanningAlertQueryResponse,
+  RepoTopicQueryResponse,
 } from './RESTClient/types';
 import { RepoEntity } from '../types';
 import { request } from '@octokit/request';
@@ -450,6 +451,31 @@ export default class OrganizationAccountClient {
       this.logger.warn(
         err,
         'Error while attempting to ingest organization secret scanning alerts',
+      );
+      throw new IntegrationError(err);
+    }
+  }
+
+  async getRepositoryTopics(
+    repoName: string,
+  ): Promise<RepoTopicQueryResponse[]> {
+    try {
+      const repoTopics = await this.v3.paginate(
+        'GET /repos/{owner}/{repo}/topics' as any, //https://docs.github.com/en/free-pro-team@latest/rest/repos/repos?apiVersion=2022-11-28#get-all-repository-topics
+        {
+          owner: this.login,
+          repo: repoName,
+        },
+        (response) => {
+          this.v3RateLimitConsumed++;
+          return response.data.names;
+        },
+      );
+      return repoTopics || [];
+    } catch (err) {
+      this.logger.warn(
+        { repoName },
+        `Error while attempting to ingest topics for repo ${repoName}`,
       );
       throw new IntegrationError(err);
     }

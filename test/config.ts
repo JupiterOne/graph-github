@@ -3,7 +3,10 @@ import * as path from 'path';
 import { IntegrationConfig, sanitizeConfig } from '../src/config';
 import { getFakeRsaKey } from '../src/util/sha';
 import { invocationConfig } from '../src';
-import { IntegrationInvocationConfig } from '@jupiterone/integration-sdk-core';
+import {
+  IntegrationInvocationConfig,
+  Relationship,
+} from '@jupiterone/integration-sdk-core';
 import { StepTestConfig } from '@jupiterone/integration-sdk-testing';
 
 if (process.env.LOAD_ENV) {
@@ -35,4 +38,14 @@ export function buildStepTestConfig(stepId: string): StepTestConfig {
     instanceConfig: integrationConfig,
     invocationConfig: invocationConfig as IntegrationInvocationConfig,
   };
+}
+
+function isMappedRelationship(r: Relationship): boolean {
+  return !!r._mapping;
+}
+
+export function filterDirectRelationships(
+  relationships: Relationship[],
+): Relationship[] {
+  return relationships.filter((r) => !isMappedRelationship(r));
 }

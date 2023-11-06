@@ -34,7 +34,7 @@ const buildQuery: BuildQuery<string, QueryState> = (
           repositories(first: $maxLimit, after: $repoCursor) {
             nodes {
               id
-					    ...${fragments.repositoryFields}
+              ...${fragments.repositoryFields}
             }
             pageInfo {
               endCursor

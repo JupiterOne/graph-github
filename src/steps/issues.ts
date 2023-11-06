@@ -25,6 +25,7 @@ import {
   Steps,
   IngestionSources,
   Relationships,
+  MappedRelationships,
 } from '../constants';
 
 export async function fetchIssues(
@@ -157,6 +158,10 @@ export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
       Relationships.REPO_HAS_ISSUE,
       Relationships.USER_CREATED_ISSUE,
       Relationships.USER_ASSIGNED_ISSUE,
+    ],
+    mappedRelationships: [
+      MappedRelationships.USER_CREATED_ISSUE,
+      MappedRelationships.USER_ASSIGNED_ISSUE,
     ],
     dependsOn: [
       Steps.FETCH_REPOS,

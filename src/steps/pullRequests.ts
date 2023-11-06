@@ -24,6 +24,7 @@ import {
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
   GithubEntities,
   IngestionSources,
+  MappedRelationships,
   Relationships,
   Steps,
 } from '../constants';
@@ -328,6 +329,11 @@ export const prSteps: IntegrationStep<IntegrationConfig>[] = [
       Relationships.USER_OPENED_PULLREQUEST,
       Relationships.USER_REVIEWED_PULLREQUEST,
       Relationships.PULLREQUEST_CONTAINS_PULLREQUEST,
+    ],
+    mappedRelationships: [
+      MappedRelationships.USER_OPENED_PULLREQUEST,
+      MappedRelationships.USER_REVIEWED_PULLREQUEST,
+      MappedRelationships.USER_APPROVED_PULLREQUEST,
     ],
     dependsOn: [
       Steps.FETCH_REPOS,

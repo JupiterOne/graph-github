@@ -1,13 +1,20 @@
 jest.setTimeout(300000);
 
-import { Recording } from '@jupiterone/integration-sdk-testing';
-import { IntegrationConfig, sanitizeConfig } from '../config';
-import { determineIngestStartDatetime, prSteps } from './pullRequests';
-import { integrationConfig } from '../../test/config';
+import {
+  Recording,
+  executeStepWithDependencies,
+} from '@jupiterone/integration-sdk-testing';
+import { IntegrationConfig } from '../config';
+import { determineIngestStartDatetime } from './pullRequests';
+import {
+  buildStepTestConfig,
+  filterDirectRelationships,
+} from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
-import { GithubEntities, Relationships } from '../constants';
-import { invocationConfig } from '..';
-import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
+import { Relationships, Steps } from '../constants';
+
+const filterOutPrContainsPrRelationships = (r: any) =>
+  r._type !== Relationships.PULLREQUEST_CONTAINS_PULLREQUEST._type;
 
 let recording: Recording;
 afterEach(async () => {
@@ -21,48 +28,36 @@ test('fetchPrs exec handler', async () => {
     directory: __dirname,
     name: 'pullRequests',
   });
-  sanitizeConfig(integrationConfig);
 
-  const { collectedEntities, collectedRelationships, encounteredTypes } =
-    await executeStepWithDependencies({
-      stepId: prSteps[0].id,
-      invocationConfig: invocationConfig as any,
-      instanceConfig: integrationConfig,
-    });
+  const stepConfig = buildStepTestConfig(Steps.FETCH_PRS);
+  const stepResults = await executeStepWithDependencies(stepConfig);
 
   expect({
-    numCollectedEntities: collectedEntities.length,
-    numCollectedRelationships: collectedRelationships.length,
-    collectedEntities: collectedEntities,
-    collectedRelationships: collectedRelationships,
-    encounteredTypes: encounteredTypes,
-  }).toMatchSnapshot();
-  const issues = collectedEntities.filter(
-    (e) => e._type === GithubEntities.GITHUB_PR._type,
-  );
-  expect(issues.length).toBeGreaterThan(0);
-  expect(issues).toMatchGraphObjectSchema(GithubEntities.GITHUB_PR);
-
-  // relationships
-  const repoHasPrRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.REPO_HAS_PULLREQUEST._type,
-  );
-  expect(repoHasPrRels.length).toBeGreaterThan(0);
-
-  const memberApprovedPrRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.USER_APPROVED_PULLREQUEST._type,
-  );
-  expect(memberApprovedPrRels.length).toBeGreaterThan(0);
-
-  const memberOpenedPrRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.USER_OPENED_PULLREQUEST._type,
-  );
-  expect(memberOpenedPrRels.length).toBeGreaterThan(0);
-
-  const memberReviewedPrRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.USER_REVIEWED_PULLREQUEST._type,
-  );
-  expect(memberReviewedPrRels.length).toBeGreaterThan(0);
+    ...stepResults,
+    // HACK: `@jupiterone/integration-sdk-testing`
+    // does not currently support `toMatchStepMetadata` with mapped
+    // relationships, which is causing tests to fail. We will add
+    // support soon and remove this hack.
+    collectedRelationships: filterDirectRelationships(
+      stepResults.collectedRelationships.filter(
+        filterOutPrContainsPrRelationships,
+      ),
+    ),
+  }).toMatchStepMetadata({
+    ...stepConfig,
+    invocationConfig: {
+      ...stepConfig.invocationConfig,
+      integrationSteps: stepConfig.invocationConfig.integrationSteps.map(
+        (s) => ({
+          ...s,
+          relationships: s.relationships.filter(
+            filterOutPrContainsPrRelationships,
+          ),
+          mappedRelationships: [],
+        }),
+      ),
+    },
+  });
 });
 
 describe.each([

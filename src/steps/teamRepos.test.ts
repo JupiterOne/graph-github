@@ -1,13 +1,12 @@
-import { Recording } from '@jupiterone/integration-sdk-testing';
-import { sanitizeConfig } from '../config';
-import { teamRepoSteps } from './teamRepos';
-import { integrationConfig } from '../../test/config';
-import { setupGithubRecording } from '../../test/recording';
-import { invocationConfig } from '..';
-import { executeStepWithDependencies } from '../../test/executeStepWithDependencies';
-import { Relationships } from '../constants';
-
 jest.setTimeout(20000);
+
+import {
+  Recording,
+  executeStepWithDependencies,
+} from '@jupiterone/integration-sdk-testing';
+import { buildStepTestConfig } from '../../test/config';
+import { setupGithubRecording } from '../../test/recording';
+import { Steps } from '../constants';
 
 let recording: Recording;
 afterEach(async () => {
@@ -19,26 +18,8 @@ test('fetchTeamRepos exec handler', async () => {
     directory: __dirname,
     name: 'teamRepos',
   });
-  sanitizeConfig(integrationConfig);
+  const stepConfig = buildStepTestConfig(Steps.FETCH_TEAM_REPOS);
+  const stepResults = await executeStepWithDependencies(stepConfig);
 
-  const { collectedEntities, collectedRelationships, encounteredTypes } =
-    await executeStepWithDependencies({
-      stepId: teamRepoSteps[0].id,
-      invocationConfig: invocationConfig as any,
-      instanceConfig: integrationConfig,
-    });
-
-  expect({
-    numCollectedEntities: collectedEntities.length,
-    numCollectedRelationships: collectedRelationships.length,
-    collectedEntities: collectedEntities,
-    collectedRelationships: collectedRelationships,
-    encounteredTypes: encounteredTypes,
-  }).toMatchSnapshot();
-
-  // this step only makes relationships
-  const repoAllowsTeamRels = collectedRelationships.filter(
-    (e) => e._type === Relationships.REPO_ALLOWS_TEAM._type,
-  );
-  expect(repoAllowsTeamRels.length).toBeGreaterThan(0);
+  expect(stepResults).toMatchStepMetadata(stepConfig);
 });

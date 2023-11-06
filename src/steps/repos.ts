@@ -63,6 +63,13 @@ export async function fetchRepos({
           decorateRepoEntityWithPagesInfo(repoEntity, pagesInfo);
         }
       })(),
+      (async () => {
+        const topics: string[] = [];
+        await apiClient.iterateTopics(repo.name, (topic) => {
+          topics.push(topic);
+        });
+        repoEntity.topics = topics;
+      })(),
     ]);
     await jobState.addEntity(repoEntity);
 

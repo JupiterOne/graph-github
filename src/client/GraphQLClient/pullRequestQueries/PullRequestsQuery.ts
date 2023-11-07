@@ -10,6 +10,7 @@ import {
 import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import fragments from '../fragments';
+import { GithubTimeoutError, buildTimeoutHandler } from '../timeoutHandler';
 
 interface QueryState extends BaseQueryState {
   pullRequests: CursorState;
@@ -198,63 +199,32 @@ const iteratePullRequests: IteratePagination<
   iteratee,
   logger,
 ): Promise<RateLimitStepSummary> => {
-  const originalMaxSearchLimit = queryParams.maxSearchLimit;
-  const requestLimitState = {
-    isActive: false,
-    count: originalMaxSearchLimit,
-    limit: originalMaxSearchLimit,
-  };
   let pullRequestFetched = 0;
   let queryCost = 0;
   let queryState: QueryState | undefined = undefined;
   let paginationComplete = false;
 
-  const countIteratee = async (pullRequest: PullRequestResponse) => {
+  const countIteratee: ResourceIteratee<PullRequestResponse> = async (
+    pullRequest: PullRequestResponse,
+  ) => {
     pullRequestFetched++;
-    if (requestLimitState.isActive) {
-      requestLimitState.count--;
-      if (requestLimitState.count === 0) {
-        // reset state to continue requesting as default
-        requestLimitState.isActive = false;
-        requestLimitState.count = originalMaxSearchLimit;
-        requestLimitState.limit = originalMaxSearchLimit;
-        queryParams.maxSearchLimit = originalMaxSearchLimit;
-        logger?.info(
-          { queryParams, queryState },
-          'Finish querying page by half the search limit.',
-        );
-      }
-    }
     await iteratee(pullRequest);
   };
 
+  const withTimeoutHandler = buildTimeoutHandler({
+    queryParams,
+    maxLimitKey: 'maxSearchLimit',
+    logger,
+  });
+
   while (!paginationComplete) {
     const executable = buildQuery(queryParams, queryState);
+    const { response, retry } = await withTimeoutHandler(async () =>
+      execute(executable),
+    );
 
-    let response: any;
-    try {
-      response = await execute(executable);
-    } catch (err) {
-      if (err.message?.includes('This may be the result of a timeout')) {
-        requestLimitState.isActive = true;
-        const newSearchLimit = Math.max(
-          Math.floor(requestLimitState.limit / 2),
-          1,
-        );
-        if (newSearchLimit === requestLimitState.limit) {
-          // prevent infinite loop: newSearchLimit is 1 and it already failed using 1
-          throw err;
-        }
-        requestLimitState.limit = newSearchLimit;
-        queryParams.maxSearchLimit = newSearchLimit;
-        logger?.info(
-          { queryParams, queryState },
-          'Search Pull Requests timeout. Start querying by half the search limit.',
-        );
-        continue;
-      } else {
-        throw err;
-      }
+    if (retry) {
+      continue;
     }
 
     queryState = await processResponseData(response, countIteratee);

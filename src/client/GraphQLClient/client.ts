@@ -68,6 +68,7 @@ import BatchedCommitsQuery from './pullRequestQueries/BatchedCommitsQuery';
 import BatchedLabelsQuery from './pullRequestQueries/BatchedLabelsQuery';
 import BatchedReviewsQuery from './pullRequestQueries/BatchedReviewsQuery';
 import BatchedTeamMembersQuery from './memberQueries/BatchedTeamMembersQuery';
+import { MAX_REQUESTS_LIMIT, MAX_SEARCH_LIMIT } from './paginate';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -266,6 +267,7 @@ export class GitHubGraphQLClient {
           repoOwner: repository.owner,
           isPublicRepo: repository.isPublic,
           pullRequestNumber,
+          maxLimit: MAX_SEARCH_LIMIT,
         },
         executor,
         iteratee,
@@ -315,6 +317,7 @@ export class GitHubGraphQLClient {
           repoName: repository.name,
           repoOwner: repository.owner,
           pullRequestNumber,
+          maxLimit: MAX_SEARCH_LIMIT,
         },
         executor,
         iteratee,
@@ -365,6 +368,7 @@ export class GitHubGraphQLClient {
           repoName: repository.name,
           repoOwner: repository.owner,
           pullRequestNumber,
+          maxLimit: MAX_SEARCH_LIMIT,
         },
         executor,
         iteratee,
@@ -412,9 +416,10 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await IssuesQuery.iterateIssues(
-        { login, repoName, lastExecutionTime },
+        { login, repoName, lastExecutionTime, maxLimit: MAX_SEARCH_LIMIT },
         executor,
         iteratee,
+        this.logger,
       ),
     );
   }
@@ -455,9 +460,10 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await OrgRepositoriesQuery.iterateRepositories(
-        { login, ...connectionFilters },
+        { login, maxLimit: MAX_REQUESTS_LIMIT, ...connectionFilters },
         executor,
         iteratee,
+        this.logger,
       ),
     );
   }
@@ -470,7 +476,12 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
-      await TagsQuery.iterateTags({ repoName, repoOwner }, executor, iteratee),
+      await TagsQuery.iterateTags(
+        { repoName, repoOwner, maxLimit: MAX_REQUESTS_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
     );
   }
 
@@ -486,7 +497,12 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
-      await TeamsQuery.iterateTeams(login, executor, iteratee),
+      await TeamsQuery.iterateTeams(
+        { login, maxLimit: MAX_REQUESTS_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
     );
   }
 
@@ -508,9 +524,11 @@ export class GitHubGraphQLClient {
         {
           login,
           repoName,
+          maxLimit: MAX_REQUESTS_LIMIT,
         },
         executor,
         iteratee,
+        this.logger,
       ),
     );
   }
@@ -556,9 +574,11 @@ export class GitHubGraphQLClient {
         {
           login,
           teamSlug,
+          maxLimit: MAX_REQUESTS_LIMIT,
         },
         executor,
         iteratee,
+        this.logger,
       ),
     );
   }
@@ -597,7 +617,12 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
-      await OrgMembersQuery.iterateMembers(login, executor, iteratee),
+      await OrgMembersQuery.iterateMembers(
+        { login, maxLimit: MAX_REQUESTS_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
     );
   }
 
@@ -613,9 +638,10 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
     return this.collectRateLimitStatus(
       await ExternalIdentifiersQuery.iterateExternalIdentifiers(
-        login,
+        { login, maxLimit: MAX_REQUESTS_LIMIT },
         executor,
         iteratee,
+        this.logger,
       ),
     );
   }
@@ -635,9 +661,10 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await TeamMembersQuery.iterateMembers(
-        { login, teamSlug },
+        { login, teamSlug, maxLimit: MAX_REQUESTS_LIMIT },
         executor,
         iteratee,
+        this.logger,
       ),
     );
   }
@@ -684,6 +711,7 @@ export class GitHubGraphQLClient {
         },
         executor,
         iteratee,
+        this.logger,
       ),
     );
   }
@@ -810,10 +838,32 @@ export class GitHubGraphQLClient {
       // Check https://github.com/lifeomic/attempt for options on retry
       return await retry(queryWithPreRetryErrorHandling, {
         maxAttempts: 3,
-        calculateDelay: () => retryDelay,
+        calculateDelay: (context, options) => {
+          if (retryDelay === 0) {
+            // no delay between attempts
+            return 0;
+          }
+          if (options.factor) {
+            retryDelay *= Math.pow(options.factor, context.attemptNum - 1);
+
+            if (options.maxDelay !== 0) {
+              retryDelay = Math.min(retryDelay, options.maxDelay);
+            }
+          }
+          return retryDelay;
+        },
         timeout: 180_000, // 3 min timeout. We need this in case Node hangs with ETIMEDOUT
         factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min
         handleError: async (error, attemptContext) => {
+          if (error.message?.includes('This may be the result of a timeout')) {
+            logger.warn(
+              { attemptContext, error, queryString, queryVariables },
+              'Hit a Github Timeout. Aborting.',
+            );
+            attemptContext.abort();
+            return;
+          }
+
           if (attemptContext.aborted) {
             logger.warn(
               { attemptContext, error, queryString, queryVariables },

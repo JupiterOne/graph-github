@@ -19,6 +19,7 @@ type QueryParams = {
   repoName: string;
   repoOwner: string;
   pullRequestNumber: number;
+  maxLimit: number;
 };
 
 /**
@@ -67,10 +68,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      maxLimit: MAX_SEARCH_LIMIT,
-      pullRequestNumber: queryParams.pullRequestNumber,
-      repoName: queryParams.repoName,
-      repoOwner: queryParams.repoOwner,
+      ...queryParams,
       ...(queryState?.commits?.hasNextPage && {
         commitsCursor: queryState?.commits.endCursor,
       }),
@@ -124,6 +122,7 @@ const iterateCommits: IteratePagination<QueryParams, Commit> = async (
   queryParams,
   execute,
   iteratee,
+  logger,
 ) => {
   return paginate(
     queryParams,
@@ -132,6 +131,8 @@ const iterateCommits: IteratePagination<QueryParams, Commit> = async (
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.commits?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

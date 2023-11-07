@@ -8,7 +8,7 @@ import {
   ProcessResponse,
   RepoConnectionFilters,
 } from '../types';
-import paginate, { MAX_REQUESTS_LIMIT } from '../paginate';
+import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -18,6 +18,7 @@ interface QueryState extends BaseQueryState {
 
 type QueryParams = RepoConnectionFilters & {
   login: string;
+  maxLimit: number;
 };
 
 /**
@@ -55,7 +56,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     }),
     queryVariables: {
       login: queryParams.login,
-      maxLimit: MAX_REQUESTS_LIMIT,
+      maxLimit: queryParams.maxLimit,
       ...(queryState?.repos?.hasNextPage && {
         repoCursor: queryState.repos.endCursor,
       }),
@@ -99,7 +100,7 @@ const processResponseData: ProcessResponse<
 const iterateRepositories: IteratePagination<
   QueryParams,
   OrgRepoQueryResponse
-> = async (queryParams, execute, iteratee) => {
+> = async (queryParams, execute, iteratee, logger) => {
   return paginate(
     queryParams,
     iteratee,
@@ -107,6 +108,8 @@ const iterateRepositories: IteratePagination<
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.repos?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

@@ -22,8 +22,8 @@ import {
   MEMBERS_TOTAL_BY_TEAM,
   TEAM_DATA_MAP,
 } from '../constants';
-import { TeamData, TeamEntity } from '../types';
-import { batchSeparateKeys } from '../client/GraphQLClient/batchUtils';
+import { TeamData } from '../types';
+import { withBatching } from '../client/GraphQLClient/batchUtils';
 
 export async function fetchTeamMembers({
   instance,
@@ -48,27 +48,24 @@ export async function fetchTeamMembers({
     return;
   }
 
-  const threshold = 100;
-  const {
-    batchedEntityKeys: batchedTeamKeys,
-    singleEntityKeys: singleTeamKeys,
-  } = batchSeparateKeys(membersTotalByRepo, threshold);
-  console.log('batchedTeamKeys :>> ', batchedTeamKeys);
-  console.log('singleTeamKeys :>> ', singleTeamKeys);
-
   const iteratee = buildIteratee({ jobState, logger, config });
 
-  for (const teamKeys of batchedTeamKeys) {
-    await apiClient.iterateBatchedTeamMembers(teamKeys, iteratee);
-  }
+  await withBatching({
+    totalConnectionsById: membersTotalByRepo,
+    threshold: 100,
+    batchCb: async (teamKeys) => {
+      await apiClient.iterateBatchedTeamMembers(teamKeys, iteratee);
+    },
+    singleCb: async (teamKey) => {
+      const teamData = teamDataMap.get(teamKey);
+      if (!teamData) {
+        return;
+      }
+      await apiClient.iterateTeamMembers(teamData.name, iteratee);
+    },
+  });
 
-  for (const teamKey of singleTeamKeys) {
-    const teamData = teamDataMap.get(teamKey);
-    if (!teamData) {
-      continue;
-    }
-    await apiClient.iterateTeamMembers(teamData.name, iteratee);
-  }
+  await jobState.deleteData(MEMBERS_TOTAL_BY_TEAM);
 }
 
 const buildIteratee = ({

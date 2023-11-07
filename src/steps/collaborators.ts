@@ -28,7 +28,7 @@ import {
   Relationships,
   COLLABORATORS_TOTAL_BY_REPO,
 } from '../constants';
-import { batchSeparateKeys } from '../client/GraphQLClient/batchUtils';
+import { withBatching } from '../client/GraphQLClient/batchUtils';
 import { CollaboratorResponse } from '../client/GraphQLClient';
 
 export async function fetchCollaborators({
@@ -67,14 +67,6 @@ export async function fetchCollaborators({
     return;
   }
 
-  const threshold = 100;
-  const {
-    batchedEntityKeys: batchedRepoKeys,
-    singleEntityKeys: singleRepoKeys,
-  } = batchSeparateKeys(collaboratorsTotalByRepo, threshold);
-  console.log('batchedRepoKeys :>> ', batchedRepoKeys);
-  console.log('singleRepoKeys :>> ', singleRepoKeys);
-
   const iteratee = buildIteratee({
     jobState,
     config,
@@ -84,23 +76,29 @@ export async function fetchCollaborators({
     outsideCollaboratorsArray,
   });
 
-  for (const repoKeys of batchedRepoKeys) {
-    await apiClient.iterateBatchedRepoCollaborators(repoKeys, iteratee);
-  }
+  await withBatching({
+    totalConnectionsById: collaboratorsTotalByRepo,
+    threshold: 100,
+    batchCb: async (repoKeys) => {
+      await apiClient.iterateBatchedRepoCollaborators(repoKeys, iteratee);
+    },
+    singleCb: async (repoKey) => {
+      const repoData = repoTags.get(repoKey);
+      if (!repoData) {
+        return;
+      }
+      await apiClient.iterateRepoCollaborators(repoData.name, iteratee);
+    },
+  });
 
-  for (const repoKey of singleRepoKeys) {
-    const repoData = repoTags.get(repoKey);
-    if (!repoData) {
-      continue;
-    }
-    await apiClient.iterateRepoCollaborators(repoData.name, iteratee);
-  }
-
-  //pullrequests.ts will want the outside collaborator info later
-  await jobState.setData(
-    GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
-    outsideCollaboratorsArray,
-  );
+  await Promise.all([
+    //pullrequests.ts will want the outside collaborator info later
+    jobState.setData(
+      GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+      outsideCollaboratorsArray,
+    ),
+    jobState.deleteData(COLLABORATORS_TOTAL_BY_REPO),
+  ]);
 }
 
 function buildIteratee({

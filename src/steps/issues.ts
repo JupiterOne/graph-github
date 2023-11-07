@@ -16,7 +16,6 @@ import {
 } from '../sync/converters';
 import {
   IdEntityMap,
-  RepoEntity,
   IssueEntity,
   OutsideCollaboratorData,
   RepoData,
@@ -32,7 +31,7 @@ import {
   ISSUES_TOTAL_BY_REPO,
   GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
-import { batchSeparateKeys } from '../client/GraphQLClient/batchUtils';
+import { withBatching } from '../client/GraphQLClient/batchUtils';
 import { IssueResponse } from '../client/GraphQLClient';
 
 export async function fetchIssues(
@@ -89,42 +88,39 @@ export async function fetchIssues(
     return;
   }
 
-  const threshold = 100;
-  const {
-    batchedEntityKeys: batchedRepoKeys,
-    singleEntityKeys: singleRepoKeys,
-  } = batchSeparateKeys(issuesTotalByRepo, threshold);
-  console.log('batchedRepoKeys :>> ', batchedRepoKeys);
-  console.log('singleRepoKeys :>> ', singleRepoKeys);
-
   const iteratee = buildIteratee({ jobState, usersByLoginMap });
 
-  for (const repoKeys of batchedRepoKeys) {
-    await apiClient.iterateBatchedIssues(
-      repoKeys,
-      lastSuccessfulExecution,
-      iteratee,
-    );
-  }
-
-  for (const repoKey of singleRepoKeys) {
-    const repoData = repoTags.get(repoKey);
-    if (!repoData) {
-      continue;
-    }
-    try {
-      await apiClient.iterateIssues(
-        repoData.name,
+  await withBatching({
+    totalConnectionsById: issuesTotalByRepo,
+    threshold: 25,
+    batchCb: async (repoKeys) => {
+      await apiClient.iterateBatchedIssues(
+        repoKeys,
         lastSuccessfulExecution,
         iteratee,
       );
-    } catch (err) {
-      apiClient.logger.warn(
-        err,
-        `Had an error ingesting Issues for repo ${repoKey}. Skipping and continuing.`,
-      );
-    }
-  }
+    },
+    singleCb: async (repoKey) => {
+      const repoData = repoTags.get(repoKey);
+      if (!repoData) {
+        return;
+      }
+      try {
+        await apiClient.iterateIssues(
+          repoData.name,
+          lastSuccessfulExecution,
+          iteratee,
+        );
+      } catch (err) {
+        apiClient.logger.warn(
+          err,
+          `Had an error ingesting Issues for repo ${repoKey}. Skipping and continuing.`,
+        );
+      }
+    },
+  });
+
+  await jobState.deleteData(ISSUES_TOTAL_BY_REPO);
 }
 
 function buildIteratee({

@@ -1,4 +1,99 @@
-export const batchSeparateKeys = (
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
+
+type BatchingOptions = {
+  totalConnectionsById: Map<string, number>;
+  threshold: number;
+  logger?: IntegrationLogger;
+  batchCb: (entityIds: string[]) => Promise<void>;
+  singleCb: (entityId: string) => Promise<void>;
+};
+
+export const withBatching = async ({
+  totalConnectionsById,
+  threshold,
+  logger,
+  batchCb,
+  singleCb,
+}: BatchingOptions) => {
+  const { batchedEntityKeys, singleEntityKeys } = batchSeparateKeys(
+    totalConnectionsById,
+    threshold,
+  );
+
+  const batchLoop = async ({
+    batchedEntityKeys,
+    totalConnectionsById,
+    threshold,
+    batchCb,
+  }: {
+    batchedEntityKeys: string[][];
+    totalConnectionsById: Map<string, number>;
+    threshold: number;
+    batchCb: (entityIds: string[]) => Promise<void>;
+  }) => {
+    const retrySingleEntityKeys: string[] = [];
+    for (const [index, entityIds] of batchedEntityKeys.entries()) {
+      try {
+        await batchCb(entityIds);
+      } catch (err) {
+        if (err.message?.includes('This may be the result of a timeout')) {
+          const newTotalConnectionsById = batchedEntityKeys
+            .slice(index)
+            .flat()
+            .reduce((acc, id) => {
+              const total = totalConnectionsById.get(id);
+              if (!total) {
+                return acc;
+              }
+              acc.set(id, total);
+              return acc;
+            }, new Map<string, number>());
+          const newThreshold = Math.max(Math.floor(threshold / 2), 1);
+          if (newThreshold === threshold) {
+            // prevent infinite loop: newThreshold is 1 and it already failed using 1
+            // it should never happen because when the threshold is 1 the queries are sent to the single query handler, but just in case.
+            throw err;
+          }
+          const { batchedEntityKeys: newBatchedEntityKeys, singleEntityKeys } =
+            batchSeparateKeys(newTotalConnectionsById, newThreshold);
+
+          logger?.warn(
+            {
+              threshold: newThreshold,
+            },
+            'Github timeout on batch query. Retrying query by half the threshold.',
+          );
+
+          const innerRetrySingleEntityKeys = await batchLoop({
+            batchedEntityKeys: newBatchedEntityKeys,
+            totalConnectionsById: newTotalConnectionsById,
+            threshold: newThreshold,
+            batchCb,
+          });
+          retrySingleEntityKeys.push(...singleEntityKeys);
+          retrySingleEntityKeys.push(...innerRetrySingleEntityKeys);
+          break;
+        } else {
+          throw err;
+        }
+      }
+    }
+    return retrySingleEntityKeys;
+  };
+
+  const retrySingleEntityKeys = await batchLoop({
+    batchedEntityKeys,
+    totalConnectionsById,
+    threshold,
+    batchCb,
+  });
+
+  for (const entityId of [...retrySingleEntityKeys, ...singleEntityKeys]) {
+    await singleCb(entityId);
+  }
+};
+
+const batchSeparateKeys = (
   entitiesMap: Map<string, number>,
   threshold: number,
   groupLimit = 80,

@@ -7,7 +7,7 @@ import {
   ProcessResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import paginate, { MAX_REQUESTS_LIMIT, MAX_SEARCH_LIMIT } from '../paginate';
+import paginate, { MAX_REQUESTS_LIMIT } from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -19,6 +19,7 @@ type QueryParams = {
   repoName: string;
   login: string;
   lastExecutionTime: string;
+  maxLimit: number;
 };
 
 const MAX_RESOURCES_PER_EXECUTION = 500;
@@ -81,7 +82,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       login: queryParams.login,
       repoName: queryParams.repoName,
       since: queryParams.lastExecutionTime,
-      maxSearchLimit: MAX_SEARCH_LIMIT,
+      maxSearchLimit: queryParams.maxLimit,
       maxInnerLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.issues?.hasNextPage && {
         issuesCursor: queryState?.issues.endCursor,
@@ -142,6 +143,7 @@ const iterateIssues: IteratePagination<QueryParams, IssueResponse> = async (
   queryParams,
   execute,
   iteratee,
+  logger,
 ) => {
   return paginate(
     queryParams,
@@ -152,6 +154,8 @@ const iterateIssues: IteratePagination<QueryParams, IssueResponse> = async (
     (queryState, issuesFetched) =>
       (!queryState?.issues?.hasNextPage ?? true) ||
       issuesFetched >= MAX_RESOURCES_PER_EXECUTION,
+    logger,
+    'maxLimit',
   );
 };
 

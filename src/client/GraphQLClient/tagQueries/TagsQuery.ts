@@ -6,7 +6,6 @@ import {
   ProcessResponse,
   TagQueryResponse,
 } from '../types';
-import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 import utils from '../utils';
 
@@ -17,6 +16,7 @@ interface QueryState extends BaseQueryState {
 export interface QueryParams {
   repoName: string;
   repoOwner: string;
+  maxLimit: number;
 }
 
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
@@ -55,9 +55,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      repoName: queryParams.repoName,
-      repoOwner: queryParams.repoOwner,
-      maxLimit: MAX_REQUESTS_LIMIT,
+      ...queryParams,
       ...(queryState?.tags?.hasNextPage && {
         tagsCursor: queryState.tags.endCursor,
       }),
@@ -98,6 +96,7 @@ const iterateTags: IteratePagination<QueryParams, TagQueryResponse> = async (
   queryParams,
   execute,
   iteratee,
+  logger,
 ) => {
   return paginate(
     queryParams,
@@ -106,6 +105,8 @@ const iterateTags: IteratePagination<QueryParams, TagQueryResponse> = async (
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.tags?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

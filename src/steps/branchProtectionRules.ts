@@ -24,7 +24,7 @@ import {
 } from '../constants';
 import { getTeamEntityKey, toBranchProtectionEntity } from '../sync/converters';
 import { BranchProtectionRuleResponse } from '../client/GraphQLClient';
-import { batchSeparateKeys } from '../client/GraphQLClient/batchUtils';
+import { withBatching } from '../client/GraphQLClient/batchUtils';
 
 export async function fetchBranchProtectionRule({
   instance,
@@ -49,25 +49,24 @@ export async function fetchBranchProtectionRule({
     return;
   }
 
-  const threshold = 100;
-  const {
-    batchedEntityKeys: batchedRepoKeys,
-    singleEntityKeys: singleRepoKeys,
-  } = batchSeparateKeys(branchProtectionRuleTotalByRepo, threshold);
-
   const iteratee = buildIteratee({ jobState, config, apiClient, logger });
 
-  for (const repoKeys of batchedRepoKeys) {
-    await apiClient.iterateBatchedBranchProtectionPolicy(repoKeys, iteratee);
-  }
+  await withBatching({
+    totalConnectionsById: branchProtectionRuleTotalByRepo,
+    threshold: 100,
+    batchCb: async (repoKeys) => {
+      await apiClient.iterateBatchedBranchProtectionPolicy(repoKeys, iteratee);
+    },
+    singleCb: async (repoKey) => {
+      const repoData = repoTags.get(repoKey);
+      if (!repoData) {
+        return;
+      }
+      await apiClient.iterateBranchProtectionPolicy(repoData.name, iteratee);
+    },
+  });
 
-  for (const repoKey of singleRepoKeys) {
-    const repoData = repoTags.get(repoKey);
-    if (!repoData) {
-      continue;
-    }
-    await apiClient.iterateBranchProtectionPolicy(repoData.name, iteratee);
-  }
+  await jobState.deleteData(BRANCH_PROTECTION_RULE_TOTAL_BY_REPO);
 }
 
 function buildIteratee({

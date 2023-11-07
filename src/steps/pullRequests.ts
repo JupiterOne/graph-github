@@ -45,7 +45,7 @@ import {
   Review,
 } from '../client/GraphQLClient';
 import { MAX_SEARCH_LIMIT } from '../client/GraphQLClient/paginate';
-import { batchSeparateKeys } from '../client/GraphQLClient/batchUtils';
+import { withBatching } from '../client/GraphQLClient/batchUtils';
 
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
 
@@ -61,9 +61,7 @@ const fetchCommits = async ({
   commitsTotalByPullRequest: Map<string, number>;
 }) => {
   const commits = new Map<string, Commit[]>();
-  const threshold = 100;
-  const { batchedEntityKeys: batchedPrIds, singleEntityKeys: singlePrIds } =
-    batchSeparateKeys(commitsTotalByPullRequest, threshold);
+
   const iteratee = (commit: Commit) => {
     if (!commits.has(commit.pullRequestId)) {
       commits.set(commit.pullRequestId, []);
@@ -71,16 +69,22 @@ const fetchCommits = async ({
     const prCommits = commits.get(commit.pullRequestId) ?? [];
     prCommits.push(commit);
   };
-  for (const pullRequestIds of batchedPrIds) {
-    await apiClient.iterateBatchedCommits(pullRequestIds, iteratee);
-  }
-  for (const pullRequestId of singlePrIds) {
-    const pullRequest = pullRequestsMap.get(pullRequestId);
-    if (!pullRequest) {
-      continue;
-    }
-    await apiClient.iterateCommits(repoEntity, pullRequest.number, iteratee);
-  }
+
+  await withBatching({
+    totalConnectionsById: commitsTotalByPullRequest,
+    threshold: 25,
+    batchCb: async (pullRequestIds) => {
+      await apiClient.iterateBatchedCommits(pullRequestIds, iteratee);
+    },
+    singleCb: async (pullRequestId) => {
+      const pullRequest = pullRequestsMap.get(pullRequestId);
+      if (!pullRequest) {
+        return;
+      }
+      await apiClient.iterateCommits(repoEntity, pullRequest.number, iteratee);
+    },
+  });
+
   return commits;
 };
 
@@ -96,9 +100,7 @@ const fetchLabels = async ({
   labelsTotalByPullRequest: Map<string, number>;
 }) => {
   const labels = new Map<string, Label[]>();
-  const threshold = 100;
-  const { batchedEntityKeys: batchedPrIds, singleEntityKeys: singlePrIds } =
-    batchSeparateKeys(labelsTotalByPullRequest, threshold);
+
   const iteratee = (label: Label) => {
     if (!labels.has(label.pullRequestId)) {
       labels.set(label.pullRequestId, []);
@@ -106,16 +108,22 @@ const fetchLabels = async ({
     const prLabels = labels.get(label.pullRequestId) ?? [];
     prLabels.push(label);
   };
-  for (const pullRequestIds of batchedPrIds) {
-    await apiClient.iterateBatchedLabels(pullRequestIds, iteratee);
-  }
-  for (const pullRequestId of singlePrIds) {
-    const pullRequest = pullRequestsMap.get(pullRequestId);
-    if (!pullRequest) {
-      continue;
-    }
-    await apiClient.iterateLabels(repoEntity, pullRequest.number, iteratee);
-  }
+
+  await withBatching({
+    totalConnectionsById: labelsTotalByPullRequest,
+    threshold: 25,
+    batchCb: async (pullRequestIds) => {
+      await apiClient.iterateBatchedLabels(pullRequestIds, iteratee);
+    },
+    singleCb: async (pullRequestId) => {
+      const pullRequest = pullRequestsMap.get(pullRequestId);
+      if (!pullRequest) {
+        return;
+      }
+      await apiClient.iterateLabels(repoEntity, pullRequest.number, iteratee);
+    },
+  });
+
   return labels;
 };
 
@@ -131,9 +139,7 @@ const fetchReviews = async ({
   reviewsTotalByPullRequest: Map<string, number>;
 }) => {
   const reviews = new Map<string, Review[]>();
-  const threshold = 100;
-  const { batchedEntityKeys: batchedPrIds, singleEntityKeys: singlePrIds } =
-    batchSeparateKeys(reviewsTotalByPullRequest, threshold);
+
   const iteratee = (review: Review) => {
     if (!reviews.has(review.pullRequestId)) {
       reviews.set(review.pullRequestId, []);
@@ -141,16 +147,22 @@ const fetchReviews = async ({
     const prReviews = reviews.get(review.pullRequestId) as Review[];
     prReviews.push(review);
   };
-  for (const pullRequestIds of batchedPrIds) {
-    await apiClient.iterateBatchedReviews(pullRequestIds, iteratee);
-  }
-  for (const pullRequestId of singlePrIds) {
-    const pullRequest = pullRequestsMap.get(pullRequestId);
-    if (!pullRequest) {
-      continue;
-    }
-    await apiClient.iterateReviews(repoEntity, pullRequest.number, iteratee);
-  }
+
+  await withBatching({
+    totalConnectionsById: reviewsTotalByPullRequest,
+    threshold: 25,
+    batchCb: async (pullRequestIds) => {
+      await apiClient.iterateBatchedReviews(pullRequestIds, iteratee);
+    },
+    singleCb: async (pullRequestId) => {
+      const pullRequest = pullRequestsMap.get(pullRequestId);
+      if (!pullRequest) {
+        return;
+      }
+      await apiClient.iterateReviews(repoEntity, pullRequest.number, iteratee);
+    },
+  });
+
   return reviews;
 };
 
@@ -428,17 +440,6 @@ export async function fetchPrs(
               );
             }
           },
-        );
-
-        console.log('pullRequestsMap :>> ', pullRequestsMap);
-        console.log(
-          'commitsTotalByPullRequest :>> ',
-          commitsTotalByPullRequest,
-        );
-        console.log('labelsTotalByPullRequest :>> ', labelsTotalByPullRequest);
-        console.log(
-          'reviewsTotalByPullRequest :>> ',
-          reviewsTotalByPullRequest,
         );
 
         const commitsByPullRequest = await fetchCommits({

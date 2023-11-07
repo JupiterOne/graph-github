@@ -67,6 +67,7 @@ import BatchedIssuesQuery from './issueQueries/BatchedIssuesQuery';
 import BatchedCommitsQuery from './pullRequestQueries/BatchedCommitsQuery';
 import BatchedLabelsQuery from './pullRequestQueries/BatchedLabelsQuery';
 import BatchedReviewsQuery from './pullRequestQueries/BatchedReviewsQuery';
+import BatchedTeamMembersQuery from './memberQueries/BatchedTeamMembersQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -635,6 +636,26 @@ export class GitHubGraphQLClient {
     return this.collectRateLimitStatus(
       await TeamMembersQuery.iterateMembers(
         { login, teamSlug },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over members of the given teamIds.
+   * @param teamIds
+   * @param iteratee
+   */
+  public async iterateBatchedTeamMembers(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedTeamMembersQuery.iterateMembers(
+        { teamIds },
         executor,
         iteratee,
       ),

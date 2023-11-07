@@ -291,20 +291,44 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamMembers(
-    team: TeamEntity,
+    teamName: string,
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iterateTeamMembers(
-      team.name,
+      teamName,
       iteratee,
     );
 
     this.logger.info(
       { rateLimit },
       'Rate limit consumed while fetching Team Members.',
+    );
+  }
+
+  /**
+   * Iterates each team-member association from team ids.
+   *
+   * @param teamIds
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedTeamMembers(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedTeamMembers(
+      teamIds,
+      iteratee,
+    );
+
+    this.logger.info(
+      { rateLimit },
+      'Rate limit consumed while fetching batched Team Members.',
     );
   }
 

@@ -17,6 +17,7 @@ import {
   Relationships,
   REPOSITORIES_TOTAL_BY_TEAM,
   TEAM_DATA_MAP,
+  MEMBERS_TOTAL_BY_TEAM,
 } from '../constants';
 
 export async function fetchTeams({
@@ -37,6 +38,7 @@ export async function fetchTeams({
 
   const teamDataMap = new Map<string, TeamData>();
   const repositoriesTotalByTeam = new Map<string, number>();
+  const membersTotalByTeam = new Map<string, number>();
 
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
@@ -52,12 +54,21 @@ export async function fetchTeams({
     );
 
     teamDataMap.set(teamEntity._key, { name: team.name });
-    repositoriesTotalByTeam.set(teamEntity._key, team.repositories.totalCount);
+    if (team.repositories.totalCount) {
+      repositoriesTotalByTeam.set(
+        teamEntity._key,
+        team.repositories.totalCount,
+      );
+    }
+    if (team.members.totalCount) {
+      membersTotalByTeam.set(teamEntity._key, team.members.totalCount);
+    }
   });
 
   await Promise.all([
-    jobState.setData(REPOSITORIES_TOTAL_BY_TEAM, repositoriesTotalByTeam),
     jobState.setData(TEAM_DATA_MAP, teamDataMap),
+    jobState.setData(REPOSITORIES_TOTAL_BY_TEAM, repositoriesTotalByTeam),
+    jobState.setData(MEMBERS_TOTAL_BY_TEAM, membersTotalByTeam),
   ]);
 }
 

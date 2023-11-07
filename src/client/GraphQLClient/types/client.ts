@@ -122,6 +122,9 @@ export interface OrgTeamQueryResponse extends Node {
   repositories: {
     totalCount: number;
   };
+  members: {
+    totalCount: number;
+  };
 }
 
 export interface TagQueryResponse extends Node {
@@ -134,6 +137,7 @@ export interface OrgTeamMemberQueryResponse extends Node {
   name?: string;
   login: string;
   teamId: string;
+  teamName: string;
   /**
    * @Deprecated
    * A single team id, even though it is listed as a plural

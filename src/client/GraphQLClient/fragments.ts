@@ -52,6 +52,9 @@ export default {
     repositories {
       totalCount
     }
+    members {
+      totalCount
+    }
   }`,
   teamMemberEdgeFields: `on TeamMemberEdge {
     role

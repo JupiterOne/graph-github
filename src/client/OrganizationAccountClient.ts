@@ -218,6 +218,13 @@ export default class OrganizationAccountClient {
     return await this.v4.iterateTeamMembers(this.login, teamSlug, iteratee);
   }
 
+  async iterateBatchedTeamMembers(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedTeamMembers(teamIds, iteratee);
+  }
+
   async iterateRepoCollaborators(
     repoName: string,
     iteratee: ResourceIteratee<CollaboratorResponse>,

@@ -5,7 +5,7 @@ import {
   ProcessResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import { MAX_REQUESTS_LIMIT, MAX_SEARCH_LIMIT } from '../paginate';
+import { MAX_REQUESTS_LIMIT } from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -69,7 +69,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     queryVariables: {
       repoIds: queryParams.repoIds,
       since: queryParams.lastExecutionTime,
-      maxSearchLimit: MAX_SEARCH_LIMIT,
+      maxSearchLimit: MAX_REQUESTS_LIMIT,
       maxInnerLimit: MAX_REQUESTS_LIMIT,
     },
   };

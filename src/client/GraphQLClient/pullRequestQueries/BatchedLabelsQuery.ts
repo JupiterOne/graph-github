@@ -1,6 +1,6 @@
 import { BaseQueryState, BuildQuery, Label, ProcessResponse } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import { MAX_SEARCH_LIMIT } from '../paginate';
+import { MAX_REQUESTS_LIMIT } from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -47,7 +47,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     }),
     queryVariables: {
       pullRequestIds: queryParams.pullRequestIds,
-      maxLimit: MAX_SEARCH_LIMIT,
+      maxLimit: MAX_REQUESTS_LIMIT,
     },
   };
 };

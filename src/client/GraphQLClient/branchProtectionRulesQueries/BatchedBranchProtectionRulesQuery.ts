@@ -69,10 +69,6 @@ const processResponseData: ProcessResponse<
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
   const repositories = responseData.nodes ?? [];
-  console.log(
-    'Executed batched branch protection rules query :>> ',
-    repositories.map((repo) => repo.id),
-  );
 
   for (const repository of repositories) {
     const rules = repository.branchProtectionRules.nodes ?? [];

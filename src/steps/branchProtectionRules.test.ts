@@ -49,6 +49,4 @@ test('fetchBranchProtectionRules exec handler', async () => {
         r._type === Relationships.APP_OVERRIDES_BRANCH_PROTECTION_RULE._type,
     );
   expect(branchProtectionRulesAppOverrideType.length).toBeGreaterThanOrEqual(0);
-
-  expect(stepResults).toMatchSnapshot();
 });

@@ -41,6 +41,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 2,
   "requiredStatusCheckContexts": Array [],
@@ -102,6 +103,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 1,
   "requiredStatusCheckContexts": Array [],
@@ -132,39 +134,41 @@ Object {
         $maxLimit: Int!
       ) {
           repository(name: $repoName, owner: $repoOwner) {
+            id
             name
             branchProtectionRules(first: $maxLimit) {
               nodes {
-                id
-                requiresLinearHistory
-                requiredApprovingReviewCount
-                dismissesStaleReviews
-                requiresCodeOwnerReviews
-                requiresCommitSignatures
-                isAdminEnforced
-                allowsForcePushes
-                allowsDeletions
-                requiresConversationResolution
-                pattern
-                allowsDeletions
-                requiresApprovingReviews
-                requiredStatusCheckContexts
-                creator {
-                  login
-                }
-                databaseId
-                requiresStatusChecks
-                requiresStrictStatusChecks
-                restrictsPushes
-                restrictsReviewDismissals
-                requiredStatusChecks {
-                  context
-                  app {
-                    id
-                    name
-                  }
-                }
-                bypassForcePushAllowances(first: $maxLimit) {
+                
+  id
+  requiresLinearHistory
+  requiredApprovingReviewCount
+  dismissesStaleReviews
+  requiresCodeOwnerReviews
+  requiresCommitSignatures
+  isAdminEnforced
+  allowsForcePushes
+  allowsDeletions
+  requiresConversationResolution
+  pattern
+  allowsDeletions
+  requiresApprovingReviews
+  requiredStatusCheckContexts
+  creator {
+    login
+  }
+  databaseId
+  requiresStatusChecks
+  requiresStrictStatusChecks
+  restrictsPushes
+  restrictsReviewDismissals
+  requiredStatusChecks {
+    context
+    app {
+      id
+      name
+    }
+  }
+  bypassForcePushAllowances(first: $maxLimit) {
         nodes {
           
   actor {
@@ -240,6 +244,7 @@ Object {
   }
         }
       }
+
               }
             }
           }
@@ -302,6 +307,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 2,
   "requiredStatusCheckContexts": Array [],
@@ -363,6 +369,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 1,
   "requiredStatusCheckContexts": Array [],
@@ -393,39 +400,41 @@ Object {
         $maxLimit: Int!
       ) {
           repository(name: $repoName, owner: $repoOwner) {
+            id
             name
             branchProtectionRules(first: $maxLimit) {
               nodes {
-                id
-                requiresLinearHistory
-                requiredApprovingReviewCount
-                dismissesStaleReviews
-                requiresCodeOwnerReviews
-                requiresCommitSignatures
-                isAdminEnforced
-                allowsForcePushes
-                allowsDeletions
-                requiresConversationResolution
-                pattern
-                allowsDeletions
-                requiresApprovingReviews
-                requiredStatusCheckContexts
-                creator {
-                  login
-                }
-                databaseId
-                requiresStatusChecks
-                requiresStrictStatusChecks
-                restrictsPushes
-                restrictsReviewDismissals
-                requiredStatusChecks {
-                  context
-                  app {
-                    id
-                    name
-                  }
-                }
-                blocksCreations
+                
+  id
+  requiresLinearHistory
+  requiredApprovingReviewCount
+  dismissesStaleReviews
+  requiresCodeOwnerReviews
+  requiresCommitSignatures
+  isAdminEnforced
+  allowsForcePushes
+  allowsDeletions
+  requiresConversationResolution
+  pattern
+  allowsDeletions
+  requiresApprovingReviews
+  requiredStatusCheckContexts
+  creator {
+    login
+  }
+  databaseId
+  requiresStatusChecks
+  requiresStrictStatusChecks
+  restrictsPushes
+  restrictsReviewDismissals
+  requiredStatusChecks {
+    context
+    app {
+      id
+      name
+    }
+  }
+  blocksCreations
 bypassForcePushAllowances(first: $maxLimit) {
         nodes {
           
@@ -502,6 +511,7 @@ bypassForcePushAllowances(first: $maxLimit) {
   }
         }
       }
+
               }
             }
           }
@@ -564,6 +574,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 2,
   "requiredStatusCheckContexts": Array [],
@@ -625,6 +636,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 1,
   "requiredStatusCheckContexts": Array [],
@@ -655,39 +667,41 @@ Object {
         $maxLimit: Int!
       ) {
           repository(name: $repoName, owner: $repoOwner) {
+            id
             name
             branchProtectionRules(first: $maxLimit) {
               nodes {
-                id
-                requiresLinearHistory
-                requiredApprovingReviewCount
-                dismissesStaleReviews
-                requiresCodeOwnerReviews
-                requiresCommitSignatures
-                isAdminEnforced
-                allowsForcePushes
-                allowsDeletions
-                requiresConversationResolution
-                pattern
-                allowsDeletions
-                requiresApprovingReviews
-                requiredStatusCheckContexts
-                creator {
-                  login
-                }
-                databaseId
-                requiresStatusChecks
-                requiresStrictStatusChecks
-                restrictsPushes
-                restrictsReviewDismissals
-                requiredStatusChecks {
-                  context
-                  app {
-                    id
-                    name
-                  }
-                }
-                blocksCreations
+                
+  id
+  requiresLinearHistory
+  requiredApprovingReviewCount
+  dismissesStaleReviews
+  requiresCodeOwnerReviews
+  requiresCommitSignatures
+  isAdminEnforced
+  allowsForcePushes
+  allowsDeletions
+  requiresConversationResolution
+  pattern
+  allowsDeletions
+  requiresApprovingReviews
+  requiredStatusCheckContexts
+  creator {
+    login
+  }
+  databaseId
+  requiresStatusChecks
+  requiresStrictStatusChecks
+  restrictsPushes
+  restrictsReviewDismissals
+  requiredStatusChecks {
+    context
+    app {
+      id
+      name
+    }
+  }
+  blocksCreations
 bypassForcePushAllowances(first: $maxLimit) {
         nodes {
           
@@ -776,6 +790,7 @@ bypassForcePushAllowances(first: $maxLimit) {
   }
         }
       }
+
               }
             }
           }

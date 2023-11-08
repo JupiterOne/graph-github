@@ -105,8 +105,6 @@ const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
     throw new Error('responseData param is required');
   }
 
-  console.log('Executed query for repo collaborators');
-
   const rateLimit = responseData.rateLimit;
   const issues = responseData.repository?.issues?.nodes ?? [];
 

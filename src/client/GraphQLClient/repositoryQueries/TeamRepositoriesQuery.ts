@@ -79,7 +79,6 @@ const processResponseData: ProcessResponse<
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
   const edges = responseData.organization?.team?.repositories?.edges ?? [];
-  console.log('Executed query for team repos');
 
   for (const edge of edges) {
     if (!utils.hasProperties(edge?.node)) {

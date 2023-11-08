@@ -308,7 +308,7 @@ export interface PullRequestFields {
   };
 }
 
-export interface PullRequestResponse extends Node {
+export type BasePullRequestFields = {
   id: string;
   title: string;
   number: number;
@@ -337,6 +337,9 @@ export interface PullRequestResponse extends Node {
     name: string;
     owner: RepositoryOwner;
   };
+};
+
+type PullRequestConnectionsCount = {
   commits: {
     totalCount: number;
   };
@@ -346,9 +349,13 @@ export interface PullRequestResponse extends Node {
   reviews: {
     totalCount: number;
   };
-}
+};
 
-export type SinglePullRequestResponse = PullRequestResponse &
+export type PullRequestResponse = Node &
+  BasePullRequestFields &
+  PullRequestConnectionsCount;
+
+export type SinglePullRequestResponse = BasePullRequestFields &
   PullRequestConnections;
 
 export interface IssueResponse extends Node {

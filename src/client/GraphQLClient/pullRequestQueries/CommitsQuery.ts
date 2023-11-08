@@ -7,7 +7,7 @@ import {
   ProcessResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import paginate, { MAX_SEARCH_LIMIT } from '../paginate';
+import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -89,7 +89,6 @@ const processResponseData: ProcessResponse<Commit, QueryState> = async (
   if (!responseData) {
     throw new Error('responseData param is required');
   }
-  console.log('Executed commits query');
 
   const rateLimit = responseData.rateLimit;
   const commitNodes = responseData.repository.pullRequest.commits.nodes;

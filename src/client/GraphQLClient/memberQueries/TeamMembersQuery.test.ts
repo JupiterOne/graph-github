@@ -19,7 +19,7 @@ describe('TeamMemberQuery', () => {
 
     // Act
     const { totalCost } = await TeamMembersQuery.iterateMembers(
-      { login, teamSlug },
+      { login, teamSlug, maxLimit: 100 },
       executor,
       iteratee,
     );
@@ -46,6 +46,7 @@ describe('TeamMemberQuery', () => {
       name: 'Silvia Smith',
       role: 'MAINTAINER',
       teamId: 'T_kwDOBfl5Zc4AWFtb',
+      teamName: 'j1-ingest-eng',
     });
   });
 });

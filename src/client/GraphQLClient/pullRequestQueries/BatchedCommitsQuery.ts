@@ -69,10 +69,6 @@ const processResponseData: ProcessResponse<Commit, QueryState> = async (
   }
 
   const pullRequests = responseData.nodes ?? [];
-  console.log(
-    'Executed batched commits query :>> ',
-    pullRequests.map((r) => r.id),
-  );
 
   const rateLimit = responseData.rateLimit;
   for (const pullRequest of pullRequests) {

@@ -19,7 +19,7 @@ describe('TeamMembersQuery', () => {
 
     // Act
     const { totalCost } = await TeamsQuery.iterateTeams(
-      login,
+      { login, maxLimit: 100 },
       executor,
       iteratee,
     );

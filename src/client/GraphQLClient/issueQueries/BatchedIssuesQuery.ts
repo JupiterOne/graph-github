@@ -92,11 +92,6 @@ const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
   const rateLimit = responseData.rateLimit;
   const repositories = responseData.nodes ?? [];
 
-  console.log(
-    'Executed batched query for repo collaborators',
-    repositories.map((r) => r.id),
-  );
-
   for (const repository of repositories) {
     const issues = repository?.issues?.nodes ?? [];
     for (const issue of issues) {

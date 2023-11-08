@@ -63,9 +63,19 @@ export const fixturePullRequest: PullRequestResponse = {
   title: 'Ingest AutoScaling Policies and build relationships',
   updatedAt: '2021-09-01T01:53:35Z',
   url: 'https://github.com/JupiterOne/jupiter-integration-aws/pull/45',
+  commits: {
+    totalCount: 3,
+  },
+  labels: {
+    totalCount: 0,
+  },
+  reviews: {
+    totalCount: 1,
+  },
 };
 export const fixtureCommits: Commit[] = [
   {
+    pullRequestId: 'MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1',
     message:
       'Ingest AutoScaling Policies and build `aws_autoscaling_group` `USES` `aws_autoscaling_policy` relationships',
     authoredDate: '2021-08-31T22:14:45Z',
@@ -75,6 +85,7 @@ export const fixtureCommits: Commit[] = [
     },
   },
   {
+    pullRequestId: 'MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1',
     message:
       "Merge branch 'main' of github.com:jupiterone/jupiter-integration-aws into autoscaling-policies",
     authoredDate: '2021-08-31T22:17:46Z',
@@ -84,6 +95,7 @@ export const fixtureCommits: Commit[] = [
     },
   },
   {
+    pullRequestId: 'MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1',
     message: 'fix _type and _class',
     authoredDate: '2021-08-31T22:19:39Z',
     oid: '1103a7a2e976439ca184f775196759084f16e42f',
@@ -94,6 +106,7 @@ export const fixtureCommits: Commit[] = [
 ];
 export const fixtureReviews: Review[] = [
   {
+    pullRequestId: 'MDExOlB1bGxSZXF1ZXN0NzIzODE1Nzc1',
     commit: {
       oid: '1103a7a2e976439ca184f775196759084f16e42f',
     },

@@ -7,7 +7,7 @@ import {
   ProcessResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import paginate, { MAX_SEARCH_LIMIT } from '../paginate';
+import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -105,7 +105,6 @@ const processResponseData: ProcessResponse<Review, QueryState> = async (
   if (!responseData) {
     throw new Error('responseData param is required');
   }
-  console.log('Executed reviews query');
 
   const rateLimit = responseData.rateLimit;
   const reviewNodes = responseData.repository.pullRequest.reviews.nodes;

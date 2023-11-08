@@ -16,6 +16,7 @@ import {
   IntegrationError,
   IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
+import { PullRequestResponse } from '../client/GraphQLClient';
 
 interface EntityToIngest {
   _type: string; // e.g. - github_pullrequest
@@ -104,7 +105,7 @@ const buildEntity = async (
     await buildUserLoginMaps(client, repoName);
 
   return toPullRequestEntity({
-    pullRequest,
+    pullRequest: pullRequest as unknown as PullRequestResponse,
     commits: pullRequest.commits ?? [],
     reviews: pullRequest.reviews ?? [],
     labels: pullRequest.labels ?? [],

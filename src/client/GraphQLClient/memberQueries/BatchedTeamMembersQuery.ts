@@ -60,10 +60,6 @@ const processResponseData: ProcessResponse<
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
   const teams = responseData.nodes ?? [];
-  console.log(
-    'Executed batched query for team members',
-    teams.map((t) => t.id),
-  );
 
   for (const team of teams) {
     const memberEdges = team?.members?.edges ?? [];

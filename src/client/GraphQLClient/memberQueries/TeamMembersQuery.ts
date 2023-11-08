@@ -69,7 +69,6 @@ const processResponseData: ProcessResponse<
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
   const memberEdges = responseData.organization?.team?.members?.edges ?? [];
-  console.log('Executed single query for team members');
 
   for (const edge of memberEdges) {
     if (!utils.hasProperties(edge?.node)) {

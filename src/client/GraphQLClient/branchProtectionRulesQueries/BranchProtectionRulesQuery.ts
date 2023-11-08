@@ -108,7 +108,6 @@ const iterateBranchProtectionRules = async (
   let queryState: QueryState = {};
   const executable = buildQuery(queryParams, queryState);
   const response = await execute(executable);
-  console.log('Executed query for branch protection rules');
   queryState = await processResponseData(response, iteratee);
 
   const queryCost = queryState?.rateLimit?.cost ?? 0;

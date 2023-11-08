@@ -6,7 +6,6 @@ import {
   IteratePagination,
   ProcessResponse,
 } from '../types';
-import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
@@ -54,7 +53,6 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     }),
     queryVariables: {
       ...queryParams,
-      maxLimit,
       ...(queryState?.collaborators?.hasNextPage && {
         collaboratorCursor: queryState.collaborators.endCursor,
       }),
@@ -68,7 +66,6 @@ const processResponseData: ProcessResponse<
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
   const collaboratorEdges = responseData.repository?.collaborators?.edges ?? [];
-  console.log('Executed query for repo collaborators');
 
   for (const edge of collaboratorEdges) {
     if (!utils.hasProperties(edge?.node)) {

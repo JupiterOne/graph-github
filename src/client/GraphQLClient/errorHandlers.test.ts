@@ -93,10 +93,10 @@ describe('errorHandlers', () => {
 
       const error = new GraphqlResponseError({} as any, {} as any, response);
       const abort = jest.fn();
-      const info = jest.fn();
+      const warn = jest.fn();
       const refresh = jest.fn();
       const logger = {
-        info,
+        warn,
       } as unknown as IntegrationLogger;
       const attemptContext = {
         abort,
@@ -106,18 +106,18 @@ describe('errorHandlers', () => {
       await retryErrorHandle(error, logger, attemptContext, refresh);
 
       // Arrange
-      expect(info).toHaveBeenCalled();
+      expect(warn).toHaveBeenCalled();
       expect(abort).not.toHaveBeenCalled();
       expect(refresh).not.toHaveBeenCalled();
     });
     test('bad cred', async () => {
       // Arrange
       const error = new Error('Bad credentials');
-      const info = jest.fn();
+      const warn = jest.fn();
       const abort = jest.fn();
       const refresh = jest.fn();
       const logger = {
-        info,
+        warn,
       } as unknown as IntegrationLogger;
       const attemptContext = {
         abort,
@@ -127,7 +127,7 @@ describe('errorHandlers', () => {
       await retryErrorHandle(error, logger, attemptContext, refresh);
 
       // Arrange
-      expect(info).toHaveBeenCalled();
+      expect(warn).toHaveBeenCalled();
       expect(refresh).toHaveBeenCalled();
       expect(abort).not.toHaveBeenCalled();
     });

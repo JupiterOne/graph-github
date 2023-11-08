@@ -13,7 +13,6 @@ import {
   EnvironmentEntity,
   RepoEntity,
   RepoData,
-  TeamEntity,
   TokenPermissions,
 } from './types';
 import getInstallation from './util/getInstallation';

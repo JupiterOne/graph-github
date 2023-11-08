@@ -1,5 +1,5 @@
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
-import { AttemptContext, sleep } from '@lifeomic/attempt';
+import { AttemptContext } from '@lifeomic/attempt';
 import { GraphQlQueryResponse } from '@octokit/graphql/dist-types/types';
 import { GraphqlResponseError } from '@octokit/graphql';
 

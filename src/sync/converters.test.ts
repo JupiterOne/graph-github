@@ -813,6 +813,7 @@ describe('toEnvSecretEntity', () => {
 
 describe('toIssue', () => {
   const apiResponse = {
+    repoName: 'Test-repo',
     id: 'I_kwDOFiNpzs479Jfp',
     activeLockReason: null,
     authorAssociation: 'MEMBER',
@@ -865,7 +866,7 @@ describe('toIssue', () => {
   };
 
   test('properties transferred', () => {
-    const issue = toIssueEntity(apiResponse as any, 'Test-repo');
+    const issue = toIssueEntity(apiResponse as any);
     expect(issue).toEqual({
       _type: 'github_issue',
       _key: 'I_kwDOFiNpzs479Jfp',

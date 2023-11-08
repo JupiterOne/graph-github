@@ -2,12 +2,9 @@ import {
   BaseQueryState,
   BuildQuery,
   CollaboratorResponse,
-  CursorState,
-  IteratePagination,
   ProcessResponse,
 } from '../types';
 import { MAX_REQUESTS_LIMIT } from '../paginate';
-import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -66,11 +63,6 @@ const processResponseData: ProcessResponse<
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
   const repositories = responseData.nodes ?? [];
-
-  console.log(
-    'Executed batched query for repo collaborators',
-    repositories.map((r) => r.id),
-  );
 
   for (const repository of repositories) {
     const collaboratorEdges = repository.collaborators?.edges ?? [];

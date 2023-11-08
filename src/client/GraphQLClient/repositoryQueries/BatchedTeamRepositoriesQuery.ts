@@ -66,11 +66,6 @@ const processResponseData: ProcessResponse<
   const rateLimit = responseData.rateLimit;
   const teams = responseData.nodes ?? [];
 
-  console.log(
-    'Executed batched query for team repos',
-    teams.map((t) => t.id),
-  );
-
   for (const team of teams) {
     const edges = team.repositories?.edges ?? [];
     for (const edge of edges) {

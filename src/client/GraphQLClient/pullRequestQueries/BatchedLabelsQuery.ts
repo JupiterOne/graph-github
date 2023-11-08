@@ -66,10 +66,6 @@ const processResponseData: ProcessResponse<Label, QueryState> = async (
     throw new Error('responseData param is required');
   }
   const pullRequests = responseData.nodes ?? [];
-  console.log(
-    'Executed batched labels query :>> ',
-    pullRequests.map((r) => r.id),
-  );
 
   const rateLimit = responseData.rateLimit;
   for (const pullRequest of pullRequests) {

@@ -10,7 +10,7 @@ import {
 import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import fragments from '../fragments';
-import { GithubTimeoutError, buildTimeoutHandler } from '../timeoutHandler';
+import { buildTimeoutHandler } from '../timeoutHandler';
 
 interface QueryState extends BaseQueryState {
   pullRequests: CursorState;

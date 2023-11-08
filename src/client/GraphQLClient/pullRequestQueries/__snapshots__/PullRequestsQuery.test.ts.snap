@@ -59,6 +59,15 @@ Object {
     title
     updatedAt
     url
+    commits {
+      totalCount
+    }
+    labels {
+      totalCount
+    }
+    reviews {
+      totalCount
+    }
   }
             }
           }
@@ -153,6 +162,15 @@ Object {
     title
     updatedAt
     url
+    commits {
+      totalCount
+    }
+    labels {
+      totalCount
+    }
+    reviews {
+      totalCount
+    }
   }
             }
           }
@@ -247,6 +265,15 @@ Object {
     title
     updatedAt
     url
+    commits {
+      totalCount
+    }
+    labels {
+      totalCount
+    }
+    reviews {
+      totalCount
+    }
   }
             }
           }
@@ -350,6 +377,15 @@ Object {
     title
     updatedAt
     url
+    commits {
+      totalCount
+    }
+    labels {
+      totalCount
+    }
+    reviews {
+      totalCount
+    }
   }
             }
           }
@@ -444,6 +480,15 @@ Object {
     title
     updatedAt
     url
+    commits {
+      totalCount
+    }
+    labels {
+      totalCount
+    }
+    reviews {
+      totalCount
+    }
   }
             }
           }

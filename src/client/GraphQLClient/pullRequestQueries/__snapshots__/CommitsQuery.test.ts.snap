@@ -10,6 +10,7 @@ Object {
   "authoredDate": "2023-05-15T14:05:06Z",
   "message": "README Update",
   "oid": "f5294eb2f1545eb113d3d3d5a7f3977934a13798",
+  "pullRequestId": "MDExOlB1bGxSZXF1ZXN0MTA=",
 }
 `;
 
@@ -23,6 +24,7 @@ Object {
   "authoredDate": "2023-05-15T14:04:53Z",
   "message": "README Update",
   "oid": "3b00cc1814bc8e93d2676f48494118a339d41839",
+  "pullRequestId": "MDExOlB1bGxSZXF1ZXN0MTA=",
 }
 `;
 
@@ -34,6 +36,7 @@ Object {
   "authoredDate": "2023-07-10T20:54:45Z",
   "message": "test PR",
   "oid": "c3d5ca5b1a7e39d8f541e815c437d04579677b67",
+  "pullRequestId": "MDExOlB1bGxSZXF1ZXN0MTA=",
 }
 `;
 
@@ -49,6 +52,7 @@ Object {
     ) {
       repository(name: $repoName, owner: $repoOwner) {
         pullRequest(number: $pullRequestNumber) {
+          id
           commits(first: $maxLimit, after: $commitsCursor) {
             totalCount
             nodes {
@@ -102,6 +106,7 @@ Object {
     ) {
       repository(name: $repoName, owner: $repoOwner) {
         pullRequest(number: $pullRequestNumber) {
+          id
           commits(first: $maxLimit, after: $commitsCursor) {
             totalCount
             nodes {

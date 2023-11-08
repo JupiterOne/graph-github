@@ -123,7 +123,7 @@ export class APIClient {
     const { rateLimit, organization } =
       await this.graphQLClient.fetchOrganization();
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Organization.',
     );
@@ -166,7 +166,7 @@ export class APIClient {
 
     const rateLimit = await this.graphQLClient.iterateOrgMembers(iteratee);
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Org Members.',
     );
@@ -187,7 +187,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Repository Tags.',
     );
@@ -207,7 +207,7 @@ export class APIClient {
     const rateLimit =
       await this.graphQLClient.iterateExternalIdentifiers(iteratee);
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Org Members.',
     );
@@ -227,7 +227,7 @@ export class APIClient {
 
     const rateLimit = await this.graphQLClient.iterateTeams(iteratee);
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Team Repositories.',
     );
@@ -252,7 +252,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Team Repositories.',
     );
@@ -277,7 +277,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while batch fetching Team Repositories.',
     );
@@ -301,7 +301,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Team Members.',
     );
@@ -325,7 +325,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching batched Team Members.',
     );
@@ -434,7 +434,7 @@ export class APIClient {
           this.gheServerVersion,
         );
 
-      this.logger.info(
+      this.logger.debug(
         { rateLimit },
         'Rate limit consumed while fetching Branch Protection Rules.',
       );
@@ -462,7 +462,7 @@ export class APIClient {
           this.gheServerVersion,
         );
 
-      this.logger.info(
+      this.logger.debug(
         { rateLimit },
         'Rate limit consumed while batch fetching Branch Protection Rules.',
       );
@@ -593,7 +593,7 @@ export class APIClient {
         gheServerVersion: this.gheServerVersion,
       },
     );
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Org Repositories.',
     );
@@ -610,7 +610,6 @@ export class APIClient {
    */
   public async iteratePullRequests(
     repo: RepoEntity,
-    logger: IntegrationLogger,
     ingestStartDatetime: string,
     maxResourceIngestion: number,
     maxSearchLimit: number,
@@ -626,7 +625,7 @@ export class APIClient {
       maxSearchLimit,
       iteratee,
     );
-    logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Pull Requests.',
     );
@@ -652,7 +651,7 @@ export class APIClient {
       pullRequestNumber,
       iteratee,
     );
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Reviews.',
     );
@@ -675,7 +674,7 @@ export class APIClient {
       pullRequestIds,
       iteratee,
     );
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while batch fetching Reviews.',
     );
@@ -702,7 +701,7 @@ export class APIClient {
       pullRequestNumber,
       iteratee,
     );
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Labels.',
     );
@@ -725,7 +724,7 @@ export class APIClient {
       pullRequestIds,
       iteratee,
     );
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching batched Labels.',
     );
@@ -752,7 +751,7 @@ export class APIClient {
       pullRequestNumber,
       iteratee,
     );
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Commits.',
     );
@@ -777,7 +776,7 @@ export class APIClient {
       pullRequestIds,
       iteratee,
     );
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Commits.',
     );
@@ -834,7 +833,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Collaborators.',
     );
@@ -859,7 +858,7 @@ export class APIClient {
       iteratee,
     );
 
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while batch fetching Collaborators.',
     );
@@ -886,7 +885,7 @@ export class APIClient {
         lastSuccessfulExecution,
         iteratee,
       );
-      this.logger.info(
+      this.logger.debug(
         { rateLimit },
         'Rate limit consumed while fetching Issues.',
       );
@@ -918,7 +917,7 @@ export class APIClient {
         lastSuccessfulExecution,
         iteratee,
       );
-      this.logger.info(
+      this.logger.debug(
         { rateLimit },
         'Rate limit consumed while fetching batched Issues.',
       );
@@ -948,7 +947,7 @@ export class APIClient {
       maxRequestLimit,
       this.gheServerVersion,
     );
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Vulnerability Alerts.',
     );
@@ -971,7 +970,7 @@ export class APIClient {
       },
       this.gheServerVersion,
     );
-    this.logger.info(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while batch fetching Vulnerability Alerts.',
     );

@@ -415,7 +415,6 @@ export async function fetchPrs(
       try {
         await apiClient.iteratePullRequests(
           repoEntity,
-          logger,
           ingestStartDatetime,
           maxResourceIngestion,
           maxSearchLimit,

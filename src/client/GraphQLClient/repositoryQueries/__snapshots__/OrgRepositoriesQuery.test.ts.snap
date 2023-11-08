@@ -53,6 +53,12 @@ exports[`OrgRepositoriesQuery pagination of org repos 1`] = `
     totalCount
   }
 
+    tags: refs(refPrefix: \\"refs/tags/\\") {
+      totalCount
+    }
+    topics: repositoryTopics {
+      totalCount
+    }
   }
             }
             pageInfo {

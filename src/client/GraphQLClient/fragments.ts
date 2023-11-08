@@ -109,6 +109,12 @@ export default {
     }
     ${vulnerabilityAlertsTotalCountFragment({ alertStates, gheServerVersion })}
     ${issuesTotalCountFragment(lastSuccessfulExecution)}
+    tags: refs(refPrefix: "refs/tags/") {
+      totalCount
+    }
+    topics: repositoryTopics {
+      totalCount
+    }
   }`,
   repositoryOwnerFields: `on RepositoryOwner {
     login

@@ -33,12 +33,12 @@ import {
   Commit,
   OrgExternalIdentifierQueryResponse,
   RepoConnectionFilters,
+  TopicQueryResponse,
 } from './client/GraphQLClient';
 import {
   CodeScanningAlertQueryResponse,
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
-  RepoTopicQueryResponse,
   SecretQueryResponse,
   SecretScanningAlertQueryResponse,
 } from './client/RESTClient/types';
@@ -173,7 +173,6 @@ export class APIClient {
   }
 
   public async iterateTags(
-    repoOwner: string,
     repoName: string,
     iteratee: ResourceIteratee<TagQueryResponse>,
   ) {
@@ -181,15 +180,30 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    const rateLimit = await this.graphQLClient.iterateTags(
-      repoOwner,
-      repoName,
+    const rateLimit = await this.graphQLClient.iterateTags(repoName, iteratee);
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Repository Tags.',
+    );
+  }
+
+  public async iterateBatchedTags(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ) {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.graphQLClient.iterateBatchedTags(
+      repoIds,
       iteratee,
     );
 
     this.logger.debug(
       { rateLimit },
-      'Rate limit consumed while fetching Repository Tags.',
+      'Rate limit consumed while fetching batched Repository Tags.',
     );
   }
 
@@ -499,16 +513,46 @@ export class APIClient {
    */
   public async iterateTopics(
     repoName: string,
-    iteratee: ResourceIteratee<RepoTopicQueryResponse>,
+    iteratee: ResourceIteratee<TopicQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const topics: RepoTopicQueryResponse[] =
-      await this.graphQLClient.getRepositoryTopics(repoName);
-    for (const topic of topics) {
-      await iteratee(topic);
+
+    const rateLimit = await this.graphQLClient.iterateTopics(
+      repoName,
+      iteratee,
+    );
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Repository Topics.',
+    );
+  }
+
+  /**
+   * Iterates each repository topic.
+   *
+   * @param repoIds
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedTopics(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
     }
+
+    const rateLimit = await this.graphQLClient.iterateBatchedTopics(
+      repoIds,
+      iteratee,
+    );
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Repository Topics.',
+    );
   }
 
   /**

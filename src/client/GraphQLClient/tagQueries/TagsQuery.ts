@@ -31,16 +31,12 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       $tagsCursor: String
     ) {
       repository(owner: $repoOwner, name: $repoName) {
+        id
         refs(first: $maxLimit, after: $tagsCursor refPrefix: "refs/tags/") {
-          edges {
-            node {
-              ...on Ref {
-                id
-                name
-              }
-            }
+          nodes {
+            id
+            name
           }
-          totalCount
           pageInfo {
             endCursor
             hasNextPage
@@ -68,16 +64,17 @@ const processResponseData: ProcessResponse<
   QueryState
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
-  const tagEdges = responseData.repository?.refs?.edges ?? [];
+  const tags = responseData.repository?.refs?.nodes ?? [];
 
-  for (const edge of tagEdges) {
-    if (!utils.hasProperties(edge?.node)) {
+  for (const tag of tags) {
+    if (!utils.hasProperties(tag)) {
       continue;
     }
 
-    const tag = edge.node;
-
-    await iteratee(tag);
+    await iteratee({
+      repoId: responseData.repository?.id,
+      ...tag,
+    });
   }
 
   return {

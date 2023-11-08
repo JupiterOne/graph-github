@@ -32,6 +32,7 @@ import {
   SinglePullRequestResponse,
   VulnerabilityAlertResponse,
   RepoConnectionFilters,
+  TopicQueryResponse,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
@@ -69,6 +70,9 @@ import BatchedLabelsQuery from './pullRequestQueries/BatchedLabelsQuery';
 import BatchedReviewsQuery from './pullRequestQueries/BatchedReviewsQuery';
 import BatchedTeamMembersQuery from './memberQueries/BatchedTeamMembersQuery';
 import { MAX_REQUESTS_LIMIT, MAX_SEARCH_LIMIT } from './paginate';
+import BatchedTagsQuery from './tagQueries/BatchedTagsQuery';
+import TopicsQuery from './topicQueries/TopicsQuery';
+import BatchedTopicsQuery from './topicQueries/BatchedTopicsQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -482,6 +486,45 @@ export class GitHubGraphQLClient {
         iteratee,
         this.logger,
       ),
+    );
+  }
+
+  public async iterateBatchedTags(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedTagsQuery.iterateTags({ repoIds }, executor, iteratee),
+    );
+  }
+
+  public async iterateTopics(
+    repoOwner: string,
+    repoName: string,
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await TopicsQuery.iterateTopics(
+        { repoName, repoOwner, maxLimit: MAX_REQUESTS_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  public async iterateBatchedTopics(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedTopicsQuery.iterateTopics({ repoIds }, executor, iteratee),
     );
   }
 

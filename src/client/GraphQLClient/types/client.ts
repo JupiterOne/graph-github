@@ -128,6 +128,12 @@ export interface OrgTeamQueryResponse extends Node {
 }
 
 export interface TagQueryResponse extends Node {
+  repoId: string;
+  name: string;
+}
+
+export interface TopicQueryResponse extends Node {
+  repoId: string;
   name: string;
 }
 
@@ -199,6 +205,12 @@ export interface OrgRepoQueryResponse extends Node {
     totalCount: number;
   };
   issues: {
+    totalCount: number;
+  };
+  tags: {
+    totalCount: number;
+  };
+  topics: {
     totalCount: number;
   };
 }

@@ -22,7 +22,6 @@ import {
   RepoEnvironmentQueryResponse,
   CodeScanningAlertQueryResponse,
   SecretScanningAlertQueryResponse,
-  RepoTopicQueryResponse,
 } from './RESTClient/types';
 import { RepoEntity } from '../types';
 import { request } from '@octokit/request';
@@ -38,6 +37,7 @@ import {
   Commit,
   OrgExternalIdentifierQueryResponse,
   RepoConnectionFilters,
+  TopicQueryResponse,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -154,11 +154,31 @@ export default class OrganizationAccountClient {
   }
 
   async iterateTags(
-    repoOwner: string,
     repoName: string,
     iteratee: ResourceIteratee<TagQueryResponse>,
   ) {
-    return await this.v4.iterateTags(repoOwner, repoName, iteratee);
+    return await this.v4.iterateTags(this.login, repoName, iteratee);
+  }
+
+  async iterateBatchedTags(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ) {
+    return await this.v4.iterateBatchedTags(repoIds, iteratee);
+  }
+
+  async iterateTopics(
+    repoName: string,
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ) {
+    return await this.v4.iterateTopics(this.login, repoName, iteratee);
+  }
+
+  async iterateBatchedTopics(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ) {
+    return await this.v4.iterateBatchedTopics(repoIds, iteratee);
   }
 
   /**
@@ -589,31 +609,6 @@ export default class OrganizationAccountClient {
       this.logger.warn(
         err,
         'Error while attempting to ingest organization secret scanning alerts',
-      );
-      throw new IntegrationError(err);
-    }
-  }
-
-  async getRepositoryTopics(
-    repoName: string,
-  ): Promise<RepoTopicQueryResponse[]> {
-    try {
-      const repoTopics = await this.v3.paginate(
-        'GET /repos/{owner}/{repo}/topics' as any, //https://docs.github.com/en/free-pro-team@latest/rest/repos/repos?apiVersion=2022-11-28#get-all-repository-topics
-        {
-          owner: this.login,
-          repo: repoName,
-        },
-        (response) => {
-          this.v3RateLimitConsumed++;
-          return response.data.names;
-        },
-      );
-      return repoTopics || [];
-    } catch (err) {
-      this.logger.warn(
-        { repoName },
-        `Error while attempting to ingest topics for repo ${repoName}`,
       );
       throw new IntegrationError(err);
     }

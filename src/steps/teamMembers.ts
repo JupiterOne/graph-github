@@ -63,6 +63,7 @@ export async function fetchTeamMembers({
       }
       await apiClient.iterateTeamMembers(teamData.name, iteratee);
     },
+    logger,
   });
 
   await jobState.deleteData(MEMBERS_TOTAL_BY_TEAM);

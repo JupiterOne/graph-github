@@ -5,6 +5,7 @@ import {
   IntegrationMissingKeyError,
   createDirectRelationship,
   JobState,
+  IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
 
 import { APIClient, getOrCreateApiClient } from '../client';
@@ -38,10 +39,12 @@ async function fetchTags({
   apiClient,
   repositoriesMap,
   tagsTotalByRepo,
+  logger,
 }: {
   apiClient: APIClient;
   repositoriesMap: Map<string, OrgRepoQueryResponse>;
   tagsTotalByRepo: Map<string, number>;
+  logger: IntegrationLogger;
 }) {
   const tags = new Map<string, TagQueryResponse[]>();
 
@@ -66,6 +69,7 @@ async function fetchTags({
       }
       await apiClient.iterateTags(repo.name, iteratee);
     },
+    logger,
   });
 
   return tags;
@@ -75,10 +79,12 @@ async function fetchTopics({
   apiClient,
   repositoriesMap,
   topicsTotalByRepo,
+  logger,
 }: {
   apiClient: APIClient;
   repositoriesMap: Map<string, OrgRepoQueryResponse>;
   topicsTotalByRepo: Map<string, number>;
+  logger: IntegrationLogger;
 }) {
   const topics = new Map<string, TopicQueryResponse[]>();
 
@@ -103,6 +109,7 @@ async function fetchTopics({
       }
       await apiClient.iterateTopics(repo.name, iteratee);
     },
+    logger,
   });
 
   return topics;
@@ -225,11 +232,13 @@ export async function fetchRepos({
       apiClient,
       repositoriesMap,
       tagsTotalByRepo,
+      logger,
     });
     const topicsByRepo = await fetchTopics({
       apiClient,
       repositoriesMap,
       topicsTotalByRepo,
+      logger,
     });
 
     for (const repo of repositoriesMap.values()) {

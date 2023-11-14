@@ -37,9 +37,11 @@ import { IssueResponse } from '../client/GraphQLClient';
 export async function fetchIssues(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
 ) {
-  const config = context.instance.config;
-  const jobState = context.jobState;
-  const logger = context.logger;
+  const {
+    instance: { config },
+    jobState,
+    logger,
+  } = context;
   const lastSuccessfulSyncTime =
     context.executionHistory.lastSuccessful?.startedOn ?? 0;
   const lastSuccessfulExecution = new Date(
@@ -118,6 +120,7 @@ export async function fetchIssues(
         );
       }
     },
+    logger,
   });
 
   await jobState.deleteData(ISSUES_TOTAL_BY_REPO);

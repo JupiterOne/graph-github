@@ -89,6 +89,7 @@ export async function fetchCollaborators({
       }
       await apiClient.iterateRepoCollaborators(repoData.name, iteratee);
     },
+    logger,
   });
 
   await Promise.all([

@@ -54,11 +54,13 @@ const fetchCommits = async ({
   pullRequestsMap,
   repoEntity,
   commitsTotalByPullRequest,
+  logger,
 }: {
   apiClient: APIClient;
   pullRequestsMap: Map<string, PullRequestResponse>;
   repoEntity: RepoEntity;
   commitsTotalByPullRequest: Map<string, number>;
+  logger: IntegrationLogger;
 }) => {
   const commits = new Map<string, Commit[]>();
 
@@ -83,6 +85,7 @@ const fetchCommits = async ({
       }
       await apiClient.iterateCommits(repoEntity, pullRequest.number, iteratee);
     },
+    logger,
   });
 
   return commits;
@@ -93,11 +96,13 @@ const fetchLabels = async ({
   pullRequestsMap,
   repoEntity,
   labelsTotalByPullRequest,
+  logger,
 }: {
   apiClient: APIClient;
   pullRequestsMap: Map<string, PullRequestResponse>;
   repoEntity: RepoEntity;
   labelsTotalByPullRequest: Map<string, number>;
+  logger: IntegrationLogger;
 }) => {
   const labels = new Map<string, Label[]>();
 
@@ -122,6 +127,7 @@ const fetchLabels = async ({
       }
       await apiClient.iterateLabels(repoEntity, pullRequest.number, iteratee);
     },
+    logger,
   });
 
   return labels;
@@ -132,11 +138,13 @@ const fetchReviews = async ({
   pullRequestsMap,
   repoEntity,
   reviewsTotalByPullRequest,
+  logger,
 }: {
   apiClient: APIClient;
   pullRequestsMap: Map<string, PullRequestResponse>;
   repoEntity: RepoEntity;
   reviewsTotalByPullRequest: Map<string, number>;
+  logger: IntegrationLogger;
 }) => {
   const reviews = new Map<string, Review[]>();
 
@@ -161,6 +169,7 @@ const fetchReviews = async ({
       }
       await apiClient.iterateReviews(repoEntity, pullRequest.number, iteratee);
     },
+    logger,
   });
 
   return reviews;
@@ -446,18 +455,21 @@ export async function fetchPrs(
           pullRequestsMap,
           repoEntity,
           commitsTotalByPullRequest,
+          logger,
         });
         const labelsByPullRequest = await fetchLabels({
           apiClient,
           pullRequestsMap,
           repoEntity,
           labelsTotalByPullRequest,
+          logger,
         });
         const reviewsByPullRequest = await fetchReviews({
           apiClient,
           pullRequestsMap,
           repoEntity,
           reviewsTotalByPullRequest,
+          logger,
         });
 
         await Promise.all(

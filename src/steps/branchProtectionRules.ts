@@ -64,6 +64,7 @@ export async function fetchBranchProtectionRule({
       }
       await apiClient.iterateBranchProtectionPolicy(repoData.name, iteratee);
     },
+    logger,
   });
 
   await jobState.deleteData(BRANCH_PROTECTION_RULE_TOTAL_BY_REPO);

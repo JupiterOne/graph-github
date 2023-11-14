@@ -58,6 +58,7 @@ export async function fetchTeamRepos({
       }
       await apiClient.iterateTeamRepos(teamData.name, iteratee);
     },
+    logger,
   });
 
   await jobState.deleteData(REPOSITORIES_TOTAL_BY_TEAM);

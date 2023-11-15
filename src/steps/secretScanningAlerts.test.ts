@@ -17,7 +17,8 @@ afterEach(async () => {
 });
 
 describe(Steps.FETCH_SECRET_SCANNING_ALERTS, () => {
-  test('success', async () => {
+  // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
+  test.skip('success', async () => {
     recording = setupGithubRecording({
       name: Steps.FETCH_SECRET_SCANNING_ALERTS,
       directory: __dirname,

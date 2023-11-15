@@ -915,24 +915,23 @@ export class APIClient {
     //ingesting codeScanning alerts requires scope security_events:read
     if (['read', 'write'].includes(perms.security_events!)) {
       this.scopes.codeScanningAlerts = true;
-      this.scopes.secretScanningAlerts = true;
     } else {
       this.logger.info(
         "Token does not have 'security_events' (aka codeScanning alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
       );
       this.scopes.codeScanningAlerts = false;
-      this.scopes.secretScanningAlerts = false;
     }
 
-    //ingesting secretScanning alerts requires secret_scanning_alerts:read permission
-    if (['read', 'write'].includes(perms.secret_scanning_alerts!)) {
-      this.scopes.secretScanningAlerts = true;
-    } else {
-      this.logger.info(
-        "Token does not have 'secret_scanning_alerts' permission enabled. Secret Scanning Alerts cannot be ingested.",
-      );
-      this.scopes.secretScanningAlerts = false;
-    }
+    // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
+    // // ingesting secretScanning alerts requires secret_scanning_alerts:read permission
+    // if (['read', 'write'].includes(perms.secret_scanning_alerts!)) {
+    //   this.scopes.secretScanningAlerts = true;
+    // } else {
+    //   this.logger.info(
+    //     "Token does not have 'secret_scanning_alerts' permission enabled. Secret Scanning Alerts cannot be ingested.",
+    //   );
+    this.scopes.secretScanningAlerts = false;
+    // }
 
     //ingesting github pages requires scope repo pages:read
     if (['read', 'write'].includes(perms.pages!)) {

@@ -11,6 +11,7 @@ import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import fragments from '../fragments';
 import { buildTimeoutHandler } from '../timeoutHandler';
+import { pullRequestFields } from './shared';
 
 interface QueryState extends BaseQueryState {
   pullRequests: CursorState;
@@ -46,7 +47,9 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
           issueCount
           edges {
             node {
-              ${pullRequestFields(queryParams.public)}
+              ...on PullRequest {
+                ${pullRequestFields(queryParams.public)}
+              }
             }
           }
           pageInfo {
@@ -70,75 +73,6 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
       }),
     },
   };
-};
-
-const pullRequestFields = (isPublicRepo: boolean) => {
-  return `...on PullRequest {
-    author {
-      ...${fragments.teamMemberFields}
-    }
-    baseRefName
-    baseRefOid
-    baseRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    body
-    changedFiles
-    createdAt
-    databaseId
-    headRefName
-    headRefOid
-    headRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    id
-    ${
-      isPublicRepo
-        ? `mergeCommit {
-              ...on Commit {
-                commitUrl
-                oid
-              }
-              associatedPullRequests(first: 1) {
-                nodes {
-                  id
-                  number
-                }
-              }
-           }`
-        : ''
-    }
-    merged
-    mergedAt
-    mergedBy {
-      ...${fragments.teamMemberFields}
-    }
-    number
-    reviewDecision
-    state
-    title
-    updatedAt
-    url
-    commits {
-      totalCount
-    }
-    labels {
-      totalCount
-    }
-    reviews {
-      totalCount
-    }
-  }`;
 };
 
 /**

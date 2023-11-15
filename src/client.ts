@@ -11,7 +11,6 @@ import { IntegrationConfig, Scopes } from './config';
 import {
   AccountType,
   EnvironmentEntity,
-  RepoEntity,
   RepoData,
   TokenPermissions,
 } from './types';
@@ -653,7 +652,8 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iteratePullRequests(
-    repo: RepoEntity,
+    repoName: string,
+    isPublicRepo: boolean,
     ingestStartDatetime: string,
     maxResourceIngestion: number,
     maxSearchLimit: number,
@@ -663,7 +663,8 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iteratePullRequestEntities(
-      repo,
+      repoName,
+      isPublicRepo,
       ingestStartDatetime,
       maxResourceIngestion,
       maxSearchLimit,
@@ -675,6 +676,24 @@ export class APIClient {
     );
   }
 
+  public async iterateBatchedPullRequests(
+    repoIds: string[],
+    iteratee: ResourceIteratee<PullRequestResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit =
+      await this.graphQLClient.iterateBatchedPullRequestEntities(
+        repoIds,
+        iteratee,
+      );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Pull Requests.',
+    );
+  }
+
   /**
    * Fetch all reviews from pull request resource in the provider.
    *
@@ -683,7 +702,8 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateReviews(
-    repo: RepoEntity,
+    repoName: string,
+    isPublicRepo: boolean,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Review>,
   ): Promise<void> {
@@ -691,7 +711,8 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iterateReviews(
-      repo,
+      repoName,
+      isPublicRepo,
       pullRequestNumber,
       iteratee,
     );
@@ -733,7 +754,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateLabels(
-    repo: RepoEntity,
+    repoName: string,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Label>,
   ): Promise<void> {
@@ -741,7 +762,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iterateLabelEntities(
-      repo,
+      repoName,
       pullRequestNumber,
       iteratee,
     );
@@ -783,7 +804,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateCommits(
-    repo: RepoEntity,
+    repoName: string,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Commit>,
   ): Promise<void> {
@@ -791,7 +812,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iterateCommits(
-      repo,
+      repoName,
       pullRequestNumber,
       iteratee,
     );

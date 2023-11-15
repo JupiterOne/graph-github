@@ -213,6 +213,9 @@ export interface OrgRepoQueryResponse extends Node {
   topics: {
     totalCount: number;
   };
+  pullRequests: {
+    totalCount: number;
+  };
 }
 
 /**
@@ -342,8 +345,10 @@ export type BasePullRequestFields = {
   author?: PullRequestUser;
   mergeCommit?: MergeCommit;
   baseRepository: {
+    id: string;
     name: string;
     owner: RepositoryOwner;
+    isPrivate: boolean;
   };
   headRepository: {
     name: string;

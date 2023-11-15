@@ -73,6 +73,7 @@ import { MAX_REQUESTS_LIMIT, MAX_SEARCH_LIMIT } from './paginate';
 import BatchedTagsQuery from './tagQueries/BatchedTagsQuery';
 import TopicsQuery from './topicQueries/TopicsQuery';
 import BatchedTopicsQuery from './topicQueries/BatchedTopicsQuery';
+import BatchedPullRequestsQuery from './pullRequestQueries/BatchedPullRequestsQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -247,6 +248,23 @@ export class GitHubGraphQLClient {
         executor,
         iteratee,
         this.logger,
+      ),
+    );
+  }
+
+  public async iterateBatchedPullRequests(
+    repoIds: string[],
+    iteratee: ResourceIteratee<PullRequestResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedPullRequestsQuery.iteratePullRequests(
+        {
+          repoIds,
+        },
+        executor,
+        iteratee,
       ),
     );
   }

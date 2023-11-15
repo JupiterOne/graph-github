@@ -19,14 +19,16 @@ import {
   IdEntityMap,
   OutsideCollaboratorData,
   PullRequestEntity,
-  RepoEntity,
+  RepoData,
 } from '../types';
 import {
   GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_OUTSIDE_COLLABORATOR_ARRAY,
+  GITHUB_REPO_TAGS_ARRAY,
   GithubEntities,
   IngestionSources,
   MappedRelationships,
+  PULL_REQUESTS_TOTAL_BY_REPO,
   Relationships,
   Steps,
 } from '../constants';
@@ -47,18 +49,17 @@ import {
 import { MAX_SEARCH_LIMIT } from '../client/GraphQLClient/paginate';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
 
+const PULL_REQUESTS_PROCESSING_BATCH_SIZE = 500;
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
 
 const fetchCommits = async ({
   apiClient,
   pullRequestsMap,
-  repoEntity,
   commitsTotalByPullRequest,
   logger,
 }: {
   apiClient: APIClient;
   pullRequestsMap: Map<string, PullRequestResponse>;
-  repoEntity: RepoEntity;
   commitsTotalByPullRequest: Map<string, number>;
   logger: IntegrationLogger;
 }) => {
@@ -83,7 +84,8 @@ const fetchCommits = async ({
       if (!pullRequest) {
         return;
       }
-      await apiClient.iterateCommits(repoEntity, pullRequest.number, iteratee);
+      const repoName = pullRequest.baseRepository.name;
+      await apiClient.iterateCommits(repoName, pullRequest.number, iteratee);
     },
     logger,
   });
@@ -94,13 +96,11 @@ const fetchCommits = async ({
 const fetchLabels = async ({
   apiClient,
   pullRequestsMap,
-  repoEntity,
   labelsTotalByPullRequest,
   logger,
 }: {
   apiClient: APIClient;
   pullRequestsMap: Map<string, PullRequestResponse>;
-  repoEntity: RepoEntity;
   labelsTotalByPullRequest: Map<string, number>;
   logger: IntegrationLogger;
 }) => {
@@ -125,7 +125,8 @@ const fetchLabels = async ({
       if (!pullRequest) {
         return;
       }
-      await apiClient.iterateLabels(repoEntity, pullRequest.number, iteratee);
+      const repoName = pullRequest.baseRepository.name;
+      await apiClient.iterateLabels(repoName, pullRequest.number, iteratee);
     },
     logger,
   });
@@ -136,13 +137,11 @@ const fetchLabels = async ({
 const fetchReviews = async ({
   apiClient,
   pullRequestsMap,
-  repoEntity,
   reviewsTotalByPullRequest,
   logger,
 }: {
   apiClient: APIClient;
   pullRequestsMap: Map<string, PullRequestResponse>;
-  repoEntity: RepoEntity;
   reviewsTotalByPullRequest: Map<string, number>;
   logger: IntegrationLogger;
 }) => {
@@ -167,7 +166,14 @@ const fetchReviews = async ({
       if (!pullRequest) {
         return;
       }
-      await apiClient.iterateReviews(repoEntity, pullRequest.number, iteratee);
+      const repoName = pullRequest.baseRepository.name;
+      const isPublicRepo = !pullRequest.baseRepository.isPrivate;
+      await apiClient.iterateReviews(
+        repoName,
+        isPublicRepo,
+        pullRequest.number,
+        iteratee,
+      );
     },
     logger,
   });
@@ -179,7 +185,6 @@ const processPullRequest = async ({
   jobState,
   logger,
   pullRequest,
-  repoEntity,
   labels,
   commits,
   reviews,
@@ -189,7 +194,6 @@ const processPullRequest = async ({
   jobState: JobState;
   logger: IntegrationLogger;
   pullRequest: PullRequestResponse;
-  repoEntity: RepoEntity;
   labels: Label[];
   commits: Commit[];
   reviews: Review[];
@@ -216,13 +220,18 @@ const processPullRequest = async ({
 
   const prEntity = (await jobState.addEntity(pr)) as PullRequestEntity;
 
-  await jobState.addRelationship(
-    createDirectRelationship({
-      _class: RelationshipClass.HAS,
-      from: repoEntity,
-      to: prEntity,
-    }),
-  );
+  const repoKey = pullRequest.baseRepository.id;
+  if (jobState.hasKey(repoKey)) {
+    await jobState.addRelationship(
+      createDirectRelationship({
+        _class: RelationshipClass.HAS,
+        fromKey: repoKey,
+        fromType: GithubEntities.GITHUB_REPO._type,
+        toKey: prEntity._key,
+        toType: GithubEntities.GITHUB_PR._type,
+      }),
+    );
+  }
 
   if (hasAssociatedMergePullRequest(pullRequest)) {
     await jobState.addRelationship(
@@ -370,6 +379,15 @@ export async function fetchPrs(
     );
   }
 
+  const repoTags = await jobState.getData<Map<string, RepoData>>(
+    GITHUB_REPO_TAGS_ARRAY,
+  );
+  if (!repoTags) {
+    throw new IntegrationMissingKeyError(
+      `Expected repos.ts to have set ${GITHUB_REPO_TAGS_ARRAY} in jobState.`,
+    );
+  }
+
   let usersByLoginMap = await jobState.getData<IdEntityMap<Entity['_key']>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
   );
@@ -414,92 +432,115 @@ export async function fetchPrs(
     'Pull requests will be ingested starting on the specified date with the specified max resources to ingest.',
   );
 
-  await jobState.iterateEntities<RepoEntity>(
-    { _type: GithubEntities.GITHUB_REPO._type },
-    async (repoEntity) => {
-      const pullRequestsMap = new Map<string, PullRequestResponse>();
-      const reviewsTotalByPullRequest = new Map<string, number>();
-      const labelsTotalByPullRequest = new Map<string, number>();
-      const commitsTotalByPullRequest = new Map<string, number>();
-      try {
-        await apiClient.iteratePullRequests(
-          repoEntity,
-          ingestStartDatetime,
-          maxResourceIngestion,
-          maxSearchLimit,
-          (pullRequest) => {
-            pullRequestsMap.set(pullRequest.id, pullRequest);
-            if (pullRequest.commits.totalCount) {
-              commitsTotalByPullRequest.set(
-                pullRequest.id,
-                pullRequest.commits.totalCount,
-              );
-            }
-            if (pullRequest.labels.totalCount) {
-              labelsTotalByPullRequest.set(
-                pullRequest.id,
-                pullRequest.labels.totalCount,
-              );
-            }
-            if (pullRequest.reviews.totalCount) {
-              reviewsTotalByPullRequest.set(
-                pullRequest.id,
-                pullRequest.reviews.totalCount,
-              );
-            }
-          },
-        );
-
-        const commitsByPullRequest = await fetchCommits({
-          apiClient,
-          pullRequestsMap,
-          repoEntity,
-          commitsTotalByPullRequest,
-          logger,
-        });
-        const labelsByPullRequest = await fetchLabels({
-          apiClient,
-          pullRequestsMap,
-          repoEntity,
-          labelsTotalByPullRequest,
-          logger,
-        });
-        const reviewsByPullRequest = await fetchReviews({
-          apiClient,
-          pullRequestsMap,
-          repoEntity,
-          reviewsTotalByPullRequest,
-          logger,
-        });
-
-        await Promise.all(
-          Array.from(pullRequestsMap.values()).map((pullRequest) => {
-            return processPullRequest({
-              jobState,
-              logger,
-              pullRequest,
-              repoEntity,
-              labels: labelsByPullRequest.get(pullRequest.id) ?? [],
-              commits: commitsByPullRequest.get(pullRequest.id) ?? [],
-              reviews: reviewsByPullRequest.get(pullRequest.id) ?? [],
-              teamMembersByLoginMap,
-              usersByLoginMap,
-            });
-          }),
-        );
-      } catch (error) {
-        logger.error(
-          {
-            errors: JSON.stringify(error),
-            repoName: repoEntity.name,
-            repoKey: repoEntity._key,
-          },
-          'Unable to process pull request entities due to error.',
-        );
-        throw error;
-      }
-    },
+  const pullRequestsTotalByRepo = await jobState.getData<Map<string, number>>(
+    PULL_REQUESTS_TOTAL_BY_REPO,
   );
+  if (!pullRequestsTotalByRepo) {
+    return;
+  }
+
+  const pullRequestsMap = new Map<string, PullRequestResponse>();
+  const reviewsTotalByPullRequest = new Map<string, number>();
+  const labelsTotalByPullRequest = new Map<string, number>();
+  const commitsTotalByPullRequest = new Map<string, number>();
+
+  const processRawPullRequests = async () => {
+    const commitsByPullRequest = await fetchCommits({
+      apiClient,
+      pullRequestsMap,
+      commitsTotalByPullRequest,
+      logger,
+    });
+    const labelsByPullRequest = await fetchLabels({
+      apiClient,
+      pullRequestsMap,
+      labelsTotalByPullRequest,
+      logger,
+    });
+    const reviewsByPullRequest = await fetchReviews({
+      apiClient,
+      pullRequestsMap,
+      reviewsTotalByPullRequest,
+      logger,
+    });
+
+    await Promise.all(
+      Array.from(pullRequestsMap.values()).map((pullRequest) => {
+        return processPullRequest({
+          jobState,
+          logger,
+          pullRequest,
+          labels: labelsByPullRequest.get(pullRequest.id) ?? [],
+          commits: commitsByPullRequest.get(pullRequest.id) ?? [],
+          reviews: reviewsByPullRequest.get(pullRequest.id) ?? [],
+          teamMembersByLoginMap,
+          usersByLoginMap,
+        });
+      }),
+    );
+  };
+
+  const iteratee = async (pullRequest: PullRequestResponse) => {
+    pullRequestsMap.set(pullRequest.id, pullRequest);
+    if (pullRequest.commits.totalCount) {
+      commitsTotalByPullRequest.set(
+        pullRequest.id,
+        pullRequest.commits.totalCount,
+      );
+    }
+    if (pullRequest.labels.totalCount) {
+      labelsTotalByPullRequest.set(
+        pullRequest.id,
+        pullRequest.labels.totalCount,
+      );
+    }
+    if (pullRequest.reviews.totalCount) {
+      reviewsTotalByPullRequest.set(
+        pullRequest.id,
+        pullRequest.reviews.totalCount,
+      );
+    }
+
+    if (pullRequestsMap.size >= PULL_REQUESTS_PROCESSING_BATCH_SIZE) {
+      await processRawPullRequests();
+      pullRequestsMap.clear();
+      commitsTotalByPullRequest.clear();
+      labelsTotalByPullRequest.clear();
+      reviewsTotalByPullRequest.clear();
+    }
+  };
+
+  await withBatching({
+    totalConnectionsById: pullRequestsTotalByRepo,
+    threshold: 25,
+    batchCb: async (repoKeys) => {
+      await apiClient.iterateBatchedPullRequests(repoKeys, iteratee);
+    },
+    singleCb: async (repoKey) => {
+      const repoData = repoTags.get(repoKey);
+      if (!repoData) {
+        return;
+      }
+      await apiClient.iteratePullRequests(
+        repoData.name,
+        repoData.public,
+        ingestStartDatetime,
+        maxResourceIngestion,
+        maxSearchLimit,
+        iteratee,
+      );
+    },
+    logger,
+  });
+
+  // flush, process any remaining PRs
+  if (pullRequestsMap.size) {
+    await processRawPullRequests();
+    pullRequestsMap.clear();
+    commitsTotalByPullRequest.clear();
+    labelsTotalByPullRequest.clear();
+    reviewsTotalByPullRequest.clear();
+  }
 }
 
 export const prSteps: IntegrationStep<IntegrationConfig>[] = [

@@ -7,12 +7,14 @@ export const pullRequestFields = (isPublicRepo: boolean) => `
   baseRefName
   baseRefOid
   baseRepository {
+    id
     name
     owner {
       ...on RepositoryOwner {
         login
       }
     }
+    isPrivate
   }
   body
   changedFiles

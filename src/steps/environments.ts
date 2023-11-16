@@ -65,12 +65,7 @@ export const environmentSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Fetch Environments',
     entities: [GithubEntities.GITHUB_ENVIRONMENT],
     relationships: [Relationships.REPO_HAS_ENVIRONMENT],
-    dependsOn: [
-      Steps.FETCH_REPOS,
-      // Added to execute steps serially.
-      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
-      Steps.FETCH_REPO_SECRETS,
-    ],
+    dependsOn: [Steps.FETCH_REPOS],
     executionHandler: fetchEnvironments,
   },
 ];

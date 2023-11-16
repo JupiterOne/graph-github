@@ -173,13 +173,7 @@ export const collaboratorSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Fetch Collaborators',
     entities: [GithubEntities.GITHUB_COLLABORATOR],
     relationships: [Relationships.REPO_ALLOWS_USER],
-    dependsOn: [
-      Steps.FETCH_REPOS,
-      Steps.FETCH_USERS,
-      // Added to execute steps serially.
-      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
-      Steps.FETCH_TEAM_REPOS,
-    ],
+    dependsOn: [Steps.FETCH_REPOS, Steps.FETCH_USERS],
     executionHandler: fetchCollaborators,
   },
 ];

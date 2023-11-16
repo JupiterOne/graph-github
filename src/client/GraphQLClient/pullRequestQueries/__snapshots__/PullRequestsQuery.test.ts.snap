@@ -13,62 +13,66 @@ Object {
           edges {
             node {
               ...on PullRequest {
-    author {
-      ...on User {
+                
+  author {
+    ...on User {
     name
     login
   }
-    }
-    baseRefName
-    baseRefOid
-    baseRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    body
-    changedFiles
-    createdAt
-    databaseId
-    headRefName
-    headRefOid
-    headRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
+  }
+  baseRefName
+  baseRefOid
+  baseRepository {
     id
-    
-    merged
-    mergedAt
-    mergedBy {
-      ...on User {
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+    isPrivate
+  }
+  body
+  changedFiles
+  createdAt
+  databaseId
+  headRefName
+  headRefOid
+  headRepository {
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+  }
+  id
+  
+  merged
+  mergedAt
+  mergedBy {
+    ...on User {
     name
     login
   }
-    }
-    number
-    reviewDecision
-    state
-    title
-    updatedAt
-    url
-    commits {
-      totalCount
-    }
-    labels {
-      totalCount
-    }
-    reviews {
-      totalCount
-    }
   }
+  number
+  reviewDecision
+  state
+  title
+  updatedAt
+  url
+  commits {
+    totalCount
+  }
+  labels {
+    totalCount
+  }
+  reviews {
+    totalCount
+  }
+
+              }
             }
           }
           pageInfo {
@@ -105,73 +109,77 @@ Object {
           edges {
             node {
               ...on PullRequest {
-    author {
-      ...on User {
+                
+  author {
+    ...on User {
     name
     login
   }
-    }
-    baseRefName
-    baseRefOid
-    baseRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    body
-    changedFiles
-    createdAt
-    databaseId
-    headRefName
-    headRefOid
-    headRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
+  }
+  baseRefName
+  baseRefOid
+  baseRepository {
     id
-    mergeCommit {
-              ...on Commit {
-                commitUrl
-                oid
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+    isPrivate
+  }
+  body
+  changedFiles
+  createdAt
+  databaseId
+  headRefName
+  headRefOid
+  headRepository {
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+  }
+  id
+  mergeCommit {
+            ...on Commit {
+              commitUrl
+              oid
+            }
+            associatedPullRequests(first: 1) {
+              nodes {
+                id
+                number
               }
-              associatedPullRequests(first: 1) {
-                nodes {
-                  id
-                  number
-                }
-              }
-           }
-    merged
-    mergedAt
-    mergedBy {
-      ...on User {
+            }
+          }
+  merged
+  mergedAt
+  mergedBy {
+    ...on User {
     name
     login
   }
-    }
-    number
-    reviewDecision
-    state
-    title
-    updatedAt
-    url
-    commits {
-      totalCount
-    }
-    labels {
-      totalCount
-    }
-    reviews {
-      totalCount
-    }
   }
+  number
+  reviewDecision
+  state
+  title
+  updatedAt
+  url
+  commits {
+    totalCount
+  }
+  labels {
+    totalCount
+  }
+  reviews {
+    totalCount
+  }
+
+              }
             }
           }
           pageInfo {
@@ -208,73 +216,77 @@ Object {
           edges {
             node {
               ...on PullRequest {
-    author {
-      ...on User {
+                
+  author {
+    ...on User {
     name
     login
   }
-    }
-    baseRefName
-    baseRefOid
-    baseRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    body
-    changedFiles
-    createdAt
-    databaseId
-    headRefName
-    headRefOid
-    headRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
+  }
+  baseRefName
+  baseRefOid
+  baseRepository {
     id
-    mergeCommit {
-              ...on Commit {
-                commitUrl
-                oid
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+    isPrivate
+  }
+  body
+  changedFiles
+  createdAt
+  databaseId
+  headRefName
+  headRefOid
+  headRepository {
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+  }
+  id
+  mergeCommit {
+            ...on Commit {
+              commitUrl
+              oid
+            }
+            associatedPullRequests(first: 1) {
+              nodes {
+                id
+                number
               }
-              associatedPullRequests(first: 1) {
-                nodes {
-                  id
-                  number
-                }
-              }
-           }
-    merged
-    mergedAt
-    mergedBy {
-      ...on User {
+            }
+          }
+  merged
+  mergedAt
+  mergedBy {
+    ...on User {
     name
     login
   }
-    }
-    number
-    reviewDecision
-    state
-    title
-    updatedAt
-    url
-    commits {
-      totalCount
-    }
-    labels {
-      totalCount
-    }
-    reviews {
-      totalCount
-    }
   }
+  number
+  reviewDecision
+  state
+  title
+  updatedAt
+  url
+  commits {
+    totalCount
+  }
+  labels {
+    totalCount
+  }
+  reviews {
+    totalCount
+  }
+
+              }
             }
           }
           pageInfo {
@@ -320,73 +332,77 @@ Object {
           edges {
             node {
               ...on PullRequest {
-    author {
-      ...on User {
+                
+  author {
+    ...on User {
     name
     login
   }
-    }
-    baseRefName
-    baseRefOid
-    baseRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    body
-    changedFiles
-    createdAt
-    databaseId
-    headRefName
-    headRefOid
-    headRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
+  }
+  baseRefName
+  baseRefOid
+  baseRepository {
     id
-    mergeCommit {
-              ...on Commit {
-                commitUrl
-                oid
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+    isPrivate
+  }
+  body
+  changedFiles
+  createdAt
+  databaseId
+  headRefName
+  headRefOid
+  headRepository {
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+  }
+  id
+  mergeCommit {
+            ...on Commit {
+              commitUrl
+              oid
+            }
+            associatedPullRequests(first: 1) {
+              nodes {
+                id
+                number
               }
-              associatedPullRequests(first: 1) {
-                nodes {
-                  id
-                  number
-                }
-              }
-           }
-    merged
-    mergedAt
-    mergedBy {
-      ...on User {
+            }
+          }
+  merged
+  mergedAt
+  mergedBy {
+    ...on User {
     name
     login
   }
-    }
-    number
-    reviewDecision
-    state
-    title
-    updatedAt
-    url
-    commits {
-      totalCount
-    }
-    labels {
-      totalCount
-    }
-    reviews {
-      totalCount
-    }
   }
+  number
+  reviewDecision
+  state
+  title
+  updatedAt
+  url
+  commits {
+    totalCount
+  }
+  labels {
+    totalCount
+  }
+  reviews {
+    totalCount
+  }
+
+              }
             }
           }
           pageInfo {
@@ -423,73 +439,77 @@ Object {
           edges {
             node {
               ...on PullRequest {
-    author {
-      ...on User {
+                
+  author {
+    ...on User {
     name
     login
   }
-    }
-    baseRefName
-    baseRefOid
-    baseRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    body
-    changedFiles
-    createdAt
-    databaseId
-    headRefName
-    headRefOid
-    headRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
+  }
+  baseRefName
+  baseRefOid
+  baseRepository {
     id
-    mergeCommit {
-              ...on Commit {
-                commitUrl
-                oid
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+    isPrivate
+  }
+  body
+  changedFiles
+  createdAt
+  databaseId
+  headRefName
+  headRefOid
+  headRepository {
+    name
+    owner {
+      ...on RepositoryOwner {
+        login
+      }
+    }
+  }
+  id
+  mergeCommit {
+            ...on Commit {
+              commitUrl
+              oid
+            }
+            associatedPullRequests(first: 1) {
+              nodes {
+                id
+                number
               }
-              associatedPullRequests(first: 1) {
-                nodes {
-                  id
-                  number
-                }
-              }
-           }
-    merged
-    mergedAt
-    mergedBy {
-      ...on User {
+            }
+          }
+  merged
+  mergedAt
+  mergedBy {
+    ...on User {
     name
     login
   }
-    }
-    number
-    reviewDecision
-    state
-    title
-    updatedAt
-    url
-    commits {
-      totalCount
-    }
-    labels {
-      totalCount
-    }
-    reviews {
-      totalCount
-    }
   }
+  number
+  reviewDecision
+  state
+  title
+  updatedAt
+  url
+  commits {
+    totalCount
+  }
+  labels {
+    totalCount
+  }
+  reviews {
+    totalCount
+  }
+
+              }
             }
           }
           pageInfo {

@@ -320,9 +320,6 @@ export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
         Steps.FETCH_USERS,
         Steps.FETCH_TEAMS,
         Steps.FETCH_APPS,
-        // Added to execute steps serially.
-        // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
-        Steps.FETCH_TEAM_MEMBERS,
       ],
       executionHandler: fetchBranchProtectionRule,
     },

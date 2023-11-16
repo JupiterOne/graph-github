@@ -90,12 +90,7 @@ export const memberSteps: IntegrationStep<IntegrationConfig>[] = [
       Relationships.ACCOUNT_HAS_USER,
       Relationships.USER_MANAGES_ACCOUNT,
     ],
-    dependsOn: [
-      Steps.FETCH_ACCOUNT,
-      // Added to execute steps serially.
-      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
-      Steps.FETCH_APPS,
-    ],
+    dependsOn: [Steps.FETCH_ACCOUNT],
     executionHandler: fetchMembers,
   },
 ];

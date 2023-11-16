@@ -62,12 +62,7 @@ export const appSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Fetch Apps',
     entities: [GithubEntities.GITHUB_APP],
     relationships: [Relationships.ACCOUNT_INSTALLED_APP],
-    dependsOn: [
-      Steps.FETCH_ACCOUNT,
-      // Added to execute steps serially.
-      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
-      Steps.FETCH_REPOS,
-    ],
+    dependsOn: [Steps.FETCH_ACCOUNT],
     executionHandler: fetchApps,
   },
 ];

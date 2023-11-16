@@ -82,13 +82,7 @@ export const teamRepoSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Fetch Team Repos',
     entities: [],
     relationships: [Relationships.REPO_ALLOWS_TEAM],
-    dependsOn: [
-      Steps.FETCH_REPOS,
-      Steps.FETCH_TEAMS,
-      // Added to execute steps serially.
-      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
-      Steps.FETCH_VULNERABILITY_ALERTS,
-    ],
+    dependsOn: [Steps.FETCH_REPOS, Steps.FETCH_TEAMS],
     executionHandler: fetchTeamRepos,
   },
 ];

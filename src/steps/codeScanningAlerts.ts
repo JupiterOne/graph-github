@@ -57,13 +57,7 @@ export const codeScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Fetch Code Scanning Alerts',
     entities: [GithubEntities.GITHUB_CODE_SCANNING_ALERT],
     relationships: [Relationships.REPO_HAS_CODE_SCANNING_FINDING],
-    dependsOn: [
-      Steps.FETCH_REPOS,
-      // Added to execute steps serially.
-      // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
-      // Steps.FETCH_SECRET_SCANNING_ALERTS,
-      Steps.FETCH_ENV_SECRETS,
-    ],
+    dependsOn: [Steps.FETCH_REPOS],
     executionHandler: fetchCodeScanAlerts,
   },
 ];

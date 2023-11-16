@@ -69,61 +69,26 @@ export const withBatching = async ({
  * @param {IntegrationLogger} [params.logger] - An optional logger for logging warnings.
  * @returns {Promise<string[]>} An array of entity keys that encountered timeouts and need to be retried individually.
  */
-const recursiveBatch = async ({
-  batchedKeys,
-  totalConnectionsById,
-  threshold,
-  batchCb,
-  logger,
-}: {
+const recursiveBatch = async (params: {
   batchedKeys: string[][];
   totalConnectionsById: Map<string, number>;
   threshold: number;
   batchCb: (entityIds: string[]) => Promise<void>;
   logger?: IntegrationLogger;
 }): Promise<string[]> => {
+  const { batchedKeys, batchCb } = params;
   const retrySingleEntityKeys: string[] = [];
   for (const [index, entityIds] of batchedKeys.entries()) {
     try {
       await batchCb(entityIds);
     } catch (err) {
       if (err.message?.includes('This may be the result of a timeout')) {
-        const newTotalConnectionsById = batchedKeys
-          .slice(index)
-          .flat()
-          .reduce((acc, id) => {
-            const total = totalConnectionsById.get(id);
-            if (!total) {
-              return acc;
-            }
-            acc.set(id, total);
-            return acc;
-          }, new Map<string, number>());
-        const newThreshold = Math.max(Math.floor(threshold / 2), 1);
-        if (newThreshold === threshold) {
-          // prevent infinite loop: newThreshold is 1 and it already failed using 1
-          // it should never happen because when the threshold is 1 the queries are sent to the single query handler, but just in case.
-          throw err;
-        }
-        const { batchedKeys: newBatchedKeys, singleKeys } =
-          separateEntityKeysByThreshold(newTotalConnectionsById, newThreshold);
-
-        logger?.warn(
-          {
-            threshold: newThreshold,
-          },
-          'Github timeout on batch query. Retrying query by half the threshold.',
-        );
-
-        const innerRetrySingleEntityKeys = await recursiveBatch({
-          batchedKeys: newBatchedKeys,
-          totalConnectionsById: newTotalConnectionsById,
-          threshold: newThreshold,
-          batchCb,
-          logger,
+        await handleTimeoutError({
+          err,
+          index,
+          retrySingleEntityKeys,
+          ...params,
         });
-        retrySingleEntityKeys.push(...singleKeys);
-        retrySingleEntityKeys.push(...innerRetrySingleEntityKeys);
         break;
       } else {
         throw err;
@@ -132,6 +97,78 @@ const recursiveBatch = async ({
   }
   return retrySingleEntityKeys;
 };
+
+/**
+ * Handles a timeout error during batched queries by retrying with adjusted parameters.
+ *
+ * @param {Object} options - The options object.
+ * @param {Error} options.err - The timeout error.
+ * @param {number} options.index - The current index in the batchedKeys array.
+ * @param {string[]} options.retrySingleEntityKeys - Array of entity keys to retry individually.
+ * @param {string[][]} options.batchedKeys - Array of arrays containing batched entity keys.
+ * @param {Map<string, number>} options.totalConnectionsById - Map of entity IDs to total connections.
+ * @param {number} options.threshold - The current threshold for batched queries.
+ * @param {(entityIds: string[]) => Promise<void>} options.batchCb - Callback function for processing batched entities.
+ * @param {IntegrationLogger} [options.logger] - Optional logger for logging warnings.
+ * @returns {Promise<void>} - Resolves when the retry process is complete.
+ * @throws {Error} - Throws the original error if the new threshold is 1, preventing an infinite loop.
+ */
+async function handleTimeoutError({
+  err,
+  index,
+  retrySingleEntityKeys,
+  batchedKeys,
+  totalConnectionsById,
+  threshold,
+  batchCb,
+  logger,
+}: {
+  err: Error;
+  index: number;
+  retrySingleEntityKeys: string[];
+  batchedKeys: string[][];
+  totalConnectionsById: Map<string, number>;
+  threshold: number;
+  batchCb: (entityIds: string[]) => Promise<void>;
+  logger?: IntegrationLogger;
+}): Promise<void> {
+  const newTotalConnectionsById = batchedKeys
+    .slice(index)
+    .flat()
+    .reduce((acc, id) => {
+      const total = totalConnectionsById.get(id);
+      if (!total) {
+        return acc;
+      }
+      acc.set(id, total);
+      return acc;
+    }, new Map<string, number>());
+  const newThreshold = Math.max(Math.floor(threshold / 2), 1);
+  if (newThreshold === threshold) {
+    // prevent infinite loop: newThreshold is 1 and it already failed using 1
+    // it should never happen because when the threshold is 1 the queries are sent to the single query handler, but just in case.
+    throw err;
+  }
+  const { batchedKeys: newBatchedKeys, singleKeys } =
+    separateEntityKeysByThreshold(newTotalConnectionsById, newThreshold);
+
+  logger?.warn(
+    {
+      threshold: newThreshold,
+    },
+    'Github timeout on batch query. Retrying query by half the threshold.',
+  );
+
+  const innerRetrySingleEntityKeys = await recursiveBatch({
+    batchedKeys: newBatchedKeys,
+    totalConnectionsById: newTotalConnectionsById,
+    threshold: newThreshold,
+    batchCb,
+    logger,
+  });
+  retrySingleEntityKeys.push(...singleKeys);
+  retrySingleEntityKeys.push(...innerRetrySingleEntityKeys);
+}
 
 /**
  * Separates entity keys into batched and single keys based on their total values and a specified threshold.

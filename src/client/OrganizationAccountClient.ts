@@ -37,6 +37,7 @@ import {
   OrgExternalIdentifierQueryResponse,
   RepoConnectionFilters,
   TopicQueryResponse,
+  BranchProtectionRuleAllowancesResponse,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -542,6 +543,18 @@ export default class OrganizationAccountClient {
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateBatchedRepoBranchProtectionRules(
       repoIds,
+      gheServerVersion,
+      iteratee,
+    );
+  }
+
+  async iterateBatchedPolicyAllowances(
+    branchProtectionRuleIds: string[],
+    iteratee: ResourceIteratee<BranchProtectionRuleAllowancesResponse>,
+    gheServerVersion?: string,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedPolicyAllowances(
+      branchProtectionRuleIds,
       gheServerVersion,
       iteratee,
     );

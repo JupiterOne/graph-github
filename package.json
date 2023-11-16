@@ -50,6 +50,7 @@
     "@octokit/request": "^5.6.3",
     "@octokit/rest": "^19.0.3",
     "date-fns": "^2.29.3",
+    "lodash": "^4.17.21",
     "semver": "^7.3.7"
   },
   "peerDependencies": {

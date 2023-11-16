@@ -69,16 +69,16 @@ export default async function getStepStartStates(
       disabled: !scopes.repoAdmin && !scopes.repoDiscussions,
       disabledReason: DisabledStepReason.PERMISSION,
     },
-    [Steps.FETCH_SECRET_SCANNING_ALERTS]: {
-      disabled:
-        !scopes.secretScanningAlerts ||
-        !utils.isSupported(
-          EnterpriseFeatures.LIST_SECRET_SCANNING_ALERT_FOR_ORG,
-          gheServerVersion,
-        ),
-      disabledReason: !scopes.secretScanningAlerts
-        ? DisabledStepReason.PERMISSION
-        : DisabledStepReason.API_VERSION,
-    },
+    // [Steps.FETCH_SECRET_SCANNING_ALERTS]: {
+    //   disabled:
+    //     !scopes.secretScanningAlerts ||
+    //     !utils.isSupported(
+    //       EnterpriseFeatures.LIST_SECRET_SCANNING_ALERT_FOR_ORG,
+    //       gheServerVersion,
+    //     ),
+    //   disabledReason: !scopes.secretScanningAlerts
+    //     ? DisabledStepReason.PERMISSION
+    //     : DisabledStepReason.API_VERSION,
+    // },
   };
 }

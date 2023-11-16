@@ -269,7 +269,7 @@ export async function fetchRepos({
 
   await apiClient.iterateRepos({ lastSuccessfulExecution }, async (repo) => {
     repositoriesMap.set(repo.id, repo);
-    if (repo.tags.totalCount) {
+    if (repo.tags?.totalCount) {
       tagsTotalByRepo.set(repo.id, repo.tags.totalCount);
     }
     if (repo.topics.totalCount) {

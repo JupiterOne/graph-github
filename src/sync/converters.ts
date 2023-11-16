@@ -36,6 +36,7 @@ import {
 } from '../types';
 import { decomposePermissions } from '../util/propertyHelpers';
 import {
+  BranchProtectionRuleAllowancesResponse,
   BranchProtectionRuleResponse,
   CollaboratorResponse,
   Commit,
@@ -394,10 +395,14 @@ export function toBranchProtectionEntity(
   data: BranchProtectionRuleResponse,
   baseUrl: string,
   orgLogin: string,
+  allowances?: BranchProtectionRuleAllowancesResponse,
 ) {
   return createIntegrationEntity({
     entityData: {
-      source: data,
+      source: {
+        ...data,
+        ...(allowances && omit(allowances, ['branchProtectionRuleId'])),
+      },
       assign: {
         _class: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._class,
         _type: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
@@ -508,7 +513,7 @@ export function toOrganizationMemberEntity(
   // First attempt to use the org level external identifiers for email if
   // available.  This will allow us to have a greater match percentage
   // when looking for existing users by work email.
-  if (externalIdentifiers?.[data.login]) {
+  if (data.login && externalIdentifiers?.[data.login]) {
     userEntity.email = externalIdentifiers[data.login];
   } else if (data.email) {
     userEntity.email = data.email;

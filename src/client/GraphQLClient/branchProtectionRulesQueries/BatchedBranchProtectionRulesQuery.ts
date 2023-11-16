@@ -11,12 +11,9 @@ import utils from '../utils';
 import {
   branchProtectionRuleFields,
   buildVersionSafeFragments,
-  processActors,
 } from './shared';
 
-interface QueryState extends BaseQueryState {
-  isInitialQuery?: boolean;
-}
+type QueryState = BaseQueryState;
 
 export type QueryParams = {
   repoIds: string[];
@@ -81,16 +78,16 @@ const processResponseData: ProcessResponse<
         repoId: repository.id,
         repoName: repository.name,
         ...rule,
-        bypassForcePushAllowances: processActors(
-          rule.bypassForcePushAllowances?.nodes,
-        ),
-        bypassPullRequestAllowances: processActors(
-          rule.bypassPullRequestAllowances?.nodes,
-        ),
-        pushAllowances: processActors(rule.pushAllowances?.nodes),
-        reviewDismissalAllowances: processActors(
-          rule.reviewDismissalAllowances?.nodes,
-        ),
+        // bypassForcePushAllowances: processActors(
+        //   rule.bypassForcePushAllowances?.nodes,
+        // ),
+        // bypassPullRequestAllowances: processActors(
+        //   rule.bypassPullRequestAllowances?.nodes,
+        // ),
+        // pushAllowances: processActors(rule.pushAllowances?.nodes),
+        // reviewDismissalAllowances: processActors(
+        //   rule.reviewDismissalAllowances?.nodes,
+        // ),
       };
 
       await iteratee(processedRule);

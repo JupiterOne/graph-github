@@ -122,7 +122,12 @@ const buildUserLoginMaps = async (client: APIClient, repoName: string) => {
   // There's not a good way to fetch a single member from an organization
   // We can use a REST endpoint, but it pulls back different data.
   await client.iterateOrgMembers((member) => {
-    memberByLoginMap.set(member.login, toOrganizationMemberEntity(member)._key);
+    if (member.login) {
+      memberByLoginMap.set(
+        member.login,
+        toOrganizationMemberEntity(member)._key,
+      );
+    }
   });
 
   await client.iterateRepoCollaborators(repoName, (collaborator) => {

@@ -33,6 +33,7 @@ import {
   OrgExternalIdentifierQueryResponse,
   RepoConnectionFilters,
   TopicQueryResponse,
+  BranchProtectionRuleAllowancesResponse,
 } from './client/GraphQLClient';
 import {
   CodeScanningAlertQueryResponse,
@@ -478,6 +479,26 @@ export class APIClient {
       this.logger.debug(
         { rateLimit },
         'Rate limit consumed while batch fetching Branch Protection Rules.',
+      );
+    }
+  }
+
+  public async iterateBatchedPolicyAllowances(
+    branchProtectionRuleIds: string[],
+    iteratee: ResourceIteratee<BranchProtectionRuleAllowancesResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.orgAdmin) {
+      const rateLimit = await this.graphQLClient.iterateBatchedPolicyAllowances(
+        branchProtectionRuleIds,
+        iteratee,
+        this.gheServerVersion,
+      );
+      this.logger.debug(
+        { rateLimit },
+        'Rate limit consumed while batch fetching Branch Protection Rule Allowances.',
       );
     }
   }

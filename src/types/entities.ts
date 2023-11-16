@@ -3,8 +3,8 @@ import { Entity } from '@jupiterone/integration-sdk-core';
 
 export interface AccountEntity extends Entity {
   accountType: AccountType;
-  accountId: string;
-  login: string;
+  accountId?: string;
+  login?: string;
   name?: string;
   createdOn: number | undefined;
   updatedOn: number | undefined;
@@ -212,8 +212,8 @@ export interface TeamData {
 }
 
 export interface UserEntity extends Entity {
-  username: string;
-  login: string;
+  username?: string;
+  login?: string;
   role: string;
   node: string;
   mfaEnabled?: boolean;

@@ -61,7 +61,8 @@ export const codeScanningAlertsSteps: IntegrationStep<IntegrationConfig>[] = [
       Steps.FETCH_REPOS,
       // Added to execute steps serially.
       // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
-      Steps.FETCH_SECRET_SCANNING_ALERTS,
+      // Steps.FETCH_SECRET_SCANNING_ALERTS,
+      Steps.FETCH_ENV_SECRETS,
     ],
     executionHandler: fetchCodeScanAlerts,
   },

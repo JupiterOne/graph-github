@@ -482,7 +482,10 @@ export async function fetchPrs(
 
   const iteratee = async (pullRequest: PullRequestResponse) => {
     pullRequestsMap.set(pullRequest.id, pullRequest);
-    if (pullRequest.commits.totalCount) {
+    if (
+      !pullRequest.baseRepository.isPrivate &&
+      pullRequest.commits.totalCount
+    ) {
       commitsTotalByPullRequest.set(
         pullRequest.id,
         pullRequest.commits.totalCount,

@@ -138,10 +138,12 @@ function buildIteratee({
         await jobState.addEntity(userEntity);
         userEntityKey = userEntity._key;
         outsideCollaboratorsByLoginMap.set(collab.login, userEntity._key);
-        outsideCollaboratorsArray.push({
-          key: userEntity._key,
-          login: userEntity.login,
-        });
+        if (userEntity.login) {
+          outsideCollaboratorsArray.push({
+            key: userEntity._key,
+            login: userEntity.login,
+          });
+        }
       }
     }
 

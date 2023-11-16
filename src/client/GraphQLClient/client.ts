@@ -33,6 +33,7 @@ import {
   VulnerabilityAlertResponse,
   RepoConnectionFilters,
   TopicQueryResponse,
+  BranchProtectionRuleAllowancesResponse,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
@@ -74,6 +75,7 @@ import BatchedTagsQuery from './tagQueries/BatchedTagsQuery';
 import TopicsQuery from './topicQueries/TopicsQuery';
 import BatchedTopicsQuery from './topicQueries/BatchedTopicsQuery';
 import BatchedPullRequestsQuery from './pullRequestQueries/BatchedPullRequestsQuery';
+import BatchedBranchProtectionRulesAllowancesQuery from './branchProtectionRulesQueries/BatchedBranchProtectionRulesAllowancesQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -838,6 +840,22 @@ export class GitHubGraphQLClient {
     return this.collectRateLimitStatus(
       await BatchedBranchProtectionRulesQuery.iterateBranchProtectionRules(
         { repoIds, gheServerVersion },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  public async iterateBatchedPolicyAllowances(
+    branchProtectionRuleIds: string[],
+    gheServerVersion: string | undefined,
+    iteratee: ResourceIteratee<BranchProtectionRuleAllowancesResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedBranchProtectionRulesAllowancesQuery.iterateBranchProtectionRulesAllowances(
+        { branchProtectionRuleIds, gheServerVersion },
         executor,
         iteratee,
       ),

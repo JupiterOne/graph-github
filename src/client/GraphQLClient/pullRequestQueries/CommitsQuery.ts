@@ -46,7 +46,6 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
         pullRequest(number: $pullRequestNumber) {
           id
           commits(first: $maxLimit, after: $commitsCursor) {
-            totalCount
             nodes {
               commit {
                 ...${fragments.commitFields}
@@ -91,7 +90,8 @@ const processResponseData: ProcessResponse<Commit, QueryState> = async (
   }
 
   const rateLimit = responseData.rateLimit;
-  const commitNodes = responseData.repository.pullRequest.commits.nodes;
+  const commitNodes =
+    responseData.repository?.pullRequest?.commits?.nodes ?? [];
 
   for (const commitNode of commitNodes) {
     if (!utils.hasProperties(commitNode.commit)) {

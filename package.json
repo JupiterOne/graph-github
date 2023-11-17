@@ -78,10 +78,10 @@
       "released"
     ],
     "onlyPublishWithReleaseLabel": true,
-    "shipit": {
-      "noChangelog": true,
-      "prerelease": false
-    }
+    "prereleaseBranches": [
+      "beta"
+    ],
+    "shipit": {}
   },
   "resolutions": {
     "jest": "27.5.1"

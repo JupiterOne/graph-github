@@ -119,7 +119,7 @@ export type Scopes = {
   repoIssues: boolean;
   dependabotAlerts: boolean;
   repoDiscussions: boolean;
-  secretScanningAlerts: boolean;
+  // secretScanningAlerts: boolean; // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
 };
 
 type AuthenticationData = {

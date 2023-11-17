@@ -895,9 +895,11 @@ export class APIClient {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    if (this.scopes.secretScanningAlerts) {
-      await this.graphQLClient.getSecretScanningAlerts(iteratee);
-    }
+
+    // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
+    // if (this.scopes.secretScanningAlerts) {
+    await this.graphQLClient.getSecretScanningAlerts(iteratee);
+    // }
   }
 
   /**
@@ -1146,7 +1148,7 @@ export class APIClient {
         dependabotAlerts: false,
         repoPages: false,
         repoDiscussions: false,
-        secretScanningAlerts: false,
+        // secretScanningAlerts: false, // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
       };
     }
     this.logger.info({ perms }, 'Permissions received with token');
@@ -1258,7 +1260,7 @@ export class APIClient {
     //   this.logger.info(
     //     "Token does not have 'secret_scanning_alerts' permission enabled. Secret Scanning Alerts cannot be ingested.",
     //   );
-    this.scopes.secretScanningAlerts = false;
+    //   this.scopes.secretScanningAlerts = false;
     // }
 
     //ingesting github pages requires scope repo pages:read

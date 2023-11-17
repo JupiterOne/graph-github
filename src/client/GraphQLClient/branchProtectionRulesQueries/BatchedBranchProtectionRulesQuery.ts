@@ -78,16 +78,6 @@ const processResponseData: ProcessResponse<
         repoId: repository.id,
         repoName: repository.name,
         ...rule,
-        // bypassForcePushAllowances: processActors(
-        //   rule.bypassForcePushAllowances?.nodes,
-        // ),
-        // bypassPullRequestAllowances: processActors(
-        //   rule.bypassPullRequestAllowances?.nodes,
-        // ),
-        // pushAllowances: processActors(rule.pushAllowances?.nodes),
-        // reviewDismissalAllowances: processActors(
-        //   rule.reviewDismissalAllowances?.nodes,
-        // ),
       };
 
       await iteratee(processedRule);

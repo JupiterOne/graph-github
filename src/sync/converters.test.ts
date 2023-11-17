@@ -679,6 +679,7 @@ describe('toEnvironmentEntity', () => {
         name: 'SomeRepo',
         _key: 'pretendKey',
         databaseId: 'pretendId',
+        public: true,
       },
     );
     expect(entity).toEqual({
@@ -719,6 +720,7 @@ describe('toEnvironmentEntity', () => {
         name: 'SomeRepo',
         _key: 'pretendKey',
         databaseId: 'pretendId',
+        public: true,
       },
     );
     expect(entity).toEqual({
@@ -916,12 +918,12 @@ describe('toPullRequestEntity', () => {
       reviews: fixtureReviews,
       labels: [],
       teamMembersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
       allKnownUsersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
     });
     expect(entity).toMatchSnapshot();
@@ -941,12 +943,12 @@ describe('toPullRequestEntity', () => {
       reviews: fixtureReviews,
       labels: [],
       teamMembersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
       allKnownUsersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
     });
     expect(entity).toMatchObject({
@@ -997,8 +999,8 @@ describe('toPullRequestEntity', () => {
       labels: [],
       teamMembersByLoginMap: new Map(),
       allKnownUsersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
     });
     expect(entity).toMatchObject({

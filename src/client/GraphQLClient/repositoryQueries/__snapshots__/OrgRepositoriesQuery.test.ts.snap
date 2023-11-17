@@ -59,6 +59,9 @@ exports[`OrgRepositoriesQuery pagination of org repos 1`] = `
     topics: repositoryTopics {
       totalCount
     }
+    pullRequests {
+      totalCount
+    }
   }
             }
             pageInfo {

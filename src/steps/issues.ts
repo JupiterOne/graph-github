@@ -176,6 +176,9 @@ function buildIteratee({
 
     if (issue.assignees) {
       for (const assignee of issue.assignees) {
+        if (!assignee.login) {
+          continue;
+        }
         if (usersByLoginMap?.has(assignee.login)) {
           await jobState.addRelationship(
             createDirectRelationship({

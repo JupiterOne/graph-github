@@ -23,8 +23,13 @@ import {
   Steps,
 } from '../constants';
 import { getTeamEntityKey, toBranchProtectionEntity } from '../sync/converters';
-import { BranchProtectionRuleResponse } from '../client/GraphQLClient';
+import {
+  BranchProtectionRuleAllowancesResponse,
+  BranchProtectionRuleResponse,
+} from '../client/GraphQLClient';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
+
+const POLICIES_PROCESSING_BATCH_SIZE = 500;
 
 export async function fetchBranchProtectionRule({
   instance,
@@ -49,7 +54,54 @@ export async function fetchBranchProtectionRule({
     return;
   }
 
-  const iteratee = buildIteratee({ jobState, config, apiClient, logger });
+  const policiesMap = new Map<string, BranchProtectionRuleResponse>();
+  const allowancesTotalByPolicy = new Map<string, number>();
+
+  const processRawPolicies = async () => {
+    const allowancesByPolicy = await fetchAllowances({
+      apiClient,
+      allowancesTotalByPolicy,
+      logger,
+    });
+    await Promise.all(
+      Array.from(policiesMap.values()).map((branchProtectionRule) => {
+        return processPolicy({
+          jobState,
+          config,
+          apiClient,
+          logger,
+          branchProtectionRule,
+          allowances: allowancesByPolicy.get(branchProtectionRule.id),
+        });
+      }),
+    );
+  };
+
+  const iteratee = async (
+    branchProtectionRule: BranchProtectionRuleResponse,
+  ) => {
+    policiesMap.set(branchProtectionRule.id, branchProtectionRule);
+    const allowances = [
+      'bypassForcePushAllowances',
+      'bypassPullRequestAllowances',
+      'pushAllowances',
+      'reviewDismissalAllowances',
+    ];
+    for (const allowance of allowances) {
+      const currentTotal =
+        allowancesTotalByPolicy.get(branchProtectionRule.id) ?? 0;
+      allowancesTotalByPolicy.set(
+        branchProtectionRule.id,
+        currentTotal + (branchProtectionRule[allowance]?.totalCount ?? 0),
+      );
+    }
+
+    if (policiesMap.size >= POLICIES_PROCESSING_BATCH_SIZE) {
+      await processRawPolicies();
+      policiesMap.clear();
+      allowancesTotalByPolicy.clear();
+    }
+  };
 
   await withBatching({
     totalConnectionsById: branchProtectionRuleTotalByRepo,
@@ -67,91 +119,106 @@ export async function fetchBranchProtectionRule({
     logger,
   });
 
+  // flush, process remaining policies
+  if (policiesMap.size) {
+    await processRawPolicies();
+    policiesMap.clear();
+    allowancesTotalByPolicy.clear();
+  }
+
   await jobState.deleteData(BRANCH_PROTECTION_RULE_TOTAL_BY_REPO);
 }
 
-function buildIteratee({
-  jobState,
-  config,
+const fetchAllowances = async ({
   apiClient,
+  allowancesTotalByPolicy,
   logger,
 }: {
-  jobState: JobState;
-  config: IntegrationConfig;
   apiClient: APIClient;
+  allowancesTotalByPolicy: Map<string, number>;
   logger: IntegrationLogger;
-}) {
-  return async (branchProtectionRule: BranchProtectionRuleResponse) => {
-    const branchProtectionRuleEntity = (await jobState.addEntity(
-      toBranchProtectionEntity(
-        branchProtectionRule,
-        config.githubApiBaseUrl,
-        apiClient.graphQLClient.login,
-      ),
-    )) as BranchProtectionRuleEntity;
+}) => {
+  const allowancesMap = new Map<
+    string,
+    BranchProtectionRuleAllowancesResponse
+  >();
 
-    if (branchProtectionRule.repoId) {
-      await jobState.addRelationship(
-        createDirectRelationship({
-          _class: RelationshipClass.HAS,
-          fromType: GithubEntities.GITHUB_REPO._type,
-          toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
-          fromKey: branchProtectionRule.repoId,
-          toKey: branchProtectionRuleEntity._key,
-        }),
+  const iteratee = (allowances: BranchProtectionRuleAllowancesResponse) => {
+    allowancesMap.set(allowances.branchProtectionRuleId, allowances);
+  };
+
+  await withBatching({
+    totalConnectionsById: allowancesTotalByPolicy,
+    threshold: 100,
+    batchCb: async (branchProtectionRuleIds) => {
+      await apiClient.iterateBatchedPolicyAllowances(
+        branchProtectionRuleIds,
+        iteratee,
       );
-    }
+    },
+    singleCb: async (branchProtectionRuleId) => {
+      await apiClient.iterateBatchedPolicyAllowances(
+        [branchProtectionRuleId],
+        iteratee,
+      );
+    },
+    logger,
+  });
 
-    if (
-      Array.isArray(branchProtectionRule.bypassPullRequestAllowances?.users)
-    ) {
-      const usersByLoginMap = await jobState.getData<
-        IdEntityMap<Entity['_key']>
-      >(GITHUB_MEMBER_BY_LOGIN_MAP);
+  return allowancesMap;
+};
 
-      if (usersByLoginMap) {
-        await Promise.all(
-          branchProtectionRule.bypassPullRequestAllowances?.users.map(
-            async (user) => {
-              if (usersByLoginMap.has(user.login)) {
-                await jobState.addRelationship(
-                  createDirectRelationship({
-                    _class: RelationshipClass.OVERRIDES,
-                    fromType: GithubEntities.GITHUB_MEMBER._type,
-                    fromKey: usersByLoginMap.get(user.login) as string,
-                    toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
-                    toKey: branchProtectionRuleEntity._key,
-                    properties: {
-                      bypassPullRequestAllowance: true,
-                    },
-                  }),
-                );
-              } else {
-                logger.warn(
-                  { user },
-                  'Failed to find user by login for bypassPullRequestAllowances',
-                );
-              }
-            },
-          ),
-        );
-      }
-    }
+async function processPolicy({
+  jobState,
+  apiClient,
+  config,
+  logger,
+  branchProtectionRule,
+  allowances,
+}: {
+  jobState: JobState;
+  apiClient: APIClient;
+  config: IntegrationConfig;
+  logger: IntegrationLogger;
+  branchProtectionRule: BranchProtectionRuleResponse;
+  allowances?: BranchProtectionRuleAllowancesResponse;
+}) {
+  const branchProtectionRuleEntity = (await jobState.addEntity(
+    toBranchProtectionEntity(
+      branchProtectionRule,
+      config.githubApiBaseUrl,
+      apiClient.graphQLClient.login,
+      allowances,
+    ),
+  )) as BranchProtectionRuleEntity;
 
-    if (
-      Array.isArray(branchProtectionRule.bypassPullRequestAllowances?.teams)
-    ) {
+  if (branchProtectionRule.repoId) {
+    await jobState.addRelationship(
+      createDirectRelationship({
+        _class: RelationshipClass.HAS,
+        fromType: GithubEntities.GITHUB_REPO._type,
+        toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+        fromKey: branchProtectionRule.repoId,
+        toKey: branchProtectionRuleEntity._key,
+      }),
+    );
+  }
+
+  if (Array.isArray(allowances?.bypassPullRequestAllowances?.users)) {
+    const usersByLoginMap = await jobState.getData<IdEntityMap<Entity['_key']>>(
+      GITHUB_MEMBER_BY_LOGIN_MAP,
+    );
+
+    if (usersByLoginMap) {
       await Promise.all(
-        branchProtectionRule.bypassPullRequestAllowances.teams.map(
-          async (team) => {
-            const teamEntityKey = getTeamEntityKey(team.id);
-
-            if (jobState.hasKey(teamEntityKey)) {
+        (allowances?.bypassPullRequestAllowances?.users ?? []).map(
+          async (user) => {
+            if (user.login && usersByLoginMap.has(user.login)) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.OVERRIDES,
-                  fromType: GithubEntities.GITHUB_TEAM._type,
-                  fromKey: teamEntityKey,
+                  fromType: GithubEntities.GITHUB_MEMBER._type,
+                  fromKey: usersByLoginMap.get(user.login) as string,
                   toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
                   toKey: branchProtectionRuleEntity._key,
                   properties: {
@@ -161,52 +228,78 @@ function buildIteratee({
               );
             } else {
               logger.warn(
-                { team },
-                'Failed to find team entity for bypassPullRequestAllowances.',
+                { user },
+                'Failed to find user by login for bypassPullRequestAllowances',
               );
             }
           },
         ),
       );
     }
+  }
 
-    if (Array.isArray(branchProtectionRule.bypassPullRequestAllowances?.apps)) {
-      const appsById =
-        await jobState.getData<IdEntityMap<Entity['_key']>>(
-          GITHUB_APP_BY_APP_ID,
-        );
-      if (appsById) {
-        await Promise.all(
-          branchProtectionRule.bypassPullRequestAllowances.apps.map(
-            async (app) => {
-              if (appsById.has(`${app.databaseId}`)) {
-                const appEntityKey = appsById.get(
-                  `${app.databaseId}`,
-                ) as string;
-                await jobState.addRelationship(
-                  createDirectRelationship({
-                    _class: RelationshipClass.OVERRIDES,
-                    fromType: GithubEntities.GITHUB_APP._type,
-                    fromKey: appEntityKey,
-                    toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
-                    toKey: branchProtectionRuleEntity._key,
-                    properties: {
-                      bypassPullRequestAllowance: true,
-                    },
-                  }),
-                );
-              } else {
-                logger.warn(
-                  { app },
-                  'Failed to find by databaseId for bypassPullRequestAllowances.',
-                );
-              }
-            },
-          ),
-        );
-      }
+  if (Array.isArray(allowances?.bypassPullRequestAllowances?.teams)) {
+    await Promise.all(
+      (allowances?.bypassPullRequestAllowances.teams ?? []).map(
+        async (team) => {
+          const teamEntityKey = getTeamEntityKey(team.id);
+
+          if (jobState.hasKey(teamEntityKey)) {
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.OVERRIDES,
+                fromType: GithubEntities.GITHUB_TEAM._type,
+                fromKey: teamEntityKey,
+                toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+                toKey: branchProtectionRuleEntity._key,
+                properties: {
+                  bypassPullRequestAllowance: true,
+                },
+              }),
+            );
+          } else {
+            logger.warn(
+              { team },
+              'Failed to find team entity for bypassPullRequestAllowances.',
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  if (Array.isArray(allowances?.bypassPullRequestAllowances?.apps)) {
+    const appsById =
+      await jobState.getData<IdEntityMap<Entity['_key']>>(GITHUB_APP_BY_APP_ID);
+    if (appsById) {
+      await Promise.all(
+        (allowances?.bypassPullRequestAllowances.apps ?? []).map(
+          async (app) => {
+            if (appsById.has(`${app.databaseId}`)) {
+              const appEntityKey = appsById.get(`${app.databaseId}`) as string;
+              await jobState.addRelationship(
+                createDirectRelationship({
+                  _class: RelationshipClass.OVERRIDES,
+                  fromType: GithubEntities.GITHUB_APP._type,
+                  fromKey: appEntityKey,
+                  toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+                  toKey: branchProtectionRuleEntity._key,
+                  properties: {
+                    bypassPullRequestAllowance: true,
+                  },
+                }),
+              );
+            } else {
+              logger.warn(
+                { app },
+                'Failed to find by databaseId for bypassPullRequestAllowances.',
+              );
+            }
+          },
+        ),
+      );
     }
-  };
+  }
 }
 
 export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
@@ -227,9 +320,6 @@ export const branchProtectionRulesSteps: IntegrationStep<IntegrationConfig>[] =
         Steps.FETCH_USERS,
         Steps.FETCH_TEAMS,
         Steps.FETCH_APPS,
-        // Added to execute steps serially.
-        // https://docs.github.com/en/rest/guides/best-practices-for-using-the-rest-api?apiVersion=2022-11-28#dealing-with-secondary-rate-limits
-        Steps.FETCH_TEAM_MEMBERS,
       ],
       executionHandler: fetchBranchProtectionRule,
     },

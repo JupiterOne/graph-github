@@ -23,7 +23,6 @@ import {
   CodeScanningAlertQueryResponse,
   SecretScanningAlertQueryResponse,
 } from './RESTClient/types';
-import { RepoEntity } from '../types';
 import { request } from '@octokit/request';
 import { ResourceIteratee } from '../client';
 import {
@@ -38,6 +37,7 @@ import {
   OrgExternalIdentifierQueryResponse,
   RepoConnectionFilters,
   TopicQueryResponse,
+  BranchProtectionRuleAllowancesResponse,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -271,7 +271,8 @@ export default class OrganizationAccountClient {
    * @param iteratee
    */
   async iteratePullRequestEntities(
-    repo: RepoEntity,
+    repoName: string,
+    isPublicRepo: boolean,
     ingestStartDatetime: string, //expect Date.toISOString format
     maxResourceIngestion: number,
     maxSearchLimit: number,
@@ -284,14 +285,25 @@ export default class OrganizationAccountClient {
     ingestStartDatetime = this.sanitizeLastExecutionTime(ingestStartDatetime);
     return await this.v4.iteratePullRequests(
       {
-        fullName: repo.fullName,
-        public: repo.public,
+        fullName: `${this.login}/${repoName}`,
+        public: isPublicRepo,
       },
       ingestStartDatetime,
       maxResourceIngestion,
       maxSearchLimit,
       iteratee,
     );
+  }
+
+  async iterateBatchedPullRequestEntities(
+    repoIds: string[],
+    iteratee: ResourceIteratee<PullRequestResponse>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting pull requests.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateBatchedPullRequests(repoIds, iteratee);
   }
 
   /**
@@ -301,7 +313,8 @@ export default class OrganizationAccountClient {
    * @param iteratee
    */
   async iterateReviews(
-    repo: RepoEntity,
+    repoName: string,
+    isPublicRepo: boolean,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Review>,
   ): Promise<RateLimitStepSummary> {
@@ -311,9 +324,9 @@ export default class OrganizationAccountClient {
     }
     return await this.v4.iterateReviews(
       {
-        name: repo.name,
-        owner: repo.owner,
-        isPublic: repo.public,
+        name: repoName,
+        owner: this.login,
+        isPublic: isPublicRepo,
       },
       pullRequestNumber,
       iteratee,
@@ -344,7 +357,7 @@ export default class OrganizationAccountClient {
    * @param iteratee
    */
   async iterateLabelEntities(
-    repo: RepoEntity,
+    repoName: string,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Label>,
   ): Promise<RateLimitStepSummary> {
@@ -354,8 +367,8 @@ export default class OrganizationAccountClient {
     }
     return await this.v4.iterateLabels(
       {
-        name: repo.name,
-        owner: repo.owner,
+        name: repoName,
+        owner: this.login,
       },
       pullRequestNumber,
       iteratee,
@@ -385,7 +398,7 @@ export default class OrganizationAccountClient {
    * @param iteratee
    */
   async iterateCommits(
-    repo: RepoEntity,
+    repoName: string,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Commit>,
   ): Promise<RateLimitStepSummary> {
@@ -395,8 +408,8 @@ export default class OrganizationAccountClient {
     }
     return await this.v4.iterateCommits(
       {
-        name: repo.name,
-        owner: repo.owner,
+        name: repoName,
+        owner: this.login,
       },
       pullRequestNumber,
       iteratee,
@@ -530,6 +543,18 @@ export default class OrganizationAccountClient {
   ): Promise<RateLimitStepSummary> {
     return await this.v4.iterateBatchedRepoBranchProtectionRules(
       repoIds,
+      gheServerVersion,
+      iteratee,
+    );
+  }
+
+  async iterateBatchedPolicyAllowances(
+    branchProtectionRuleIds: string[],
+    iteratee: ResourceIteratee<BranchProtectionRuleAllowancesResponse>,
+    gheServerVersion?: string,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedPolicyAllowances(
+      branchProtectionRuleIds,
       gheServerVersion,
       iteratee,
     );

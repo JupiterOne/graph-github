@@ -11,7 +11,6 @@ import { IntegrationConfig, Scopes } from './config';
 import {
   AccountType,
   EnvironmentEntity,
-  RepoEntity,
   RepoData,
   TokenPermissions,
 } from './types';
@@ -34,6 +33,7 @@ import {
   OrgExternalIdentifierQueryResponse,
   RepoConnectionFilters,
   TopicQueryResponse,
+  BranchProtectionRuleAllowancesResponse,
 } from './client/GraphQLClient';
 import {
   CodeScanningAlertQueryResponse,
@@ -483,6 +483,26 @@ export class APIClient {
     }
   }
 
+  public async iterateBatchedPolicyAllowances(
+    branchProtectionRuleIds: string[],
+    iteratee: ResourceIteratee<BranchProtectionRuleAllowancesResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.orgAdmin) {
+      const rateLimit = await this.graphQLClient.iterateBatchedPolicyAllowances(
+        branchProtectionRuleIds,
+        iteratee,
+        this.gheServerVersion,
+      );
+      this.logger.debug(
+        { rateLimit },
+        'Rate limit consumed while batch fetching Branch Protection Rule Allowances.',
+      );
+    }
+  }
+
   /**
    * Iterates each Github environment.
    *
@@ -653,7 +673,8 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iteratePullRequests(
-    repo: RepoEntity,
+    repoName: string,
+    isPublicRepo: boolean,
     ingestStartDatetime: string,
     maxResourceIngestion: number,
     maxSearchLimit: number,
@@ -663,7 +684,8 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iteratePullRequestEntities(
-      repo,
+      repoName,
+      isPublicRepo,
       ingestStartDatetime,
       maxResourceIngestion,
       maxSearchLimit,
@@ -675,6 +697,24 @@ export class APIClient {
     );
   }
 
+  public async iterateBatchedPullRequests(
+    repoIds: string[],
+    iteratee: ResourceIteratee<PullRequestResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit =
+      await this.graphQLClient.iterateBatchedPullRequestEntities(
+        repoIds,
+        iteratee,
+      );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Pull Requests.',
+    );
+  }
+
   /**
    * Fetch all reviews from pull request resource in the provider.
    *
@@ -683,7 +723,8 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateReviews(
-    repo: RepoEntity,
+    repoName: string,
+    isPublicRepo: boolean,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Review>,
   ): Promise<void> {
@@ -691,7 +732,8 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iterateReviews(
-      repo,
+      repoName,
+      isPublicRepo,
       pullRequestNumber,
       iteratee,
     );
@@ -733,7 +775,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateLabels(
-    repo: RepoEntity,
+    repoName: string,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Label>,
   ): Promise<void> {
@@ -741,7 +783,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iterateLabelEntities(
-      repo,
+      repoName,
       pullRequestNumber,
       iteratee,
     );
@@ -783,7 +825,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateCommits(
-    repo: RepoEntity,
+    repoName: string,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Commit>,
   ): Promise<void> {
@@ -791,7 +833,7 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iterateCommits(
-      repo,
+      repoName,
       pullRequestNumber,
       iteratee,
     );
@@ -1201,24 +1243,23 @@ export class APIClient {
     //ingesting codeScanning alerts requires scope security_events:read
     if (['read', 'write'].includes(perms.security_events!)) {
       this.scopes.codeScanningAlerts = true;
-      this.scopes.secretScanningAlerts = true;
     } else {
       this.logger.info(
         "Token does not have 'security_events' (aka codeScanning alerts) scope. Repo Vulnerability Alerts cannot be ingested.",
       );
       this.scopes.codeScanningAlerts = false;
-      this.scopes.secretScanningAlerts = false;
     }
 
-    //ingesting secretScanning alerts requires secret_scanning_alerts:read permission
-    if (['read', 'write'].includes(perms.secret_scanning_alerts!)) {
-      this.scopes.secretScanningAlerts = true;
-    } else {
-      this.logger.info(
-        "Token does not have 'secret_scanning_alerts' permission enabled. Secret Scanning Alerts cannot be ingested.",
-      );
-      this.scopes.secretScanningAlerts = false;
-    }
+    // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
+    // // ingesting secretScanning alerts requires secret_scanning_alerts:read permission
+    // if (['read', 'write'].includes(perms.secret_scanning_alerts!)) {
+    //   this.scopes.secretScanningAlerts = true;
+    // } else {
+    //   this.logger.info(
+    //     "Token does not have 'secret_scanning_alerts' permission enabled. Secret Scanning Alerts cannot be ingested.",
+    //   );
+    this.scopes.secretScanningAlerts = false;
+    // }
 
     //ingesting github pages requires scope repo pages:read
     if (['read', 'write'].includes(perms.pages!)) {

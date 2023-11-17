@@ -12,7 +12,7 @@ export const fixtureUser: UserEntity = {
   login: 'somebody',
 } as unknown as UserEntity;
 export const pullRequestUser: PullRequestUser = {
-  login: fixtureUser.login,
+  login: fixtureUser.login!,
   name: fixtureUser.name as string,
 };
 export const fixtureReviewerUser: UserEntity = {
@@ -21,21 +21,23 @@ export const fixtureReviewerUser: UserEntity = {
   login: 'reviewer-user',
 } as unknown as UserEntity;
 export const pullRequestReviewer: PullRequestUser = {
-  login: fixtureReviewerUser.login,
+  login: fixtureReviewerUser.login!,
   name: fixtureReviewerUser.name as string,
 };
 export const fixturePullRequest: PullRequestResponse = {
   author: {
-    login: fixtureUser.login,
+    login: fixtureUser.login!,
     name: fixtureUser.name as string,
   },
   baseRefName: 'main',
   baseRefOid: '989c2e36df5b7d2e77ff1ab33aaee49bea705066',
   baseRepository: {
+    id: '123',
     name: 'jupiter-integration-aws',
     owner: {
       login: 'JupiterOne',
     },
+    isPrivate: false,
   },
   body: 'This is some discription or something',
   changedFiles: 7,

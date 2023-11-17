@@ -1,6 +1,6 @@
 import {
   BaseQueryState,
-  BranchProtectionRuleResponse,
+  BranchProtectionRuleAllowancesResponse,
   BuildQuery,
   ProcessResponse,
 } from '../types';
@@ -8,15 +8,12 @@ import { ExecutableQuery } from '../CreateQueryExecutor';
 import fragments from '../fragments';
 import { MAX_REQUESTS_LIMIT } from '../paginate';
 import utils from '../utils';
-import {
-  branchProtectionRuleFields,
-  buildVersionSafeFragments,
-} from './shared';
+import { allowancesFields, processActors } from './shared';
 
 type QueryState = BaseQueryState;
 
 export type QueryParams = {
-  repoIds: string[];
+  branchProtectionRuleIds: string[];
   gheServerVersion?: string;
 };
 
@@ -24,24 +21,15 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   queryParams,
   queryState,
 ): ExecutableQuery => {
-  const versionSafeFragments = buildVersionSafeFragments(
-    queryParams.gheServerVersion,
-  );
-
   const query = `
       query (
-        $repoIds: [ID!]!
+        $branchProtectionRuleIds: [ID!]!
         $maxLimit: Int!
       ) {
-          nodes(ids: $repoIds) {
-            ...on Repository {
+          nodes(ids: $branchProtectionRuleIds) {
+            ...on BranchProtectionRule {
               id
-              name
-              branchProtectionRules(first: $maxLimit) {
-                nodes {
-                  ${branchProtectionRuleFields(versionSafeFragments)}
-                }
-              }
+              ${allowancesFields(queryParams.gheServerVersion)}
             }
           }
           ...${fragments.rateLimit}
@@ -54,34 +42,37 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      repoIds: queryParams.repoIds,
+      branchProtectionRuleIds: queryParams.branchProtectionRuleIds,
       maxLimit: MAX_REQUESTS_LIMIT,
     },
   };
 };
 
 const processResponseData: ProcessResponse<
-  BranchProtectionRuleResponse,
+  BranchProtectionRuleAllowancesResponse,
   QueryState
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
-  const repositories = responseData.nodes ?? [];
+  const branchProtectionRules = responseData.nodes ?? [];
 
-  for (const repository of repositories) {
-    const rules = repository.branchProtectionRules.nodes ?? [];
-    for (const rule of rules) {
-      if (!utils.hasProperties(rule)) {
-        continue;
-      }
-
-      const processedRule = {
-        repoId: repository.id,
-        repoName: repository.name,
-        ...rule,
-      };
-
-      await iteratee(processedRule);
+  for (const rule of branchProtectionRules) {
+    if (!utils.hasProperties(rule)) {
+      continue;
     }
+
+    await iteratee({
+      branchProtectionRuleId: rule.id,
+      bypassForcePushAllowances: processActors(
+        rule.bypassForcePushAllowances?.nodes,
+      ),
+      bypassPullRequestAllowances: processActors(
+        rule.bypassPullRequestAllowances?.nodes,
+      ),
+      pushAllowances: processActors(rule.pushAllowances?.nodes),
+      reviewDismissalAllowances: processActors(
+        rule.reviewDismissalAllowances?.nodes,
+      ),
+    });
   }
 
   return {
@@ -89,7 +80,7 @@ const processResponseData: ProcessResponse<
   };
 };
 
-const iterateBranchProtectionRules = async (
+const iterateBranchProtectionRulesAllowances = async (
   queryParams: QueryParams,
   execute,
   iteratee,
@@ -109,4 +100,4 @@ const iterateBranchProtectionRules = async (
   };
 };
 
-export default { iterateBranchProtectionRules };
+export default { iterateBranchProtectionRulesAllowances };

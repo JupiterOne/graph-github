@@ -65,7 +65,7 @@ interface Actor {
   id: string;
   databaseId?: number; // This is used to identify an app
   name?: string | null;
-  login: string;
+  login?: string;
 }
 
 export interface OrgQueryResponse extends Node, Actor {
@@ -207,10 +207,13 @@ export interface OrgRepoQueryResponse extends Node {
   issues: {
     totalCount: number;
   };
-  tags: {
+  tags?: {
     totalCount: number;
   };
   topics: {
+    totalCount: number;
+  };
+  pullRequests: {
     totalCount: number;
   };
 }
@@ -342,8 +345,10 @@ export type BasePullRequestFields = {
   author?: PullRequestUser;
   mergeCommit?: MergeCommit;
   baseRepository: {
+    id: string;
     name: string;
     owner: RepositoryOwner;
+    isPrivate: boolean;
   };
   headRepository: {
     name: string;
@@ -511,15 +516,39 @@ export interface BranchProtectionRuleResponse extends Node {
     };
   }>;
   bypassForcePushAllowances: {
-    teams: Array<Omit<Actor, 'login'>>;
-    apps: Array<Omit<Actor, 'login'>>;
-    users: Array<Omit<Actor, 'name'>>;
+    totalCount: number;
   };
   bypassPullRequestAllowances: {
-    teams: Array<Actor>;
-    apps: Array<Actor>;
-    users: Array<Actor>;
+    totalCount: number;
   };
-  pushAllowances: Array<Actor>;
-  reviewDismissalAllowances: Array<Actor>;
+  pushAllowances: {
+    totalCount: number;
+  };
+  reviewDismissalAllowances: {
+    totalCount: number;
+  };
+}
+
+export interface BranchProtectionRuleAllowancesResponse {
+  branchProtectionRuleId: string;
+  bypassForcePushAllowances: {
+    teams: Actor[];
+    apps: Actor[];
+    users: Actor[];
+  };
+  bypassPullRequestAllowances: {
+    teams: Actor[];
+    apps: Actor[];
+    users: Actor[];
+  };
+  pushAllowances: {
+    teams: Actor[];
+    apps: Actor[];
+    users: Actor[];
+  };
+  reviewDismissalAllowances: {
+    teams: Actor[];
+    apps: Actor[];
+    users: Actor[];
+  };
 }

@@ -24,6 +24,10 @@ export const buildVersionSafeFragments = (
     fragments.additionalFields.push('blocksCreations');
   }
 
+  return fragments;
+};
+
+export const allowancesFields = (gheServerVersion?: string): string => {
   const isAppFragmentSupported = utils.isSupported(
     EnterpriseFeatures.BRANCH_PROTECTION_RULES_APP_MEMBER,
     gheServerVersion,
@@ -39,30 +43,27 @@ export const buildVersionSafeFragments = (
     ? actorQueryWithAppFragment
     : getActorQuery();
 
-  fragments.additionalFields.push(
-    `bypassForcePushAllowances(first: $maxLimit) {
-        nodes {
-          ${actorQuery}
-        }
+  return `
+    bypassForcePushAllowances(first: $maxLimit) {
+      nodes {
+        ${actorQuery}
       }
-      bypassPullRequestAllowances(first: $maxLimit) {
-        nodes {
-          ${actorQuery}
-        }
+    }
+    bypassPullRequestAllowances(first: $maxLimit) {
+      nodes {
+        ${actorQuery}
       }
-      pushAllowances(first: $maxLimit) {
-        nodes {
-          ${actorQueryWithAppFragment}
-        }
+    }
+    pushAllowances(first: $maxLimit) {
+      nodes {
+        ${actorQueryWithAppFragment}
       }
-      reviewDismissalAllowances(first: $maxLimit) {
-        nodes {
-          ${actorQuery}
-        }
-      }`,
-  );
-
-  return fragments;
+    }
+    reviewDismissalAllowances(first: $maxLimit) {
+      nodes {
+        ${actorQuery}
+      }
+    }`;
 };
 
 const getActorQuery = (additionalFragments: string[] = []) => `
@@ -84,8 +85,8 @@ type ActorNode = {
   actor: {
     __typename: 'Team' | 'User' | 'App';
     id: string;
-    name: string;
-    databaseId?: string;
+    name?: string;
+    databaseId?: number;
     slug?: string;
     login?: string;
   };
@@ -138,4 +139,16 @@ export const branchProtectionRuleFields = (
     }
   }
   ${versionSafeFragments.additionalFields.join('\n')}
+  bypassForcePushAllowances {
+    totalCount
+  }
+  bypassPullRequestAllowances {
+    totalCount
+  }
+  pushAllowances {
+    totalCount
+  }
+  reviewDismissalAllowances {
+    totalCount
+  }
 `;

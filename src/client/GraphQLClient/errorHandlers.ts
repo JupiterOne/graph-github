@@ -13,20 +13,14 @@ import { GraphqlResponseError } from '@octokit/graphql';
  */
 const handleTypeErrors = (
   errors: GraphQlQueryResponse<never>['errors'],
-  logger,
+  logger: IntegrationLogger,
   type: string,
 ): boolean => {
   if (Array.isArray(errors) && errors?.every((error) => error.type === type)) {
-    logger.info(
+    logger.debug(
       { errors, type },
       'The error was found and ignored because of the type.',
     );
-    errors.forEach((error) => {
-      if (error.message) {
-        logger.debug(error.message);
-      }
-    });
-
     return true;
   }
 

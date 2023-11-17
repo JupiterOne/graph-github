@@ -115,6 +115,9 @@ export default {
     topics: repositoryTopics {
       totalCount
     }
+    pullRequests {
+      totalCount
+    }
   }`,
   repositoryOwnerFields: `on RepositoryOwner {
     login

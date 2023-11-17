@@ -168,82 +168,19 @@ Object {
       name
     }
   }
-  bypassForcePushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  
+  bypassForcePushAllowances {
+    totalCount
   }
-        }
-      }
-      bypassPullRequestAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  bypassPullRequestAllowances {
+    totalCount
   }
-        }
-      }
-      pushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  pushAllowances {
+    totalCount
   }
-        }
-      }
-      reviewDismissalAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  reviewDismissalAllowances {
+    totalCount
   }
-        }
-      }
 
               }
             }
@@ -435,82 +372,18 @@ Object {
     }
   }
   blocksCreations
-bypassForcePushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  bypassForcePushAllowances {
+    totalCount
   }
-        }
-      }
-      bypassPullRequestAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  bypassPullRequestAllowances {
+    totalCount
   }
-        }
-      }
-      pushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  pushAllowances {
+    totalCount
   }
-        }
-      }
-      reviewDismissalAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  reviewDismissalAllowances {
+    totalCount
   }
-        }
-      }
 
               }
             }
@@ -702,94 +575,18 @@ Object {
     }
   }
   blocksCreations
-bypassForcePushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  bypassForcePushAllowances {
+    totalCount
   }
-        }
-      }
-      bypassPullRequestAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  bypassPullRequestAllowances {
+    totalCount
   }
-        }
-      }
-      pushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  pushAllowances {
+    totalCount
   }
-        }
-      }
-      reviewDismissalAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  reviewDismissalAllowances {
+    totalCount
   }
-        }
-      }
 
               }
             }

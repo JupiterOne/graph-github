@@ -3,8 +3,8 @@ import { Entity } from '@jupiterone/integration-sdk-core';
 
 export interface AccountEntity extends Entity {
   accountType: AccountType;
-  accountId: string;
-  login: string;
+  accountId?: string;
+  login?: string;
   name?: string;
   createdOn: number | undefined;
   updatedOn: number | undefined;
@@ -204,6 +204,7 @@ export interface RepoData {
   _key: string; // an alphanumeric, used for most repo indexing
   name: string; // a string, used for some REST API calls
   databaseId: string; // typically an integer, used to retrieve env secrets REST API call
+  public: boolean;
 }
 
 export interface TeamData {
@@ -211,8 +212,8 @@ export interface TeamData {
 }
 
 export interface UserEntity extends Entity {
-  username: string;
-  login: string;
+  username?: string;
+  login?: string;
   role: string;
   node: string;
   mfaEnabled?: boolean;

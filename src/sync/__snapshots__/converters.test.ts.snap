@@ -17,6 +17,8 @@ Object {
         "baseRefName": "main",
         "baseRefOid": "989c2e36df5b7d2e77ff1ab33aaee49bea705066",
         "baseRepository": Object {
+          "id": "123",
+          "isPrivate": false,
           "name": "jupiter-integration-aws",
           "owner": Object {
             "login": "JupiterOne",

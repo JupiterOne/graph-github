@@ -25,6 +25,7 @@ import {
   COLLABORATORS_TOTAL_BY_REPO,
   VULN_ALERTS_TOTAL_BY_REPO,
   ISSUES_TOTAL_BY_REPO,
+  PULL_REQUESTS_TOTAL_BY_REPO,
 } from '../constants';
 import {
   OrgRepoQueryResponse,
@@ -127,6 +128,7 @@ const processRepository = async ({
   collaboratorsTotalByRepo,
   vulnAlertsTotalByRepo,
   issuesTotalByRepo,
+  pullRequestsTotalByRepo,
 }: {
   repo: OrgRepoQueryResponse;
   tags: TagQueryResponse[];
@@ -139,6 +141,7 @@ const processRepository = async ({
   collaboratorsTotalByRepo: Map<string, number>;
   vulnAlertsTotalByRepo: Map<string, number>;
   issuesTotalByRepo: Map<string, number>;
+  pullRequestsTotalByRepo: Map<string, number>;
 }) => {
   const repoEntity = toRepositoryEntity(repo);
 
@@ -160,6 +163,7 @@ const processRepository = async ({
     _key: repoEntity._key,
     name: repoEntity.name,
     databaseId: repoEntity.databaseId,
+    public: repoEntity.public,
   });
 
   if (repo.branchProtectionRules.totalCount) {
@@ -182,6 +186,9 @@ const processRepository = async ({
   }
   if (repo.issues.totalCount) {
     issuesTotalByRepo.set(repoEntity._key, repo.issues.totalCount);
+  }
+  if (repo.pullRequests.totalCount) {
+    pullRequestsTotalByRepo.set(repoEntity._key, repo.pullRequests.totalCount);
   }
 
   await jobState.addRelationship(
@@ -222,10 +229,11 @@ export async function fetchRepos({
   const collaboratorsTotalByRepo = new Map<string, number>();
   const vulnAlertsTotalByRepo = new Map<string, number>();
   const issuesTotalByRepo = new Map<string, number>();
+  const pullRequestsTotalByRepo = new Map<string, number>();
 
-  let repositoriesMap = new Map<string, OrgRepoQueryResponse>();
-  let tagsTotalByRepo = new Map<string, number>();
-  let topicsTotalByRepo = new Map<string, number>();
+  const repositoriesMap = new Map<string, OrgRepoQueryResponse>();
+  const tagsTotalByRepo = new Map<string, number>();
+  const topicsTotalByRepo = new Map<string, number>();
 
   const processReposBatch = async () => {
     const tagsByRepo = await fetchTags({
@@ -254,13 +262,14 @@ export async function fetchRepos({
         collaboratorsTotalByRepo,
         vulnAlertsTotalByRepo,
         issuesTotalByRepo,
+        pullRequestsTotalByRepo,
       });
     }
   };
 
   await apiClient.iterateRepos({ lastSuccessfulExecution }, async (repo) => {
     repositoriesMap.set(repo.id, repo);
-    if (repo.tags.totalCount) {
+    if (repo.tags?.totalCount) {
       tagsTotalByRepo.set(repo.id, repo.tags.totalCount);
     }
     if (repo.topics.totalCount) {
@@ -269,9 +278,9 @@ export async function fetchRepos({
 
     if (repositoriesMap.size >= REPOSITORIES_PROCESSING_BATCH_SIZE) {
       await processReposBatch();
-      repositoriesMap = new Map();
-      tagsTotalByRepo = new Map();
-      topicsTotalByRepo = new Map();
+      repositoriesMap.clear();
+      tagsTotalByRepo.clear();
+      topicsTotalByRepo.clear();
     }
   });
 
@@ -289,6 +298,7 @@ export async function fetchRepos({
     jobState.setData(COLLABORATORS_TOTAL_BY_REPO, collaboratorsTotalByRepo),
     jobState.setData(VULN_ALERTS_TOTAL_BY_REPO, vulnAlertsTotalByRepo),
     jobState.setData(ISSUES_TOTAL_BY_REPO, issuesTotalByRepo),
+    jobState.setData(PULL_REQUESTS_TOTAL_BY_REPO, pullRequestsTotalByRepo),
   ]);
 }
 

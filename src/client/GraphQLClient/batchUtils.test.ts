@@ -33,10 +33,10 @@ describe('withBatching', () => {
     expect(mockBatchCb).toHaveBeenCalledTimes(2);
     expect(mockBatchCb.mock.calls).toEqual([
       [
-        ['entity6', 'entity7', 'entity2'], // first call
+        ['entity1', 'entity5'], // first call
       ],
       [
-        ['entity1', 'entity5'], // second call
+        ['entity2', 'entity7', 'entity6'], // second call
       ],
     ]);
     expect(mockSingleCb).toHaveBeenCalledTimes(2);
@@ -83,19 +83,19 @@ describe('withBatching', () => {
     expect(mockBatchCb).toHaveBeenCalledTimes(5); // Ensure that the batchCb is retried once after the error
     expect(mockBatchCb.mock.calls).toEqual([
       [
-        ['entity6', 'entity7', 'entity1'], // first call - throws error
+        ['entity1', 'entity2', 'entity6'], // first call - throws error
       ],
       [
-        ['entity6', 'entity7'], // second call - retrying with half the threshold
+        ['entity1', 'entity6'], // second call - retrying with half the threshold
       ],
       [
-        ['entity1'], // third call
+        ['entity2'], // third call
       ],
       [
-        ['entity2'], // fourth call
+        ['entity5'], // fourth call
       ],
       [
-        ['entity5'], // fifth call
+        ['entity7'], // fifth call
       ],
     ]);
 
@@ -150,10 +150,10 @@ describe('withBatching', () => {
     expect(mockBatchCb).toHaveBeenCalledTimes(3); // Ensure that the batchCb is retried once after the error
     expect(mockBatchCb.mock.calls).toEqual([
       [
-        ['entity6', 'entity7', 'entity1'], // first call - throws error
+        ['entity1', 'entity2', 'entity6'], // first call - throws error
       ],
       [
-        ['entity6', 'entity7'], // second call - retrying with half the threshold (5) - throws error
+        ['entity1', 'entity6'], // second call - retrying with half the threshold (5) - throws error
       ],
       [
         ['entity6'], // third call - retrying with half the threshold (2)
@@ -162,10 +162,10 @@ describe('withBatching', () => {
 
     expect(mockSingleCb).toHaveBeenCalledTimes(6);
     expect(mockSingleCb.mock.calls).toEqual([
-      ['entity7'], // first call - retry from batched keys
-      ['entity1'], // second call - retry from batched keys
-      ['entity2'], // third call - retry from batched keys
-      ['entity5'], // fourth call - retry from batched keys
+      ['entity1'], // first call - retry from batched keys
+      ['entity2'], // second call - retry from batched keys
+      ['entity5'], // third call - retry from batched keys
+      ['entity7'], // fourth call - retry from batched keys
       ['entity3'], // fifth call
       ['entity4'], // sixth call
     ]);

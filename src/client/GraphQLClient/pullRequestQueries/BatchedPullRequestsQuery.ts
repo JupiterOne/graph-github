@@ -1,52 +1,41 @@
 import {
   BaseQueryState,
-  BranchProtectionRuleResponse,
   BuildQuery,
   ProcessResponse,
+  PullRequestResponse,
 } from '../types';
-import { ExecutableQuery } from '../CreateQueryExecutor';
-import fragments from '../fragments';
 import { MAX_REQUESTS_LIMIT } from '../paginate';
 import utils from '../utils';
-import {
-  branchProtectionRuleFields,
-  buildVersionSafeFragments,
-} from './shared';
+import fragments from '../fragments';
+import { pullRequestFields } from './shared';
 
 type QueryState = BaseQueryState;
 
-export type QueryParams = {
+type QueryParams = {
   repoIds: string[];
-  gheServerVersion?: string;
 };
 
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
   queryParams,
   queryState,
-): ExecutableQuery => {
-  const versionSafeFragments = buildVersionSafeFragments(
-    queryParams.gheServerVersion,
-  );
-
+) => {
   const query = `
-      query (
-        $repoIds: [ID!]!
-        $maxLimit: Int!
-      ) {
-          nodes(ids: $repoIds) {
-            ...on Repository {
-              id
-              name
-              branchProtectionRules(first: $maxLimit) {
-                nodes {
-                  ${branchProtectionRuleFields(versionSafeFragments)}
-                }
-              }
+    query (
+      $repoIds: [ID!]!
+      $maxLimit: Int!
+    ) {
+      nodes(ids: $repoIds) {
+        ...on Repository {
+          id
+          pullRequests(first: $maxLimit) {
+            nodes {
+              ${pullRequestFields(true)}
             }
           }
-          ...${fragments.rateLimit}
+        }
       }
-  `;
+      ...${fragments.rateLimit}
+    }`;
 
   return {
     query,
@@ -61,26 +50,25 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
 };
 
 const processResponseData: ProcessResponse<
-  BranchProtectionRuleResponse,
+  PullRequestResponse,
   QueryState
 > = async (responseData, iteratee) => {
+  if (!responseData) {
+    throw new Error('responseData param is required.');
+  }
+
   const rateLimit = responseData.rateLimit;
   const repositories = responseData.nodes ?? [];
 
   for (const repository of repositories) {
-    const rules = repository.branchProtectionRules.nodes ?? [];
-    for (const rule of rules) {
-      if (!utils.hasProperties(rule)) {
+    const pullRequests = repository.pullRequests?.nodes ?? [];
+    for (const pullRequest of pullRequests) {
+      if (!utils.hasProperties(pullRequest)) {
+        // If there's no data, pass - possible if permissions aren't correct in GHE
         continue;
       }
 
-      const processedRule = {
-        repoId: repository.id,
-        repoName: repository.name,
-        ...rule,
-      };
-
-      await iteratee(processedRule);
+      await iteratee(utils.responseToResource(pullRequest));
     }
   }
 
@@ -89,7 +77,13 @@ const processResponseData: ProcessResponse<
   };
 };
 
-const iterateBranchProtectionRules = async (
+/**
+ * Paginates over the pull requests found on the specified repos.
+ * @param queryParams
+ * @param execute
+ * @param iteratee
+ */
+const iteratePullRequests = async (
   queryParams: QueryParams,
   execute,
   iteratee,
@@ -109,4 +103,4 @@ const iterateBranchProtectionRules = async (
   };
 };
 
-export default { iterateBranchProtectionRules };
+export default { iteratePullRequests };

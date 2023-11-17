@@ -54,7 +54,6 @@ Object {
         pullRequest(number: $pullRequestNumber) {
           id
           commits(first: $maxLimit, after: $commitsCursor) {
-            totalCount
             nodes {
               commit {
                 ...on Commit {
@@ -108,7 +107,6 @@ Object {
         pullRequest(number: $pullRequestNumber) {
           id
           commits(first: $maxLimit, after: $commitsCursor) {
-            totalCount
             nodes {
               commit {
                 ...on Commit {

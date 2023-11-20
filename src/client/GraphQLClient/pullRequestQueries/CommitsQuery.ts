@@ -7,7 +7,7 @@ import {
   ProcessResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import paginate, { MAX_SEARCH_LIMIT } from '../paginate';
+import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -19,6 +19,7 @@ type QueryParams = {
   repoName: string;
   repoOwner: string;
   pullRequestNumber: number;
+  maxLimit: number;
 };
 
 /**
@@ -43,8 +44,8 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     ) {
       repository(name: $repoName, owner: $repoOwner) {
         pullRequest(number: $pullRequestNumber) {
+          id
           commits(first: $maxLimit, after: $commitsCursor) {
-            totalCount
             nodes {
               commit {
                 ...${fragments.commitFields}
@@ -66,10 +67,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      maxLimit: MAX_SEARCH_LIMIT,
-      pullRequestNumber: queryParams.pullRequestNumber,
-      repoName: queryParams.repoName,
-      repoOwner: queryParams.repoOwner,
+      ...queryParams,
       ...(queryState?.commits?.hasNextPage && {
         commitsCursor: queryState?.commits.endCursor,
       }),
@@ -92,14 +90,18 @@ const processResponseData: ProcessResponse<Commit, QueryState> = async (
   }
 
   const rateLimit = responseData.rateLimit;
-  const commitNodes = responseData.repository.pullRequest.commits.nodes;
+  const commitNodes =
+    responseData.repository?.pullRequest?.commits?.nodes ?? [];
 
   for (const commitNode of commitNodes) {
     if (!utils.hasProperties(commitNode.commit)) {
       continue;
     }
 
-    await iteratee(commitNode.commit);
+    await iteratee({
+      pullRequestId: responseData.repository?.pullRequest?.id,
+      ...commitNode.commit,
+    });
   }
 
   return {
@@ -119,6 +121,7 @@ const iterateCommits: IteratePagination<QueryParams, Commit> = async (
   queryParams,
   execute,
   iteratee,
+  logger,
 ) => {
   return paginate(
     queryParams,
@@ -127,6 +130,8 @@ const iterateCommits: IteratePagination<QueryParams, Commit> = async (
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.commits?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

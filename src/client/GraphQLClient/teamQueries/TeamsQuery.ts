@@ -6,7 +6,6 @@ import {
   OrgTeamQueryResponse,
   ProcessResponse,
 } from '../types';
-import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
@@ -15,7 +14,15 @@ interface QueryState extends BaseQueryState {
   teams: CursorState;
 }
 
-const buildQuery: BuildQuery<string, QueryState> = (login, queryState) => {
+type QueryParams = {
+  login: string;
+  maxLimit: number;
+};
+
+const buildQuery: BuildQuery<QueryParams, QueryState> = (
+  queryParams,
+  queryState,
+) => {
   const query = `
     query ($login: String!, $maxLimit: Int!, $teamCursor: String) {
       organization(login: $login) {
@@ -42,8 +49,7 @@ const buildQuery: BuildQuery<string, QueryState> = (login, queryState) => {
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      login,
-      maxLimit: MAX_REQUESTS_LIMIT,
+      ...queryParams,
       ...(queryState?.teams?.hasNextPage && {
         teamCursor: queryState.teams.endCursor,
       }),
@@ -80,18 +86,19 @@ const processResponseData: ProcessResponse<
  * @param execute
  * @param iteratee
  */
-const iterateTeams: IteratePagination<string, OrgTeamQueryResponse> = async (
-  login,
-  execute,
-  iteratee,
-) => {
+const iterateTeams: IteratePagination<
+  QueryParams,
+  OrgTeamQueryResponse
+> = async (queryParams, execute, iteratee, logger) => {
   return paginate(
-    login,
+    queryParams,
     iteratee,
     execute,
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.teams?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

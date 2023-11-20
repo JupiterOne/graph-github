@@ -6,7 +6,6 @@ import {
   ProcessResponse,
   TagQueryResponse,
 } from '../types';
-import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 import utils from '../utils';
 
@@ -17,6 +16,7 @@ interface QueryState extends BaseQueryState {
 export interface QueryParams {
   repoName: string;
   repoOwner: string;
+  maxLimit: number;
 }
 
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
@@ -31,16 +31,12 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       $tagsCursor: String
     ) {
       repository(owner: $repoOwner, name: $repoName) {
+        id
         refs(first: $maxLimit, after: $tagsCursor refPrefix: "refs/tags/") {
-          edges {
-            node {
-              ...on Ref {
-                id
-                name
-              }
-            }
+          nodes {
+            id
+            name
           }
-          totalCount
           pageInfo {
             endCursor
             hasNextPage
@@ -55,9 +51,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      repoName: queryParams.repoName,
-      repoOwner: queryParams.repoOwner,
-      maxLimit: MAX_REQUESTS_LIMIT,
+      ...queryParams,
       ...(queryState?.tags?.hasNextPage && {
         tagsCursor: queryState.tags.endCursor,
       }),
@@ -70,16 +64,17 @@ const processResponseData: ProcessResponse<
   QueryState
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
-  const tagEdges = responseData.repository?.refs?.edges ?? [];
+  const tags = responseData.repository?.refs?.nodes ?? [];
 
-  for (const edge of tagEdges) {
-    if (!utils.hasProperties(edge?.node)) {
+  for (const tag of tags) {
+    if (!utils.hasProperties(tag)) {
       continue;
     }
 
-    const tag = edge.node;
-
-    await iteratee(tag);
+    await iteratee({
+      repoId: responseData.repository?.id,
+      ...tag,
+    });
   }
 
   return {
@@ -98,6 +93,7 @@ const iterateTags: IteratePagination<QueryParams, TagQueryResponse> = async (
   queryParams,
   execute,
   iteratee,
+  logger,
 ) => {
   return paginate(
     queryParams,
@@ -106,6 +102,8 @@ const iterateTags: IteratePagination<QueryParams, TagQueryResponse> = async (
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.tags?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

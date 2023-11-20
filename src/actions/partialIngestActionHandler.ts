@@ -16,6 +16,7 @@ import {
   IntegrationError,
   IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
+import { PullRequestResponse } from '../client/GraphQLClient';
 
 interface EntityToIngest {
   _type: string; // e.g. - github_pullrequest
@@ -104,7 +105,7 @@ const buildEntity = async (
     await buildUserLoginMaps(client, repoName);
 
   return toPullRequestEntity({
-    pullRequest,
+    pullRequest: pullRequest as unknown as PullRequestResponse,
     commits: pullRequest.commits ?? [],
     reviews: pullRequest.reviews ?? [],
     labels: pullRequest.labels ?? [],
@@ -121,7 +122,12 @@ const buildUserLoginMaps = async (client: APIClient, repoName: string) => {
   // There's not a good way to fetch a single member from an organization
   // We can use a REST endpoint, but it pulls back different data.
   await client.iterateOrgMembers((member) => {
-    memberByLoginMap.set(member.login, toOrganizationMemberEntity(member)._key);
+    if (member.login) {
+      memberByLoginMap.set(
+        member.login,
+        toOrganizationMemberEntity(member)._key,
+      );
+    }
   });
 
   await client.iterateRepoCollaborators(repoName, (collaborator) => {

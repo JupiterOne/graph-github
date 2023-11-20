@@ -15,6 +15,7 @@ describe('RepoCollaboratorsQuery', () => {
         {
           login: 'J1-Test',
           repoName: 'happy-sunshine',
+          maxLimit: 100,
         },
         execute,
         iteratee,

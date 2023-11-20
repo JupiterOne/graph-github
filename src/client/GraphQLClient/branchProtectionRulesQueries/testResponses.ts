@@ -1,6 +1,7 @@
 const branchProtectionRulesResponses = [
   {
     repository: {
+      repoId: 'R_kgDOI2pL-A',
       name: 'reimagined-barnacle',
       branchProtectionRules: {
         nodes: [

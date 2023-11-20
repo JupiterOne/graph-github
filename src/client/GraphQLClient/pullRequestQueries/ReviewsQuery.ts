@@ -7,7 +7,7 @@ import {
   ProcessResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import paginate, { MAX_SEARCH_LIMIT } from '../paginate';
+import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -20,6 +20,7 @@ type QueryParams = {
   repoOwner: string;
   isPublicRepo: boolean;
   pullRequestNumber: number;
+  maxLimit: number;
 };
 
 /**
@@ -80,7 +81,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      maxLimit: MAX_SEARCH_LIMIT,
+      maxLimit: queryParams.maxLimit,
       pullRequestNumber: queryParams.pullRequestNumber,
       repoName: queryParams.repoName,
       repoOwner: queryParams.repoOwner,
@@ -133,6 +134,7 @@ const iterateReviews: IteratePagination<QueryParams, Review> = async (
   queryParams,
   execute,
   iteratee,
+  logger,
 ) => {
   return paginate(
     queryParams,
@@ -141,6 +143,8 @@ const iterateReviews: IteratePagination<QueryParams, Review> = async (
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.reviews?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

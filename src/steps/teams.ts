@@ -10,8 +10,15 @@ import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toTeamEntity } from '../sync/converters';
-import { AccountEntity, TeamEntity } from '../types';
-import { GithubEntities, Steps, Relationships } from '../constants';
+import { AccountEntity, TeamData, TeamEntity } from '../types';
+import {
+  GithubEntities,
+  Steps,
+  Relationships,
+  REPOSITORIES_TOTAL_BY_TEAM,
+  TEAM_DATA_MAP,
+  MEMBERS_TOTAL_BY_TEAM,
+} from '../constants';
 
 export async function fetchTeams({
   instance,
@@ -29,6 +36,10 @@ export async function fetchTeams({
     );
   }
 
+  const teamDataMap = new Map<string, TeamData>();
+  const repositoriesTotalByTeam = new Map<string, number>();
+  const membersTotalByTeam = new Map<string, number>();
+
   await apiClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
       toTeamEntity(team),
@@ -41,7 +52,24 @@ export async function fetchTeams({
         to: teamEntity,
       }),
     );
+
+    teamDataMap.set(teamEntity._key, { name: team.name });
+    if (team.repositories.totalCount) {
+      repositoriesTotalByTeam.set(
+        teamEntity._key,
+        team.repositories.totalCount,
+      );
+    }
+    if (team.members.totalCount) {
+      membersTotalByTeam.set(teamEntity._key, team.members.totalCount);
+    }
   });
+
+  await Promise.all([
+    jobState.setData(TEAM_DATA_MAP, teamDataMap),
+    jobState.setData(REPOSITORIES_TOTAL_BY_TEAM, repositoriesTotalByTeam),
+    jobState.setData(MEMBERS_TOTAL_BY_TEAM, membersTotalByTeam),
+  ]);
 }
 
 export const teamSteps: IntegrationStep<IntegrationConfig>[] = [

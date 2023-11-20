@@ -19,6 +19,8 @@ Object {
       "name": "feature",
     },
   ],
+  "repoId": "R_kgDOI2pL-A",
+  "repoName": "reimagined-barnacle",
   "title": "Need to add code part 1",
 }
 `;
@@ -42,6 +44,8 @@ Object {
       "name": "critical",
     },
   ],
+  "repoId": "R_kgDOI2pL-A",
+  "repoName": "reimagined-barnacle",
   "title": "Need to add code part 2",
 }
 `;
@@ -65,6 +69,8 @@ Object {
       "name": "easy",
     },
   ],
+  "repoId": "R_kgDOI2pL-A",
+  "repoName": "reimagined-barnacle",
   "title": "Need to add code part 3",
 }
 `;
@@ -73,21 +79,19 @@ exports[`IssuesQuery #iterateIssues Pulling data out 4`] = `
 Object {
   "query": "
     query(
-      $issueQuery: String!, 
+      $repoName: String!,
+      $login: String!
+      $since: DateTime!,
       $maxSearchLimit: Int!, 
       $maxInnerLimit: Int!,
       $issuesCursor: String
     ) {
-      search(
-        first: $maxSearchLimit, 
-        after: $issuesCursor, 
-        type: ISSUE, 
-        query: $issueQuery
-        ) {
-          issueCount
-          edges {
-            node {
-            ... on Issue {
+      repository(name: $repoName, owner: $login) {
+        id
+        name
+        issues(first: $maxSearchLimit, after: $issuesCursor, filterBy: { since: $since }) {
+          nodes {
+            
     id
     activeLockReason
     author {
@@ -123,34 +127,17 @@ Object {
     titleHTML
     updatedAt
     url
-  }
-            
-            ... on Issue {
-                assignees(first: $maxInnerLimit) {
-                  totalCount
-                  nodes {
-                    name
-                    login
-                  }
-                  pageInfo {
-                    endCursor
-                    hasNextPage
-                  }
-                }
+  
+            assignees(first: $maxInnerLimit) {
+              nodes {
+                name
+                login
               }
-              
-            ... on Issue {
-                labels(first: $maxInnerLimit) {
-                  totalCount
-                  nodes {
-                    id
-                    name
-                  }
-                  pageInfo {
-                    endCursor
-                    hasNextPage
-                  }
-                }
+            }
+            labels(first: $maxInnerLimit) {
+              nodes {
+                id
+                name
               }
             }
           }
@@ -159,7 +146,8 @@ Object {
             hasNextPage
           }
         }
-        ...on Query {
+      }
+      ...on Query {
     rateLimit {
       limit
       cost
@@ -169,9 +157,11 @@ Object {
   }
     }",
   "queryVariables": Object {
-    "issueQuery": "is:issue repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
+    "login": "J1-Test",
     "maxInnerLimit": 100,
-    "maxSearchLimit": 25,
+    "maxSearchLimit": 100,
+    "repoName": "reimagined-barnacle",
+    "since": "2011-10-05T14:48:00.000Z",
   },
 }
 `;
@@ -180,21 +170,19 @@ exports[`IssuesQuery #iterateIssues Pulling data out 5`] = `
 Object {
   "query": "
     query(
-      $issueQuery: String!, 
+      $repoName: String!,
+      $login: String!
+      $since: DateTime!,
       $maxSearchLimit: Int!, 
       $maxInnerLimit: Int!,
       $issuesCursor: String
     ) {
-      search(
-        first: $maxSearchLimit, 
-        after: $issuesCursor, 
-        type: ISSUE, 
-        query: $issueQuery
-        ) {
-          issueCount
-          edges {
-            node {
-            ... on Issue {
+      repository(name: $repoName, owner: $login) {
+        id
+        name
+        issues(first: $maxSearchLimit, after: $issuesCursor, filterBy: { since: $since }) {
+          nodes {
+            
     id
     activeLockReason
     author {
@@ -230,34 +218,17 @@ Object {
     titleHTML
     updatedAt
     url
-  }
-            
-            ... on Issue {
-                assignees(first: $maxInnerLimit) {
-                  totalCount
-                  nodes {
-                    name
-                    login
-                  }
-                  pageInfo {
-                    endCursor
-                    hasNextPage
-                  }
-                }
+  
+            assignees(first: $maxInnerLimit) {
+              nodes {
+                name
+                login
               }
-              
-            ... on Issue {
-                labels(first: $maxInnerLimit) {
-                  totalCount
-                  nodes {
-                    id
-                    name
-                  }
-                  pageInfo {
-                    endCursor
-                    hasNextPage
-                  }
-                }
+            }
+            labels(first: $maxInnerLimit) {
+              nodes {
+                id
+                name
               }
             }
           }
@@ -266,7 +237,8 @@ Object {
             hasNextPage
           }
         }
-        ...on Query {
+      }
+      ...on Query {
     rateLimit {
       limit
       cost
@@ -276,10 +248,16 @@ Object {
   }
     }",
   "queryVariables": Object {
-    "issueQuery": "is:issue repo:J1-Test/happy-sunshine updated:>=2011-10-05T14:48:00.000Z",
     "issuesCursor": "Y3Vyc29yOjE=",
+    "login": "J1-Test",
     "maxInnerLimit": 100,
-    "maxSearchLimit": 25,
+    "maxSearchLimit": 100,
+    "repoName": "reimagined-barnacle",
+    "since": "2011-10-05T14:48:00.000Z",
+  },
+  "rateLimit": Object {
+    "cost": 1,
+    "remaining": 4983,
   },
 }
 `;

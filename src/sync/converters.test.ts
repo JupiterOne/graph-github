@@ -679,6 +679,7 @@ describe('toEnvironmentEntity', () => {
         name: 'SomeRepo',
         _key: 'pretendKey',
         databaseId: 'pretendId',
+        public: true,
       },
     );
     expect(entity).toEqual({
@@ -719,6 +720,7 @@ describe('toEnvironmentEntity', () => {
         name: 'SomeRepo',
         _key: 'pretendKey',
         databaseId: 'pretendId',
+        public: true,
       },
     );
     expect(entity).toEqual({
@@ -813,6 +815,7 @@ describe('toEnvSecretEntity', () => {
 
 describe('toIssue', () => {
   const apiResponse = {
+    repoName: 'Test-repo',
     id: 'I_kwDOFiNpzs479Jfp',
     activeLockReason: null,
     authorAssociation: 'MEMBER',
@@ -865,7 +868,7 @@ describe('toIssue', () => {
   };
 
   test('properties transferred', () => {
-    const issue = toIssueEntity(apiResponse as any, 'Test-repo');
+    const issue = toIssueEntity(apiResponse as any);
     expect(issue).toEqual({
       _type: 'github_issue',
       _key: 'I_kwDOFiNpzs479Jfp',
@@ -915,12 +918,12 @@ describe('toPullRequestEntity', () => {
       reviews: fixtureReviews,
       labels: [],
       teamMembersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
       allKnownUsersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
     });
     expect(entity).toMatchSnapshot();
@@ -940,12 +943,12 @@ describe('toPullRequestEntity', () => {
       reviews: fixtureReviews,
       labels: [],
       teamMembersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
       allKnownUsersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
     });
     expect(entity).toMatchObject({
@@ -996,8 +999,8 @@ describe('toPullRequestEntity', () => {
       labels: [],
       teamMembersByLoginMap: new Map(),
       allKnownUsersByLoginMap: new Map([
-        [fixtureUser.login, fixtureUser._key],
-        [fixtureReviewerUser.login, fixtureReviewerUser._key],
+        [fixtureUser.login!, fixtureUser._key],
+        [fixtureReviewerUser.login!, fixtureReviewerUser._key],
       ]),
     });
     expect(entity).toMatchObject({

@@ -2,7 +2,7 @@
 import { gte } from 'semver';
 import { first } from 'lodash';
 
-const responseToResource = (node) => {
+const singlePrResponseToResource = (node) => {
   if (!hasProperties(node)) {
     return null;
   }
@@ -31,6 +31,28 @@ const responseToResource = (node) => {
     }),
     ...(node.labels && {
       labels: node.labels.nodes?.filter((node) => node) ?? [],
+    }),
+  };
+};
+
+const responseToResource = (node) => {
+  if (!hasProperties(node)) {
+    return null;
+  }
+
+  const associatedPullRequest = first(
+    node.mergeCommit?.associatedPullRequests?.nodes,
+  );
+
+  delete node.mergeCommit?.associatedPullRequests;
+
+  return {
+    ...node,
+    ...(node.mergeCommit && {
+      mergeCommit: {
+        ...node.mergeCommit,
+        associatedPullRequest,
+      },
     }),
   };
 };
@@ -80,6 +102,7 @@ const isSupported = (
 
 export default {
   hasProperties,
+  singlePrResponseToResource,
   responseToResource,
   isSupported,
 };

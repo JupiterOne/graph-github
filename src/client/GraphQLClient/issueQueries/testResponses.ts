@@ -1,27 +1,22 @@
 const issuesResponses = [
   {
-    search: {
-      issueCount: 3,
-      edges: [
-        {
-          node: {
+    repository: {
+      id: 'R_kgDOI2pL-A',
+      name: 'reimagined-barnacle',
+      issues: {
+        nodes: [
+          {
             id: '111',
             title: 'Need to add code part 1',
             assignees: {
-              totalCount: 1,
               nodes: [
                 {
                   name: null,
                   login: 'spoultonV2',
                 },
               ],
-              pageInfo: {
-                endCursor: 'Y3Vyc29yOnYyOpHOBgq4WA==',
-                hasNextPage: false,
-              },
             },
             labels: {
-              totalCount: 9,
               nodes: [
                 {
                   id: 'LA_kwDOG5ypUc7mjrvd',
@@ -39,26 +34,18 @@ const issuesResponses = [
               },
             },
           },
-        },
-        {
-          node: {
+          {
             id: '2222',
             title: 'Need to add code part 2',
             assignees: {
-              totalCount: 1,
               nodes: [
                 {
                   name: null,
                   login: 'maxmin',
                 },
               ],
-              pageInfo: {
-                endCursor: 'Y3Vyc29yOnYyOpHOBgq4WA==',
-                hasNextPage: false,
-              },
             },
             labels: {
-              totalCount: 9,
               nodes: [
                 {
                   id: 'LA_kwDOG5ypUc7mjrvd',
@@ -69,45 +56,39 @@ const issuesResponses = [
                   name: 'critical',
                 },
               ],
-              pageInfo: {
-                endCursor:
-                  'Y3Vyc29yOnYyOpK5MjAyMi0wMi0yNFQxMTowNDo1OC0wNzowMM7mjrwE',
-                hasNextPage: false,
-              },
             },
           },
+        ],
+        pageInfo: {
+          endCursor: 'Y3Vyc29yOjE=',
+          hasNextPage: true,
         },
-      ],
-      pageInfo: {
-        endCursor: 'Y3Vyc29yOjE=',
-        hasNextPage: true,
       },
+    },
+    rateLimit: {
+      cost: 1,
+      remaining: 4983,
     },
   },
   // Send page
   {
-    search: {
-      issueCount: 3,
-      edges: [
-        {
-          node: {
+    repository: {
+      id: 'R_kgDOI2pL-A',
+      name: 'reimagined-barnacle',
+      issues: {
+        nodes: [
+          {
             id: '333',
             title: 'Need to add code part 3',
             assignees: {
-              totalCount: 1,
               nodes: [
                 {
                   name: null,
                   login: 'chris3',
                 },
               ],
-              pageInfo: {
-                endCursor: 'Y3Vyc29yOnYyOpHOBgq4WA==',
-                hasNextPage: false,
-              },
             },
             labels: {
-              totalCount: 9,
               nodes: [
                 {
                   id: 'LA_kwDOG5ypUc7mjrvd',
@@ -118,23 +99,18 @@ const issuesResponses = [
                   name: 'easy',
                 },
               ],
-              pageInfo: {
-                endCursor:
-                  'Y3Vyc29yOnYyOpK5MjAyMi0wMi0yNFQxMTowNDo1OC0wNzowMM7mjrwE',
-                hasNextPage: false,
-              },
             },
           },
+        ],
+        pageInfo: {
+          endCursor: 'Y3Vyc29yOjE=',
+          hasNextPage: false,
         },
-      ],
-      pageInfo: {
-        endCursor: 'Y3Vyc29yOjE=',
-        hasNextPage: false,
       },
     },
     rateLimit: {
-      cost: 3,
-      remaining: 4983,
+      cost: 1,
+      remaining: 4982,
     },
   },
 ];

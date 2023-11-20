@@ -11,9 +11,7 @@ import { IntegrationConfig, Scopes } from './config';
 import {
   AccountType,
   EnvironmentEntity,
-  RepoEntity,
-  RepoKeyAndName,
-  TeamEntity,
+  RepoData,
   TokenPermissions,
 } from './types';
 import getInstallation from './util/getInstallation';
@@ -33,12 +31,14 @@ import {
   Label,
   Commit,
   OrgExternalIdentifierQueryResponse,
+  RepoConnectionFilters,
+  TopicQueryResponse,
+  BranchProtectionRuleAllowancesResponse,
 } from './client/GraphQLClient';
 import {
   CodeScanningAlertQueryResponse,
   OrgAppQueryResponse,
   RepoEnvironmentQueryResponse,
-  RepoTopicQueryResponse,
   SecretQueryResponse,
   SecretScanningAlertQueryResponse,
 } from './client/RESTClient/types';
@@ -173,7 +173,6 @@ export class APIClient {
   }
 
   public async iterateTags(
-    repoOwner: string,
     repoName: string,
     iteratee: ResourceIteratee<TagQueryResponse>,
   ) {
@@ -181,15 +180,30 @@ export class APIClient {
       await this.setupAccountClient();
     }
 
-    const rateLimit = await this.graphQLClient.iterateTags(
-      repoOwner,
-      repoName,
+    const rateLimit = await this.graphQLClient.iterateTags(repoName, iteratee);
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Repository Tags.',
+    );
+  }
+
+  public async iterateBatchedTags(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ) {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.graphQLClient.iterateBatchedTags(
+      repoIds,
       iteratee,
     );
 
     this.logger.debug(
       { rateLimit },
-      'Rate limit consumed while fetching Repository Tags.',
+      'Rate limit consumed while fetching batched Repository Tags.',
     );
   }
 
@@ -240,7 +254,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamRepos(
-    team: TeamEntity,
+    teamName: string,
     iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
@@ -248,7 +262,7 @@ export class APIClient {
     }
 
     const rateLimit = await this.graphQLClient.iterateTeamRepositories(
-      team.name,
+      teamName,
       iteratee,
     );
 
@@ -259,26 +273,75 @@ export class APIClient {
   }
 
   /**
+   * Iterates each team-repo association from the provider.
+   *
+   * @param team
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedTeamRepos(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.graphQLClient.iterateBatchedTeamRepositories(
+      teamIds,
+      iteratee,
+    );
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Team Repositories.',
+    );
+  }
+
+  /**
    * Iterates each team-member association for a single team.
    *
    * @param team
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateTeamMembers(
-    team: TeamEntity,
+    teamName: string,
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iterateTeamMembers(
-      team.name,
+      teamName,
       iteratee,
     );
 
     this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Team Members.',
+    );
+  }
+
+  /**
+   * Iterates each team-member association from team ids.
+   *
+   * @param teamIds
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedTeamMembers(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedTeamMembers(
+      teamIds,
+      iteratee,
+    );
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching batched Team Members.',
     );
   }
 
@@ -309,7 +372,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateOrgSecrets(
-    allRepos: RepoKeyAndName[],
+    allRepos: Map<string, RepoData>,
     iteratee: ResourceIteratee<SecretQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
@@ -321,7 +384,7 @@ export class APIClient {
       for (const secret of secrets) {
         //set repos that use this secret, so we can make relationships in iteratree
         secret.visibility === 'all'
-          ? (secret.repos = allRepos)
+          ? (secret.repos = Array.from(allRepos.values()))
           : (secret.repos = []);
         if (
           secret.visibility === 'selected' ||
@@ -330,9 +393,11 @@ export class APIClient {
           //go get the list of repos and add them
           const reposForOrgSecret =
             await this.graphQLClient.getReposForOrgSecret(secret.name);
-          const secretRepos: RepoKeyAndName[] = [];
+          const secretRepos: RepoData[] = [];
           for (const repo of reposForOrgSecret) {
-            const repoTag = allRepos.find((r) => r._key === repo.node_id);
+            const repoTag = Array.from(allRepos.values()).find(
+              (r) => r._key === repo.node_id,
+            );
             if (repoTag) {
               secretRepos.push(repoTag);
             }
@@ -391,6 +456,54 @@ export class APIClient {
   }
 
   /**
+   * Iterates branch protection rules for the provided repoIds.
+   *
+   * @param repoIds
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedBranchProtectionPolicy(
+    repoIds: string[],
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.orgAdmin) {
+      const rateLimit =
+        await this.graphQLClient.iterateBatchedRepoBranchProtectionRules(
+          repoIds,
+          iteratee,
+          this.gheServerVersion,
+        );
+
+      this.logger.debug(
+        { rateLimit },
+        'Rate limit consumed while batch fetching Branch Protection Rules.',
+      );
+    }
+  }
+
+  public async iterateBatchedPolicyAllowances(
+    branchProtectionRuleIds: string[],
+    iteratee: ResourceIteratee<BranchProtectionRuleAllowancesResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.orgAdmin) {
+      const rateLimit = await this.graphQLClient.iterateBatchedPolicyAllowances(
+        branchProtectionRuleIds,
+        iteratee,
+        this.gheServerVersion,
+      );
+      this.logger.debug(
+        { rateLimit },
+        'Rate limit consumed while batch fetching Branch Protection Rule Allowances.',
+      );
+    }
+  }
+
+  /**
    * Iterates each Github environment.
    *
    * @param repoName
@@ -420,16 +533,46 @@ export class APIClient {
    */
   public async iterateTopics(
     repoName: string,
-    iteratee: ResourceIteratee<RepoTopicQueryResponse>,
+    iteratee: ResourceIteratee<TopicQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const topics: RepoTopicQueryResponse[] =
-      await this.graphQLClient.getRepositoryTopics(repoName);
-    for (const topic of topics) {
-      await iteratee(topic);
+
+    const rateLimit = await this.graphQLClient.iterateTopics(
+      repoName,
+      iteratee,
+    );
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Repository Topics.',
+    );
+  }
+
+  /**
+   * Iterates each repository topic.
+   *
+   * @param repoIds
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedTopics(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
     }
+
+    const rateLimit = await this.graphQLClient.iterateBatchedTopics(
+      repoIds,
+      iteratee,
+    );
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Repository Topics.',
+    );
   }
 
   /**
@@ -500,12 +643,20 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateRepos(
+    connectionFilters: Pick<RepoConnectionFilters, 'lastSuccessfulExecution'>,
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.graphQLClient.iterateOrgRepositories(iteratee);
+    const rateLimit = await this.graphQLClient.iterateOrgRepositories(
+      iteratee,
+      {
+        ...connectionFilters,
+        alertStates: this.config.dependabotAlertStates,
+        gheServerVersion: this.gheServerVersion,
+      },
+    );
     this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Org Repositories.',
@@ -522,8 +673,8 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iteratePullRequests(
-    repo: RepoEntity,
-    logger: IntegrationLogger,
+    repoName: string,
+    isPublicRepo: boolean,
     ingestStartDatetime: string,
     maxResourceIngestion: number,
     maxSearchLimit: number,
@@ -533,15 +684,34 @@ export class APIClient {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iteratePullRequestEntities(
-      repo,
+      repoName,
+      isPublicRepo,
       ingestStartDatetime,
       maxResourceIngestion,
       maxSearchLimit,
       iteratee,
     );
-    logger.debug(
+    this.logger.debug(
       { rateLimit },
       'Rate limit consumed while fetching Pull Requests.',
+    );
+  }
+
+  public async iterateBatchedPullRequests(
+    repoIds: string[],
+    iteratee: ResourceIteratee<PullRequestResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit =
+      await this.graphQLClient.iterateBatchedPullRequestEntities(
+        repoIds,
+        iteratee,
+      );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Pull Requests.',
     );
   }
 
@@ -550,24 +720,50 @@ export class APIClient {
    *
    * @param repo entity
    * @param pullRequestNumber number
-   * @param logger logger
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateReviews(
-    repo: RepoEntity,
+    repoName: string,
+    isPublicRepo: boolean,
     pullRequestNumber: number,
-    logger: IntegrationLogger,
     iteratee: ResourceIteratee<Review>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.graphQLClient.iterateReviewEntities(
-      repo,
+    const rateLimit = await this.graphQLClient.iterateReviews(
+      repoName,
+      isPublicRepo,
       pullRequestNumber,
       iteratee,
     );
-    logger.debug({ rateLimit }, 'Rate limit consumed while fetching Reviews.');
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Reviews.',
+    );
+  }
+
+  /**
+   * Fetch all reviews from pull request resource in the provider.
+   *
+   * @param pullRequestIds string[]
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedReviews(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Review>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedReviews(
+      pullRequestIds,
+      iteratee,
+    );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Reviews.',
+    );
   }
 
   /**
@@ -579,20 +775,45 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateLabels(
-    repo: RepoEntity,
+    repoName: string,
     pullRequestNumber: number,
-    logger: IntegrationLogger,
     iteratee: ResourceIteratee<Label>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
     const rateLimit = await this.graphQLClient.iterateLabelEntities(
-      repo,
+      repoName,
       pullRequestNumber,
       iteratee,
     );
-    logger.debug({ rateLimit }, 'Rate limit consumed while fetching Labels.');
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Labels.',
+    );
+  }
+
+  /**
+   * Fetch all labels from pull request resource in the provider.
+   *
+   * @param pullRequestIds string[]
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedLabels(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedLabelEntities(
+      pullRequestIds,
+      iteratee,
+    );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching batched Labels.',
+    );
   }
 
   /**
@@ -604,20 +825,47 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateCommits(
-    repo: RepoEntity,
+    repoName: string,
     pullRequestNumber: number,
-    logger: IntegrationLogger,
     iteratee: ResourceIteratee<Commit>,
   ): Promise<void> {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
-    const rateLimit = await this.graphQLClient.iterateCommitEntities(
-      repo,
+    const rateLimit = await this.graphQLClient.iterateCommits(
+      repoName,
       pullRequestNumber,
       iteratee,
     );
-    logger.debug({ rateLimit }, 'Rate limit consumed while fetching Commits.');
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Commits.',
+    );
+  }
+
+  /**
+   * Fetch all commits from pull request resource in the provider.
+   *
+   * @param repo entity
+   * @param pullRequestNumber number
+   * @param logger logger
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedCommits(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedCommits(
+      pullRequestIds,
+      iteratee,
+    );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while fetching Commits.',
+    );
   }
 
   /**
@@ -675,7 +923,32 @@ export class APIClient {
 
     this.logger.debug(
       { rateLimit },
-      'Rate limit consumed while fetching Issues.',
+      'Rate limit consumed while fetching Collaborators.',
+    );
+  }
+
+  /**
+   * Iterates the collaborators for a multiple repos.
+   *
+   * @param repoName name of the repository
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedRepoCollaborators(
+    repoIds: string[],
+    iteratee: ResourceIteratee<CollaboratorResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.graphQLClient.iterateBatchedRepoCollaborators(
+      repoIds,
+      iteratee,
+    );
+
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Collaborators.',
     );
   }
 
@@ -687,7 +960,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateIssues(
-    repo: RepoEntity,
+    repoName: string,
     lastSuccessfulExecution: string,
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<void> {
@@ -696,7 +969,7 @@ export class APIClient {
     }
     if (this.scopes.repoIssues) {
       const rateLimit = await this.graphQLClient.iterateIssueEntities(
-        repo,
+        repoName,
         lastSuccessfulExecution,
         iteratee,
       );
@@ -711,8 +984,40 @@ export class APIClient {
     }
   }
 
+  /**
+   * Iterates the issues for a repo in the provider.
+   *
+   * @param repo
+   * @param lastSuccessfulExecution
+   * @param iteratee receives each resource to produce entities/relationships
+   */
+  public async iterateBatchedIssues(
+    repoIds: string[],
+    lastSuccessfulExecution: string,
+    iteratee: ResourceIteratee<IssueResponse>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    if (this.scopes.repoIssues) {
+      const rateLimit = await this.graphQLClient.iterateBatchedIssueEntities(
+        repoIds,
+        lastSuccessfulExecution,
+        iteratee,
+      );
+      this.logger.debug(
+        { rateLimit },
+        'Rate limit consumed while fetching batched Issues.',
+      );
+    } else {
+      this.logger.info(
+        'Repo issues scope was not provided, skipping batched Issue ingestion.',
+      );
+    }
+  }
+
   public async iterateRepoVulnAlerts(
-    repo: RepoEntity,
+    repoName: string,
     maxRequestLimit: number,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
   ) {
@@ -721,7 +1026,7 @@ export class APIClient {
     }
 
     const rateLimit = await this.graphQLClient.iterateRepoVulnAlerts(
-      repo.name,
+      repoName,
       iteratee,
       {
         states: this.config.dependabotAlertStates,
@@ -732,7 +1037,30 @@ export class APIClient {
     );
     this.logger.debug(
       { rateLimit },
-      'Rate limit consumed while fetching Issues.',
+      'Rate limit consumed while fetching Vulnerability Alerts.',
+    );
+  }
+
+  public async iterateBatchedRepoVulnAlerts(
+    repoIds: string[],
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+  ) {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+
+    const rateLimit = await this.graphQLClient.iterateBatchedRepoVulnAlerts(
+      repoIds,
+      iteratee,
+      {
+        states: this.config.dependabotAlertStates,
+        severities: this.config.dependabotAlertSeverities,
+      },
+      this.gheServerVersion,
+    );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Vulnerability Alerts.',
     );
   }
 

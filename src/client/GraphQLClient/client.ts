@@ -31,6 +31,9 @@ import {
   TagQueryResponse,
   SinglePullRequestResponse,
   VulnerabilityAlertResponse,
+  RepoConnectionFilters,
+  TopicQueryResponse,
+  BranchProtectionRuleAllowancesResponse,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
@@ -58,8 +61,23 @@ import TagsQuery from './tagQueries/TagsQuery';
 import ReviewsQuery from './pullRequestQueries/ReviewsQuery';
 import LabelsQuery from './pullRequestQueries/LabelsQuery';
 import CommitsQuery from './pullRequestQueries/CommitsQuery';
+import BatchedBranchProtectionRulesQuery from './branchProtectionRulesQueries/BatchedBranchProtectionRulesQuery';
+import BatchedRepoCollaboratorsQuery from './collaboratorQueries/BatchedRepoCollaboratorsQuery';
+import BatchedRepoVulnAlertsQuery from './vulnerabilityAlertQueries/BatchedRepoVulnAlertsQuery';
+import BatchedTeamRepositoriesQuery from './repositoryQueries/BatchedTeamRepositoriesQuery';
+import BatchedIssuesQuery from './issueQueries/BatchedIssuesQuery';
+import BatchedCommitsQuery from './pullRequestQueries/BatchedCommitsQuery';
+import BatchedLabelsQuery from './pullRequestQueries/BatchedLabelsQuery';
+import BatchedReviewsQuery from './pullRequestQueries/BatchedReviewsQuery';
+import BatchedTeamMembersQuery from './memberQueries/BatchedTeamMembersQuery';
+import { MAX_REQUESTS_LIMIT, MAX_SEARCH_LIMIT } from './paginate';
+import BatchedTagsQuery from './tagQueries/BatchedTagsQuery';
+import TopicsQuery from './topicQueries/TopicsQuery';
+import BatchedTopicsQuery from './topicQueries/BatchedTopicsQuery';
+import BatchedPullRequestsQuery from './pullRequestQueries/BatchedPullRequestsQuery';
+import BatchedBranchProtectionRulesAllowancesQuery from './branchProtectionRulesQueries/BatchedBranchProtectionRulesAllowancesQuery';
 
-const FIVE_MINUTES_IN_MILLIS = 300000;
+const FIVE_MINUTES_IN_MILLIS = 300_000;
 
 export class GitHubGraphQLClient {
   private readonly graphqlUrl: string;
@@ -236,6 +254,23 @@ export class GitHubGraphQLClient {
     );
   }
 
+  public async iterateBatchedPullRequests(
+    repoIds: string[],
+    iteratee: ResourceIteratee<PullRequestResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedPullRequestsQuery.iteratePullRequests(
+        {
+          repoIds,
+        },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
   /**
    * Iterates over reviews for the given pull request.
    * @param repository
@@ -256,10 +291,33 @@ export class GitHubGraphQLClient {
           repoOwner: repository.owner,
           isPublicRepo: repository.isPublic,
           pullRequestNumber,
+          maxLimit: MAX_SEARCH_LIMIT,
         },
         executor,
         iteratee,
         this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over reviews for the given pull request ids.
+   * @param pullRequestIds
+   * @param iteratee
+   */
+  public async iterateBatchedReviews(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Review>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedReviewsQuery.iterateReviews(
+        {
+          pullRequestIds,
+        },
+        executor,
+        iteratee,
       ),
     );
   }
@@ -283,10 +341,34 @@ export class GitHubGraphQLClient {
           repoName: repository.name,
           repoOwner: repository.owner,
           pullRequestNumber,
+          maxLimit: MAX_SEARCH_LIMIT,
         },
         executor,
         iteratee,
         this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over labels for the given pull request.
+   * @param repository
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  public async iterateBatchedLabels(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedLabelsQuery.iterateLabels(
+        {
+          pullRequestIds,
+        },
+        executor,
+        iteratee,
       ),
     );
   }
@@ -310,10 +392,34 @@ export class GitHubGraphQLClient {
           repoName: repository.name,
           repoOwner: repository.owner,
           pullRequestNumber,
+          maxLimit: MAX_SEARCH_LIMIT,
         },
         executor,
         iteratee,
         this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over commits for the given pull request ids.
+   * @param repository
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  public async iterateBatchedCommits(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedCommitsQuery.iterateCommits(
+        {
+          pullRequestIds,
+        },
+        executor,
+        iteratee,
       ),
     );
   }
@@ -325,7 +431,8 @@ export class GitHubGraphQLClient {
    * @param iteratee
    */
   public async iterateIssues(
-    repoFullName: string,
+    login: string,
+    repoName: string,
     lastExecutionTime: string,
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<RateLimitStepSummary> {
@@ -333,7 +440,30 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await IssuesQuery.iterateIssues(
-        { repoFullName, lastExecutionTime },
+        { login, repoName, lastExecutionTime, maxLimit: MAX_SEARCH_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over issues for the given repositories.
+   * @param repoFullName
+   * @param lastExecutionTime
+   * @param iteratee
+   */
+  public async iterateBatchedIssues(
+    repoIds: string[],
+    lastExecutionTime: string,
+    iteratee: ResourceIteratee<IssueResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedIssuesQuery.iterateIssues(
+        { repoIds, lastExecutionTime },
         executor,
         iteratee,
       ),
@@ -348,11 +478,17 @@ export class GitHubGraphQLClient {
   public async iterateOrgRepositories(
     login: string,
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
+    connectionFilters: RepoConnectionFilters,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
-      await OrgRepositoriesQuery.iterateRepositories(login, executor, iteratee),
+      await OrgRepositoriesQuery.iterateRepositories(
+        { login, maxLimit: MAX_REQUESTS_LIMIT, ...connectionFilters },
+        executor,
+        iteratee,
+        this.logger,
+      ),
     );
   }
 
@@ -364,7 +500,51 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
-      await TagsQuery.iterateTags({ repoName, repoOwner }, executor, iteratee),
+      await TagsQuery.iterateTags(
+        { repoName, repoOwner, maxLimit: MAX_REQUESTS_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  public async iterateBatchedTags(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedTagsQuery.iterateTags({ repoIds }, executor, iteratee),
+    );
+  }
+
+  public async iterateTopics(
+    repoOwner: string,
+    repoName: string,
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await TopicsQuery.iterateTopics(
+        { repoName, repoOwner, maxLimit: MAX_REQUESTS_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  public async iterateBatchedTopics(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedTopicsQuery.iterateTopics({ repoIds }, executor, iteratee),
     );
   }
 
@@ -380,7 +560,12 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
-      await TeamsQuery.iterateTeams(login, executor, iteratee),
+      await TeamsQuery.iterateTeams(
+        { login, maxLimit: MAX_REQUESTS_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
     );
   }
 
@@ -402,6 +587,31 @@ export class GitHubGraphQLClient {
         {
           login,
           repoName,
+          maxLimit: MAX_REQUESTS_LIMIT,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterate repository collaborators within an organization.
+   * @param login aka organization
+   * @param repoName
+   * @param iteratee
+   */
+  public async iterateBatchedRepoCollaborators(
+    repoIds: string[],
+    iteratee: ResourceIteratee<CollaboratorResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedRepoCollaboratorsQuery.iterateCollaborators(
+        {
+          repoIds,
         },
         executor,
         iteratee,
@@ -427,6 +637,30 @@ export class GitHubGraphQLClient {
         {
           login,
           teamSlug,
+          maxLimit: MAX_REQUESTS_LIMIT,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over repositories for the given team ids.
+   * @param teamIds
+   * @param iteratee
+   */
+  public async iterateBatchedTeamRepositories(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedTeamRepositoriesQuery.iterateRepositories(
+        {
+          teamIds,
         },
         executor,
         iteratee,
@@ -446,7 +680,12 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
 
     return this.collectRateLimitStatus(
-      await OrgMembersQuery.iterateMembers(login, executor, iteratee),
+      await OrgMembersQuery.iterateMembers(
+        { login, maxLimit: MAX_REQUESTS_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
     );
   }
 
@@ -462,9 +701,10 @@ export class GitHubGraphQLClient {
     const executor = createQueryExecutor(this, this.logger);
     return this.collectRateLimitStatus(
       await ExternalIdentifiersQuery.iterateExternalIdentifiers(
-        login,
+        { login, maxLimit: MAX_REQUESTS_LIMIT },
         executor,
         iteratee,
+        this.logger,
       ),
     );
   }
@@ -484,7 +724,28 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await TeamMembersQuery.iterateMembers(
-        { login, teamSlug },
+        { login, teamSlug, maxLimit: MAX_REQUESTS_LIMIT },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over members of the given teamIds.
+   * @param teamIds
+   * @param iteratee
+   */
+  public async iterateBatchedTeamMembers(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedTeamMembersQuery.iterateMembers(
+        { teamIds },
         executor,
         iteratee,
       ),
@@ -510,6 +771,29 @@ export class GitHubGraphQLClient {
           stateFilter: filters.states ?? [],
           gheServerVersion,
           maxRequestLimit,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      ),
+    );
+  }
+
+  public async iterateBatchedRepoVulnAlerts(
+    repoIds: string[],
+    filters: { severities: string[]; states: string[] },
+    gheServerVersion: string | undefined,
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedRepoVulnAlertsQuery.iterateVulnerabilityAlerts(
+        {
+          repoIds,
+          severityFilter: filters.severities ?? [],
+          stateFilter: filters.states ?? [],
+          gheServerVersion,
         },
         executor,
         iteratee,
@@ -540,6 +824,44 @@ export class GitHubGraphQLClient {
     );
   }
 
+  /**
+   * Iterates through all branch protections rules found on the provided repo.
+   * @param login - aka company
+   * @param repoName
+   * @param iteratee
+   */
+  public async iterateBatchedRepoBranchProtectionRules(
+    repoIds: string[],
+    gheServerVersion: string | undefined,
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedBranchProtectionRulesQuery.iterateBranchProtectionRules(
+        { repoIds, gheServerVersion },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  public async iterateBatchedPolicyAllowances(
+    branchProtectionRuleIds: string[],
+    gheServerVersion: string | undefined,
+    iteratee: ResourceIteratee<BranchProtectionRuleAllowancesResponse>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedBranchProtectionRulesAllowancesQuery.iterateBranchProtectionRulesAllowances(
+        { branchProtectionRuleIds, gheServerVersion },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
   private readonly TIMEOUT_RETRY_ATTEMPTS = 3;
 
   /**
@@ -555,9 +877,11 @@ export class GitHubGraphQLClient {
     timeoutRetryAttempt = 0,
   ) {
     const { logger } = this;
+    let retryDelay = 0;
 
     const queryWithPreRetryErrorHandling = async () => {
       try {
+        retryDelay = 30_000;
         logger.debug(
           { queryString, queryVariables, timeoutRetryAttempt },
           'Attempting GraphQL request',
@@ -593,26 +917,55 @@ export class GitHubGraphQLClient {
       // Check https://github.com/lifeomic/attempt for options on retry
       return await retry(queryWithPreRetryErrorHandling, {
         maxAttempts: 3,
-        delay: 30_000, // 30 seconds to start
+        calculateDelay: (context, options) => {
+          if (retryDelay === 0) {
+            // no delay between attempts
+            return 0;
+          }
+          if (options.factor) {
+            retryDelay *= Math.pow(options.factor, context.attemptNum - 1);
+
+            if (options.maxDelay !== 0) {
+              retryDelay = Math.min(retryDelay, options.maxDelay);
+            }
+          }
+          return retryDelay;
+        },
         timeout: 180_000, // 3 min timeout. We need this in case Node hangs with ETIMEDOUT
         factor: 2, //exponential backoff factor. with 30 sec start and 3 attempts, longest wait is 2 min
         handleError: async (error, attemptContext) => {
-          logger.debug('Error being handled in handleError.');
-          await retryErrorHandle(error, logger, attemptContext, () =>
-            this.refreshToken(),
-          );
+          if (error.message?.includes('This may be the result of a timeout')) {
+            logger.warn(
+              { attemptContext, error, queryString, queryVariables },
+              'Hit a Github Timeout. Aborting.',
+            );
+            attemptContext.abort();
+            return;
+          }
 
           if (attemptContext.aborted) {
             logger.warn(
               { attemptContext, error, queryString, queryVariables },
               'Hit an unrecoverable error when attempting to query GraphQL. Aborting.',
             );
-          } else {
-            logger.warn(
-              { attemptContext, error, queryString, queryVariables },
-              `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
-            );
+            return;
           }
+
+          logger.debug('Error being handled in handleError.');
+          const delayMs = await retryErrorHandle(
+            error,
+            logger,
+            attemptContext,
+            () => this.refreshToken(),
+          );
+          if (delayMs) {
+            retryDelay = delayMs;
+          }
+
+          logger.warn(
+            { attemptContext, error, queryString, queryVariables },
+            `Hit a possibly recoverable error when attempting to query GraphQL. Waiting before trying again.`,
+          );
         },
         handleTimeout: (attemptContext) => {
           if (timeoutRetryAttempt < this.TIMEOUT_RETRY_ATTEMPTS) {

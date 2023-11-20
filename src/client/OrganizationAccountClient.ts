@@ -22,9 +22,7 @@ import {
   RepoEnvironmentQueryResponse,
   CodeScanningAlertQueryResponse,
   SecretScanningAlertQueryResponse,
-  RepoTopicQueryResponse,
 } from './RESTClient/types';
-import { RepoEntity } from '../types';
 import { request } from '@octokit/request';
 import { ResourceIteratee } from '../client';
 import {
@@ -37,6 +35,9 @@ import {
   Label,
   Commit,
   OrgExternalIdentifierQueryResponse,
+  RepoConnectionFilters,
+  TopicQueryResponse,
+  BranchProtectionRuleAllowancesResponse,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -143,16 +144,41 @@ export default class OrganizationAccountClient {
    */
   async iterateOrgRepositories(
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
+    connectionFilters: RepoConnectionFilters,
   ): Promise<RateLimitStepSummary> {
-    return await this.v4.iterateOrgRepositories(this.login, iteratee);
+    return await this.v4.iterateOrgRepositories(
+      this.login,
+      iteratee,
+      connectionFilters,
+    );
   }
 
   async iterateTags(
-    repoOwner: string,
     repoName: string,
     iteratee: ResourceIteratee<TagQueryResponse>,
   ) {
-    return await this.v4.iterateTags(repoOwner, repoName, iteratee);
+    return await this.v4.iterateTags(this.login, repoName, iteratee);
+  }
+
+  async iterateBatchedTags(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ) {
+    return await this.v4.iterateBatchedTags(repoIds, iteratee);
+  }
+
+  async iterateTopics(
+    repoName: string,
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ) {
+    return await this.v4.iterateTopics(this.login, repoName, iteratee);
+  }
+
+  async iterateBatchedTopics(
+    repoIds: string[],
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ) {
+    return await this.v4.iterateBatchedTopics(repoIds, iteratee);
   }
 
   /**
@@ -169,6 +195,18 @@ export default class OrganizationAccountClient {
       teamSlug,
       iteratee,
     );
+  }
+
+  /**
+   * Iterate over team repositories.
+   * @param teamSlug
+   * @param iteratee
+   */
+  async iterateBatchedTeamRepositories(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedTeamRepositories(teamIds, iteratee);
   }
 
   /**
@@ -200,6 +238,13 @@ export default class OrganizationAccountClient {
     return await this.v4.iterateTeamMembers(this.login, teamSlug, iteratee);
   }
 
+  async iterateBatchedTeamMembers(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedTeamMembers(teamIds, iteratee);
+  }
+
   async iterateRepoCollaborators(
     repoName: string,
     iteratee: ResourceIteratee<CollaboratorResponse>,
@@ -211,6 +256,13 @@ export default class OrganizationAccountClient {
     );
   }
 
+  async iterateBatchedRepoCollaborators(
+    repoIds: string[],
+    iteratee: ResourceIteratee<CollaboratorResponse>,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedRepoCollaborators(repoIds, iteratee);
+  }
+
   /**
    * Calls the GraphQL client to iterate over pull request entities.
    * @param repo
@@ -219,7 +271,8 @@ export default class OrganizationAccountClient {
    * @param iteratee
    */
   async iteratePullRequestEntities(
-    repo: RepoEntity,
+    repoName: string,
+    isPublicRepo: boolean,
     ingestStartDatetime: string, //expect Date.toISOString format
     maxResourceIngestion: number,
     maxSearchLimit: number,
@@ -232,8 +285,8 @@ export default class OrganizationAccountClient {
     ingestStartDatetime = this.sanitizeLastExecutionTime(ingestStartDatetime);
     return await this.v4.iteratePullRequests(
       {
-        fullName: repo.fullName,
-        public: repo.public,
+        fullName: `${this.login}/${repoName}`,
+        public: isPublicRepo,
       },
       ingestStartDatetime,
       maxResourceIngestion,
@@ -242,14 +295,26 @@ export default class OrganizationAccountClient {
     );
   }
 
+  async iterateBatchedPullRequestEntities(
+    repoIds: string[],
+    iteratee: ResourceIteratee<PullRequestResponse>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting pull requests.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateBatchedPullRequests(repoIds, iteratee);
+  }
+
   /**
    * Calls the GraphQL client to iterate over review entities.
    * @param repo
    * @param pullRequestNumber
    * @param iteratee
    */
-  async iterateReviewEntities(
-    repo: RepoEntity,
+  async iterateReviews(
+    repoName: string,
+    isPublicRepo: boolean,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Review>,
   ): Promise<RateLimitStepSummary> {
@@ -259,13 +324,30 @@ export default class OrganizationAccountClient {
     }
     return await this.v4.iterateReviews(
       {
-        name: repo.name,
-        owner: repo.owner,
-        isPublic: repo.public,
+        name: repoName,
+        owner: this.login,
+        isPublic: isPublicRepo,
       },
       pullRequestNumber,
       iteratee,
     );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over review entities.
+   * @param pullRequestIds
+   * @param isPublicRepo
+   * @param iteratee
+   */
+  async iterateBatchedReviews(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Review>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting Reviews.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateBatchedReviews(pullRequestIds, iteratee);
   }
 
   /**
@@ -275,7 +357,7 @@ export default class OrganizationAccountClient {
    * @param iteratee
    */
   async iterateLabelEntities(
-    repo: RepoEntity,
+    repoName: string,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Label>,
   ): Promise<RateLimitStepSummary> {
@@ -285,8 +367,49 @@ export default class OrganizationAccountClient {
     }
     return await this.v4.iterateLabels(
       {
-        name: repo.name,
-        owner: repo.owner,
+        name: repoName,
+        owner: this.login,
+      },
+      pullRequestNumber,
+      iteratee,
+    );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over label entities.
+   * @param pullRequestIds
+   * @param iteratee
+   */
+  async iterateBatchedLabelEntities(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting Labels.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateBatchedLabels(pullRequestIds, iteratee);
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over commit entities.
+   * @param repo
+   * @param pullRequestNumber
+   * @param iteratee
+   */
+  async iterateCommits(
+    repoName: string,
+    pullRequestNumber: number,
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting Commit.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateCommits(
+      {
+        name: repoName,
+        owner: this.login,
       },
       pullRequestNumber,
       iteratee,
@@ -299,34 +422,26 @@ export default class OrganizationAccountClient {
    * @param pullRequestNumber
    * @param iteratee
    */
-  async iterateCommitEntities(
-    repo: RepoEntity,
-    pullRequestNumber: number,
+  async iterateBatchedCommits(
+    pullRequestIds: string[],
     iteratee: ResourceIteratee<Commit>,
   ): Promise<RateLimitStepSummary> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting Commit.');
       return { totalCost: 0 };
     }
-    return await this.v4.iterateCommits(
-      {
-        name: repo.name,
-        owner: repo.owner,
-      },
-      pullRequestNumber,
-      iteratee,
-    );
+    return await this.v4.iterateBatchedCommits(pullRequestIds, iteratee);
   }
 
   /**
    * Calls the GraphQL client to iterate over issue entities.
    * Notes: issues and PRs are actually the same in the API
-   * @param repo
+   * @param repoName
    * @param lastExecutionTime
    * @param iteratee
    */
   async iterateIssueEntities(
-    repo: RepoEntity,
+    repoName: string,
     lastExecutionTime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<RateLimitStepSummary> {
@@ -341,7 +456,37 @@ export default class OrganizationAccountClient {
     lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
 
     return await this.v4.iterateIssues(
-      repo.fullName,
+      this.login,
+      repoName,
+      lastExecutionTime,
+      iteratee,
+    );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over issue entities.
+   * Notes: issues and PRs are actually the same in the API
+   * @param repoIds
+   * @param lastExecutionTime
+   * @param iteratee
+   */
+  async iterateBatchedIssueEntities(
+    repoIds: string[],
+    lastExecutionTime: string, //expect Date.toISOString format
+    iteratee: ResourceIteratee<IssueResponse>,
+  ): Promise<RateLimitStepSummary> {
+    //issues and PRs are actually the same in the API
+    //we just filter for is:issue instead of is:pr
+    //and remove pr-specific children from the request
+    // TODO: SP -> investigate removing pr-specific children
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting issues.');
+      return { totalCost: 0 };
+    }
+    lastExecutionTime = this.sanitizeLastExecutionTime(lastExecutionTime);
+
+    return await this.v4.iterateBatchedIssues(
+      repoIds,
       lastExecutionTime,
       iteratee,
     );
@@ -364,6 +509,20 @@ export default class OrganizationAccountClient {
     );
   }
 
+  async iterateBatchedRepoVulnAlerts(
+    repoIds: string[],
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+    filters: { severities: string[]; states: string[] },
+    gheServerVersion?: string,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedRepoVulnAlerts(
+      repoIds,
+      filters,
+      gheServerVersion,
+      iteratee,
+    );
+  }
+
   async iterateRepoBranchProtectionRules(
     repoName: string,
     iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
@@ -372,6 +531,30 @@ export default class OrganizationAccountClient {
     return await this.v4.iterateRepoBranchProtectionRules(
       this.login,
       repoName,
+      gheServerVersion,
+      iteratee,
+    );
+  }
+
+  async iterateBatchedRepoBranchProtectionRules(
+    repoIds: string[],
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
+    gheServerVersion?: string,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedRepoBranchProtectionRules(
+      repoIds,
+      gheServerVersion,
+      iteratee,
+    );
+  }
+
+  async iterateBatchedPolicyAllowances(
+    branchProtectionRuleIds: string[],
+    iteratee: ResourceIteratee<BranchProtectionRuleAllowancesResponse>,
+    gheServerVersion?: string,
+  ): Promise<RateLimitStepSummary> {
+    return await this.v4.iterateBatchedPolicyAllowances(
+      branchProtectionRuleIds,
       gheServerVersion,
       iteratee,
     );
@@ -451,31 +634,6 @@ export default class OrganizationAccountClient {
       this.logger.warn(
         err,
         'Error while attempting to ingest organization secret scanning alerts',
-      );
-      throw new IntegrationError(err);
-    }
-  }
-
-  async getRepositoryTopics(
-    repoName: string,
-  ): Promise<RepoTopicQueryResponse[]> {
-    try {
-      const repoTopics = await this.v3.paginate(
-        'GET /repos/{owner}/{repo}/topics' as any, //https://docs.github.com/en/free-pro-team@latest/rest/repos/repos?apiVersion=2022-11-28#get-all-repository-topics
-        {
-          owner: this.login,
-          repo: repoName,
-        },
-        (response) => {
-          this.v3RateLimitConsumed++;
-          return response.data.names;
-        },
-      );
-      return repoTopics || [];
-    } catch (err) {
-      this.logger.warn(
-        { repoName },
-        `Error while attempting to ingest topics for repo ${repoName}`,
       );
       throw new IntegrationError(err);
     }

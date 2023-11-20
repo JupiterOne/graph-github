@@ -10,6 +10,8 @@ import {
 import utils from '../utils';
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import fragments from '../fragments';
+import { buildTimeoutHandler } from '../timeoutHandler';
+import { pullRequestFields } from './shared';
 
 interface QueryState extends BaseQueryState {
   pullRequests: CursorState;
@@ -45,7 +47,9 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
           issueCount
           edges {
             node {
-              ${pullRequestFields(queryParams.public)}
+              ...on PullRequest {
+                ${pullRequestFields(queryParams.public)}
+              }
             }
           }
           pageInfo {
@@ -69,66 +73,6 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
       }),
     },
   };
-};
-
-const pullRequestFields = (isPublicRepo: boolean) => {
-  return `...on PullRequest {
-    author {
-      ...${fragments.teamMemberFields}
-    }
-    baseRefName
-    baseRefOid
-    baseRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    body
-    changedFiles
-    createdAt
-    databaseId
-    headRefName
-    headRefOid
-    headRepository {
-      name
-      owner {
-        ...on RepositoryOwner {
-          login
-        }
-      }
-    }
-    id
-    ${
-      isPublicRepo
-        ? `mergeCommit {
-              ...on Commit {
-                commitUrl
-                oid
-              }
-              associatedPullRequests(first: 1) {
-                nodes {
-                  id
-                  number
-                }
-              }
-           }`
-        : ''
-    }
-    merged
-    mergedAt
-    mergedBy {
-      ...${fragments.teamMemberFields}
-    }
-    number
-    reviewDecision
-    state
-    title
-    updatedAt
-    url
-  }`;
 };
 
 /**
@@ -189,55 +133,32 @@ const iteratePullRequests: IteratePagination<
   iteratee,
   logger,
 ): Promise<RateLimitStepSummary> => {
-  const originalMaxSearchLimit = queryParams.maxSearchLimit;
-  const fetchBySinglePRState = {
-    isActive: false,
-    count: originalMaxSearchLimit,
-  };
   let pullRequestFetched = 0;
   let queryCost = 0;
   let queryState: QueryState | undefined = undefined;
   let paginationComplete = false;
 
-  const countIteratee = async (pullRequest: PullRequestResponse) => {
+  const countIteratee: ResourceIteratee<PullRequestResponse> = async (
+    pullRequest: PullRequestResponse,
+  ) => {
     pullRequestFetched++;
-    if (fetchBySinglePRState.isActive) {
-      fetchBySinglePRState.count--;
-      if (fetchBySinglePRState.count === 0) {
-        // reset state to continue requesting as default
-        fetchBySinglePRState.isActive = false;
-        fetchBySinglePRState.count = originalMaxSearchLimit;
-        queryParams.maxSearchLimit = originalMaxSearchLimit;
-        logger?.info(
-          { queryParams, queryState },
-          'Finish querying page by single PR.',
-        );
-      }
-    }
     await iteratee(pullRequest);
   };
 
+  const withTimeoutHandler = buildTimeoutHandler({
+    queryParams,
+    maxLimitKey: 'maxSearchLimit',
+    logger,
+  });
+
   while (!paginationComplete) {
     const executable = buildQuery(queryParams, queryState);
+    const { response, retry } = await withTimeoutHandler(async () =>
+      execute(executable),
+    );
 
-    let response: any;
-    try {
-      response = await execute(executable);
-    } catch (err) {
-      if (
-        err.message?.includes('This may be the result of a timeout') &&
-        !fetchBySinglePRState.isActive
-      ) {
-        fetchBySinglePRState.isActive = true;
-        queryParams.maxSearchLimit = 1;
-        logger?.info(
-          { queryParams, queryState },
-          'Search Pull Requests timeout. Start querying by single PR.',
-        );
-        continue;
-      } else {
-        throw err;
-      }
+    if (retry) {
+      continue;
     }
 
     queryState = await processResponseData(response, countIteratee);

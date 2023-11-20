@@ -41,6 +41,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 2,
   "requiredStatusCheckContexts": Array [],
@@ -102,6 +103,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 1,
   "requiredStatusCheckContexts": Array [],
@@ -132,114 +134,54 @@ Object {
         $maxLimit: Int!
       ) {
           repository(name: $repoName, owner: $repoOwner) {
+            id
             name
             branchProtectionRules(first: $maxLimit) {
               nodes {
-                id
-                requiresLinearHistory
-                requiredApprovingReviewCount
-                dismissesStaleReviews
-                requiresCodeOwnerReviews
-                requiresCommitSignatures
-                isAdminEnforced
-                allowsForcePushes
-                allowsDeletions
-                requiresConversationResolution
-                pattern
-                allowsDeletions
-                requiresApprovingReviews
-                requiredStatusCheckContexts
-                creator {
-                  login
-                }
-                databaseId
-                requiresStatusChecks
-                requiresStrictStatusChecks
-                restrictsPushes
-                restrictsReviewDismissals
-                requiredStatusChecks {
-                  context
-                  app {
-                    id
-                    name
-                  }
-                }
-                bypassForcePushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
+                
+  id
+  requiresLinearHistory
+  requiredApprovingReviewCount
+  dismissesStaleReviews
+  requiresCodeOwnerReviews
+  requiresCommitSignatures
+  isAdminEnforced
+  allowsForcePushes
+  allowsDeletions
+  requiresConversationResolution
+  pattern
+  allowsDeletions
+  requiresApprovingReviews
+  requiredStatusCheckContexts
+  creator {
+    login
+  }
+  databaseId
+  requiresStatusChecks
+  requiresStrictStatusChecks
+  restrictsPushes
+  restrictsReviewDismissals
+  requiredStatusChecks {
+    context
+    app {
       id
       name
     }
-    ... on User {
-      id
-      login
-      email
-    }
-    
   }
-        }
-      }
-      bypassPullRequestAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  
+  bypassForcePushAllowances {
+    totalCount
   }
-        }
-      }
-      pushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  bypassPullRequestAllowances {
+    totalCount
   }
-        }
-      }
-      reviewDismissalAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  pushAllowances {
+    totalCount
   }
-        }
-      }
+  reviewDismissalAllowances {
+    totalCount
+  }
+
               }
             }
           }
@@ -302,6 +244,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 2,
   "requiredStatusCheckContexts": Array [],
@@ -363,6 +306,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 1,
   "requiredStatusCheckContexts": Array [],
@@ -393,115 +337,54 @@ Object {
         $maxLimit: Int!
       ) {
           repository(name: $repoName, owner: $repoOwner) {
+            id
             name
             branchProtectionRules(first: $maxLimit) {
               nodes {
-                id
-                requiresLinearHistory
-                requiredApprovingReviewCount
-                dismissesStaleReviews
-                requiresCodeOwnerReviews
-                requiresCommitSignatures
-                isAdminEnforced
-                allowsForcePushes
-                allowsDeletions
-                requiresConversationResolution
-                pattern
-                allowsDeletions
-                requiresApprovingReviews
-                requiredStatusCheckContexts
-                creator {
-                  login
-                }
-                databaseId
-                requiresStatusChecks
-                requiresStrictStatusChecks
-                restrictsPushes
-                restrictsReviewDismissals
-                requiredStatusChecks {
-                  context
-                  app {
-                    id
-                    name
-                  }
-                }
-                blocksCreations
-bypassForcePushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
+                
+  id
+  requiresLinearHistory
+  requiredApprovingReviewCount
+  dismissesStaleReviews
+  requiresCodeOwnerReviews
+  requiresCommitSignatures
+  isAdminEnforced
+  allowsForcePushes
+  allowsDeletions
+  requiresConversationResolution
+  pattern
+  allowsDeletions
+  requiresApprovingReviews
+  requiredStatusCheckContexts
+  creator {
+    login
+  }
+  databaseId
+  requiresStatusChecks
+  requiresStrictStatusChecks
+  restrictsPushes
+  restrictsReviewDismissals
+  requiredStatusChecks {
+    context
+    app {
       id
       name
     }
-    ... on User {
-      id
-      login
-      email
-    }
-    
   }
-        }
-      }
-      bypassPullRequestAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  blocksCreations
+  bypassForcePushAllowances {
+    totalCount
   }
-        }
-      }
-      pushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  bypassPullRequestAllowances {
+    totalCount
   }
-        }
-      }
-      reviewDismissalAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    
+  pushAllowances {
+    totalCount
   }
-        }
-      }
+  reviewDismissalAllowances {
+    totalCount
+  }
+
               }
             }
           }
@@ -564,6 +447,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 2,
   "requiredStatusCheckContexts": Array [],
@@ -625,6 +509,7 @@ Object {
     "teams": Array [],
     "users": Array [],
   },
+  "repoId": undefined,
   "repoName": "reimagined-barnacle",
   "requiredApprovingReviewCount": 1,
   "requiredStatusCheckContexts": Array [],
@@ -655,127 +540,54 @@ Object {
         $maxLimit: Int!
       ) {
           repository(name: $repoName, owner: $repoOwner) {
+            id
             name
             branchProtectionRules(first: $maxLimit) {
               nodes {
-                id
-                requiresLinearHistory
-                requiredApprovingReviewCount
-                dismissesStaleReviews
-                requiresCodeOwnerReviews
-                requiresCommitSignatures
-                isAdminEnforced
-                allowsForcePushes
-                allowsDeletions
-                requiresConversationResolution
-                pattern
-                allowsDeletions
-                requiresApprovingReviews
-                requiredStatusCheckContexts
-                creator {
-                  login
-                }
-                databaseId
-                requiresStatusChecks
-                requiresStrictStatusChecks
-                restrictsPushes
-                restrictsReviewDismissals
-                requiredStatusChecks {
-                  context
-                  app {
-                    id
-                    name
-                  }
-                }
-                blocksCreations
-bypassForcePushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
+                
+  id
+  requiresLinearHistory
+  requiredApprovingReviewCount
+  dismissesStaleReviews
+  requiresCodeOwnerReviews
+  requiresCommitSignatures
+  isAdminEnforced
+  allowsForcePushes
+  allowsDeletions
+  requiresConversationResolution
+  pattern
+  allowsDeletions
+  requiresApprovingReviews
+  requiredStatusCheckContexts
+  creator {
+    login
+  }
+  databaseId
+  requiresStatusChecks
+  requiresStrictStatusChecks
+  restrictsPushes
+  restrictsReviewDismissals
+  requiredStatusChecks {
+    context
+    app {
       id
       name
     }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
   }
-        }
-      }
-      bypassPullRequestAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  blocksCreations
+  bypassForcePushAllowances {
+    totalCount
   }
-        }
-      }
-      pushAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  bypassPullRequestAllowances {
+    totalCount
   }
-        }
-      }
-      reviewDismissalAllowances(first: $maxLimit) {
-        nodes {
-          
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ... on App {
-        id
-        name
-        databaseId
-      }
+  pushAllowances {
+    totalCount
   }
-        }
-      }
+  reviewDismissalAllowances {
+    totalCount
+  }
+
               }
             }
           }

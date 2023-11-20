@@ -38,6 +38,30 @@ exports[`OrgRepositoriesQuery pagination of org repos 1`] = `
     rebaseMergeAllowed
     url
     visibility
+    branchProtectionRules {
+      totalCount
+    }
+    collaborators {
+      totalCount
+    }
+    vulnerabilityAlerts(states: [FIXED, DISMISSED, OPEN]) {
+  totalCount
+}
+
+    
+  issues(filterBy: { since: \\"1970-01-01T00:00:00.000Z\\" }) {
+    totalCount
+  }
+
+    tags: refs(refPrefix: \\"refs/tags/\\") {
+      totalCount
+    }
+    topics: repositoryTopics {
+      totalCount
+    }
+    pullRequests {
+      totalCount
+    }
   }
             }
             pageInfo {

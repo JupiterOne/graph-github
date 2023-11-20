@@ -11,7 +11,7 @@ describe('utils', () => {
 
   test('responseToResource', () => {
     expect(
-      utils.responseToResource({
+      utils.singlePrResponseToResource({
         id: 'PR_asdf',
         commits: {
           totalCount: 11,
@@ -53,7 +53,7 @@ describe('utils', () => {
     ).toMatchSnapshot();
 
     expect(
-      utils.responseToResource({
+      utils.singlePrResponseToResource({
         mergeCommit: {
           id: 'C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI',
           associatedPullRequests: {

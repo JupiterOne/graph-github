@@ -18,7 +18,7 @@ describe('OrgMemberQuery', () => {
 
     // Act
     const { totalCost } = await OrgMembersQuery.iterateMembers(
-      login,
+      { login, maxLimit: 100 },
       executor,
       iteratee,
     );

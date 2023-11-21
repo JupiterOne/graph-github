@@ -256,6 +256,7 @@ export class GitHubGraphQLClient {
 
   public async iterateBatchedPullRequests(
     repoIds: string[],
+    ingestStartDatetime: string,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     const executor = createQueryExecutor(this, this.logger);
@@ -264,6 +265,7 @@ export class GitHubGraphQLClient {
       await BatchedPullRequestsQuery.iteratePullRequests(
         {
           repoIds,
+          ingestStartDatetime,
         },
         executor,
         iteratee,

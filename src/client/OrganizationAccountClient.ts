@@ -297,13 +297,18 @@ export default class OrganizationAccountClient {
 
   async iterateBatchedPullRequestEntities(
     repoIds: string[],
+    ingestStartDatetime: string, //expect Date.toISOString format
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<RateLimitStepSummary> {
     if (!this.authorizedForPullRequests) {
       this.logger.info('Account not authorized for ingesting pull requests.');
       return { totalCost: 0 };
     }
-    return await this.v4.iterateBatchedPullRequests(repoIds, iteratee);
+    return await this.v4.iterateBatchedPullRequests(
+      repoIds,
+      ingestStartDatetime,
+      iteratee,
+    );
   }
 
   /**

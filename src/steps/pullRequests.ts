@@ -517,7 +517,11 @@ export async function fetchPrs(
     totalConnectionsById: pullRequestsTotalByRepo,
     threshold: 25,
     batchCb: async (repoKeys) => {
-      await apiClient.iterateBatchedPullRequests(repoKeys, iteratee);
+      await apiClient.iterateBatchedPullRequests(
+        repoKeys,
+        ingestStartDatetime,
+        iteratee,
+      );
     },
     singleCb: async (repoKey) => {
       const repoData = repoTags.get(repoKey);

@@ -699,6 +699,7 @@ export class APIClient {
 
   public async iterateBatchedPullRequests(
     repoIds: string[],
+    ingestStartDatetime: string,
     iteratee: ResourceIteratee<PullRequestResponse>,
   ): Promise<void> {
     if (!this.graphQLClient) {
@@ -707,6 +708,7 @@ export class APIClient {
     const rateLimit =
       await this.graphQLClient.iterateBatchedPullRequestEntities(
         repoIds,
+        ingestStartDatetime,
         iteratee,
       );
     this.logger.debug(

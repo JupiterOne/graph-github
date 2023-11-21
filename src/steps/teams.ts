@@ -53,7 +53,7 @@ export async function fetchTeams({
       }),
     );
 
-    teamDataMap.set(teamEntity._key, { name: team.name });
+    teamDataMap.set(teamEntity._key, { name: team.slug });
     if (team.repositories.totalCount) {
       repositoriesTotalByTeam.set(
         teamEntity._key,

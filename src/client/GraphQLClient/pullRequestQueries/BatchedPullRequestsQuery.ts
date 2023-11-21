@@ -13,6 +13,7 @@ type QueryState = BaseQueryState;
 
 type QueryParams = {
   repoIds: string[];
+  ingestStartDatetime: string;
 };
 
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
@@ -91,7 +92,15 @@ const iteratePullRequests = async (
   let queryState: QueryState = {};
   const executable = buildQuery(queryParams, queryState);
   const response = await execute(executable);
-  queryState = await processResponseData(response, iteratee);
+  const filterIteratee = async (pullRequest: PullRequestResponse) => {
+    if (
+      new Date(pullRequest.updatedAt) >=
+      new Date(queryParams.ingestStartDatetime)
+    ) {
+      await iteratee(pullRequest);
+    }
+  };
+  queryState = await processResponseData(response, filterIteratee);
 
   const queryCost = queryState?.rateLimit?.cost ?? 0;
 

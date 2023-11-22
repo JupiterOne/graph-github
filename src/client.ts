@@ -55,6 +55,8 @@ export type GithubPagesInfo = {
   pagesUrl?: string;
 };
 
+const FIVE_MINUTES_IN_MILLIS = 300_000;
+
 /**
  * An APIClient maintains authentication state and provides an interface to
  * third party data APIs.
@@ -67,6 +69,7 @@ export class APIClient {
   graphQLClient: OrganizationAccountClient;
   restClient: Octokit;
   ghsToken: string;
+  tokenExpires: number;
   gheServerVersion?: string;
   scopes: Scopes;
 
@@ -356,6 +359,10 @@ export class APIClient {
     if (!this.graphQLClient) {
       await this.setupAccountClient();
     }
+    if (this.tokenExpires - FIVE_MINUTES_IN_MILLIS < Date.now()) {
+      await this.refreshToken();
+    }
+
     if (this.scopes.orgAdmin) {
       const apps: OrgAppQueryResponse[] =
         await this.graphQLClient.getInstalledApps(this.ghsToken);
@@ -1080,7 +1087,6 @@ export class APIClient {
       this.logger,
     );
 
-    let tokenExpires: number;
     let myPermissions: TokenPermissions;
     try {
       const { token, permissions, expiresAt } = (await appClient.auth({
@@ -1093,7 +1099,7 @@ export class APIClient {
 
       this.ghsToken = token;
       myPermissions = permissions;
-      tokenExpires = parseTimePropertyValue(expiresAt) || 0;
+      this.tokenExpires = parseTimePropertyValue(expiresAt) || 0;
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
@@ -1127,12 +1133,42 @@ export class APIClient {
       graphqlClient: new GitHubGraphQLClient(
         this.graphqlUrl,
         this.ghsToken,
-        tokenExpires,
+        this.tokenExpires,
         this.logger,
         appClient,
       ),
       logger: this.logger,
     });
+  }
+
+  /**
+   * Refreshes the token.
+   */
+  private async refreshToken() {
+    const appClient = createGitHubAppClient(
+      this.restApiUrl,
+      this.config,
+      this.logger,
+    );
+
+    try {
+      const { token, expiresAt } = (await appClient.auth({
+        type: 'installation',
+      })) as {
+        token: string;
+        expiresAt: string;
+      };
+      this.ghsToken = token;
+      this.tokenExpires = parseTimePropertyValue(expiresAt) || 0;
+    } catch (err) {
+      this.logger.error(err);
+      throw new IntegrationProviderAuthenticationError({
+        cause: err,
+        endpoint: err.response?.url,
+        status: err.status,
+        statusText: err.response?.data?.message,
+      });
+    }
   }
 
   private processScopes(perms: TokenPermissions) {

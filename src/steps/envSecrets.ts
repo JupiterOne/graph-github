@@ -4,6 +4,7 @@ import {
   RelationshipClass,
   IntegrationMissingKeyError,
   createDirectRelationship,
+  IntegrationWarnEventName,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
@@ -34,6 +35,8 @@ export async function fetchEnvSecrets({
       `Expected reposecrets.ts to have set ${GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP} in jobState.`,
     );
   }
+
+  const notFoundSecrets: { repoName: string; envName: string }[] = [];
 
   await jobState.iterateEntities<EnvironmentEntity>(
     { _type: GithubEntities.GITHUB_ENVIRONMENT._type },
@@ -108,12 +111,24 @@ export async function fetchEnvSecrets({
             { envName: envEntity.name },
             'Environment not found while fetching secrets, skipping',
           );
+          notFoundSecrets.push({
+            repoName: envEntity.parentRepoName,
+            envName: envEntity.name,
+          });
           return;
         }
         throw err;
       }
     },
   );
+  if (notFoundSecrets.length > 0) {
+    logger.publishWarnEvent({
+      name: IntegrationWarnEventName.IncompleteData,
+      description: `Environment secrets were not found and skipped for the following repository/environment: ${JSON.stringify(
+        notFoundSecrets,
+      )}`,
+    });
+  }
 }
 
 export const envSecretSteps: IntegrationStep<IntegrationConfig>[] = [

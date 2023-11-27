@@ -4,6 +4,7 @@ import {
   RelationshipClass,
   IntegrationMissingKeyError,
   createDirectRelationship,
+  IntegrationWarnEventName,
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
@@ -35,74 +36,99 @@ export async function fetchEnvSecrets({
     );
   }
 
+  const notFoundSecrets: { repoName: string; envName: string }[] = [];
+
   await jobState.iterateEntities<EnvironmentEntity>(
     { _type: GithubEntities.GITHUB_ENVIRONMENT._type },
     async (envEntity) => {
-      await apiClient.iterateEnvSecrets(envEntity, async (envSecret) => {
-        const secretEntity = (await jobState.addEntity(
-          toEnvSecretEntity(
-            envSecret,
-            apiClient.graphQLClient.login,
-            config.githubApiBaseUrl,
-            envEntity,
-          ),
-        )) as SecretEntity;
+      try {
+        await apiClient.iterateEnvSecrets(envEntity, async (envSecret) => {
+          const secretEntity = (await jobState.addEntity(
+            toEnvSecretEntity(
+              envSecret,
+              apiClient.graphQLClient.login,
+              config.githubApiBaseUrl,
+              envEntity,
+            ),
+          )) as SecretEntity;
 
-        await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.HAS,
-            from: envEntity,
-            to: secretEntity,
-          }),
-        );
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.HAS,
+              from: envEntity,
+              to: secretEntity,
+            }),
+          );
 
-        await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.USES,
-            fromType: GithubEntities.GITHUB_REPO._type,
-            toType: GithubEntities.GITHUB_ENV_SECRET._type,
-            fromKey: envEntity.parentRepoKey,
-            toKey: secretEntity._key,
-          }),
-        );
+          await jobState.addRelationship(
+            createDirectRelationship({
+              _class: RelationshipClass.USES,
+              fromType: GithubEntities.GITHUB_REPO._type,
+              toType: GithubEntities.GITHUB_ENV_SECRET._type,
+              fromKey: envEntity.parentRepoKey,
+              toKey: secretEntity._key,
+            }),
+          );
 
-        const keyOfHypotheticalOrgSecretOfSameName = getSecretEntityKey({
-          name: envSecret.name,
-          secretOwnerType: 'Org',
-          secretOwnerName: apiClient.graphQLClient.login,
+          const keyOfHypotheticalOrgSecretOfSameName = getSecretEntityKey({
+            name: envSecret.name,
+            secretOwnerType: 'Org',
+            secretOwnerName: apiClient.graphQLClient.login,
+          });
+          if (jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.OVERRIDES,
+                fromType: GithubEntities.GITHUB_ENV_SECRET._type,
+                toType: GithubEntities.GITHUB_ORG_SECRET._type,
+                fromKey: secretEntity._key,
+                toKey: keyOfHypotheticalOrgSecretOfSameName,
+              }),
+            );
+          }
+
+          const repoSecretEntitiesMap = repoSecretEntitiesByRepoNameMap.get(
+            envEntity.parentRepoName,
+          );
+          if (
+            repoSecretEntitiesMap &&
+            repoSecretEntitiesMap.has(envSecret.name)
+          ) {
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.OVERRIDES,
+                fromType: GithubEntities.GITHUB_ENV_SECRET._type,
+                fromKey: secretEntity._key,
+                toType: GithubEntities.GITHUB_REPO_SECRET._type,
+                toKey: repoSecretEntitiesMap.get(envSecret.name) as string,
+              }),
+            );
+          }
         });
-        if (jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
-          await jobState.addRelationship(
-            createDirectRelationship({
-              _class: RelationshipClass.OVERRIDES,
-              fromType: GithubEntities.GITHUB_ENV_SECRET._type,
-              toType: GithubEntities.GITHUB_ORG_SECRET._type,
-              fromKey: secretEntity._key,
-              toKey: keyOfHypotheticalOrgSecretOfSameName,
-            }),
+      } catch (err) {
+        if (err.status === 404) {
+          logger.warn(
+            { envName: envEntity.name },
+            'Environment not found while fetching secrets, skipping',
           );
+          notFoundSecrets.push({
+            repoName: envEntity.parentRepoName,
+            envName: envEntity.name,
+          });
+          return;
         }
-
-        const repoSecretEntitiesMap = repoSecretEntitiesByRepoNameMap.get(
-          envEntity.parentRepoName,
-        );
-        if (
-          repoSecretEntitiesMap &&
-          repoSecretEntitiesMap.has(envSecret.name)
-        ) {
-          await jobState.addRelationship(
-            createDirectRelationship({
-              _class: RelationshipClass.OVERRIDES,
-              fromType: GithubEntities.GITHUB_ENV_SECRET._type,
-              fromKey: secretEntity._key,
-              toType: GithubEntities.GITHUB_REPO_SECRET._type,
-              toKey: repoSecretEntitiesMap.get(envSecret.name) as string,
-            }),
-          );
-        }
-      });
+        throw err;
+      }
     },
   );
+  if (notFoundSecrets.length > 0) {
+    logger.publishWarnEvent({
+      name: IntegrationWarnEventName.IncompleteData,
+      description: `Environment secrets were not found and skipped for the following repository/environment: ${JSON.stringify(
+        notFoundSecrets,
+      )}`,
+    });
+  }
 }
 
 export const envSecretSteps: IntegrationStep<IntegrationConfig>[] = [

@@ -15,7 +15,6 @@ import { BranchProtectionRuleEntity, IdEntityMap, RepoData } from '../types';
 import {
   BRANCH_PROTECTION_RULE_TOTAL_BY_REPO,
   GITHUB_APP_BY_APP_ID,
-  GITHUB_MEMBER_BY_LOGIN_MAP,
   GITHUB_REPO_TAGS_ARRAY,
   GithubEntities,
   IngestionSources,
@@ -205,37 +204,31 @@ async function processPolicy({
   }
 
   if (Array.isArray(allowances?.bypassPullRequestAllowances?.users)) {
-    const usersByLoginMap = await jobState.getData<IdEntityMap<Entity['_key']>>(
-      GITHUB_MEMBER_BY_LOGIN_MAP,
+    await Promise.all(
+      (allowances?.bypassPullRequestAllowances?.users ?? []).map(
+        async (user) => {
+          if (jobState.hasKey(user.id)) {
+            await jobState.addRelationship(
+              createDirectRelationship({
+                _class: RelationshipClass.OVERRIDES,
+                fromType: GithubEntities.GITHUB_MEMBER._type,
+                fromKey: user.id,
+                toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
+                toKey: branchProtectionRuleEntity._key,
+                properties: {
+                  bypassPullRequestAllowance: true,
+                },
+              }),
+            );
+          } else {
+            logger.warn(
+              { user },
+              'Failed to find user for bypassPullRequestAllowances',
+            );
+          }
+        },
+      ),
     );
-
-    if (usersByLoginMap) {
-      await Promise.all(
-        (allowances?.bypassPullRequestAllowances?.users ?? []).map(
-          async (user) => {
-            if (user.login && usersByLoginMap.has(user.login)) {
-              await jobState.addRelationship(
-                createDirectRelationship({
-                  _class: RelationshipClass.OVERRIDES,
-                  fromType: GithubEntities.GITHUB_MEMBER._type,
-                  fromKey: usersByLoginMap.get(user.login) as string,
-                  toType: GithubEntities.GITHUB_BRANCH_PROTECTION_RULE._type,
-                  toKey: branchProtectionRuleEntity._key,
-                  properties: {
-                    bypassPullRequestAllowance: true,
-                  },
-                }),
-              );
-            } else {
-              logger.warn(
-                { user },
-                'Failed to find user by login for bypassPullRequestAllowances',
-              );
-            }
-          },
-        ),
-      );
-    }
   }
 
   if (Array.isArray(allowances?.bypassPullRequestAllowances?.teams)) {

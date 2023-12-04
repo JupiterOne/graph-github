@@ -18,6 +18,12 @@ exports[`TeamMembersQuery pagination of teams 1`] = `
     databaseId
     description
     privacy
+    repositories {
+      totalCount
+    }
+    members {
+      totalCount
+    }
   }
             }
           }

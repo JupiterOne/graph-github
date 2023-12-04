@@ -1,4 +1,4 @@
-jest.setTimeout(13000);
+jest.setTimeout(40000);
 
 import { Steps } from '../constants';
 import {

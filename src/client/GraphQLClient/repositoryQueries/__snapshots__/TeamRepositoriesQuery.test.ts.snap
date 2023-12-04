@@ -12,16 +12,17 @@ exports[`TeamRepositoriesQuery pagination of team repos 1`] = `
             id
             team(slug: $teamSlug) {
               id
-              name
               repositories(first: $maxLimit, after: $teamRepoCursor) {
-                edges {
-                  node {
-                    id
-                  }
-                  ...on TeamRepositoryEdge {
-                    permission
-                  }
-                }
+                
+  edges {
+    node {
+      id
+    }
+    ...on TeamRepositoryEdge {
+      permission
+    }
+  }
+
                 pageInfo {
                   endCursor
                   hasNextPage

@@ -7,7 +7,12 @@ import {
 import { ExecutableQuery } from '../CreateQueryExecutor';
 import fragments from '../fragments';
 import { MAX_REQUESTS_LIMIT } from '../paginate';
-import utils, { EnterpriseFeatures } from '../utils';
+import utils from '../utils';
+import {
+  branchProtectionRuleFields,
+  buildVersionSafeFragments,
+  processActors,
+} from './shared';
 
 interface QueryState extends BaseQueryState {
   isInitialQuery?: boolean;
@@ -17,71 +22,6 @@ export type QueryParams = {
   repoName: string;
   repoOwner: string;
   gheServerVersion?: string;
-};
-
-interface VersionSafeFragments {
-  additionalFields: string[];
-}
-
-/**
- * Depending on the version of GHE Server, provide a supported query.
- * @param gheServerVersion
- */
-const buildVersionSafeFragments = (
-  gheServerVersion?: string,
-): VersionSafeFragments => {
-  const fragments: VersionSafeFragments = {
-    additionalFields: [],
-  };
-
-  if (
-    utils.isSupported(
-      EnterpriseFeatures.BRANCH_PROTECTION_RULES_BLOCKS_CREATIONS_FIELD,
-      gheServerVersion,
-    )
-  ) {
-    fragments.additionalFields.push('blocksCreations');
-  }
-
-  const isAppFragmentSupported = utils.isSupported(
-    EnterpriseFeatures.BRANCH_PROTECTION_RULES_APP_MEMBER,
-    gheServerVersion,
-  );
-  const actorQueryWithAppFragment = getActorQuery([
-    `... on App {
-        id
-        name
-        databaseId
-      }`,
-  ]);
-  const actorQuery = isAppFragmentSupported
-    ? actorQueryWithAppFragment
-    : getActorQuery();
-
-  fragments.additionalFields.push(
-    `bypassForcePushAllowances(first: $maxLimit) {
-        nodes {
-          ${actorQuery}
-        }
-      }
-      bypassPullRequestAllowances(first: $maxLimit) {
-        nodes {
-          ${actorQuery}
-        }
-      }
-      pushAllowances(first: $maxLimit) {
-        nodes {
-          ${actorQueryWithAppFragment}
-        }
-      }
-      reviewDismissalAllowances(first: $maxLimit) {
-        nodes {
-          ${actorQuery}
-        }
-      }`,
-  );
-
-  return fragments;
 };
 
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
@@ -99,39 +39,11 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
         $maxLimit: Int!
       ) {
           repository(name: $repoName, owner: $repoOwner) {
+            id
             name
             branchProtectionRules(first: $maxLimit) {
               nodes {
-                id
-                requiresLinearHistory
-                requiredApprovingReviewCount
-                dismissesStaleReviews
-                requiresCodeOwnerReviews
-                requiresCommitSignatures
-                isAdminEnforced
-                allowsForcePushes
-                allowsDeletions
-                requiresConversationResolution
-                pattern
-                allowsDeletions
-                requiresApprovingReviews
-                requiredStatusCheckContexts
-                creator {
-                  login
-                }
-                databaseId
-                requiresStatusChecks
-                requiresStrictStatusChecks
-                restrictsPushes
-                restrictsReviewDismissals
-                requiredStatusChecks {
-                  context
-                  app {
-                    id
-                    name
-                  }
-                }
-                ${versionSafeFragments.additionalFields.join('\n')}
+                ${branchProtectionRuleFields(versionSafeFragments)}
               }
             }
           }
@@ -152,21 +64,6 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
-const getActorQuery = (additionalFragments: string[] = []) => `
-  actor {
-    __typename
-    ... on Team {
-      id
-      name
-    }
-    ... on User {
-      id
-      login
-      email
-    }
-    ${additionalFragments.join('\n')}
-  }`;
-
 const processResponseData: ProcessResponse<
   BranchProtectionRuleResponse,
   QueryState
@@ -180,6 +77,7 @@ const processResponseData: ProcessResponse<
     }
 
     const processedRule = {
+      repoId: responseData.repository.id,
       repoName: responseData.repository.name,
       ...rule,
       bypassForcePushAllowances: processActors(
@@ -199,30 +97,6 @@ const processResponseData: ProcessResponse<
 
   return {
     rateLimit,
-  };
-};
-
-type ActorNode = {
-  actor: {
-    __typename: 'Team' | 'User' | 'App';
-    id: string;
-    name: string;
-    databaseId?: string;
-    slug?: string;
-    login?: string;
-  };
-};
-const processActors = (actorNodes: ActorNode[]) => {
-  if (!Array.isArray(actorNodes)) {
-    actorNodes = [];
-  }
-
-  const actors = actorNodes.map((node) => node?.actor);
-
-  return {
-    teams: actors.filter((actor) => actor?.__typename === 'Team'),
-    users: actors.filter((actor) => actor?.__typename === 'User'),
-    apps: actors.filter((actor) => actor?.__typename === 'App'),
   };
 };
 

@@ -17,6 +17,7 @@ describe('ReviewsQuery', () => {
           repoName: 'happy-sunshine',
           isPublicRepo: true,
           pullRequestNumber: 2,
+          maxLimit: 25,
         },
         execute,
         iteratee,

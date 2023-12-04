@@ -9,7 +9,7 @@ import {
 
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
-import { IdEntityMap, RepoKeyAndName, SecretEntity } from '../types';
+import { IdEntityMap, RepoData, SecretEntity } from '../types';
 import {
   GithubEntities,
   GITHUB_REPO_TAGS_ARRAY,
@@ -28,7 +28,7 @@ export async function fetchRepoSecrets({
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
 
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+  const repoTags = await jobState.getData<Map<string, RepoData>>(
     GITHUB_REPO_TAGS_ARRAY,
   );
   if (!repoTags) {
@@ -42,15 +42,15 @@ export async function fetchRepoSecrets({
     IdEntityMap<Entity['_key']>
   > = new Map();
 
-  for (const repoTag of repoTags) {
+  for (const [repoKey, repoData] of repoTags) {
     const repoSecretEntities: IdEntityMap<Entity['_key']> = new Map();
-    await apiClient.iterateRepoSecrets(repoTag.name, async (secret) => {
+    await apiClient.iterateRepoSecrets(repoData.name, async (secret) => {
       const secretEntity = (await jobState.addEntity(
         toRepoSecretEntity(
           secret,
           apiClient.graphQLClient.login,
           config.githubApiBaseUrl,
-          repoTag.name,
+          repoData.name,
         ),
       )) as SecretEntity;
       repoSecretEntities.set(secret.name, secretEntity._key);
@@ -60,7 +60,7 @@ export async function fetchRepoSecrets({
           _class: RelationshipClass.HAS,
           fromType: GithubEntities.GITHUB_REPO._type,
           toType: GithubEntities.GITHUB_REPO_SECRET._type,
-          fromKey: repoTag._key,
+          fromKey: repoKey,
           toKey: secretEntity._key,
         }),
       );
@@ -70,7 +70,7 @@ export async function fetchRepoSecrets({
           _class: RelationshipClass.USES,
           fromType: GithubEntities.GITHUB_REPO._type,
           toType: GithubEntities.GITHUB_REPO_SECRET._type,
-          fromKey: repoTag._key,
+          fromKey: repoKey,
           toKey: secretEntity._key,
         }),
       );
@@ -92,7 +92,7 @@ export async function fetchRepoSecrets({
         );
       }
     });
-    repoSecretEntitiesByRepoNameMap.set(repoTag.name, repoSecretEntities);
+    repoSecretEntitiesByRepoNameMap.set(repoData.name, repoSecretEntities);
   }
   await jobState.setData(
     GITHUB_REPO_SECRET_ENTITIES_BY_REPO_NAME_MAP,

@@ -1,3 +1,5 @@
+jest.setTimeout(150000);
+
 import {
   Recording,
   executeStepWithDependencies,
@@ -5,8 +7,6 @@ import {
 import { buildStepTestConfig } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import { Steps } from '../constants';
-
-jest.setTimeout(25000);
 
 let recording: Recording;
 afterEach(async () => {

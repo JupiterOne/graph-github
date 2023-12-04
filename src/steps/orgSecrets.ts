@@ -9,7 +9,7 @@ import {
 import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
-import { AccountEntity, RepoKeyAndName, SecretEntity } from '../types';
+import { AccountEntity, RepoData, SecretEntity } from '../types';
 import {
   GithubEntities,
   GITHUB_REPO_TAGS_ARRAY,
@@ -34,7 +34,7 @@ export async function fetchOrgSecrets({
       `Expected to find Account entity in jobState.`,
     );
   }
-  const repoTags = await jobState.getData<RepoKeyAndName[]>(
+  const repoTags = await jobState.getData<Map<string, RepoData>>(
     GITHUB_REPO_TAGS_ARRAY,
   );
   if (!repoTags) {

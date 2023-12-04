@@ -7,10 +7,10 @@ import {
   OrgTeamRepoQueryResponse,
   ProcessResponse,
 } from '../types';
-import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
+import { teamReposFields } from './shared';
 
 interface QueryState extends BaseQueryState {
   teamRepos?: CursorState;
@@ -18,6 +18,7 @@ interface QueryState extends BaseQueryState {
 type QueryParams = {
   login: string;
   teamSlug: string;
+  maxLimit: number;
 };
 
 /**
@@ -40,16 +41,8 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
             id
             team(slug: $teamSlug) {
               id
-              name
               repositories(first: $maxLimit, after: $teamRepoCursor) {
-                edges {
-                  node {
-                    id
-                  }
-                  ...on TeamRepositoryEdge {
-                    permission
-                  }
-                }
+                ${teamReposFields}
                 pageInfo {
                   endCursor
                   hasNextPage
@@ -66,9 +59,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      login: queryParams.login,
-      teamSlug: queryParams.teamSlug,
-      maxLimit: MAX_REQUESTS_LIMIT,
+      ...queryParams,
       ...(queryState?.teamRepos?.hasNextPage && {
         teamRepoCursor: queryState.teamRepos.endCursor,
       }),
@@ -97,6 +88,7 @@ const processResponseData: ProcessResponse<
     const repo = {
       id: edge.node.id,
       permission: edge.permission,
+      teamId: responseData.organization?.team?.id,
     };
 
     await iteratee(repo);
@@ -117,7 +109,7 @@ const processResponseData: ProcessResponse<
 const iterateRepositories: IteratePagination<
   QueryParams,
   OrgTeamRepoQueryResponse
-> = async (queryParams, execute, iteratee) => {
+> = async (queryParams, execute, iteratee, logger) => {
   return paginate(
     queryParams,
     iteratee,
@@ -125,6 +117,8 @@ const iterateRepositories: IteratePagination<
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.teamRepos?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

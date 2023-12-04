@@ -23,6 +23,7 @@ describe('TeamRepositoriesQuery', () => {
       {
         login: 'J1-Test',
         teamSlug: 'eng',
+        maxLimit: 100,
       },
       executor,
       iteratee,
@@ -45,6 +46,7 @@ describe('TeamRepositoriesQuery', () => {
     });
     expect(iteratee).toHaveBeenCalledTimes(6);
     expect(iteratee.mock.calls[5][0]).toEqual({
+      teamId: 'T_kwDOBfl5Zc4AWFta',
       id: 'R_6',
       permission: 'WRITE',
     });
@@ -60,6 +62,7 @@ describe('TeamRepositoriesQuery', () => {
       {
         login: 'J1-Test',
         teamSlug: 'eng',
+        maxLimit: 100,
       },
       executor,
       iteratee,

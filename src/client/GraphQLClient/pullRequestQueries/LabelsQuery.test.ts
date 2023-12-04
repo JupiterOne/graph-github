@@ -16,6 +16,7 @@ describe('LabelsQuery', () => {
           repoOwner: 'J1-Test',
           repoName: 'happy-sunshine',
           pullRequestNumber: 2,
+          maxLimit: 25,
         },
         execute,
         iteratee,

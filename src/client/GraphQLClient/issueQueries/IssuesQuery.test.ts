@@ -13,15 +13,17 @@ describe('IssuesQuery', () => {
       // Act
       const result = await IssuesQuery.iterateIssues(
         {
-          repoFullName: 'J1-Test/happy-sunshine',
+          login: 'J1-Test',
+          repoName: 'reimagined-barnacle',
           lastExecutionTime: '2011-10-05T14:48:00.000Z',
+          maxLimit: 100,
         },
         execute,
         iteratee,
       );
 
       // Assert
-      expect(result.totalCost).toBe(3);
+      expect(result.totalCost).toBe(2);
       expect(iteratee).toHaveBeenCalledTimes(3);
       expect(iteratee.mock.calls[0][0]).toMatchSnapshot();
       expect(iteratee.mock.calls[1][0]).toMatchSnapshot();

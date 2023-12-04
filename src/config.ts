@@ -203,8 +203,20 @@ export function sanitizeConfig(config: IntegrationConfig) {
     config.dependabotAlertRequestLimit ||
     process.env['DEPENDABOT_ALERT_REQUEST_LIMIT'];
 
-  config.dependabotAlertSeverities = config.dependabotAlertSeverities ?? [];
-  config.dependabotAlertStates = config.dependabotAlertStates ?? [];
+  const dependabotAlertSeverities: any =
+    config.dependabotAlertSeverities ??
+    process.env['DEPENDABOT_ALERT_SEVERITIES'];
+  config.dependabotAlertSeverities =
+    typeof dependabotAlertSeverities === 'string'
+      ? dependabotAlertSeverities.split(',').map((state) => state.trim())
+      : config.dependabotAlertSeverities ?? [];
+
+  const dependabotAlertStates: any =
+    config.dependabotAlertStates ?? process.env['DEPENDABOT_ALERT_STATES'];
+  config.dependabotAlertStates =
+    typeof dependabotAlertStates === 'string'
+      ? dependabotAlertStates.split(',').map((state) => state.trim())
+      : dependabotAlertStates ?? [];
 
   if (
     !config.githubAppId ||

@@ -1,3 +1,4 @@
+import { ALL_ALERT_STATES } from '../vulnerabilityAlertQueries/shared';
 import OrgRepositoriesQuery from './OrgRepositoriesQuery';
 import { emptyOrgRepos, orgRepos } from './testResponses';
 
@@ -18,7 +19,13 @@ describe('OrgRepositoriesQuery', () => {
 
     // Act
     const { totalCost } = await OrgRepositoriesQuery.iterateRepositories(
-      login,
+      {
+        login,
+        maxLimit: 100,
+        lastSuccessfulExecution: '1970-01-01T00:00:00.000Z',
+        alertStates: ALL_ALERT_STATES,
+        gheServerVersion: '5.0.0',
+      },
       executor,
       iteratee,
     );
@@ -49,7 +56,13 @@ describe('OrgRepositoriesQuery', () => {
   ])('org handling empty/partial responses', async (iteratee, executor) => {
     // Act
     const { totalCost } = await OrgRepositoriesQuery.iterateRepositories(
-      'J1-Test',
+      {
+        login: 'J1-Test',
+        maxLimit: 100,
+        lastSuccessfulExecution: '1970-01-01T00:00:00.000Z',
+        alertStates: ALL_ALERT_STATES,
+        gheServerVersion: '5.0.0',
+      },
       executor,
       iteratee,
     );

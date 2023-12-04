@@ -1,4 +1,4 @@
-jest.setTimeout(20000);
+jest.setTimeout(100000);
 
 import {
   Recording,

@@ -65,7 +65,7 @@ interface Actor {
   id: string;
   databaseId?: number; // This is used to identify an app
   name?: string | null;
-  login: string;
+  login?: string;
 }
 
 export interface OrgQueryResponse extends Node, Actor {
@@ -119,9 +119,21 @@ export interface OrgTeamQueryResponse extends Node {
   databaseId: number;
   description: string;
   privacy: string;
+  repositories: {
+    totalCount: number;
+  };
+  members: {
+    totalCount: number;
+  };
 }
 
 export interface TagQueryResponse extends Node {
+  repoId: string;
+  name: string;
+}
+
+export interface TopicQueryResponse extends Node {
+  repoId: string;
   name: string;
 }
 
@@ -131,6 +143,7 @@ export interface OrgTeamMemberQueryResponse extends Node {
   name?: string;
   login: string;
   teamId: string;
+  teamName: string;
   /**
    * @Deprecated
    * A single team id, even though it is listed as a plural
@@ -145,6 +158,12 @@ enum RepositoryVisibility {
   PRIVATE = 'PRIVATE',
   PUBLIC = 'PUBLIC',
 }
+
+export type RepoConnectionFilters = {
+  lastSuccessfulExecution: string;
+  alertStates: string[];
+  gheServerVersion?: string;
+};
 
 export interface OrgRepoQueryResponse extends Node {
   name: string;
@@ -176,12 +195,34 @@ export interface OrgRepoQueryResponse extends Node {
   pushedAt?: string;
   rebaseMergeAllowed?: boolean;
   visibility: RepositoryVisibility;
+  branchProtectionRules: {
+    totalCount: number;
+  };
+  collaborators: {
+    totalCount: number;
+  };
+  vulnerabilityAlerts: {
+    totalCount: number;
+  };
+  issues: {
+    totalCount: number;
+  };
+  tags?: {
+    totalCount: number;
+  };
+  topics: {
+    totalCount: number;
+  };
+  pullRequests: {
+    totalCount: number;
+  };
 }
 
 /**
  * Expresses the relationship between a repo and the team's permissions.
  */
 export interface OrgTeamRepoQueryResponse extends Node {
+  teamId: string;
   /**
    * The ID of the repository.
    */
@@ -206,6 +247,7 @@ export interface RepositoryOwner {
 }
 
 export interface Commit {
+  pullRequestId: string;
   oid: string;
   message: string;
   authoredDate: string;
@@ -226,10 +268,12 @@ export interface AssociatedPullRequest {
 }
 
 export interface Label {
+  pullRequestId: string;
   name: string;
 }
 
 export interface Review {
+  pullRequestId: string;
   state:
     | 'PENDING'
     | 'COMMENTED'
@@ -279,7 +323,7 @@ export interface PullRequestFields {
   };
 }
 
-export interface PullRequestResponse extends Node {
+export type BasePullRequestFields = {
   id: string;
   title: string;
   number: number;
@@ -301,19 +345,39 @@ export interface PullRequestResponse extends Node {
   author?: PullRequestUser;
   mergeCommit?: MergeCommit;
   baseRepository: {
+    id: string;
     name: string;
     owner: RepositoryOwner;
+    isPrivate: boolean;
   };
   headRepository: {
     name: string;
     owner: RepositoryOwner;
   };
-}
+};
 
-export type SinglePullRequestResponse = PullRequestResponse &
+type PullRequestConnectionsCount = {
+  commits: {
+    totalCount: number;
+  };
+  labels: {
+    totalCount: number;
+  };
+  reviews: {
+    totalCount: number;
+  };
+};
+
+export type PullRequestResponse = Node &
+  BasePullRequestFields &
+  PullRequestConnectionsCount;
+
+export type SinglePullRequestResponse = BasePullRequestFields &
   PullRequestConnections;
 
 export interface IssueResponse extends Node {
+  repoId: string;
+  repoName: string;
   id: string;
   activeLockReason: string;
   author: {
@@ -356,6 +420,7 @@ export interface CollaboratorResponse extends Node {
  * Response structure of a Repo Vulnerability Alert aka Dependabot.
  */
 export interface VulnerabilityAlertResponse extends Node {
+  repoId?: string;
   repository: {
     nameWithOwner: string;
   };
@@ -420,6 +485,7 @@ export interface VulnerabilityAlertResponse extends Node {
 }
 
 export interface BranchProtectionRuleResponse extends Node {
+  repoId: string;
   repoName: string;
   requiresLinearHistory: boolean;
   requiredApprovingReviewCount: number;
@@ -450,15 +516,39 @@ export interface BranchProtectionRuleResponse extends Node {
     };
   }>;
   bypassForcePushAllowances: {
-    teams: Array<Omit<Actor, 'login'>>;
-    apps: Array<Omit<Actor, 'login'>>;
-    users: Array<Omit<Actor, 'name'>>;
+    totalCount: number;
   };
   bypassPullRequestAllowances: {
-    teams: Array<Actor>;
-    apps: Array<Actor>;
-    users: Array<Actor>;
+    totalCount: number;
   };
-  pushAllowances: Array<Actor>;
-  reviewDismissalAllowances: Array<Actor>;
+  pushAllowances: {
+    totalCount: number;
+  };
+  reviewDismissalAllowances: {
+    totalCount: number;
+  };
+}
+
+export interface BranchProtectionRuleAllowancesResponse {
+  branchProtectionRuleId: string;
+  bypassForcePushAllowances: {
+    teams: Actor[];
+    apps: Actor[];
+    users: Actor[];
+  };
+  bypassPullRequestAllowances: {
+    teams: Actor[];
+    apps: Actor[];
+    users: Actor[];
+  };
+  pushAllowances: {
+    teams: Actor[];
+    apps: Actor[];
+    users: Actor[];
+  };
+  reviewDismissalAllowances: {
+    teams: Actor[];
+    apps: Actor[];
+    users: Actor[];
+  };
 }

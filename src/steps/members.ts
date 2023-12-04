@@ -55,7 +55,9 @@ export async function fetchMembers({
       toOrganizationMemberEntity(member, externalIdentifiers),
     )) as UserEntity;
 
-    memberByLoginMap.set(member.login, memberEntity._key);
+    if (member.login) {
+      memberByLoginMap.set(member.login, memberEntity._key);
+    }
 
     await jobState.addRelationship(
       createDirectRelationship({

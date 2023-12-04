@@ -6,7 +6,6 @@ import {
   IteratePagination,
   ProcessResponse,
 } from '../types';
-import { MAX_REQUESTS_LIMIT } from '../paginate';
 import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
@@ -18,6 +17,7 @@ interface QueryState extends BaseQueryState {
 type QueryParams = {
   login: string;
   repoName: string;
+  maxLimit: number;
 };
 
 const buildQuery: BuildQuery<QueryParams, QueryState> = (
@@ -53,7 +53,6 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     }),
     queryVariables: {
       ...queryParams,
-      maxLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.collaborators?.hasNextPage && {
         collaboratorCursor: queryState.collaborators.endCursor,
       }),
@@ -100,7 +99,7 @@ const processResponseData: ProcessResponse<
 const iterateCollaborators: IteratePagination<
   QueryParams,
   CollaboratorResponse
-> = async (queryParams, execute, iteratee) => {
+> = async (queryParams, execute, iteratee, logger) => {
   return paginate(
     queryParams,
     iteratee,
@@ -108,6 +107,8 @@ const iterateCollaborators: IteratePagination<
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.collaborators?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

@@ -15,15 +15,18 @@ interface QueryState extends BaseQueryState {
   members: CursorState;
 }
 
-const MAX_REQUESTS_LIMIT = 100;
+type QueryParams = {
+  login: string;
+  maxLimit: number;
+};
 
 /**
  * Builds query and query variables for Org Members.
  * @param login
  * @param queryState
  */
-const buildQuery: BuildQuery<string, QueryState> = (
-  login,
+const buildQuery: BuildQuery<QueryParams, QueryState> = (
+  queryParams,
   queryState,
 ): ExecutableQuery => {
   const query = `
@@ -53,8 +56,7 @@ const buildQuery: BuildQuery<string, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      login,
-      maxLimit: MAX_REQUESTS_LIMIT,
+      ...queryParams,
       ...(queryState?.members?.hasNextPage && {
         memberCursor: queryState.members.endCursor,
       }),
@@ -96,16 +98,18 @@ const processResponseData: ProcessResponse<
 };
 
 const iterateMembers: IteratePagination<
-  string,
+  QueryParams,
   OrgMemberQueryResponse
-> = async (login, execute, iteratee) => {
+> = async (queryParams, execute, iteratee, logger) => {
   return paginate(
-    login,
+    queryParams,
     iteratee,
     execute,
     buildQuery,
     processResponseData,
     (queryState) => !queryState?.members?.hasNextPage ?? true,
+    logger,
+    'maxLimit',
   );
 };
 

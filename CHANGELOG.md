@@ -1,3 +1,19 @@
+# v4.0.0 (Mon Dec 04 2023)
+
+#### 💥 Breaking Change
+
+- Release graphql improvements [#289](https://github.com/JupiterOne/graph-github/pull/289) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### 🐛 Bug Fix
+
+- Setup beta branch [#285](https://github.com/JupiterOne/graph-github/pull/285) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

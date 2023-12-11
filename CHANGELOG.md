@@ -1,3 +1,20 @@
+# v4.0.1 (Mon Dec 11 2023)
+
+#### 🐛 Bug Fix
+
+- INT-10071 - handle gateway timeout for repos step [#290](https://github.com/JupiterOne/graph-github/pull/290) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### ⚠️ Pushed to `main`
+
+- Fix x-cortex-service-groups where tier-4 was set incorrectly ([@jablonnc](https://github.com/jablonnc))
+
+#### Authors: 2
+
+- Noah Jablonski ([@jablonnc](https://github.com/jablonnc))
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.0.0 (Mon Dec 04 2023)
 
 #### 💥 Breaking Change

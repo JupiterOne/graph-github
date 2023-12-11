@@ -486,7 +486,7 @@ export class GitHubGraphQLClient {
 
     return this.collectRateLimitStatus(
       await OrgRepositoriesQuery.iterateRepositories(
-        { login, maxLimit: MAX_REQUESTS_LIMIT, ...connectionFilters },
+        { login, maxLimit: 50, ...connectionFilters },
         executor,
         iteratee,
         this.logger,

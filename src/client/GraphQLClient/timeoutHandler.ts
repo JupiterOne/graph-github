@@ -1,5 +1,7 @@
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 
+const GATEWAY_TIMEOUT = 504;
+
 export const buildTimeoutHandler = <P, T>({
   queryParams,
   maxLimitKey,
@@ -30,7 +32,10 @@ export const buildTimeoutHandler = <P, T>({
     try {
       response = await makeRequest();
     } catch (err) {
-      if (err.message?.includes('This may be the result of a timeout')) {
+      if (
+        err.message?.includes('This may be the result of a timeout') ||
+        err.status === GATEWAY_TIMEOUT
+      ) {
         const newMaxLimit = Math.max(Math.floor(maxLimit / 2), 1);
         if (newMaxLimit === maxLimit) {
           // prevent infinite loop: newMaxLimit is 1 and it already failed using 1

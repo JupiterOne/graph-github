@@ -2,23 +2,13 @@
 
 exports[`IssuesQuery #iterateIssues Pulling data out 1`] = `
 Object {
-  "assignees": Array [
-    Object {
-      "login": "spoultonV2",
-      "name": null,
-    },
-  ],
+  "assignees": Object {
+    "totalCount": 1,
+  },
   "id": "111",
-  "labels": Array [
-    Object {
-      "id": "LA_kwDOG5ypUc7mjrvd",
-      "name": "bug",
-    },
-    Object {
-      "id": "LA_kwDOG5ypUc7mjrvi",
-      "name": "feature",
-    },
-  ],
+  "labels": Object {
+    "totalCount": 2,
+  },
   "repoId": "R_kgDOI2pL-A",
   "repoName": "reimagined-barnacle",
   "title": "Need to add code part 1",
@@ -27,23 +17,13 @@ Object {
 
 exports[`IssuesQuery #iterateIssues Pulling data out 2`] = `
 Object {
-  "assignees": Array [
-    Object {
-      "login": "maxmin",
-      "name": null,
-    },
-  ],
+  "assignees": Object {
+    "totalCount": 1,
+  },
   "id": "2222",
-  "labels": Array [
-    Object {
-      "id": "LA_kwDOG5ypUc7mjrvd",
-      "name": "bug",
-    },
-    Object {
-      "id": "LA_kwDOG5ypUc7mjrvi",
-      "name": "critical",
-    },
-  ],
+  "labels": Object {
+    "totalCount": 2,
+  },
   "repoId": "R_kgDOI2pL-A",
   "repoName": "reimagined-barnacle",
   "title": "Need to add code part 2",
@@ -52,23 +32,13 @@ Object {
 
 exports[`IssuesQuery #iterateIssues Pulling data out 3`] = `
 Object {
-  "assignees": Array [
-    Object {
-      "login": "chris3",
-      "name": null,
-    },
-  ],
+  "assignees": Object {
+    "totalCount": 1,
+  },
   "id": "333",
-  "labels": Array [
-    Object {
-      "id": "LA_kwDOG5ypUc7mjrvd",
-      "name": "defect",
-    },
-    Object {
-      "id": "LA_kwDOG5ypUc7mjrvi",
-      "name": "easy",
-    },
-  ],
+  "labels": Object {
+    "totalCount": 2,
+  },
   "repoId": "R_kgDOI2pL-A",
   "repoName": "reimagined-barnacle",
   "title": "Need to add code part 3",
@@ -83,7 +53,6 @@ Object {
       $login: String!
       $since: DateTime!,
       $maxSearchLimit: Int!, 
-      $maxInnerLimit: Int!,
       $issuesCursor: String
     ) {
       repository(name: $repoName, owner: $login) {
@@ -127,19 +96,13 @@ Object {
     titleHTML
     updatedAt
     url
+    labels {
+      totalCount
+    }
+    assignees {
+      totalCount
+    }
   
-            assignees(first: $maxInnerLimit) {
-              nodes {
-                name
-                login
-              }
-            }
-            labels(first: $maxInnerLimit) {
-              nodes {
-                id
-                name
-              }
-            }
           }
           pageInfo {
             endCursor
@@ -158,7 +121,6 @@ Object {
     }",
   "queryVariables": Object {
     "login": "J1-Test",
-    "maxInnerLimit": 100,
     "maxSearchLimit": 100,
     "repoName": "reimagined-barnacle",
     "since": "2011-10-05T14:48:00.000Z",
@@ -174,7 +136,6 @@ Object {
       $login: String!
       $since: DateTime!,
       $maxSearchLimit: Int!, 
-      $maxInnerLimit: Int!,
       $issuesCursor: String
     ) {
       repository(name: $repoName, owner: $login) {
@@ -218,19 +179,13 @@ Object {
     titleHTML
     updatedAt
     url
+    labels {
+      totalCount
+    }
+    assignees {
+      totalCount
+    }
   
-            assignees(first: $maxInnerLimit) {
-              nodes {
-                name
-                login
-              }
-            }
-            labels(first: $maxInnerLimit) {
-              nodes {
-                id
-                name
-              }
-            }
           }
           pageInfo {
             endCursor
@@ -250,7 +205,6 @@ Object {
   "queryVariables": Object {
     "issuesCursor": "Y3Vyc29yOjE=",
     "login": "J1-Test",
-    "maxInnerLimit": 100,
     "maxSearchLimit": 100,
     "repoName": "reimagined-barnacle",
     "since": "2011-10-05T14:48:00.000Z",

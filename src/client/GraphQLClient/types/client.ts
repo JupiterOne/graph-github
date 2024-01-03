@@ -403,8 +403,24 @@ export interface IssueResponse extends Node {
   titleHTML: string;
   updatedAt: string;
   url: string;
-  assignees?: Actor[];
-  labels?: Label[];
+  assignees: {
+    totalCount: number;
+  };
+  labels: {
+    totalCount: number;
+  };
+}
+
+export interface IssueLabel {
+  issueId: string;
+  id: string;
+  name: string;
+}
+
+export interface IssueAssignee {
+  issueId: string;
+  name: string;
+  login: string;
 }
 
 export interface CollaboratorResponse extends Node {

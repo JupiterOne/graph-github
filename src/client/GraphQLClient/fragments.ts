@@ -336,5 +336,11 @@ export default {
     titleHTML
     updatedAt
     url
+    labels {
+      totalCount
+    }
+    assignees {
+      totalCount
+    }
   `,
 };

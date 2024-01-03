@@ -34,6 +34,8 @@ import {
   RepoConnectionFilters,
   TopicQueryResponse,
   BranchProtectionRuleAllowancesResponse,
+  IssueLabel,
+  IssueAssignee,
 } from './client/GraphQLClient';
 import {
   CodeScanningAlertQueryResponse,
@@ -1023,6 +1025,52 @@ export class APIClient {
         'Repo issues scope was not provided, skipping batched Issue ingestion.',
       );
     }
+  }
+
+  /**
+   * Fetch all labels from issues resource in the provider.
+   *
+   * @param {string[]} issueIds
+   * @param {ResourceIteratee<IssueLabel>} iteratee
+   */
+  public async iterateBatchedIssueLabels(
+    issueIds: string[],
+    iteratee: ResourceIteratee<IssueLabel>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedIssueLabels(
+      issueIds,
+      iteratee,
+    );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Issue Labels.',
+    );
+  }
+
+  /**
+   * Fetch all assignees from issues resource in the provider.
+   *
+   * @param {string[]} issueIds
+   * @param {ResourceIteratee<IssueAssignee>} iteratee
+   */
+  public async iterateBatchedIssueAssignees(
+    issueIds: string[],
+    iteratee: ResourceIteratee<IssueAssignee>,
+  ): Promise<void> {
+    if (!this.graphQLClient) {
+      await this.setupAccountClient();
+    }
+    const rateLimit = await this.graphQLClient.iterateBatchedIssueAssignees(
+      issueIds,
+      iteratee,
+    );
+    this.logger.debug(
+      { rateLimit },
+      'Rate limit consumed while batch fetching Issue Assignees.',
+    );
   }
 
   public async iterateRepoVulnAlerts(

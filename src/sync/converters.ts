@@ -40,6 +40,7 @@ import {
   BranchProtectionRuleResponse,
   CollaboratorResponse,
   Commit,
+  IssueLabel,
   IssueResponse,
   Label,
   OrgMemberQueryResponse,
@@ -570,9 +571,12 @@ export function toOrganizationCollaboratorEntity(
   return userEntity;
 }
 
-export function toIssueEntity(data: IssueResponse): IssueEntity {
+export function toIssueEntity(
+  data: IssueResponse,
+  issueLabels: IssueLabel[],
+): IssueEntity {
   const issueName = data.repoName + '/' + String(data.number); //format matches name of PRs
-  const labels = data.labels?.map((l) => l.name);
+  const labels = issueLabels.map((l) => l.name);
   const truncatedIssueBody = truncateEntityPropertyValue(data.body);
 
   const issueEntity: IssueEntity = {

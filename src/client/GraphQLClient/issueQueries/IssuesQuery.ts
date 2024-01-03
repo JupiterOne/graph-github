@@ -7,7 +7,7 @@ import {
   ProcessResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
-import paginate, { MAX_REQUESTS_LIMIT } from '../paginate';
+import paginate from '../paginate';
 import utils from '../utils';
 import fragments from '../fragments';
 
@@ -42,7 +42,6 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       $login: String!
       $since: DateTime!,
       $maxSearchLimit: Int!, 
-      $maxInnerLimit: Int!,
       $issuesCursor: String
     ) {
       repository(name: $repoName, owner: $login) {
@@ -51,18 +50,6 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
         issues(first: $maxSearchLimit, after: $issuesCursor, filterBy: { since: $since }) {
           nodes {
             ${fragments.issueFields}
-            assignees(first: $maxInnerLimit) {
-              nodes {
-                name
-                login
-              }
-            }
-            labels(first: $maxInnerLimit) {
-              nodes {
-                id
-                name
-              }
-            }
           }
           pageInfo {
             endCursor
@@ -83,7 +70,6 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       repoName: queryParams.repoName,
       since: queryParams.lastExecutionTime,
       maxSearchLimit: queryParams.maxLimit,
-      maxInnerLimit: MAX_REQUESTS_LIMIT,
       ...(queryState?.issues?.hasNextPage && {
         issuesCursor: queryState?.issues.endCursor,
       }),
@@ -117,8 +103,8 @@ const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
       ...issue,
       repoId: responseData.repository?.id,
       repoName: responseData.repository?.name,
-      assignees: issue.assignees?.nodes ?? [],
-      labels: issue.labels?.nodes ?? [],
+      assignees: { totalCount: issue.assignees?.totalCount ?? 0 },
+      labels: { totalCount: issue.labels?.totalCount ?? 0 },
     };
 
     await iteratee(resource);

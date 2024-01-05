@@ -1,3 +1,20 @@
+# v4.0.2 (Fri Jan 05 2024)
+
+#### 🐛 Bug Fix
+
+- INT-10119 - split issues query for labels and assignees [#291](https://github.com/JupiterOne/graph-github/pull/291) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### ⚠️ Pushed to `main`
+
+- Apply remove-codeql with multi-gitter [ci skip] ([@electricgull](https://github.com/electricgull))
+
+#### Authors: 2
+
+- Cameron Griffin ([@electricgull](https://github.com/electricgull))
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.0.1 (Mon Dec 11 2023)
 
 #### 🐛 Bug Fix

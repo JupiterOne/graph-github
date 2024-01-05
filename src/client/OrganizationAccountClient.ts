@@ -38,6 +38,8 @@ import {
   RepoConnectionFilters,
   TopicQueryResponse,
   BranchProtectionRuleAllowancesResponse,
+  IssueLabel,
+  IssueAssignee,
 } from './GraphQLClient/types';
 
 export default class OrganizationAccountClient {
@@ -495,6 +497,38 @@ export default class OrganizationAccountClient {
       lastExecutionTime,
       iteratee,
     );
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over issue label entities.
+   * @param {string[]} issueIds
+   * @param {ResourceIteratee<IssueLabel>} iteratee
+   */
+  async iterateBatchedIssueLabels(
+    issueIds: string[],
+    iteratee: ResourceIteratee<IssueLabel>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting issues.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateBatchedIssueLabels(issueIds, iteratee);
+  }
+
+  /**
+   * Calls the GraphQL client to iterate over issue assignee entities.
+   * @param {string[]} issueIds
+   * @param {ResourceIteratee<IssueAssignee>} iteratee
+   */
+  async iterateBatchedIssueAssignees(
+    issueIds: string[],
+    iteratee: ResourceIteratee<IssueAssignee>,
+  ): Promise<RateLimitStepSummary> {
+    if (!this.authorizedForPullRequests) {
+      this.logger.info('Account not authorized for ingesting issues.');
+      return { totalCost: 0 };
+    }
+    return await this.v4.iterateBatchedIssueAssignees(issueIds, iteratee);
   }
 
   async iterateRepoVulnAlerts(

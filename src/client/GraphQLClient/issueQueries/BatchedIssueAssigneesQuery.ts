@@ -1,7 +1,7 @@
 import {
   BaseQueryState,
   BuildQuery,
-  IssueResponse,
+  IssueAssignee,
   ProcessResponse,
 } from '../types';
 import { ExecutableQuery } from '../CreateQueryExecutor';
@@ -12,12 +12,11 @@ import fragments from '../fragments';
 type QueryState = BaseQueryState;
 
 type QueryParams = {
-  repoIds: string[];
-  lastExecutionTime: string;
+  issueIds: string[];
 };
 
 /**
- * Builds query for searching for applicable Issues.
+ * Builds query for searching for applicable Labels.
  * Pagination is handled at the root level but not
  * currently for inner resources.
  *
@@ -29,18 +28,17 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   queryState,
 ): ExecutableQuery => {
   const query = `
-    query(
-      $repoIds: [ID!]!,
-      $since: DateTime!,
-      $maxSearchLimit: Int!, 
+    query (
+      $issueIds: [ID!]!,
+      $maxLimit: Int!
     ) {
-      nodes(ids: $repoIds) {
-        ...on Repository {
+      nodes(ids: $issueIds) {
+        ...on Issue {
           id
-          name
-          issues(first: $maxSearchLimit, filterBy: { since: $since }) {
+          assignees(first: $maxLimit) {
             nodes {
-              ${fragments.issueFields}
+              name
+              login
             }
           }
         }
@@ -54,9 +52,8 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      repoIds: queryParams.repoIds,
-      since: queryParams.lastExecutionTime,
-      maxSearchLimit: MAX_REQUESTS_LIMIT,
+      issueIds: queryParams.issueIds,
+      maxLimit: MAX_REQUESTS_LIMIT,
     },
   };
 };
@@ -67,33 +64,28 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
  * @param responseData
  * @param iteratee
  */
-const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
+const processResponseData: ProcessResponse<IssueAssignee, QueryState> = async (
   responseData,
   iteratee,
 ) => {
   if (!responseData) {
     throw new Error('responseData param is required');
   }
+  const issues = responseData.nodes ?? [];
 
   const rateLimit = responseData.rateLimit;
-  const repositories = responseData.nodes ?? [];
+  for (const issue of issues) {
+    const assigneesNodes = issue.assignees?.nodes ?? [];
 
-  for (const repository of repositories) {
-    const issues = repository?.issues?.nodes ?? [];
-    for (const issue of issues) {
-      if (!utils.hasProperties(issue)) {
+    for (const assigneeNode of assigneesNodes) {
+      if (!utils.hasProperties(assigneeNode)) {
         continue;
       }
 
-      const resource = {
-        ...issue,
-        repoId: repository.id,
-        repoName: repository.name,
-        assignees: { totalCount: issue.assignees?.totalCount ?? 0 },
-        labels: { totalCount: issue.labels?.totalCount ?? 0 },
-      };
-
-      await iteratee(resource);
+      await iteratee({
+        issueId: issue.id,
+        ...assigneeNode,
+      });
     }
   }
 
@@ -103,13 +95,17 @@ const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
 };
 
 /**
- * Iterate issues, with pagination, up to 500.
+ * Iterate issue assignees
  * Utilizes queryParams.lastExecutionTime to query the minimal amount.
  * @param queryParams
  * @param iteratee
  * @param execute
  */
-const iterateIssues = async (queryParams: QueryParams, execute, iteratee) => {
+const iterateIssueAssignees = async (
+  queryParams: QueryParams,
+  execute,
+  iteratee,
+) => {
   let queryState: QueryState = {};
   const executable = buildQuery(queryParams, queryState);
   const response = await execute(executable);
@@ -125,4 +121,4 @@ const iterateIssues = async (queryParams: QueryParams, execute, iteratee) => {
   };
 };
 
-export default { iterateIssues };
+export default { iterateIssueAssignees };

@@ -843,32 +843,28 @@ describe('toIssue', () => {
     bodyUrl:
       'https://github.com/Kei-Institute/Test-repo/issues/3#issue-1005885417',
     url: 'https://github.com/Kei-Institute/Test-repo/issues/3',
-    assignees: [
-      {
-        name: 'Erich Smith',
-        login: 'erichs',
-        issues: 'I_kwDOFiNpzs479Jfp',
-      },
-      {
-        name: 'Kevin Casey',
-        login: 'kevincasey1222',
-        issues: 'I_kwDOFiNpzs479Jfp',
-      },
-    ],
-    labels: [
-      {
-        name: 'bug',
-        someotherproperty: 'stuff',
-      },
-      {
-        name: 'enhancement',
-        someotherproperty: 'stuff',
-      },
-    ],
+    assignees: {
+      totalCount: 2,
+    },
+    labels: {
+      totalCount: 2,
+    },
   };
 
   test('properties transferred', () => {
-    const issue = toIssueEntity(apiResponse as any);
+    const labels = [
+      {
+        issueId: apiResponse.id,
+        id: 'test-id-1',
+        name: 'bug',
+      },
+      {
+        issueId: apiResponse.id,
+        id: 'test-id-2',
+        name: 'enhancement',
+      },
+    ];
+    const issue = toIssueEntity(apiResponse as any, labels);
     expect(issue).toEqual({
       _type: 'github_issue',
       _key: 'I_kwDOFiNpzs479Jfp',

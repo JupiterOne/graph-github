@@ -1,5 +1,6 @@
 import {
   Entity,
+  IntegrationLogger,
   IntegrationMissingKeyError,
   IntegrationStep,
   IntegrationStepExecutionContext,
@@ -8,7 +9,7 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
+import { APIClient, getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import {
   toIssueEntity,
@@ -32,7 +33,81 @@ import {
   GITHUB_REPO_TAGS_ARRAY,
 } from '../constants';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
-import { IssueResponse } from '../client/GraphQLClient';
+import {
+  IssueAssignee,
+  IssueLabel,
+  IssueResponse,
+} from '../client/GraphQLClient';
+
+const ISSUES_PROCESSING_BATCH_SIZE = 500;
+
+const fetchIssueLabels = async ({
+  apiClient,
+  labelsTotalByIssue,
+  logger,
+}: {
+  apiClient: APIClient;
+  labelsTotalByIssue: Map<string, number>;
+  logger: IntegrationLogger;
+}) => {
+  const labels = new Map<string, IssueLabel[]>();
+
+  const iteratee = (label: IssueLabel) => {
+    if (!labels.has(label.issueId)) {
+      labels.set(label.issueId, []);
+    }
+    const issueLabels = labels.get(label.issueId) ?? [];
+    issueLabels.push(label);
+  };
+
+  await withBatching({
+    totalConnectionsById: labelsTotalByIssue,
+    threshold: 100,
+    batchCb: async (issueIds) => {
+      await apiClient.iterateBatchedIssueLabels(issueIds, iteratee);
+    },
+    singleCb: async (issueId) => {
+      await apiClient.iterateBatchedIssueLabels([issueId], iteratee);
+    },
+    logger,
+  });
+
+  return labels;
+};
+
+const fetchIssueAssignees = async ({
+  apiClient,
+  assigneesTotalByIssue,
+  logger,
+}: {
+  apiClient: APIClient;
+  assigneesTotalByIssue: Map<string, number>;
+  logger: IntegrationLogger;
+}) => {
+  const assignees = new Map<string, IssueAssignee[]>();
+
+  const iteratee = (assignee: IssueAssignee) => {
+    if (!assignees.has(assignee.issueId)) {
+      assignees.set(assignee.issueId, []);
+    }
+    const issueAssignees = assignees.get(assignee.issueId) ?? [];
+    issueAssignees.push(assignee);
+  };
+
+  await withBatching({
+    totalConnectionsById: assigneesTotalByIssue,
+    threshold: 100,
+    batchCb: async (issueIds) => {
+      await apiClient.iterateBatchedIssueAssignees(issueIds, iteratee);
+    },
+    singleCb: async (issueId) => {
+      await apiClient.iterateBatchedIssueAssignees([issueId], iteratee);
+    },
+    logger,
+  });
+
+  return assignees;
+};
 
 export async function fetchIssues(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
@@ -90,7 +165,51 @@ export async function fetchIssues(
     return;
   }
 
-  const iteratee = buildIteratee({ jobState, usersByLoginMap });
+  const issuesMap = new Map<string, IssueResponse>();
+  const labelsTotalByIssue = new Map<string, number>();
+  const assigneesTotalByIssue = new Map<string, number>();
+
+  const processRawIssues = async () => {
+    const labelsByIssue = await fetchIssueLabels({
+      apiClient,
+      labelsTotalByIssue,
+      logger,
+    });
+    const assigneesByIssue = await fetchIssueAssignees({
+      apiClient,
+      assigneesTotalByIssue,
+      logger,
+    });
+
+    await Promise.all(
+      Array.from(issuesMap.values()).map((issue) => {
+        return processIssue({
+          jobState,
+          issue,
+          labels: labelsByIssue.get(issue.id) ?? [],
+          assignees: assigneesByIssue.get(issue.id) ?? [],
+          usersByLoginMap,
+        });
+      }),
+    );
+  };
+
+  const iteratee = async (issue: IssueResponse) => {
+    issuesMap.set(issue.id, issue);
+    if (issue.labels.totalCount) {
+      labelsTotalByIssue.set(issue.id, issue.labels.totalCount);
+    }
+    if (issue.assignees.totalCount) {
+      assigneesTotalByIssue.set(issue.id, issue.assignees.totalCount);
+    }
+
+    if (issuesMap.size >= ISSUES_PROCESSING_BATCH_SIZE) {
+      await processRawIssues();
+      issuesMap.clear();
+      labelsTotalByIssue.clear();
+      assigneesTotalByIssue.clear();
+    }
+  };
 
   await withBatching({
     totalConnectionsById: issuesTotalByRepo,
@@ -123,87 +242,97 @@ export async function fetchIssues(
     logger,
   });
 
+  // flush, process any remaining issues
+  if (issuesMap.size) {
+    await processRawIssues();
+    issuesMap.clear();
+    labelsTotalByIssue.clear();
+    assigneesTotalByIssue.clear();
+  }
+  // clear memory
   await jobState.deleteData(ISSUES_TOTAL_BY_REPO);
 }
 
-function buildIteratee({
+const processIssue = async ({
+  issue,
+  assignees,
+  labels,
   jobState,
   usersByLoginMap,
 }: {
+  issue: IssueResponse;
+  assignees: IssueAssignee[];
+  labels: IssueLabel[];
   jobState: JobState;
   usersByLoginMap?: IdEntityMap<Entity['_key']>;
-}) {
-  return async (issue: IssueResponse) => {
-    const issueEntity = (await jobState.addEntity(
-      toIssueEntity(issue),
-    )) as IssueEntity;
+}) => {
+  const issueEntity = (await jobState.addEntity(
+    toIssueEntity(issue, labels),
+  )) as IssueEntity;
 
-    if (jobState.hasKey(issue.repoId)) {
+  if (jobState.hasKey(issue.repoId)) {
+    await jobState.addRelationship(
+      createDirectRelationship({
+        _class: RelationshipClass.HAS,
+        fromKey: issue.repoId,
+        fromType: GithubEntities.GITHUB_REPO._type,
+        toKey: issueEntity._key,
+        toType: GithubEntities.GITHUB_ISSUE._type,
+      }),
+    );
+  }
+
+  if (issue.author) {
+    if (usersByLoginMap?.has(issue.author.login)) {
       await jobState.addRelationship(
         createDirectRelationship({
-          _class: RelationshipClass.HAS,
-          fromKey: issue.repoId,
-          fromType: GithubEntities.GITHUB_REPO._type,
-          toKey: issueEntity._key,
+          _class: RelationshipClass.CREATED,
+          fromType: GithubEntities.GITHUB_MEMBER._type,
+          fromKey: usersByLoginMap.get(issue.author.login) as string,
           toType: GithubEntities.GITHUB_ISSUE._type,
+          toKey: issueEntity._key,
         }),
       );
+    } else {
+      //we don't recognize this author - make a mapped relationship
+      await jobState.addRelationship(
+        createUnknownUserIssueRelationship(
+          issue.author.login,
+          Relationships.USER_CREATED_ISSUE._type,
+          RelationshipClass.CREATED,
+          issueEntity._key,
+        ),
+      );
     }
+  }
 
-    if (issue.author) {
-      if (usersByLoginMap?.has(issue.author.login)) {
-        await jobState.addRelationship(
-          createDirectRelationship({
-            _class: RelationshipClass.CREATED,
-            fromType: GithubEntities.GITHUB_MEMBER._type,
-            fromKey: usersByLoginMap.get(issue.author.login) as string,
-            toType: GithubEntities.GITHUB_ISSUE._type,
-            toKey: issueEntity._key,
-          }),
-        );
-      } else {
-        //we don't recognize this author - make a mapped relationship
-        await jobState.addRelationship(
-          createUnknownUserIssueRelationship(
-            issue.author.login,
-            Relationships.USER_CREATED_ISSUE._type,
-            RelationshipClass.CREATED,
-            issueEntity._key,
-          ),
-        );
-      }
+  for (const assignee of assignees) {
+    if (!assignee.login) {
+      continue;
     }
-
-    if (issue.assignees) {
-      for (const assignee of issue.assignees) {
-        if (!assignee.login) {
-          continue;
-        }
-        if (usersByLoginMap?.has(assignee.login)) {
-          await jobState.addRelationship(
-            createDirectRelationship({
-              _class: RelationshipClass.ASSIGNED,
-              fromType: GithubEntities.GITHUB_MEMBER._type,
-              fromKey: usersByLoginMap.get(assignee.login) as string,
-              toType: GithubEntities.GITHUB_ISSUE._type,
-              toKey: issueEntity._key,
-            }),
-          );
-        } else {
-          //we don't recognize this assignee - make a mapped relationship
-          await jobState.addRelationship(
-            createUnknownUserIssueRelationship(
-              assignee.login,
-              Relationships.USER_ASSIGNED_ISSUE._type,
-              RelationshipClass.ASSIGNED,
-              issueEntity._key,
-            ),
-          );
-        }
-      }
+    if (usersByLoginMap?.has(assignee.login)) {
+      await jobState.addRelationship(
+        createDirectRelationship({
+          _class: RelationshipClass.ASSIGNED,
+          fromType: GithubEntities.GITHUB_MEMBER._type,
+          fromKey: usersByLoginMap.get(assignee.login) as string,
+          toType: GithubEntities.GITHUB_ISSUE._type,
+          toKey: issueEntity._key,
+        }),
+      );
+    } else {
+      //we don't recognize this assignee - make a mapped relationship
+      await jobState.addRelationship(
+        createUnknownUserIssueRelationship(
+          assignee.login,
+          Relationships.USER_ASSIGNED_ISSUE._type,
+          RelationshipClass.ASSIGNED,
+          issueEntity._key,
+        ),
+      );
     }
-  };
-}
+  }
+};
 
 export const issueSteps: IntegrationStep<IntegrationConfig>[] = [
   {

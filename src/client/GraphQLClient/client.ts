@@ -34,6 +34,8 @@ import {
   RepoConnectionFilters,
   TopicQueryResponse,
   BranchProtectionRuleAllowancesResponse,
+  IssueLabel,
+  IssueAssignee,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
@@ -76,6 +78,8 @@ import TopicsQuery from './topicQueries/TopicsQuery';
 import BatchedTopicsQuery from './topicQueries/BatchedTopicsQuery';
 import BatchedPullRequestsQuery from './pullRequestQueries/BatchedPullRequestsQuery';
 import BatchedBranchProtectionRulesAllowancesQuery from './branchProtectionRulesQueries/BatchedBranchProtectionRulesAllowancesQuery';
+import BatchedIssueLabelsQuery from './issueQueries/BatchedIssueLabelsQuery';
+import BatchedIssueAssigneesQuery from './issueQueries/BatchedIssueAssigneesQuery';
 
 const FIVE_MINUTES_IN_MILLIS = 300_000;
 
@@ -466,6 +470,50 @@ export class GitHubGraphQLClient {
     return this.collectRateLimitStatus(
       await BatchedIssuesQuery.iterateIssues(
         { repoIds, lastExecutionTime },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over issue labels for the given issue ids.
+   * @param {string[]} issueIds
+   * @param {ResourceIteratee<IssueLabel>} iteratee
+   */
+  public async iterateBatchedIssueLabels(
+    issueIds: string[],
+    iteratee: ResourceIteratee<IssueLabel>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedIssueLabelsQuery.iterateIssueLabels(
+        {
+          issueIds,
+        },
+        executor,
+        iteratee,
+      ),
+    );
+  }
+
+  /**
+   * Iterates over issue assignees for the given issue ids.
+   * @param {string[]} issueIds
+   * @param {ResourceIteratee<IssueAssignee>} iteratee
+   */
+  public async iterateBatchedIssueAssignees(
+    issueIds: string[],
+    iteratee: ResourceIteratee<IssueAssignee>,
+  ): Promise<RateLimitStepSummary> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    return this.collectRateLimitStatus(
+      await BatchedIssueAssigneesQuery.iterateIssueAssignees(
+        {
+          issueIds,
+        },
         executor,
         iteratee,
       ),

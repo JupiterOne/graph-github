@@ -33,17 +33,27 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     query ($login: String!, $maxLimit: Int!, $memberCursor: String) {
       organization(login: $login) {
         samlIdentityProvider {
-          ssoUrl
           externalIdentities(first: $maxLimit, after: $memberCursor) {
-            edges {
-              node {
-                guid
-                samlIdentity {
-                  nameId
+            nodes {
+              samlIdentity {
+                attributes {
+                  metadata
+                  name
+                  value
                 }
-                user {
-                  login
+                emails {
+                  primary
+                  type
+                  value
                 }
+                familyName
+                givenName
+                groups
+                nameId
+                username
+              }
+              user {
+                login
               }
             }
             pageInfo {
@@ -80,26 +90,23 @@ const processResponseData: ProcessResponse<
   QueryState
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
-  const identityEdges =
+  const identityNodes =
     responseData.organization?.samlIdentityProvider?.externalIdentities
-      ?.edges ?? [];
+      ?.nodes ?? [];
 
-  for (const edge of identityEdges) {
-    if (!utils.hasProperties(edge?.node)) {
+  for (const node of identityNodes) {
+    if (!utils.hasProperties(node)) {
       continue;
     }
 
-    const member = {
-      ...edge.node,
-      organization: responseData.organization?.id,
-    };
-
-    await iteratee(member);
+    await iteratee(node);
   }
 
   return {
     rateLimit,
-    members: responseData.organization?.externalIdentities?.pageInfo,
+    members:
+      responseData.organization?.samlIdentityProvider?.externalIdentities
+        ?.pageInfo,
   };
 };
 

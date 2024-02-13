@@ -100,10 +100,23 @@ export interface OrgMemberQueryResponse extends Node, Actor {
   organization: string; // the id of the org
 }
 
-export interface OrgExternalIdentifierQueryResponse extends Node, Actor {
-  guid: string;
+export interface OrgExternalIdentifierQueryResponse {
   samlIdentity: {
-    nameId: string;
+    attributes: {
+      metadata?: string;
+      name: string;
+      value: string;
+    }[];
+    emails?: {
+      primary?: boolean;
+      type?: string;
+      value: string;
+    }[];
+    familyName?: string;
+    givenName?: string;
+    groups?: string[];
+    nameId?: string;
+    username?: string;
   };
   user: {
     login: string;

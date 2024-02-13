@@ -12,7 +12,10 @@ import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toOrganizationMemberEntity } from '../sync/converters';
 import { AccountEntity, UserEntity, IdEntityMap } from '../types';
-import { OrgMemberRole } from '../client/GraphQLClient';
+import {
+  OrgExternalIdentifierQueryResponse,
+  OrgMemberRole,
+} from '../client/GraphQLClient';
 import {
   GithubEntities,
   GITHUB_MEMBER_BY_LOGIN_MAP,
@@ -37,13 +40,15 @@ export async function fetchMembers({
     );
   }
 
-  const externalIdentifiers: { [userId: string]: string } = {};
+  const externalIdentifiersMap = new Map<
+    string,
+    OrgExternalIdentifierQueryResponse
+  >();
 
   await apiClient.iterateOrgExternalIdentifiers((identifier) => {
     if (identifier?.user?.login) {
       // Catch instances where this feature isn't enabled
-      externalIdentifiers[identifier.user.login] =
-        identifier.samlIdentity.nameId;
+      externalIdentifiersMap.set(identifier.user.login, identifier);
     }
   });
 
@@ -52,7 +57,7 @@ export async function fetchMembers({
 
   await apiClient.iterateOrgMembers(async (member) => {
     const memberEntity = (await jobState.addEntity(
-      toOrganizationMemberEntity(member, externalIdentifiers),
+      toOrganizationMemberEntity(member, externalIdentifiersMap),
     )) as UserEntity;
 
     if (member.login) {

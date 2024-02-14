@@ -8,7 +8,7 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { getOrCreateApiClient } from '../client';
-import { IntegrationConfig } from '../config';
+import { ExecutionConfig, IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toOrganizationMemberEntity } from '../sync/converters';
 import { AccountEntity, UserEntity, IdEntityMap } from '../types';
@@ -27,9 +27,11 @@ export async function fetchMembers({
   instance,
   logger,
   jobState,
-}: IntegrationStepExecutionContext<IntegrationConfig>) {
+  executionConfig,
+}: IntegrationStepExecutionContext<IntegrationConfig, ExecutionConfig>) {
   const config = instance.config;
   const apiClient = getOrCreateApiClient(config, logger);
+  const { logIdentityMetrics } = executionConfig;
 
   const accountEntity = (await jobState.getData<AccountEntity>(
     DATA_ACCOUNT_ENTITY,
@@ -45,19 +47,38 @@ export async function fetchMembers({
     OrgExternalIdentifierQueryResponse
   >();
 
+  const identityMetrics = {
+    totalMembers: 0,
+    totalIdentities: 0,
+    unclaimed: 0,
+    samlMatches: 0,
+  };
   await apiClient.iterateOrgExternalIdentifiers((identifier) => {
-    if (identifier?.user?.login) {
-      // Catch instances where this feature isn't enabled
-      externalIdentifiersMap.set(identifier.user.login, identifier);
+    identityMetrics.totalIdentities++;
+    if (!identifier?.user) {
+      // This identity has not been claimed by an organization member.
+      identityMetrics.unclaimed++;
+      return;
     }
+    externalIdentifiersMap.set(identifier.user.login, identifier);
   });
 
   //for use later in other steps
   const memberByLoginMap: IdEntityMap<Entity['_key']> = new Map();
 
   await apiClient.iterateOrgMembers(async (member) => {
+    identityMetrics.totalMembers++;
+    const externalIdentity = externalIdentifiersMap.get(member.login);
+    const samlEmail = externalIdentity?.samlIdentity?.nameId;
+    if (samlEmail) {
+      identityMetrics.samlMatches++;
+    }
+    const memberRawData = {
+      ...member,
+      externalIdentity,
+    };
     const memberEntity = (await jobState.addEntity(
-      toOrganizationMemberEntity(member, externalIdentifiersMap),
+      toOrganizationMemberEntity(memberRawData, samlEmail),
     )) as UserEntity;
 
     if (member.login) {
@@ -82,6 +103,10 @@ export async function fetchMembers({
       );
     }
   });
+
+  if (logIdentityMetrics) {
+    logger.info({ identityMetrics }, 'Identity metrics.');
+  }
 
   await jobState.setData(GITHUB_MEMBER_BY_LOGIN_MAP, memberByLoginMap);
 }

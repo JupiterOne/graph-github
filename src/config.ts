@@ -108,6 +108,10 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   dependabotAlertSeverities: string[];
 }
 
+export interface ExecutionConfig {
+  logIdentityMetrics?: boolean;
+}
+
 export type Scopes = {
   codeScanningAlerts: boolean;
   orgAdmin: boolean;

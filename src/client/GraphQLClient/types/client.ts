@@ -84,7 +84,9 @@ export interface OrgQueryResponse extends Node, Actor {
  * Organization GraphQL Fragment Types
  */
 
-export interface OrgMemberQueryResponse extends Node, Actor {
+export interface OrgMemberQueryResponse extends Node {
+  name?: string;
+  login: string;
   hasTwoFactorEnabled: boolean;
   role: OrgMemberRole;
   isSiteAdmin: boolean;
@@ -98,6 +100,10 @@ export interface OrgMemberQueryResponse extends Node, Actor {
   url: string;
   websiteUrl: string;
   organization: string; // the id of the org
+}
+
+export interface MemberRawData extends OrgMemberQueryResponse {
+  externalIdentity?: OrgExternalIdentifierQueryResponse;
 }
 
 export interface OrgExternalIdentifierQueryResponse {

@@ -1,3 +1,15 @@
+# v4.0.3 (Tue Feb 13 2024)
+
+#### 🐛 Bug Fix
+
+- fix pagination for external identities query [#292](https://github.com/JupiterOne/graph-github/pull/292) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.0.2 (Fri Jan 05 2024)
 
 #### 🐛 Bug Fix

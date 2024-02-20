@@ -3,13 +3,8 @@ import {
   GraphqlResponseError,
 } from '@octokit/graphql';
 
-import {
-  IntegrationLogger,
-  IntegrationProviderAuthenticationError,
-  parseTimePropertyValue,
-} from '@jupiterone/integration-sdk-core';
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import { retry } from '@lifeomic/attempt';
-import { Octokit } from '@octokit/rest';
 
 import { ResourceIteratee } from '../../client';
 
@@ -80,8 +75,25 @@ import BatchedPullRequestsQuery from './pullRequestQueries/BatchedPullRequestsQu
 import BatchedBranchProtectionRulesAllowancesQuery from './branchProtectionRulesQueries/BatchedBranchProtectionRulesAllowancesQuery';
 import BatchedIssueLabelsQuery from './issueQueries/BatchedIssueLabelsQuery';
 import BatchedIssueAssigneesQuery from './issueQueries/BatchedIssueAssigneesQuery';
+import { IntegrationConfig } from '../../config';
+import { createTokenAuth } from '@octokit/auth-token';
+import { createAppAuth } from '@octokit/auth-app';
 
-const FIVE_MINUTES_IN_MILLIS = 300_000;
+function getAuthStrategy(config: IntegrationConfig) {
+  let auth:
+    | ReturnType<typeof createAppAuth>
+    | ReturnType<typeof createTokenAuth>;
+  if (config.selectedAuthType === 'githubEnterpriseToken') {
+    auth = createTokenAuth(config.enterpriseToken);
+  } else {
+    auth = createAppAuth({
+      appId: config.githubAppId,
+      privateKey: config.githubAppPrivateKey,
+      installationId: config.installationId,
+    });
+  }
+  return auth;
+}
 
 export class GitHubGraphQLClient {
   private readonly graphqlUrl: string;
@@ -89,11 +101,8 @@ export class GitHubGraphQLClient {
   /**
    * Documentation can be found here: https://github.com/octokit/graphql.js
    */
-  private graph: graphql;
+  private graphqlWithAuth: graphql;
 
-  private readonly logger: IntegrationLogger;
-  private authClient: Octokit;
-  private tokenExpires: number;
   private rateLimitStatus: {
     limit: number;
     remaining: number;
@@ -101,23 +110,19 @@ export class GitHubGraphQLClient {
   };
 
   constructor(
-    graphqlUrl: string,
-    token: string,
-    tokenExpires: number,
-    logger: IntegrationLogger,
-    authClient: Octokit,
+    private readonly config: IntegrationConfig,
+    private readonly logger: IntegrationLogger,
   ) {
-    this.graphqlUrl = graphqlUrl;
-    this.graph = octokitGraphQl.defaults({
+    this.graphqlUrl = this.config.githubApiBaseUrl.includes('api.github.com')
+      ? this.config.githubApiBaseUrl
+      : `${this.config.githubApiBaseUrl}/api`;
+
+    this.graphqlWithAuth = octokitGraphQl.defaults({
       baseUrl: this.graphqlUrl,
-      headers: {
-        'User-Agent': 'jupiterone-graph-github',
-        Authorization: `token ${token}`,
+      request: {
+        hook: getAuthStrategy(this.config).hook,
       },
     });
-    this.tokenExpires = tokenExpires;
-    this.logger = logger;
-    this.authClient = authClient;
   }
 
   private collectRateLimitStatus(results: RateLimitStepSummary) {
@@ -137,38 +142,6 @@ export class GitHubGraphQLClient {
   }
 
   /**
-   * Refreshes the token and reinitialize the graphql client.
-   * @private
-   */
-  private async refreshToken() {
-    try {
-      const { token, expiresAt } = (await this.authClient.auth({
-        type: 'installation',
-        refresh: true, //required or else client will return the previous token from cache
-      })) as {
-        token: string;
-        expiresAt: string;
-      };
-      this.graph = octokitGraphQl.defaults({
-        baseUrl: this.graphqlUrl,
-        headers: {
-          'User-Agent': 'jupiterone-graph-github',
-          Authorization: `token ${token}`,
-        },
-      });
-      this.tokenExpires = parseTimePropertyValue(expiresAt) || 0;
-    } catch (err) {
-      this.logger.error(err);
-      throw new IntegrationProviderAuthenticationError({
-        cause: err,
-        endpoint: err.response?.url,
-        status: err.status,
-        statusText: err.response?.data?.message,
-      });
-    }
-  }
-
-  /**
    * Performs GraphQl request.
    * Handles:
    *    - token management (refreshes 5 minutes before expiring)
@@ -180,10 +153,6 @@ export class GitHubGraphQLClient {
     queryString: string,
     queryVariables: Record<string, unknown>,
   ) {
-    if (this.tokenExpires - FIVE_MINUTES_IN_MILLIS < Date.now()) {
-      await this.refreshToken();
-    }
-
     return await this.retryGraphQL(queryString, queryVariables);
   }
 
@@ -936,7 +905,7 @@ export class GitHubGraphQLClient {
           { queryString, queryVariables, timeoutRetryAttempt },
           'Attempting GraphQL request',
         );
-        return await this.graph(queryString, queryVariables);
+        return await this.graphqlWithAuth(queryString, queryVariables);
       } catch (error) {
         logger.debug(
           { queryString, queryVariables, timeoutRetryAttempt, error },
@@ -1006,7 +975,15 @@ export class GitHubGraphQLClient {
             error,
             logger,
             attemptContext,
-            () => this.refreshToken(),
+            () => {
+              // Resets auth cache and it will fetch a new token on next request
+              this.graphqlWithAuth = octokitGraphQl.defaults({
+                baseUrl: this.graphqlUrl,
+                request: {
+                  hook: getAuthStrategy(this.config).hook,
+                },
+              });
+            },
           );
           if (delayMs) {
             retryDelay = delayMs;

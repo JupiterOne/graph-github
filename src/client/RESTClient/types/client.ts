@@ -153,23 +153,34 @@ export interface SimpleUser {
 }
 
 export interface OrgAppQueryResponse {
-  id: string; //the installation id
-  respository_selection: string;
+  /**
+   * The ID of the installation.
+   */
+  id: number;
+  /**
+   * Describe whether all repositories have been selected or there's a selection involved
+   */
+  repository_selection: 'all' | 'selected';
+  // access_tokens_url: string;
+  // repositories_url: string;
   html_url: string;
   app_id: number;
-  app_slug: string; //a name for the app
+  /**
+   * The ID of the user or organization this token is being scoped to.
+   */
   target_id: number;
-  target_type: string; // typically "Organization"
+  target_type: string;
   permissions: TokenPermissions;
+  events: string[];
   created_at: string;
   updated_at: string;
-  events: string[];
-  repository_selection: string; // 'all' || 'selected'  It doesn't actually list which are selected.
-  single_file_name: string;
-  has_multiple_single_files: boolean;
-  single_file_paths: string[];
-  suspended_by: string;
-  suspended_at: string;
+  single_file_name: string | null;
+  has_multiple_single_files?: boolean;
+  single_file_paths?: string[];
+  app_slug: string;
+  suspended_by: null | SimpleUser;
+  suspended_at: string | null;
+  // contact_email?: string | null;
 }
 
 export interface SecretQueryResponse {
@@ -186,27 +197,68 @@ export interface SecretQueryResponse {
 }
 
 export interface RepoEnvironmentQueryResponse {
-  id: string;
+  id: number;
   node_id: string;
   name: string;
   url: string;
   html_url: string;
   created_at: string;
   updated_at: string;
-  protection_rules: ProtectionRule[];
-  deployment_branch_policy: {
-    //sometimes null object
+  protection_rules?: ProtectionRule[];
+  deployment_branch_policy?: {
     protected_branches: boolean;
     custom_branch_policies: boolean;
-  };
+  } | null;
   //the following property is set by the integration code from another API call, not received from the Environments REST API
   envSecrets?: SecretQueryResponse[];
 }
 
-interface ProtectionRule {
-  id: string;
+type ProtectionRule =
+  | Partial<{
+      id: number;
+      node_id: string;
+      type: string;
+      wait_timer?: number;
+    }>
+  | Partial<{
+      id: number;
+      node_id: string;
+      prevent_self_review?: boolean;
+      type: string;
+      reviewers?: {
+        type?: 'User' | 'Team';
+        reviewer?: SimpleUser | Team;
+      }[];
+    }>
+  | Partial<{
+      id: number;
+      node_id: string;
+      type: string;
+    }>;
+
+export interface Team {
+  id: number;
   node_id: string;
-  type: string; // examples include 'branch_policy', 'required_reviewers', or 'wait_timer'. Existence of other props depends on this.
-  wait_timer?: number;
-  reviewers?: object[]; //could be users or teams, but not all props found in OrgMemberQueryResponse or OrgTeamQueryResponse
+  name: string;
+  slug: string;
+  description: string | null;
+  privacy?: string;
+  notification_setting?: string;
+  permission: string;
+  permissions?: {
+    pull: boolean;
+    triage: boolean;
+    push: boolean;
+    maintain: boolean;
+    admin: boolean;
+  };
+  url: string;
+  html_url: string;
+  members_url: string;
+  repositories_url: string;
+  parent:
+    | null
+    | (Omit<Team, 'permissions' | 'parent'> & {
+        ldap_dn?: string;
+      });
 }

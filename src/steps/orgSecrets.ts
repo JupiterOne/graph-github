@@ -6,7 +6,6 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { AccountEntity, RepoData, SecretEntity } from '../types';
@@ -18,6 +17,7 @@ import {
   Relationships,
 } from '../constants';
 import { toOrgSecretEntity } from '../sync/converters';
+import { getOrCreateRestClient } from '../client/RESTClient/client';
 
 export async function fetchOrgSecrets({
   instance,
@@ -25,7 +25,7 @@ export async function fetchOrgSecrets({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const restClient = getOrCreateRestClient(config, logger);
 
   const accountEntity =
     await jobState.getData<AccountEntity>(DATA_ACCOUNT_ENTITY);
@@ -43,11 +43,11 @@ export async function fetchOrgSecrets({
     );
   }
 
-  await apiClient.iterateOrgSecrets(repoTags, async (secret) => {
+  await restClient.iterateOrgSecrets(repoTags, async (secret) => {
     const secretEntity = (await jobState.addEntity(
       toOrgSecretEntity(
         secret,
-        apiClient.graphQLClient.login || '',
+        await restClient.getOrganizationLogin(),
         config.githubApiBaseUrl,
       ),
     )) as SecretEntity;

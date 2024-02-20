@@ -7,9 +7,11 @@ import {
   IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
 import { getOrCreateApiClient } from './client';
-const fs = require('fs');
+import fs from 'node:fs';
 import { URL } from 'url';
 import { IngestionSources } from './constants';
+import { getOrCreateRestClient } from './client/RESTClient/client';
+import { ScopesSet } from './client/scopes';
 
 /**
  * A type describing the configuration fields required to execute the
@@ -28,23 +30,63 @@ import { IngestionSources } from './constants';
  * path to a .pem file on the local filesystem. That file will load the real field,
  * githubAppPrivateKey, that is used in the managed environment.
  */
-export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
-  githubAppId: {
-    type: 'string', //should be a number, but that's not an option in the SDK
-  },
-  githubAppLocalPrivateKeyPath: {
-    type: 'string', //only used for local configs
-  },
-  installationId: {
-    type: 'string', //should be a number, but that's not an option in the SDK
-  },
-};
+export const instanceConfigFields: IntegrationInstanceConfigFieldMap<IntegrationConfig> =
+  {
+    selectedAuthType: {
+      type: 'string',
+    },
+    enterpriseToken: {
+      type: 'string',
+      optional: true,
+    },
+    organization: {
+      type: 'string',
+      optional: true,
+    },
+    githubAppId: {
+      type: 'string',
+      optional: true,
+    },
+    // Used only for local execution.
+    githubAppLocalPrivateKeyPath: {
+      type: 'string',
+      optional: true,
+    },
+    githubAppPrivateKey: {
+      type: 'string',
+      optional: true,
+    },
+    installationId: {
+      type: 'string',
+      optional: true,
+    },
+    githubApiBaseUrl: {
+      type: 'string',
+      optional: true,
+    },
+    pullRequestIngestStartDatetime: {
+      type: 'string',
+      optional: true,
+    },
+    pullRequestMaxResourcesPerRepo: {
+      type: 'string',
+      optional: true,
+    },
+    pullRequestMaxSearchLimit: {
+      type: 'string',
+      optional: true,
+    },
+    dependabotAlertStates: {
+      type: 'string',
+      optional: true,
+    },
+    dependabotAlertSeverities: {
+      type: 'string',
+      optional: true,
+    },
+  };
 
-/**
- * Properties provided by the `IntegrationInstance.config`. Normally reflects the
- * same properties defined by `instanceConfigFields`. See note above.
- */
-export interface IntegrationConfig extends IntegrationInstanceConfig {
+export interface IntegrationGithubAppConfig extends BaseIntegrationConfig {
   /**
    * The GitHub App ID of the application at https://github.com/settings/apps.
    * In the managed environment for GitHub Cloud, this field is set by the environment.
@@ -74,20 +116,37 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
    * In the managed environment for GitHub Enterprise Server, this value is filled in by the user.
    */
   installationId: number;
+}
+
+export interface IntegrationGithubCloudConfig
+  extends IntegrationGithubAppConfig {
+  selectedAuthType: 'githubCloud';
+}
+
+export interface IntegrationGithubEnterpriseServerConfig
+  extends IntegrationGithubAppConfig {
+  selectedAuthType: 'githubEnterpriseServer';
+}
+
+export interface IntegrationGithubEnterpriseTokenConfig
+  extends BaseIntegrationConfig {
+  selectedAuthType: 'githubEnterpriseToken';
+  /**
+   * The Enterprise Owner personal access token (classic).
+   */
+  enterpriseToken: string;
 
   /**
-   * Optional. Login is usually derived from a call to the API,
-   * but if that fails or is not available, processing can proceed
-   * if this var is specified.
+   * The organization login to ingest from.
    */
-  githubAppDefaultLogin: string;
+  organization: string;
+}
 
-  /**
-   * Indicates if the integration is being configured
-   * for a GitHub Enterprise Server.
-   */
-  configureGitHubEnterpriseServer: boolean;
-
+/**
+ * Properties provided by the `IntegrationInstance.config`. Normally reflects the
+ * same properties defined by `instanceConfigFields`. See note above.
+ */
+export interface BaseIntegrationConfig extends IntegrationInstanceConfig {
   /**
    * Used during GitHub Enterprise Server Configuration. Defaults to api.github.com.
    *
@@ -98,37 +157,60 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   githubApiBaseUrl: string;
 
   /**
+   * The date and time to start ingesting pull requests in ISO 8601 format.
+   */
+  pullRequestIngestStartDatetime?: string;
+
+  /**
+   * The maximum number of resources to ingest per repository.
+   */
+  pullRequestMaxResourcesPerRepo?: number;
+
+  /**
+   * The maximum number of pull requests to fetch per page.
+   */
+  pullRequestMaxSearchLimit?: number;
+
+  /**
    * Array of alert states used to filter alerts.
    */
-  dependabotAlertStates: string[];
+  dependabotAlertStates?: string[];
 
   /**
    * Array of severities used to filter alerts.
    */
-  dependabotAlertSeverities: string[];
+  dependabotAlertSeverities?: string[];
+
+  /**
+   * @deprecated
+   *
+   * Optional. Login is usually derived from a call to the API,
+   * but if that fails or is not available, processing can proceed
+   * if this var is specified.
+   */
+  githubAppDefaultLogin?: string;
+
+  /**
+   * @deprecated
+   *
+   * Indicates if the integration is being configured
+   * for a GitHub Enterprise Server.
+   */
+  configureGitHubEnterpriseServer?: boolean;
 }
+
+export type IntegrationConfig =
+  | IntegrationGithubCloudConfig
+  | IntegrationGithubEnterpriseServerConfig
+  | IntegrationGithubEnterpriseTokenConfig;
 
 export interface ExecutionConfig {
   logIdentityMetrics?: boolean;
 }
 
-export type Scopes = {
-  codeScanningAlerts: boolean;
-  orgAdmin: boolean;
-  orgSecrets: boolean;
-  repoAdmin: boolean;
-  repoSecrets: boolean;
-  repoPages: boolean;
-  repoEnvironments: boolean;
-  repoIssues: boolean;
-  dependabotAlerts: boolean;
-  repoDiscussions: boolean;
-  // secretScanningAlerts: boolean; // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
-};
-
 type AuthenticationData = {
-  scopes: Scopes;
-  gheServerVersion?: string;
+  scopes: ScopesSet | undefined;
+  gheServerVersion: string | null;
 };
 
 async function sanitizeAndVerifyAuthentication(
@@ -137,12 +219,12 @@ async function sanitizeAndVerifyAuthentication(
 ): Promise<AuthenticationData> {
   sanitizeConfig(config); // Mutate the config as needed
 
-  const apiClient = getOrCreateApiClient(config, logger);
-  await apiClient.verifyAuthentication();
+  const restClient = getOrCreateRestClient(config, logger);
+  await restClient.verifyAuthentication();
 
   return {
-    scopes: apiClient.scopes,
-    gheServerVersion: apiClient.gheServerVersion,
+    scopes: await restClient.getScopes(),
+    gheServerVersion: await restClient.getGithubServerVersion(),
   };
 }
 
@@ -162,26 +244,40 @@ export async function validateAndReturnAuthenticationData(
   return await sanitizeAndVerifyAuthentication(config, logger);
 }
 
+function getLocalPrivateKey(): string | undefined {
+  const localPath = process.env['GITHUB_APP_LOCAL_PRIVATE_KEY_PATH'];
+  if (!localPath) {
+    return;
+  }
+  try {
+    const content = fs.readFileSync(localPath);
+    return content.toString();
+  } catch (err) {
+    throw new IntegrationValidationError(
+      `'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH' ${localPath}: cannot read content`,
+    );
+  }
+}
+
 /**
  * Modifies config based on auth approach: local, cloud, GHE
  * @param config
  */
 export function sanitizeConfig(config: IntegrationConfig) {
-  const localPath = process.env['GITHUB_APP_LOCAL_PRIVATE_KEY_PATH'];
-  if (localPath) {
-    let content;
-    try {
-      content = fs.readFileSync(localPath);
-    } catch (err) {
-      // basically not there
-    }
-    if (content) {
-      config.githubAppPrivateKey = content.toString();
-    } else {
+  if (config.selectedAuthType === 'githubEnterpriseToken') {
+    if (!config.enterpriseToken || !config.organization) {
       throw new IntegrationValidationError(
-        `'GITHUB_APP_LOCAL_PRIVATE_KEY_PATH' ${localPath}: cannot read content`,
+        'Config requires all of {enterpriseToken, organization}',
       );
     }
+    return;
+  }
+
+  // -- selectedAuthType is either 'githubCloud' or 'githubEnterpriseServer' --
+
+  const localPrivateKey = getLocalPrivateKey();
+  if (localPrivateKey) {
+    config.githubAppPrivateKey = localPrivateKey;
   }
 
   // First use env var (local dev), next config for managed env, and then default to api.github.com
@@ -192,35 +288,43 @@ export function sanitizeConfig(config: IntegrationConfig) {
   );
 
   config.pullRequestIngestStartDatetime =
-    config.pullRequestIngestStartDatetime ||
+    config.pullRequestIngestStartDatetime ??
     process.env['PULL_REQUEST_INGEST_START_DATETIME']; // Expects Date.toISOString format
 
-  config.pullRequestMaxResourcesPerRepo =
-    config.pullRequestMaxResourcesPerRepo ||
+  const pullRequestMaxResourcesPerRepo =
+    config.pullRequestMaxResourcesPerRepo ??
     process.env['PULL_REQUEST_MAX_RESOURCES_PER_REPO'];
+  if (pullRequestMaxResourcesPerRepo) {
+    config.pullRequestMaxResourcesPerRepo = Number(
+      pullRequestMaxResourcesPerRepo,
+    );
+  }
 
-  config.pullRequestMaxSearchLimit =
-    config.pullRequestMaxSearchLimit ||
+  const pullRequestMaxSearchLimit =
+    config.pullRequestMaxSearchLimit ??
     process.env['PULL_REQUEST_MAX_SEARCH_LIMIT'];
+  if (pullRequestMaxSearchLimit) {
+    config.pullRequestMaxSearchLimit = Number(pullRequestMaxSearchLimit);
+  }
 
-  config.dependabotAlertRequestLimit =
-    config.dependabotAlertRequestLimit ||
-    process.env['DEPENDABOT_ALERT_REQUEST_LIMIT'];
-
-  const dependabotAlertSeverities: any =
+  const dependabotAlertSeverities =
     config.dependabotAlertSeverities ??
     process.env['DEPENDABOT_ALERT_SEVERITIES'];
-  config.dependabotAlertSeverities =
-    typeof dependabotAlertSeverities === 'string'
-      ? dependabotAlertSeverities.split(',').map((state) => state.trim())
-      : config.dependabotAlertSeverities ?? [];
+  if (dependabotAlertSeverities) {
+    config.dependabotAlertSeverities =
+      typeof dependabotAlertSeverities === 'string'
+        ? dependabotAlertSeverities.split(',').map((state) => state.trim())
+        : config.dependabotAlertSeverities ?? [];
+  }
 
-  const dependabotAlertStates: any =
+  const dependabotAlertStates =
     config.dependabotAlertStates ?? process.env['DEPENDABOT_ALERT_STATES'];
-  config.dependabotAlertStates =
-    typeof dependabotAlertStates === 'string'
-      ? dependabotAlertStates.split(',').map((state) => state.trim())
-      : dependabotAlertStates ?? [];
+  if (dependabotAlertStates) {
+    config.dependabotAlertStates =
+      typeof dependabotAlertStates === 'string'
+        ? dependabotAlertStates.split(',').map((state) => state.trim())
+        : dependabotAlertStates ?? [];
+  }
 
   if (
     !config.githubAppId ||

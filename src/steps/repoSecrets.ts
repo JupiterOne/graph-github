@@ -7,7 +7,6 @@ import {
   Entity,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { IdEntityMap, RepoData, SecretEntity } from '../types';
 import {
@@ -19,6 +18,7 @@ import {
   Relationships,
 } from '../constants';
 import { toRepoSecretEntity, getSecretEntityKey } from '../sync/converters';
+import { getOrCreateRestClient } from '../client/RESTClient/client';
 
 export async function fetchRepoSecrets({
   instance,
@@ -26,7 +26,7 @@ export async function fetchRepoSecrets({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const restClient = getOrCreateRestClient(config, logger);
 
   const repoTags = await jobState.getData<Map<string, RepoData>>(
     GITHUB_REPO_TAGS_ARRAY,
@@ -44,11 +44,11 @@ export async function fetchRepoSecrets({
 
   for (const [repoKey, repoData] of repoTags) {
     const repoSecretEntities: IdEntityMap<Entity['_key']> = new Map();
-    await apiClient.iterateRepoSecrets(repoData.name, async (secret) => {
+    await restClient.iterateRepoSecrets(repoData.name, async (secret) => {
       const secretEntity = (await jobState.addEntity(
         toRepoSecretEntity(
           secret,
-          apiClient.graphQLClient.login,
+          await restClient.getOrganizationLogin(),
           config.githubApiBaseUrl,
           repoData.name,
         ),
@@ -78,7 +78,7 @@ export async function fetchRepoSecrets({
       const keyOfHypotheticalOrgSecretOfSameName = getSecretEntityKey({
         name: secret.name,
         secretOwnerType: 'Org',
-        secretOwnerName: apiClient.graphQLClient.login,
+        secretOwnerName: await restClient.getOrganizationLogin(),
       });
       if (jobState.hasKey(keyOfHypotheticalOrgSecretOfSameName)) {
         await jobState.addRelationship(

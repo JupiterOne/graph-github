@@ -27,57 +27,57 @@ export default async function getStepStartStates(
     [Steps.FETCH_COLLABORATORS]: { disabled: false },
     [Steps.FETCH_PRS]: { disabled: false },
     [Steps.FETCH_ISSUES]: {
-      disabled: !scopes.repoIssues,
+      disabled: !scopes?.has('issues'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_APPS]: {
-      disabled: !scopes.orgAdmin,
+      disabled: !scopes?.has('organization_administration'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_CODE_SCANNING_ALERTS]: {
       disabled:
-        !scopes.codeScanningAlerts ||
+        !scopes?.has('security_events') ||
         !utils.isSupported(
           EnterpriseFeatures.LIST_CODE_SCANNING_ALERT_FOR_ORG,
           gheServerVersion,
         ),
-      disabledReason: !scopes.codeScanningAlerts
+      disabledReason: !scopes?.has('security_events')
         ? DisabledStepReason.PERMISSION
         : DisabledStepReason.API_VERSION,
     },
     [Steps.FETCH_ENVIRONMENTS]: {
-      disabled: !scopes.repoEnvironments,
+      disabled: !scopes?.has('environments'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_ORG_SECRETS]: {
-      disabled: !scopes.orgSecrets,
+      disabled: !scopes?.has('organization_secrets'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_REPO_SECRETS]: {
-      disabled: !scopes.repoSecrets,
+      disabled: !scopes?.has('secrets'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_ENV_SECRETS]: {
-      disabled: !scopes.repoSecrets || !scopes.repoEnvironments,
+      disabled: !scopes?.has('secrets') || !scopes?.has('environments'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_VULNERABILITY_ALERTS]: {
-      disabled: !scopes.dependabotAlerts,
+      disabled: !scopes?.has('vulnerability_alerts'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_BRANCH_PROTECTION_RULES]: {
-      disabled: !scopes.repoAdmin && !scopes.repoDiscussions,
+      disabled: !scopes?.has('administration') && !scopes?.has('discussions'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
     // [Steps.FETCH_SECRET_SCANNING_ALERTS]: {
     //   disabled:
-    //     !scopes.secretScanningAlerts ||
+    //     !scopes?.has('secret_scanning_alerts') ||
     //     !utils.isSupported(
     //       EnterpriseFeatures.LIST_SECRET_SCANNING_ALERT_FOR_ORG,
     //       gheServerVersion,
     //     ),
-    //   disabledReason: !scopes.secretScanningAlerts
+    //   disabledReason: !scopes?.has('secret_scanning_alerts')
     //     ? DisabledStepReason.PERMISSION
     //     : DisabledStepReason.API_VERSION,
     // },

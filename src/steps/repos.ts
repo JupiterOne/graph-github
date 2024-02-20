@@ -33,6 +33,10 @@ import {
   TopicQueryResponse,
 } from '../client/GraphQLClient';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
+import {
+  GithubRestClient,
+  getOrCreateRestClient,
+} from '../client/RESTClient/client';
 
 const REPOSITORIES_PROCESSING_BATCH_SIZE = 500;
 
@@ -121,7 +125,7 @@ const processRepository = async ({
   tags,
   topics,
   accountEntity,
-  apiClient,
+  restClient,
   jobState,
   repoTags,
   branchProtectionRuleTotalByRepo,
@@ -135,7 +139,7 @@ const processRepository = async ({
   topics: TopicQueryResponse[];
   accountEntity: AccountEntity;
   jobState: JobState;
-  apiClient: APIClient;
+  restClient: GithubRestClient;
   repoTags: Map<string, RepoData>;
   branchProtectionRuleTotalByRepo: Map<string, number>;
   collaboratorsTotalByRepo: Map<string, number>;
@@ -149,11 +153,11 @@ const processRepository = async ({
   repoEntity.topics = topics.map((t) => t.name);
 
   // Fetch Repo Pages
-  if (apiClient.scopes.repoPages) {
-    const pagesInfo = await apiClient.fetchPagesInfoForRepo(
-      repoEntity.owner,
-      repoEntity.name,
-    );
+  const pagesInfo = await restClient.fetchPagesInfoForRepo(
+    repoEntity.owner,
+    repoEntity.name,
+  );
+  if (pagesInfo) {
     decorateRepoEntityWithPagesInfo(repoEntity, pagesInfo);
   }
 
@@ -207,6 +211,7 @@ export async function fetchRepos({
   executionHistory,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
+  const restClient = getOrCreateRestClient(config, logger);
   const apiClient = getOrCreateApiClient(config, logger);
 
   const accountEntity =
@@ -255,7 +260,7 @@ export async function fetchRepos({
         tags: tagsByRepo.get(repo.id) ?? [],
         topics: topicsByRepo.get(repo.id) ?? [],
         accountEntity,
-        apiClient,
+        restClient,
         jobState,
         repoTags,
         branchProtectionRuleTotalByRepo,

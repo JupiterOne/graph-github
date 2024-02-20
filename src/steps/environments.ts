@@ -6,7 +6,6 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { RepoData, EnvironmentEntity } from '../types';
 import {
@@ -17,6 +16,7 @@ import {
   Relationships,
 } from '../constants';
 import { toEnvironmentEntity } from '../sync/converters';
+import { getOrCreateRestClient } from '../client/RESTClient/client';
 
 export async function fetchEnvironments({
   instance,
@@ -24,7 +24,7 @@ export async function fetchEnvironments({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const restClient = getOrCreateRestClient(config, logger);
 
   const repoTags = await jobState.getData<Map<string, RepoData>>(
     GITHUB_REPO_TAGS_ARRAY,
@@ -36,11 +36,11 @@ export async function fetchEnvironments({
   }
 
   for (const [repoKey, repoData] of repoTags) {
-    await apiClient.iterateEnvironments(repoData.name, async (env) => {
+    await restClient.iterateEnvironments(repoData.name, async (env) => {
       const envEntity = (await jobState.addEntity(
         toEnvironmentEntity(
           env,
-          apiClient.graphQLClient.login,
+          await restClient.getOrganizationLogin(),
           config.githubApiBaseUrl,
           repoData,
         ),

@@ -38,6 +38,10 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap<Integration
       type: 'string',
       optional: true,
     },
+    enterpriseSlug: {
+      type: 'string',
+      optional: true,
+    },
     organization: {
       type: 'string',
       optional: true,
@@ -134,6 +138,11 @@ export interface IntegrationGithubEnterpriseTokenConfig
    * The Enterprise Owner personal access token (classic).
    */
   enterpriseToken: string;
+
+  /**
+   * The enterprise slug.
+   */
+  enterpriseSlug: string;
 
   /**
    * The organization login to ingest from.
@@ -271,9 +280,13 @@ export function sanitizeConfig(config: IntegrationConfig) {
   );
 
   if (config.selectedAuthType === 'githubEnterpriseToken') {
-    if (!config.enterpriseToken || !config.organization) {
+    if (
+      !config.enterpriseToken ||
+      !config.enterpriseSlug ||
+      !config.organization
+    ) {
       throw new IntegrationValidationError(
-        'Config requires all of {enterpriseToken, organization}',
+        'Config requires all of {enterpriseToken, enterpriseSlug, organization}',
       );
     }
   } else {

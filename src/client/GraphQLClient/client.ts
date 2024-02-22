@@ -797,6 +797,10 @@ export class GithubGraphqlClient implements IScopes {
     const result = await ExternalIdentifiersQuery.iterateExternalIdentifiers(
       {
         login: await this.getOrganizationLogin(),
+        enterpriseSlug:
+          this.config.selectedAuthType === 'githubEnterpriseToken'
+            ? this.config.enterpriseSlug
+            : undefined,
         maxLimit: MAX_REQUESTS_LIMIT,
       },
       executor,

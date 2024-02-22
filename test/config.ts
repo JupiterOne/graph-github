@@ -22,6 +22,7 @@ const INSTALLATION_ID = 32841752;
 const APP_PRIVATE_KEY = getFakeRsaKey();
 
 export const integrationConfig: IntegrationConfig = {
+  selectedAuthType: process.env.SELECTED_AUTH_TYPE || 'githubCloud',
   githubAppId: Number(process.env.GITHUB_APP_ID) || GITHUB_APP_ID,
   githubAppPrivateKey: APP_PRIVATE_KEY,
   installationId: Number(process.env.INSTALLATION_ID) || INSTALLATION_ID,

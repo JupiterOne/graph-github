@@ -8,7 +8,6 @@ import {
   IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
 
-import { APIClient, getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import {
@@ -28,9 +27,11 @@ import {
   PULL_REQUESTS_TOTAL_BY_REPO,
 } from '../constants';
 import {
+  GithubGraphqlClient,
   OrgRepoQueryResponse,
   TagQueryResponse,
   TopicQueryResponse,
+  getOrCreateGraphqlClient,
 } from '../client/GraphQLClient';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
 import {
@@ -41,12 +42,12 @@ import {
 const REPOSITORIES_PROCESSING_BATCH_SIZE = 500;
 
 async function fetchTags({
-  apiClient,
+  graphqlClient,
   repositoriesMap,
   tagsTotalByRepo,
   logger,
 }: {
-  apiClient: APIClient;
+  graphqlClient: GithubGraphqlClient;
   repositoriesMap: Map<string, OrgRepoQueryResponse>;
   tagsTotalByRepo: Map<string, number>;
   logger: IntegrationLogger;
@@ -65,14 +66,14 @@ async function fetchTags({
     totalConnectionsById: tagsTotalByRepo,
     threshold: 100,
     batchCb: async (repoIds) => {
-      await apiClient.iterateBatchedTags(repoIds, iteratee);
+      await graphqlClient.iterateTags(repoIds, iteratee);
     },
     singleCb: async (repoId) => {
       const repo = repositoriesMap.get(repoId);
       if (!repo) {
         return;
       }
-      await apiClient.iterateTags(repo.name, iteratee);
+      await graphqlClient.iterateTags(repo.name, iteratee);
     },
     logger,
   });
@@ -81,12 +82,12 @@ async function fetchTags({
 }
 
 async function fetchTopics({
-  apiClient,
+  graphqlClient,
   repositoriesMap,
   topicsTotalByRepo,
   logger,
 }: {
-  apiClient: APIClient;
+  graphqlClient: GithubGraphqlClient;
   repositoriesMap: Map<string, OrgRepoQueryResponse>;
   topicsTotalByRepo: Map<string, number>;
   logger: IntegrationLogger;
@@ -105,14 +106,14 @@ async function fetchTopics({
     totalConnectionsById: topicsTotalByRepo,
     threshold: 100,
     batchCb: async (repoIds) => {
-      await apiClient.iterateBatchedTopics(repoIds, iteratee);
+      await graphqlClient.iterateTopics(repoIds, iteratee);
     },
     singleCb: async (repoId) => {
       const repo = repositoriesMap.get(repoId);
       if (!repo) {
         return;
       }
-      await apiClient.iterateTopics(repo.name, iteratee);
+      await graphqlClient.iterateTopics(repo.name, iteratee);
     },
     logger,
   });
@@ -212,7 +213,7 @@ export async function fetchRepos({
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
   const restClient = getOrCreateRestClient(config, logger);
-  const apiClient = getOrCreateApiClient(config, logger);
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
 
   const accountEntity =
     await jobState.getData<AccountEntity>(DATA_ACCOUNT_ENTITY);
@@ -242,13 +243,13 @@ export async function fetchRepos({
 
   const processReposBatch = async () => {
     const tagsByRepo = await fetchTags({
-      apiClient,
+      graphqlClient,
       repositoriesMap,
       tagsTotalByRepo,
       logger,
     });
     const topicsByRepo = await fetchTopics({
-      apiClient,
+      graphqlClient,
       repositoriesMap,
       topicsTotalByRepo,
       logger,
@@ -272,22 +273,25 @@ export async function fetchRepos({
     }
   };
 
-  await apiClient.iterateRepos({ lastSuccessfulExecution }, async (repo) => {
-    repositoriesMap.set(repo.id, repo);
-    if (repo.tags?.totalCount) {
-      tagsTotalByRepo.set(repo.id, repo.tags.totalCount);
-    }
-    if (repo.topics.totalCount) {
-      topicsTotalByRepo.set(repo.id, repo.topics.totalCount);
-    }
+  await graphqlClient.iterateRepositories(
+    lastSuccessfulExecution,
+    async (repo) => {
+      repositoriesMap.set(repo.id, repo);
+      if (repo.tags?.totalCount) {
+        tagsTotalByRepo.set(repo.id, repo.tags.totalCount);
+      }
+      if (repo.topics.totalCount) {
+        topicsTotalByRepo.set(repo.id, repo.topics.totalCount);
+      }
 
-    if (repositoriesMap.size >= REPOSITORIES_PROCESSING_BATCH_SIZE) {
-      await processReposBatch();
-      repositoriesMap.clear();
-      tagsTotalByRepo.clear();
-      topicsTotalByRepo.clear();
-    }
-  });
+      if (repositoriesMap.size >= REPOSITORIES_PROCESSING_BATCH_SIZE) {
+        await processReposBatch();
+        repositoriesMap.clear();
+        tagsTotalByRepo.clear();
+        topicsTotalByRepo.clear();
+      }
+    },
+  );
 
   // flush remaining unprocessed repositories
   if (repositoriesMap.size) {

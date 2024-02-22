@@ -6,7 +6,6 @@ import {
   IntegrationIngestionConfigFieldMap,
   IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
-import { getOrCreateApiClient } from './client';
 import fs from 'node:fs';
 import { URL } from 'url';
 import { IngestionSources } from './constants';
@@ -224,7 +223,7 @@ async function sanitizeAndVerifyAuthentication(
 
   return {
     scopes: await restClient.getScopes(),
-    gheServerVersion: await restClient.getGithubServerVersion(),
+    gheServerVersion: await restClient.getGithubEnterpriseServerVersion(),
   };
 }
 
@@ -264,28 +263,37 @@ function getLocalPrivateKey(): string | undefined {
  * @param config
  */
 export function sanitizeConfig(config: IntegrationConfig) {
-  if (config.selectedAuthType === 'githubEnterpriseToken') {
-    if (!config.enterpriseToken || !config.organization) {
-      throw new IntegrationValidationError(
-        'Config requires all of {enterpriseToken, organization}',
-      );
-    }
-    return;
-  }
-
-  // -- selectedAuthType is either 'githubCloud' or 'githubEnterpriseServer' --
-
-  const localPrivateKey = getLocalPrivateKey();
-  if (localPrivateKey) {
-    config.githubAppPrivateKey = localPrivateKey;
-  }
-
   // First use env var (local dev), next config for managed env, and then default to api.github.com
   config.githubApiBaseUrl = validateBaseUrl(
     process.env['GITHUB_API_BASE_URL'] ??
       config.githubApiBaseUrl ??
       'https://api.github.com',
   );
+
+  if (config.selectedAuthType === 'githubEnterpriseToken') {
+    if (!config.enterpriseToken || !config.organization) {
+      throw new IntegrationValidationError(
+        'Config requires all of {enterpriseToken, organization}',
+      );
+    }
+  } else {
+    // -- selectedAuthType is either 'githubCloud' or 'githubEnterpriseServer' --
+    const localPrivateKey = getLocalPrivateKey();
+    if (localPrivateKey) {
+      config.githubAppPrivateKey = localPrivateKey;
+    }
+
+    if (
+      !config.githubAppId ||
+      !config.githubAppPrivateKey ||
+      !config.installationId ||
+      !config.githubApiBaseUrl
+    ) {
+      throw new IntegrationValidationError(
+        'Config requires all of {githubAppId, githubAppPrivateKey, installationId, githubApiBaseUrl}',
+      );
+    }
+  }
 
   config.pullRequestIngestStartDatetime =
     config.pullRequestIngestStartDatetime ??
@@ -324,17 +332,6 @@ export function sanitizeConfig(config: IntegrationConfig) {
       typeof dependabotAlertStates === 'string'
         ? dependabotAlertStates.split(',').map((state) => state.trim())
         : dependabotAlertStates ?? [];
-  }
-
-  if (
-    !config.githubAppId ||
-    !config.githubAppPrivateKey ||
-    !config.installationId ||
-    !config.githubApiBaseUrl
-  ) {
-    throw new IntegrationValidationError(
-      'Config requires all of {githubAppId, githubAppPrivateKey, installationId, githubApiBaseUrl}',
-    );
   }
 }
 

@@ -1,12 +1,13 @@
 import {
+  IntegrationError,
   IntegrationStep,
   IntegrationStepExecutionContext,
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from '../config';
-import { getOrCreateApiClient } from '../client';
 import { toAccountEntity } from '../sync/converters';
 import { GithubEntities, Steps } from '../constants';
+import { getOrCreateGraphqlClient } from '../client/GraphQLClient';
 
 export const DATA_ACCOUNT_ENTITY = 'DATA_ACCOUNT_ENTITY';
 
@@ -15,11 +16,18 @@ export async function fetchAccountDetails({
   instance,
   logger,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
-  const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
-  const accountEntity = await jobState.addEntity(
-    toAccountEntity(await apiClient.fetchOrganization()),
-  );
+  const { config } = instance;
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
+  const organization = await graphqlClient.fetchOrganization();
+  if (!organization) {
+    throw new IntegrationError({
+      code: 'ORGANIZATION_FETCH_FAILED',
+      message: 'Failed to fetch organization details',
+    });
+  }
+
+  const accountEntity = toAccountEntity(organization);
+  await jobState.addEntity(accountEntity);
   await jobState.setData(DATA_ACCOUNT_ENTITY, accountEntity);
 }
 

@@ -13,7 +13,8 @@ afterEach(async () => {
   await recording.stop();
 });
 
-test('fetchCodeScanningAlerts exec handler', async () => {
+// Skipped because we don't have scanning alerts on our test org
+test.skip('fetchCodeScanningAlerts exec handler', async () => {
   recording = setupGithubRecording({
     directory: __dirname,
     name: 'codeScanningAlerts',

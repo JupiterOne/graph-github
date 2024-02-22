@@ -4,7 +4,7 @@ import {
   ProcessResponse,
   RateLimitStepSummary,
 } from './types';
-import { ResourceIteratee } from '../../client';
+import { ResourceIteratee } from '../types';
 import { QueryExecutor } from './CreateQueryExecutor';
 import { buildTimeoutHandler } from './timeoutHandler';
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';

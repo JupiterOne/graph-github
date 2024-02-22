@@ -6,7 +6,6 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toTeamEntity } from '../sync/converters';
@@ -19,6 +18,7 @@ import {
   TEAM_DATA_MAP,
   MEMBERS_TOTAL_BY_TEAM,
 } from '../constants';
+import { getOrCreateGraphqlClient } from '../client/GraphQLClient';
 
 export async function fetchTeams({
   instance,
@@ -26,7 +26,7 @@ export async function fetchTeams({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
 
   const accountEntity =
     await jobState.getData<AccountEntity>(DATA_ACCOUNT_ENTITY);
@@ -40,7 +40,7 @@ export async function fetchTeams({
   const repositoriesTotalByTeam = new Map<string, number>();
   const membersTotalByTeam = new Map<string, number>();
 
-  await apiClient.iterateTeams(async (team) => {
+  await graphqlClient.iterateTeams(async (team) => {
     const teamEntity = (await jobState.addEntity(
       toTeamEntity(team),
     )) as TeamEntity;

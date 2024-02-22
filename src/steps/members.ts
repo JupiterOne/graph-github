@@ -7,7 +7,6 @@ import {
   Entity,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { ExecutionConfig, IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toOrganizationMemberEntity } from '../sync/converters';
@@ -15,6 +14,7 @@ import { AccountEntity, UserEntity, IdEntityMap } from '../types';
 import {
   OrgExternalIdentifierQueryResponse,
   OrgMemberRole,
+  getOrCreateGraphqlClient,
 } from '../client/GraphQLClient';
 import {
   GithubEntities,
@@ -29,8 +29,8 @@ export async function fetchMembers({
   jobState,
   executionConfig,
 }: IntegrationStepExecutionContext<IntegrationConfig, ExecutionConfig>) {
-  const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const { config } = instance;
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
   const { logIdentityMetrics } = executionConfig;
 
   const accountEntity = (await jobState.getData<AccountEntity>(
@@ -53,7 +53,7 @@ export async function fetchMembers({
     unclaimed: 0,
     samlMatches: 0,
   };
-  await apiClient.iterateOrgExternalIdentifiers((identifier) => {
+  await graphqlClient.iterateExternalIdentifiers((identifier) => {
     identityMetrics.totalIdentities++;
     if (!identifier?.user) {
       // This identity has not been claimed by an organization member.
@@ -66,7 +66,7 @@ export async function fetchMembers({
   //for use later in other steps
   const memberByLoginMap: IdEntityMap<Entity['_key']> = new Map();
 
-  await apiClient.iterateOrgMembers(async (member) => {
+  await graphqlClient.iterateMembers(async (member) => {
     identityMetrics.totalMembers++;
     const externalIdentity = externalIdentifiersMap.get(member.login);
     const samlEmail = externalIdentity?.samlIdentity?.nameId;

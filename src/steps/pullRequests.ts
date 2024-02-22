@@ -10,7 +10,6 @@ import {
   RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 
-import { APIClient, getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 
@@ -42,6 +41,8 @@ import { hasAssociatedMergePullRequest } from '../sync/converterUtils';
 import { sub } from 'date-fns';
 import {
   Commit,
+  getOrCreateGraphqlClient,
+  GithubGraphqlClient,
   Label,
   PullRequestResponse,
   Review,
@@ -53,12 +54,12 @@ const PULL_REQUESTS_PROCESSING_BATCH_SIZE = 500;
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
 
 const fetchCommits = async ({
-  apiClient,
+  graphqlClient,
   pullRequestsMap,
   commitsTotalByPullRequest,
   logger,
 }: {
-  apiClient: APIClient;
+  graphqlClient: GithubGraphqlClient;
   pullRequestsMap: Map<string, PullRequestResponse>;
   commitsTotalByPullRequest: Map<string, number>;
   logger: IntegrationLogger;
@@ -77,7 +78,7 @@ const fetchCommits = async ({
     totalConnectionsById: commitsTotalByPullRequest,
     threshold: 25,
     batchCb: async (pullRequestIds) => {
-      await apiClient.iterateBatchedCommits(pullRequestIds, iteratee);
+      await graphqlClient.iterateCommits(pullRequestIds, iteratee);
     },
     singleCb: async (pullRequestId) => {
       const pullRequest = pullRequestsMap.get(pullRequestId);
@@ -85,7 +86,11 @@ const fetchCommits = async ({
         return;
       }
       const repoName = pullRequest.baseRepository.name;
-      await apiClient.iterateCommits(repoName, pullRequest.number, iteratee);
+      await graphqlClient.iterateCommits(
+        repoName,
+        pullRequest.number,
+        iteratee,
+      );
     },
     logger,
   });
@@ -94,12 +99,12 @@ const fetchCommits = async ({
 };
 
 const fetchLabels = async ({
-  apiClient,
+  graphqlClient,
   pullRequestsMap,
   labelsTotalByPullRequest,
   logger,
 }: {
-  apiClient: APIClient;
+  graphqlClient: GithubGraphqlClient;
   pullRequestsMap: Map<string, PullRequestResponse>;
   labelsTotalByPullRequest: Map<string, number>;
   logger: IntegrationLogger;
@@ -118,7 +123,7 @@ const fetchLabels = async ({
     totalConnectionsById: labelsTotalByPullRequest,
     threshold: 25,
     batchCb: async (pullRequestIds) => {
-      await apiClient.iterateBatchedLabels(pullRequestIds, iteratee);
+      await graphqlClient.iterateLabels(pullRequestIds, iteratee);
     },
     singleCb: async (pullRequestId) => {
       const pullRequest = pullRequestsMap.get(pullRequestId);
@@ -126,7 +131,7 @@ const fetchLabels = async ({
         return;
       }
       const repoName = pullRequest.baseRepository.name;
-      await apiClient.iterateLabels(repoName, pullRequest.number, iteratee);
+      await graphqlClient.iterateLabels(repoName, pullRequest.number, iteratee);
     },
     logger,
   });
@@ -135,12 +140,12 @@ const fetchLabels = async ({
 };
 
 const fetchReviews = async ({
-  apiClient,
+  graphqlClient,
   pullRequestsMap,
   reviewsTotalByPullRequest,
   logger,
 }: {
-  apiClient: APIClient;
+  graphqlClient: GithubGraphqlClient;
   pullRequestsMap: Map<string, PullRequestResponse>;
   reviewsTotalByPullRequest: Map<string, number>;
   logger: IntegrationLogger;
@@ -159,7 +164,7 @@ const fetchReviews = async ({
     totalConnectionsById: reviewsTotalByPullRequest,
     threshold: 25,
     batchCb: async (pullRequestIds) => {
-      await apiClient.iterateBatchedReviews(pullRequestIds, iteratee);
+      await graphqlClient.iterateReviews(pullRequestIds, iteratee);
     },
     singleCb: async (pullRequestId) => {
       const pullRequest = pullRequestsMap.get(pullRequestId);
@@ -168,7 +173,7 @@ const fetchReviews = async ({
       }
       const repoName = pullRequest.baseRepository.name;
       const isPublicRepo = !pullRequest.baseRepository.isPrivate;
-      await apiClient.iterateReviews(
+      await graphqlClient.iterateReviews(
         repoName,
         isPublicRepo,
         pullRequest.number,
@@ -369,7 +374,7 @@ export async function fetchPrs(
   const jobState = context.jobState;
   const logger = context.logger;
 
-  const apiClient = getOrCreateApiClient(config, logger);
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
 
   const accountEntity =
     await jobState.getData<AccountEntity>(DATA_ACCOUNT_ENTITY);
@@ -446,19 +451,19 @@ export async function fetchPrs(
 
   const processRawPullRequests = async () => {
     const commitsByPullRequest = await fetchCommits({
-      apiClient,
+      graphqlClient,
       pullRequestsMap,
       commitsTotalByPullRequest,
       logger,
     });
     const labelsByPullRequest = await fetchLabels({
-      apiClient,
+      graphqlClient,
       pullRequestsMap,
       labelsTotalByPullRequest,
       logger,
     });
     const reviewsByPullRequest = await fetchReviews({
-      apiClient,
+      graphqlClient,
       pullRequestsMap,
       reviewsTotalByPullRequest,
       logger,
@@ -517,7 +522,7 @@ export async function fetchPrs(
     totalConnectionsById: pullRequestsTotalByRepo,
     threshold: 25,
     batchCb: async (repoKeys) => {
-      await apiClient.iterateBatchedPullRequests(
+      await graphqlClient.iteratePullRequests(
         repoKeys,
         ingestStartDatetime,
         iteratee,
@@ -528,7 +533,7 @@ export async function fetchPrs(
       if (!repoData) {
         return;
       }
-      await apiClient.iteratePullRequests(
+      await graphqlClient.iteratePullRequests(
         repoData.name,
         repoData.public,
         ingestStartDatetime,

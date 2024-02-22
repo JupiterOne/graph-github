@@ -9,7 +9,6 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { APIClient, getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import {
   toIssueEntity,
@@ -34,19 +33,21 @@ import {
 } from '../constants';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
 import {
+  GithubGraphqlClient,
   IssueAssignee,
   IssueLabel,
   IssueResponse,
+  getOrCreateGraphqlClient,
 } from '../client/GraphQLClient';
 
 const ISSUES_PROCESSING_BATCH_SIZE = 500;
 
 const fetchIssueLabels = async ({
-  apiClient,
+  graphqlClient,
   labelsTotalByIssue,
   logger,
 }: {
-  apiClient: APIClient;
+  graphqlClient: GithubGraphqlClient;
   labelsTotalByIssue: Map<string, number>;
   logger: IntegrationLogger;
 }) => {
@@ -64,10 +65,10 @@ const fetchIssueLabels = async ({
     totalConnectionsById: labelsTotalByIssue,
     threshold: 100,
     batchCb: async (issueIds) => {
-      await apiClient.iterateBatchedIssueLabels(issueIds, iteratee);
+      await graphqlClient.iterateIssueLabels(issueIds, iteratee);
     },
     singleCb: async (issueId) => {
-      await apiClient.iterateBatchedIssueLabels([issueId], iteratee);
+      await graphqlClient.iterateIssueLabels([issueId], iteratee);
     },
     logger,
   });
@@ -76,11 +77,11 @@ const fetchIssueLabels = async ({
 };
 
 const fetchIssueAssignees = async ({
-  apiClient,
+  graphqlClient,
   assigneesTotalByIssue,
   logger,
 }: {
-  apiClient: APIClient;
+  graphqlClient: GithubGraphqlClient;
   assigneesTotalByIssue: Map<string, number>;
   logger: IntegrationLogger;
 }) => {
@@ -98,10 +99,10 @@ const fetchIssueAssignees = async ({
     totalConnectionsById: assigneesTotalByIssue,
     threshold: 100,
     batchCb: async (issueIds) => {
-      await apiClient.iterateBatchedIssueAssignees(issueIds, iteratee);
+      await graphqlClient.iterateIssueAssignees(issueIds, iteratee);
     },
     singleCb: async (issueId) => {
-      await apiClient.iterateBatchedIssueAssignees([issueId], iteratee);
+      await graphqlClient.iterateIssueAssignees([issueId], iteratee);
     },
     logger,
   });
@@ -122,7 +123,7 @@ export async function fetchIssues(
   const lastSuccessfulExecution = new Date(
     lastSuccessfulSyncTime,
   ).toISOString();
-  const apiClient = getOrCreateApiClient(config, logger);
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
 
   const repoTags = await jobState.getData<Map<string, RepoData>>(
     GITHUB_REPO_TAGS_ARRAY,
@@ -171,12 +172,12 @@ export async function fetchIssues(
 
   const processRawIssues = async () => {
     const labelsByIssue = await fetchIssueLabels({
-      apiClient,
+      graphqlClient,
       labelsTotalByIssue,
       logger,
     });
     const assigneesByIssue = await fetchIssueAssignees({
-      apiClient,
+      graphqlClient,
       assigneesTotalByIssue,
       logger,
     });
@@ -215,7 +216,7 @@ export async function fetchIssues(
     totalConnectionsById: issuesTotalByRepo,
     threshold: 25,
     batchCb: async (repoKeys) => {
-      await apiClient.iterateBatchedIssues(
+      await graphqlClient.iterateIssues(
         repoKeys,
         lastSuccessfulExecution,
         iteratee,
@@ -227,13 +228,13 @@ export async function fetchIssues(
         return;
       }
       try {
-        await apiClient.iterateIssues(
+        await graphqlClient.iterateIssues(
           repoData.name,
           lastSuccessfulExecution,
           iteratee,
         );
       } catch (err) {
-        apiClient.logger.warn(
+        logger.warn(
           err,
           `Had an error ingesting Issues for repo ${repoKey}. Skipping and continuing.`,
         );

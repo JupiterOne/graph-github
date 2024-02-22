@@ -1,4 +1,4 @@
-import { ResourceIteratee } from '../../../client';
+import { ResourceIteratee } from '../../types';
 import {
   PullRequestResponse,
   IteratePagination,

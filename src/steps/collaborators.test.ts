@@ -1,3 +1,5 @@
+// @jest-environment node
+
 jest.setTimeout(150000);
 
 import {

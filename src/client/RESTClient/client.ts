@@ -5,9 +5,7 @@ import {
   IntegrationLogger,
   IntegrationProviderAPIError,
   IntegrationProviderAuthenticationError,
-  IntegrationValidationError,
 } from '@jupiterone/integration-sdk-core';
-import { StrategyOptions, createAppAuth } from '@octokit/auth-app';
 import { throttling } from '@octokit/plugin-throttling';
 import { retry } from '@octokit/plugin-retry';
 import {
@@ -18,17 +16,21 @@ import {
   SecretQueryResponse,
   SecretScanningAlertQueryResponse,
 } from './types';
-import { AccountType, RepoData } from '../../types';
+import { RepoData } from '../../types';
 import { RequestError } from '@octokit/request-error';
 import {
   AppScopes,
-  ClassicTokenScopes,
   IScopes,
   ScopesSet,
-  scope,
+  TokenScopes,
+  fetchScopes,
 } from '../scopes';
+import { fetchOrganizationLogin } from '../organizationLogin';
+import { getAuthOptions } from '../auth';
+import { getMetaResponse } from '../meta';
+import { ResourceIteratee } from '../types';
+import fetch from 'node-fetch';
 
-export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 export type GithubPagesInfo = {
   hasPages: boolean;
   pagesUrl?: string;
@@ -37,26 +39,6 @@ export type GithubPagesInfo = {
 //MAX_RETRIES is an arbitrary number, but consider that it limits the number
 // of retries for the entire client instance, not for a single request.
 const MAX_RETRIES = 20;
-
-function getAuthOptions(config: IntegrationConfig) {
-  let authOptions: {
-    authStrategy?: typeof createAppAuth;
-    auth: string | StrategyOptions;
-  };
-  if (config.selectedAuthType === 'githubEnterpriseToken') {
-    authOptions = { auth: config.githubEnterpriseToken };
-  } else {
-    authOptions = {
-      authStrategy: createAppAuth,
-      auth: {
-        appId: config.githubAppId,
-        privateKey: config.githubAppPrivateKey,
-        installationId: config.installationId,
-      },
-    };
-  }
-  return authOptions;
-}
 
 export class GithubRestClient implements IScopes {
   /**
@@ -94,7 +76,7 @@ export class GithubRestClient implements IScopes {
    * This is only fetched once and then cached.
    * If the version is not applicable, it will be set to null.
    */
-  private ghServerVersion: string | null | undefined;
+  private gheServerVersion: string | null | undefined;
 
   constructor(config: IntegrationConfig, logger: IntegrationLogger) {
     this.config = config;
@@ -110,22 +92,25 @@ export class GithubRestClient implements IScopes {
     this.octokit = new OctokitThrottling({
       baseUrl: this.restApiUrl,
       ...getAuthOptions(config),
+      request: {
+        fetch: fetch,
+      },
       userAgent: 'jupiter-integration-github',
       throttle: {
-        onRateLimit: (retryAfter: number, options: any) => {
+        onRateLimit: (retryAfter, options) => {
           logger.warn(
             { retryAfter, options },
-            'Rate limit reached for request.',
+            `Rate limit reached for request "${options.method} ${options.url}"`,
           );
           if (options.request.retryCount < MAX_RETRIES) {
             // Retry twice
             return true;
           }
         },
-        onAbuseLimit: (retryAfter: number, options: any) => {
+        onSecondaryRateLimit: (retryAfter, options) => {
           logger.warn(
             { retryAfter, options },
-            'Abuse limit reached for request.',
+            `Secondary rate limit reached for request "${options.method} ${options.url}"`,
           );
           // Note: retryCount represents the number of retries for the entire client instance, not for a single request.
           if (options.request.retryCount < MAX_RETRIES) {
@@ -138,7 +123,7 @@ export class GithubRestClient implements IScopes {
 
   public async verifyAuthentication(): Promise<void> {
     try {
-      const response = await this.octokit.meta.get();
+      const response = await getMetaResponse(this.config);
       const meta = response.data as { installed_version?: string };
       const gheServerVersion = meta.installed_version;
       if (gheServerVersion) {
@@ -163,13 +148,13 @@ export class GithubRestClient implements IScopes {
     }
   }
 
-  async getGithubServerVersion(): Promise<string | null> {
-    if (this.ghServerVersion === undefined) {
-      const response = await this.octokit.meta.get();
+  async getGithubEnterpriseServerVersion(): Promise<string | null> {
+    if (this.gheServerVersion === undefined) {
+      const response = await getMetaResponse(this.config);
       const meta = response.data as { installed_version?: string };
-      this.ghServerVersion = meta.installed_version ?? null;
+      this.gheServerVersion = meta.installed_version ?? null;
     }
-    return this.ghServerVersion;
+    return this.gheServerVersion;
   }
 
   async getOrganizationLogin(): Promise<string> {
@@ -177,45 +162,7 @@ export class GithubRestClient implements IScopes {
       return this.orgLogin;
     }
 
-    if (this.config.selectedAuthType === 'githubEnterpriseToken') {
-      this.orgLogin = this.config.organization;
-    } else {
-      try {
-        const {
-          data: installation,
-          status,
-          url,
-        } = await this.octokit.apps.getInstallation({
-          installation_id: this.config.installationId,
-        });
-
-        if (!installation) {
-          throw new IntegrationProviderAPIError({
-            endpoint: url,
-            status,
-            statusText: String(status),
-            message:
-              'Response from GitHub API did not include installation data',
-          });
-        }
-
-        if (installation.target_type !== AccountType.Org) {
-          throw new IntegrationValidationError(
-            'Integration supports only GitHub Organization accounts.',
-          );
-        }
-
-        this.orgLogin =
-          installation?.account?.login ?? this.config.githubAppDefaultLogin;
-      } catch (err) {
-        throw new IntegrationError({
-          code: 'APP_INSTALLATION_NOT_FOUND',
-          message:
-            'Github App installation associated with this integration instance no longer exists',
-          cause: err,
-        });
-      }
-    }
+    this.orgLogin = await fetchOrganizationLogin(this.config);
 
     if (!this.orgLogin) {
       throw new IntegrationError({
@@ -228,23 +175,10 @@ export class GithubRestClient implements IScopes {
   }
 
   async getScopes(): Promise<ScopesSet | undefined> {
-    if (this.scopes) {
-      return this.scopes;
+    if (!this.scopes) {
+      this.scopes = await fetchScopes(this.config);
     }
 
-    if (this.config.selectedAuthType === 'githubEnterpriseToken') {
-      const response = await this.octokit.request('HEAD /');
-      const scopesHeader = response.headers['x-oauth-scopes'];
-      this.scopes = scopesHeader
-        ? new Set(scopesHeader.split(/,\s+/) as ClassicTokenScopes[])
-        : undefined;
-    } else {
-      const response = await this.octokit.apps.getInstallation({
-        installation_id: this.config.installationId,
-      });
-      const permissions = Object.keys(response.data.permissions) as AppScopes[];
-      this.scopes = permissions.length ? new Set(permissions) : undefined;
-    }
     return this.scopes;
   }
 
@@ -254,7 +188,8 @@ export class GithubRestClient implements IScopes {
    * @param repoOwner - e.g. JupiterOne
    * @param repoName - e.g. graph-github
    */
-  @scope(['pages'], 'Pages Info')
+  @AppScopes(['pages'])
+  @TokenScopes(['repo'])
   public async fetchPagesInfoForRepo(
     repoOwner: string,
     repoName: string,
@@ -289,7 +224,8 @@ export class GithubRestClient implements IScopes {
    * @param allRepos
    * @param iteratee receives each resource to produce entities/relationships
    */
-  @scope(['organization_secrets'], 'Org Secrets')
+  @AppScopes(['organization_secrets'])
+  @TokenScopes(['admin:org'])
   async iterateOrgSecrets(
     allRepos: Map<string, RepoData>,
     iteratee: ResourceIteratee<SecretQueryResponse>,
@@ -333,8 +269,7 @@ export class GithubRestClient implements IScopes {
         },
       );
       for await (const response of iterator) {
-        // TODO: check that this property returns the correct data
-        for (const secret of response.data.secrets) {
+        for (const secret of response.data) {
           await iteratee(secret);
         }
       }
@@ -360,8 +295,7 @@ export class GithubRestClient implements IScopes {
         },
       );
       for await (const response of iterator) {
-        // TODO: check that this property returns the correct data
-        for (const repo of response.data.repositories) {
+        for (const repo of response.data) {
           await iteratee(repo);
         }
       }
@@ -374,7 +308,8 @@ export class GithubRestClient implements IScopes {
     }
   }
 
-  @scope(['security_events'], 'Code Scanning Alerts')
+  @AppScopes(['security_events'])
+  @TokenScopes(['repo', 'security_events'])
   async iterateCodeScanningAlerts(
     iteratee: ResourceIteratee<CodeScanningAlertQueryResponse>,
   ): Promise<void> {
@@ -400,14 +335,15 @@ export class GithubRestClient implements IScopes {
     }
   }
 
-  @scope(['secret_scanning_alerts'], 'Secret Scanning Alerts')
+  @AppScopes(['secret_scanning_alerts'])
+  @TokenScopes(['repo', 'security_events'])
   async iterateSecretScanningAlerts(
     iteratee: ResourceIteratee<SecretScanningAlertQueryResponse>,
   ): Promise<void> {
     const org = await this.getOrganizationLogin();
     try {
       const iterator = this.octokit.paginate.iterator(
-        'GET /orgs/{org}/secret-scanning/alerts',
+        this.octokit.rest.secretScanning.listAlertsForOrg,
         {
           org,
           per_page: 100,
@@ -427,7 +363,8 @@ export class GithubRestClient implements IScopes {
     }
   }
 
-  @scope(['secrets'], 'Repo Secrets')
+  @AppScopes(['secrets'])
+  @TokenScopes(['repo'])
   async iterateRepoSecrets(
     repoName: string,
     iteratee: ResourceIteratee<SecretQueryResponse>,
@@ -436,7 +373,7 @@ export class GithubRestClient implements IScopes {
     try {
       //https://docs.github.com/en/rest/reference/actions#list-repository-secrets
       const iterator = this.octokit.paginate.iterator(
-        'GET /repos/{owner}/{repo}/actions/secrets',
+        this.octokit.rest.actions.listRepoSecrets,
         {
           owner,
           repo: repoName,
@@ -444,8 +381,7 @@ export class GithubRestClient implements IScopes {
         },
       );
       for await (const response of iterator) {
-        // TODO: check that this property returns the correct data
-        for (const repoSecret of response.data.secrets) {
+        for (const repoSecret of response.data) {
           await iteratee(repoSecret);
         }
       }
@@ -465,7 +401,8 @@ export class GithubRestClient implements IScopes {
     }
   }
 
-  @scope(['environments'], 'Environments')
+  @AppScopes(['actions'])
+  @TokenScopes(['repo'])
   async iterateEnvironments(
     repoName: string,
     iteratee: ResourceIteratee<RepoEnvironmentQueryResponse>,
@@ -483,8 +420,7 @@ export class GithubRestClient implements IScopes {
         },
       );
       for await (const response of iterator) {
-        // TODO: check that this property returns the correct data
-        for (const environment of response.data?.environments || []) {
+        for (const environment of response.data) {
           if (environment) {
             await iteratee(environment);
           }
@@ -509,7 +445,8 @@ export class GithubRestClient implements IScopes {
     }
   }
 
-  @scope(['secrets'], 'Env Secrets')
+  @AppScopes(['secrets'])
+  @TokenScopes(['repo'])
   async iterateEnvSecrets(
     repoDatabaseId: number,
     envName: string,
@@ -519,7 +456,7 @@ export class GithubRestClient implements IScopes {
     try {
       // https://docs.github.com/en/rest/actions/secrets?apiVersion=2022-11-28#list-environment-secrets
       const iterator = this.octokit.paginate.iterator(
-        'GET /repositories/{repository_id}/environments/{environment_name}/secrets',
+        this.octokit.rest.actions.listEnvironmentSecrets,
         {
           repository_id: repoDatabaseId,
           environment_name: envName,
@@ -527,7 +464,7 @@ export class GithubRestClient implements IScopes {
         },
       );
       for await (const response of iterator) {
-        for (const secret of response.data.secrets) {
+        for (const secret of response.data) {
           await iteratee(secret);
         }
       }
@@ -550,37 +487,18 @@ export class GithubRestClient implements IScopes {
     }
   }
 
-  @scope(['organization_administration'], 'Github Apps')
+  @AppScopes(['organization_administration'])
+  @TokenScopes(['read:org', 'admin:org'])
   async iterateApps(
     iteratee: ResourceIteratee<OrgAppQueryResponse>,
   ): Promise<void> {
-    //the endpoint needed is /orgs/${this.login}/installations
-    //when we try to call it from the Octokit v3 REST client paginate function, we get 'bad credentials'
-    //per GitHub tech support, this endpoint requires a token that starts with 'ghs'
-    //the v3 Octokit REST client .auth call returns such a token, which we pass to the
-    //v4 GraphQL client. However, the v4 GraphQL client does not appear to have access
-    //to the Apps Nodes (as far as we can currently tell), and the v3 REST client does not
-    //appear to use the 'ghs' token that it returns. When we use curl or a direct request
-    //via @octokit/request, using the ghs token, the endpoint works. Attempts to override
-    //the v3 REST client headers in the paginate function, in order to force it to use the
-    //ghs token, have been unsuccessful. After several hours of experimentation and research,
-    //the only thing that has worked in this direct call to @octokit/request, which is the v3 REST API.
-    //It's not ideal to call that REST API without the client wrapper, because it is not a paginated call,
-    //and it does not have rate-limit and retry functions. We could build our own pagination and
-    //rate-limit aware wrapper for it, but if this endpoint is the only time we need @octokit/request,
-    //we will probably be okay without pagination and rate-limit aware features, because there are
-    //typically only going to be a few GitHub apps installed in a given organization.
-    //TODO: a more elegant solution. Possibly making our own pagination and rate-limit aware wrapper.
     const org = await this.getOrganizationLogin();
     try {
-      const reply = await this.octokit.request(
-        `GET /orgs/{org}/installations`,
-        {
-          org,
-        },
-      );
+      const reply = await this.octokit.rest.orgs.listAppInstallations({
+        org,
+      });
       if (reply.data.installations) {
-        for (const installation of reply.data.installations) {
+        for (const installation of reply.data?.installations ?? []) {
           await iteratee(installation);
         }
       } else {

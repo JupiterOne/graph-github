@@ -8,12 +8,12 @@ import {
   createDirectRelationship,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { toOrganizationMemberEntityFromTeamMember } from '../sync/converters';
 import {
   OrgTeamMemberQueryResponse,
   TeamMemberRole,
+  getOrCreateGraphqlClient,
 } from '../client/GraphQLClient';
 import {
   GithubEntities,
@@ -31,7 +31,7 @@ export async function fetchTeamMembers({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
 
   const teamDataMap =
     await jobState.getData<Map<string, TeamData>>(TEAM_DATA_MAP);
@@ -54,14 +54,14 @@ export async function fetchTeamMembers({
     totalConnectionsById: membersTotalByRepo,
     threshold: 100,
     batchCb: async (teamKeys) => {
-      await apiClient.iterateBatchedTeamMembers(teamKeys, iteratee);
+      await graphqlClient.iterateTeamMembers(teamKeys, iteratee);
     },
     singleCb: async (teamKey) => {
       const teamData = teamDataMap.get(teamKey);
       if (!teamData) {
         return;
       }
-      await apiClient.iterateTeamMembers(teamData.name, iteratee);
+      await graphqlClient.iterateTeamMembers(teamData.name, iteratee);
     },
     logger,
   });

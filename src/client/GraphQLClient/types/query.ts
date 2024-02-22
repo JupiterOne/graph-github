@@ -1,4 +1,4 @@
-import { ResourceIteratee } from '../../../client';
+import { ResourceIteratee } from '../../types';
 import { ExecutableQuery, QueryExecutor } from '../CreateQueryExecutor';
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 

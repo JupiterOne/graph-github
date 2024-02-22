@@ -1,5 +1,6 @@
-import { GitHubGraphQLClient } from './client';
+import { GithubGraphqlClient } from './client';
 import sleepIfApproachingRateLimit from '../../util/sleepIfApproachingRateLimit';
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 
 export type QueryExecutor = (executable: ExecutableQuery) => Promise<any>;
 
@@ -22,8 +23,8 @@ export type ExecutableQuery = {
  * @param logger
  */
 export const createQueryExecutor = (
-  client: GitHubGraphQLClient,
-  logger,
+  client: GithubGraphqlClient,
+  logger: IntegrationLogger,
 ): QueryExecutor => {
   return async (executable): Promise<any> => {
     // client.rateLimit is the known rateLimit when this query executor was created.

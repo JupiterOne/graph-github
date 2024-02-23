@@ -1,3 +1,15 @@
+# v4.0.4 (Wed Feb 14 2024)
+
+#### 🐛 Bug Fix
+
+- log metrics to debug external identity issues [#293](https://github.com/JupiterOne/graph-github/pull/293) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.0.3 (Tue Feb 13 2024)
 
 #### 🐛 Bug Fix

@@ -1,7 +1,6 @@
 import {
   createDirectRelationship,
   Entity,
-  Execution,
   IntegrationLogger,
   IntegrationMissingKeyError,
   IntegrationStep,
@@ -38,7 +37,6 @@ import {
 } from '../sync/converters';
 import { cloneDeep } from 'lodash';
 import { hasAssociatedMergePullRequest } from '../sync/converterUtils';
-import { sub } from 'date-fns';
 import {
   Commit,
   getOrCreateGraphqlClient,
@@ -319,52 +317,19 @@ const processPullRequest = async ({
   }
 };
 
-const PollingIntervalToDurationMap: Record<string, Duration> = {
-  DISABLED: {},
-  ONE_WEEK: { days: 7 },
-  ONE_DAY: { days: 1 },
-  TWELVE_HOURS: { hours: 12 },
-  EIGHT_HOURS: { hours: 8 },
-  FOUR_HOURS: { hours: 4 },
-  ONE_HOUR: { hours: 1 },
-  THIRTY_MINUTES: { minutes: 30 },
-};
-
-/**
- * Determines what the ingestion start datetime should be for PRs.
- * Values are considered in the following order:
- * 1. Value provided by config
- * 2. last successful build time
- * 3. Defaults to Unix epoch
- * @param config
- * @param lastSuccessful
- */
 export const determineIngestStartDatetime = (
   config: IntegrationConfig,
-  lastSuccessful?: Execution,
 ): string => {
-  let startDatetime;
+  // Support for legacy config
+  // TODO: move existing instances using it to new config
   if (config.pullRequestIngestStartDatetime) {
-    // Allows for historical pull requests to be ingested.
-    startDatetime = config.pullRequestIngestStartDatetime;
-  } else if (lastSuccessful?.startedOn) {
-    startDatetime = lastSuccessful?.startedOn;
-
-    // subtract a pollingInterval to collect any missed PRs during the previous run
-    if (
-      config.pollingInterval &&
-      PollingIntervalToDurationMap[config.pollingInterval]
-    ) {
-      startDatetime = sub(
-        startDatetime,
-        PollingIntervalToDurationMap[config.pollingInterval],
-      );
-    }
-  } else {
-    startDatetime = 0;
+    return new Date(config.pullRequestIngestStartDatetime).toISOString();
   }
 
-  return new Date(startDatetime).toISOString();
+  const nowDate = new Date();
+  const days = config.pullRequestIngestSinceDays || 90;
+  const daysAgoDate = new Date(nowDate.setDate(nowDate.getDate() - days));
+  return daysAgoDate.toISOString();
 };
 
 export async function fetchPrs(
@@ -420,10 +385,7 @@ export async function fetchPrs(
     );
   }
 
-  const ingestStartDatetime = determineIngestStartDatetime(
-    config,
-    context.executionHistory.lastSuccessful,
-  );
+  const ingestStartDatetime = determineIngestStartDatetime(config);
   const maxResourceIngestion =
     config.pullRequestMaxResourcesPerRepo ??
     DEFAULT_MAX_RESOURCES_PER_EXECUTION;

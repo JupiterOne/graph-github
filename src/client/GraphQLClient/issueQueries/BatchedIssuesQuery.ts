@@ -13,7 +13,7 @@ type QueryState = BaseQueryState;
 
 type QueryParams = {
   repoIds: string[];
-  lastExecutionTime: string;
+  ingestStartDatetime: string;
 };
 
 /**
@@ -55,7 +55,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     }),
     queryVariables: {
       repoIds: queryParams.repoIds,
-      since: queryParams.lastExecutionTime,
+      since: queryParams.ingestStartDatetime,
       maxSearchLimit: MAX_REQUESTS_LIMIT,
     },
   };
@@ -104,7 +104,7 @@ const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
 
 /**
  * Iterate issues, with pagination, up to 500.
- * Utilizes queryParams.lastExecutionTime to query the minimal amount.
+ * Utilizes queryParams.ingestStartDatetime to query the minimal amount.
  * @param queryParams
  * @param iteratee
  * @param execute

@@ -251,7 +251,6 @@ export class GithubGraphqlClient implements IScopes {
     return pullRequest;
   }
 
-  // token: repo (for private repos)
   async iteratePullRequests(
     repoName: string,
     isPublicRepo: boolean,
@@ -286,13 +285,12 @@ export class GithubGraphqlClient implements IScopes {
     ) {
       const login = await this.getOrganizationLogin();
       const fullName = `${login}/${arg1}`;
-      const ingestStartDatetime = this.sanitizeLastExecutionTime(arg3);
       const iteratee = arg6 as ResourceIteratee<PullRequestResponse>;
       result = await PullRequestsQuery.iteratePullRequests(
         {
           fullName,
           public: arg2,
-          ingestStartDatetime,
+          ingestStartDatetime: arg3,
           maxResourceIngestion: arg4,
           maxSearchLimit: arg5,
         },
@@ -305,12 +303,11 @@ export class GithubGraphqlClient implements IScopes {
       typeof arg2 === 'string' && // ingestStartDatetime
       typeof arg3 === 'function' // iteratee
     ) {
-      const ingestStartDatetime = this.sanitizeLastExecutionTime(arg2);
       const iteratee = arg3 as ResourceIteratee<PullRequestResponse>;
       result = await BatchedPullRequestsQuery.iteratePullRequests(
         {
           repoIds: arg1,
-          ingestStartDatetime,
+          ingestStartDatetime: arg2,
         },
         executor,
         iteratee,
@@ -322,7 +319,6 @@ export class GithubGraphqlClient implements IScopes {
     this.collectRateLimitStatus(result);
   }
 
-  // token: repo (for private repos)
   async iterateReviews(
     repoName: string,
     isPublicRepo: boolean,
@@ -376,7 +372,6 @@ export class GithubGraphqlClient implements IScopes {
     this.collectRateLimitStatus(result);
   }
 
-  // token: repo (for private repos)
   async iterateLabels(
     repoName: string,
     pullRequestNumber: number,
@@ -427,7 +422,6 @@ export class GithubGraphqlClient implements IScopes {
     this.collectRateLimitStatus(result);
   }
 
-  // token: repo (for private repos)
   async iterateCommits(
     repoName: string,
     pullRequestNumber: number,
@@ -478,26 +472,23 @@ export class GithubGraphqlClient implements IScopes {
     this.collectRateLimitStatus(result);
   }
 
-  // token: repo (for private repos)
   async iterateIssues(
     repoName: string,
-    lastExecutionTime: string,
+    ingestStartDatetime: string,
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<void>;
   async iterateIssues(
     repoIds: string[],
-    lastExecutionTime: string,
+    ingestStartDatetime: string,
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<void>;
   @AppScopes(['issues'])
   async iterateIssues(
     arg1: unknown,
-    lastExecutionTime: string,
+    ingestStartDatetime: string,
     iteratee: ResourceIteratee<IssueResponse>,
   ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
-    const sanitizedLastExecutionTime =
-      this.sanitizeLastExecutionTime(lastExecutionTime);
 
     let result: RateLimitStepSummary | undefined;
     if (
@@ -507,7 +498,7 @@ export class GithubGraphqlClient implements IScopes {
         {
           login: await this.getOrganizationLogin(),
           repoName: arg1,
-          lastExecutionTime: sanitizedLastExecutionTime,
+          ingestStartDatetime,
           maxLimit: MAX_SEARCH_LIMIT,
         },
         executor,
@@ -518,7 +509,7 @@ export class GithubGraphqlClient implements IScopes {
       Array.isArray(arg1) // repoIds
     ) {
       result = await BatchedIssuesQuery.iterateIssues(
-        { repoIds: arg1, lastExecutionTime: sanitizedLastExecutionTime },
+        { repoIds: arg1, ingestStartDatetime },
         executor,
         iteratee,
       );
@@ -1130,31 +1121,6 @@ export class GithubGraphqlClient implements IScopes {
       logger.error({ error }, 'An error occurred during the request logic.');
       throw error;
     }
-  }
-
-  // TODO: move to a better place
-  private sanitizeLastExecutionTime(lastExecutionTime: string): string {
-    // defensive programming just in case of bad code changes later
-    // GitHub expects the query string for the updated parameter to be in format 'YYYY-MM-DD'.
-    // It will also take a full Date.toIsoString output with time.
-    // Examples: 2011-10-05 or 2011-10-05T14:48:00.000Z
-    // It will NOT behave properly with a msec-since-epoch integer.
-    // If a malformed string is passed to Github, it does NOT throw an error
-    // It simply returns no data, as if no data meets the criteria
-    // So if we have a bad string, we'll just set lastExecutionTime far back so we get the
-    // behavior of a first-time execution
-    let sanitizedExecutionTime = lastExecutionTime;
-    if (
-      new Date(lastExecutionTime).toString() === 'Invalid Date' ||
-      !lastExecutionTime.includes('-')
-    ) {
-      this.logger.warn(
-        { lastExecutionTime },
-        `Bad string format passed to lastExecutionTime, setting to 2000-01-01 for safety`,
-      );
-      sanitizedExecutionTime = '2000-01-01';
-    }
-    return sanitizedExecutionTime;
   }
 }
 

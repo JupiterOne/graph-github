@@ -67,6 +67,14 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap<Integration
       type: 'string',
       optional: true,
     },
+    issuesIngestSinceDays: {
+      type: 'string',
+      optional: true,
+    },
+    pullRequestIngestSinceDays: {
+      type: 'string',
+      optional: true,
+    },
     pullRequestIngestStartDatetime: {
       type: 'string',
       optional: true,
@@ -165,6 +173,18 @@ export interface BaseIntegrationConfig extends IntegrationInstanceConfig {
   githubApiBaseUrl: string;
 
   /**
+   * The number of days to ingest issues from.
+   */
+  issuesIngestSinceDays?: number;
+
+  /**
+   * The number of days to ingest pull requests from.
+   */
+  pullRequestIngestSinceDays?: number;
+
+  /**
+   * @deprecated
+   *
    * The date and time to start ingesting pull requests in ISO 8601 format.
    */
   pullRequestIngestStartDatetime?: string;
@@ -306,6 +326,16 @@ export function sanitizeConfig(config: IntegrationConfig) {
         'Config requires all of {githubAppId, githubAppPrivateKey, installationId, githubApiBaseUrl}',
       );
     }
+  }
+
+  if (config.issuesIngestSinceDays) {
+    config.issuesIngestSinceDays = Number(config.issuesIngestSinceDays);
+  }
+
+  if (config.pullRequestIngestSinceDays) {
+    config.pullRequestIngestSinceDays = Number(
+      config.pullRequestIngestSinceDays,
+    );
   }
 
   config.pullRequestIngestStartDatetime =

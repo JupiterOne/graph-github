@@ -110,6 +110,13 @@ const fetchIssueAssignees = async ({
   return assignees;
 };
 
+const determineIngestStartDatetime = (config: IntegrationConfig): string => {
+  const nowDate = new Date();
+  const days = config.issuesIngestSinceDays || 90;
+  const daysAgoDate = new Date(nowDate.setDate(nowDate.getDate() - days));
+  return daysAgoDate.toISOString();
+};
+
 export async function fetchIssues(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
 ) {
@@ -118,11 +125,7 @@ export async function fetchIssues(
     jobState,
     logger,
   } = context;
-  const lastSuccessfulSyncTime =
-    context.executionHistory.lastSuccessful?.startedOn ?? 0;
-  const lastSuccessfulExecution = new Date(
-    lastSuccessfulSyncTime,
-  ).toISOString();
+  const ingestStartDateTime = determineIngestStartDatetime(config);
   const graphqlClient = getOrCreateGraphqlClient(config, logger);
 
   const repoTags = await jobState.getData<Map<string, RepoData>>(
@@ -218,7 +221,7 @@ export async function fetchIssues(
     batchCb: async (repoKeys) => {
       await graphqlClient.iterateIssues(
         repoKeys,
-        lastSuccessfulExecution,
+        ingestStartDateTime,
         iteratee,
       );
     },
@@ -230,7 +233,7 @@ export async function fetchIssues(
       try {
         await graphqlClient.iterateIssues(
           repoData.name,
-          lastSuccessfulExecution,
+          ingestStartDateTime,
           iteratee,
         );
       } catch (err) {

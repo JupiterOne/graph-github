@@ -51,7 +51,6 @@
     "@octokit/request": "^8.2.0",
     "@octokit/request-error": "^5.0.1",
     "@octokit/rest": "^20.0.2",
-    "date-fns": "^2.29.3",
     "lodash": "^4.17.21",
     "node-fetch": "2",
     "semver": "^7.3.7"

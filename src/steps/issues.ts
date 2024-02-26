@@ -39,6 +39,7 @@ import {
   IssueResponse,
   getOrCreateGraphqlClient,
 } from '../client/GraphQLClient';
+import dayjs from 'dayjs';
 
 const ISSUES_PROCESSING_BATCH_SIZE = 500;
 
@@ -111,9 +112,9 @@ const fetchIssueAssignees = async ({
 };
 
 const determineIngestStartDatetime = (config: IntegrationConfig): string => {
-  const nowDate = new Date();
+  const nowDate = dayjs();
   const days = config.issuesIngestSinceDays || 90;
-  const daysAgoDate = new Date(nowDate.setDate(nowDate.getDate() - days));
+  const daysAgoDate = nowDate.subtract(days, 'day');
   return daysAgoDate.toISOString();
 };
 

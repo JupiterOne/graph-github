@@ -47,6 +47,7 @@ import {
 } from '../client/GraphQLClient';
 import { MAX_SEARCH_LIMIT } from '../client/GraphQLClient/paginate';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
+import dayjs from 'dayjs';
 
 const PULL_REQUESTS_PROCESSING_BATCH_SIZE = 500;
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
@@ -323,12 +324,12 @@ export const determineIngestStartDatetime = (
   // Support for legacy config
   // TODO: move existing instances using it to new config
   if (config.pullRequestIngestStartDatetime) {
-    return new Date(config.pullRequestIngestStartDatetime).toISOString();
+    return dayjs(config.pullRequestIngestStartDatetime).toISOString();
   }
 
-  const nowDate = new Date();
+  const nowDate = dayjs();
   const days = config.pullRequestIngestSinceDays || 90;
-  const daysAgoDate = new Date(nowDate.setDate(nowDate.getDate() - days));
+  const daysAgoDate = nowDate.subtract(days, 'day');
   return daysAgoDate.toISOString();
 };
 

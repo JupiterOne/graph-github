@@ -1,3 +1,15 @@
+# v4.2.0 (Tue Feb 27 2024)
+
+#### 🚀 Enhancement
+
+- add config options to change ingestion window for PRs and issues [#295](https://github.com/JupiterOne/graph-github/pull/295) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.1.0 (Tue Feb 27 2024)
 
 #### 🚀 Enhancement

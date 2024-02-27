@@ -1,3 +1,15 @@
+# v4.1.0 (Tue Feb 27 2024)
+
+#### 🚀 Enhancement
+
+- Add authentication type for enterprise PATs [#294](https://github.com/JupiterOne/graph-github/pull/294) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.0.4 (Wed Feb 14 2024)
 
 #### 🐛 Bug Fix

@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-github",
-  "version": "4.0.4",
+  "version": "4.1.0",
   "description": "A JupiterOne Integration",
   "repository": {
     "type": "git",

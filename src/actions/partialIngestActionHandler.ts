@@ -4,7 +4,6 @@ import {
   isValidPullRequestKey,
 } from '../util/propertyHelpers';
 import { QueryParams } from '../client/GraphQLClient/pullRequestQueries/SinglePullRequestQuery';
-import { APIClient } from '../client';
 import {
   toOrganizationCollaboratorEntity,
   toOrganizationMemberEntity,
@@ -16,7 +15,11 @@ import {
   IntegrationError,
   IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
-import { PullRequestResponse } from '../client/GraphQLClient';
+import {
+  GithubGraphqlClient,
+  PullRequestResponse,
+} from '../client/GraphQLClient';
+import { IntegrationConfig } from '../config';
 
 interface EntityToIngest {
   _type: string; // e.g. - github_pullrequest
@@ -34,8 +37,9 @@ export interface EntityIngestError extends EntityToIngest {
  * @param logger
  */
 export const partialIngestActionHandler = async (
-  client: APIClient,
+  client: GithubGraphqlClient,
   entitiesToIngest: EntityToIngest[],
+  config: IntegrationConfig,
   logger: IntegrationLogger,
 ): Promise<{ entities: any[]; errors: EntityIngestError[] }> => {
   const errors: EntityIngestError[] = [];
@@ -48,7 +52,7 @@ export const partialIngestActionHandler = async (
 
       const pullRequest = decomposePullRequestKey(entity._key);
 
-      return buildEntity(client, {
+      return buildEntity(client, config, {
         repoOwner: pullRequest.login,
         repoName: pullRequest.repoName,
         pullRequestNumber: pullRequest.pullRequestNumber,
@@ -84,7 +88,8 @@ export const partialIngestActionHandler = async (
  * @param pullRequestNumber
  */
 const buildEntity = async (
-  client: APIClient,
+  client: GithubGraphqlClient,
+  config: IntegrationConfig,
   { repoOwner, repoName, pullRequestNumber }: QueryParams,
 ) => {
   const pullRequest = await client.fetchPullRequest(
@@ -102,7 +107,7 @@ const buildEntity = async (
   }
 
   const { memberByLoginMap, allCollaboratorsByLoginMap } =
-    await buildUserLoginMaps(client, repoName);
+    await buildUserLoginMaps(client, config, repoName);
 
   return toPullRequestEntity({
     pullRequest: pullRequest as unknown as PullRequestResponse,
@@ -114,14 +119,18 @@ const buildEntity = async (
   });
 };
 
-const buildUserLoginMaps = async (client: APIClient, repoName: string) => {
+const buildUserLoginMaps = async (
+  client: GithubGraphqlClient,
+  config: IntegrationConfig,
+  repoName: string,
+) => {
   const memberByLoginMap: IdEntityMap<Entity['_key']> = new Map();
   const allCollaboratorsByLoginMap: IdEntityMap<Entity['_key']> = new Map();
 
   // Query for all members of organization
   // There's not a good way to fetch a single member from an organization
   // We can use a REST endpoint, but it pulls back different data.
-  await client.iterateOrgMembers((member) => {
+  await client.iterateMembers((member) => {
     if (member.login) {
       memberByLoginMap.set(
         member.login,
@@ -130,13 +139,11 @@ const buildUserLoginMaps = async (client: APIClient, repoName: string) => {
     }
   });
 
-  await client.iterateRepoCollaborators(repoName, (collaborator) => {
+  await client.iterateCollaborators(repoName, (collaborator) => {
     allCollaboratorsByLoginMap.set(
       collaborator.login,
-      toOrganizationCollaboratorEntity(
-        collaborator,
-        client.config.githubApiBaseUrl,
-      )._key,
+      toOrganizationCollaboratorEntity(collaborator, config.githubApiBaseUrl)
+        ._key,
     );
   });
 

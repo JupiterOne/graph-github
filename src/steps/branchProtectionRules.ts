@@ -9,7 +9,6 @@ import {
   RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 
-import { APIClient, getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { BranchProtectionRuleEntity, IdEntityMap, RepoData } from '../types';
 import {
@@ -25,6 +24,8 @@ import { getTeamEntityKey, toBranchProtectionEntity } from '../sync/converters';
 import {
   BranchProtectionRuleAllowancesResponse,
   BranchProtectionRuleResponse,
+  getOrCreateGraphqlClient,
+  GithubGraphqlClient,
 } from '../client/GraphQLClient';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
 
@@ -36,7 +37,8 @@ export async function fetchBranchProtectionRule({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
+  const orgLogin = await graphqlClient.getOrganizationLogin();
 
   const repoTags = await jobState.getData<Map<string, RepoData>>(
     GITHUB_REPO_TAGS_ARRAY,
@@ -58,7 +60,7 @@ export async function fetchBranchProtectionRule({
 
   const processRawPolicies = async () => {
     const allowancesByPolicy = await fetchAllowances({
-      apiClient,
+      graphqlClient,
       allowancesTotalByPolicy,
       logger,
     });
@@ -67,7 +69,7 @@ export async function fetchBranchProtectionRule({
         return processPolicy({
           jobState,
           config,
-          apiClient,
+          orgLogin,
           logger,
           branchProtectionRule,
           allowances: allowancesByPolicy.get(branchProtectionRule.id),
@@ -106,14 +108,14 @@ export async function fetchBranchProtectionRule({
     totalConnectionsById: branchProtectionRuleTotalByRepo,
     threshold: 100,
     batchCb: async (repoKeys) => {
-      await apiClient.iterateBatchedBranchProtectionPolicy(repoKeys, iteratee);
+      await graphqlClient.iterateBranchProtectionRules(repoKeys, iteratee);
     },
     singleCb: async (repoKey) => {
       const repoData = repoTags.get(repoKey);
       if (!repoData) {
         return;
       }
-      await apiClient.iterateBranchProtectionPolicy(repoData.name, iteratee);
+      await graphqlClient.iterateBranchProtectionRules(repoData.name, iteratee);
     },
     logger,
   });
@@ -129,11 +131,11 @@ export async function fetchBranchProtectionRule({
 }
 
 const fetchAllowances = async ({
-  apiClient,
+  graphqlClient,
   allowancesTotalByPolicy,
   logger,
 }: {
-  apiClient: APIClient;
+  graphqlClient: GithubGraphqlClient;
   allowancesTotalByPolicy: Map<string, number>;
   logger: IntegrationLogger;
 }) => {
@@ -150,13 +152,13 @@ const fetchAllowances = async ({
     totalConnectionsById: allowancesTotalByPolicy,
     threshold: 100,
     batchCb: async (branchProtectionRuleIds) => {
-      await apiClient.iterateBatchedPolicyAllowances(
+      await graphqlClient.iteratePolicyAllowances(
         branchProtectionRuleIds,
         iteratee,
       );
     },
     singleCb: async (branchProtectionRuleId) => {
-      await apiClient.iterateBatchedPolicyAllowances(
+      await graphqlClient.iteratePolicyAllowances(
         [branchProtectionRuleId],
         iteratee,
       );
@@ -169,14 +171,14 @@ const fetchAllowances = async ({
 
 async function processPolicy({
   jobState,
-  apiClient,
+  orgLogin,
   config,
   logger,
   branchProtectionRule,
   allowances,
 }: {
   jobState: JobState;
-  apiClient: APIClient;
+  orgLogin: string;
   config: IntegrationConfig;
   logger: IntegrationLogger;
   branchProtectionRule: BranchProtectionRuleResponse;
@@ -186,7 +188,7 @@ async function processPolicy({
     toBranchProtectionEntity(
       branchProtectionRule,
       config.githubApiBaseUrl,
-      apiClient.graphQLClient.login,
+      orgLogin,
       allowances,
     ),
   )) as BranchProtectionRuleEntity;

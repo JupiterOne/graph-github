@@ -4,14 +4,12 @@ import {
 } from '@octokit/graphql';
 
 import {
+  IntegrationError,
   IntegrationLogger,
-  IntegrationProviderAuthenticationError,
-  parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 import { retry } from '@lifeomic/attempt';
-import { Octokit } from '@octokit/rest';
 
-import { ResourceIteratee } from '../../client';
+import { ResourceIteratee } from '../types';
 
 import {
   BranchProtectionRuleResponse,
@@ -36,6 +34,7 @@ import {
   BranchProtectionRuleAllowancesResponse,
   IssueLabel,
   IssueAssignee,
+  OrgQueryResponse,
 } from './types';
 import PullRequestsQuery from './pullRequestQueries/PullRequestsQuery';
 import IssuesQuery from './issueQueries/IssuesQuery';
@@ -47,9 +46,7 @@ import ExternalIdentifiersQuery from './memberQueries/ExternalIdentifiersQuery';
 import TeamMembersQuery from './memberQueries/TeamMembersQuery';
 import TeamsQuery from './teamQueries/TeamsQuery';
 import RepoCollaboratorsQuery from './collaboratorQueries/RepoCollaboratorsQuery';
-import OrganizationQuery, {
-  OrganizationResults,
-} from './organizationQueries/OrganizationQuery';
+import OrganizationQuery from './organizationQueries/OrganizationQuery';
 import {
   handleForbiddenErrors,
   handleNotFoundErrors,
@@ -80,44 +77,104 @@ import BatchedPullRequestsQuery from './pullRequestQueries/BatchedPullRequestsQu
 import BatchedBranchProtectionRulesAllowancesQuery from './branchProtectionRulesQueries/BatchedBranchProtectionRulesAllowancesQuery';
 import BatchedIssueLabelsQuery from './issueQueries/BatchedIssueLabelsQuery';
 import BatchedIssueAssigneesQuery from './issueQueries/BatchedIssueAssigneesQuery';
+import { IntegrationConfig } from '../../config';
+import {
+  AppScopes,
+  IScopes,
+  ScopesSet,
+  TokenScopes,
+  fetchScopes,
+} from '../scopes';
+import { fetchOrganizationLogin } from '../organizationLogin';
+import { getAuthStrategy } from '../auth';
+import { getMetaResponse } from '../meta';
+import fetch from 'node-fetch';
 
-const FIVE_MINUTES_IN_MILLIS = 300_000;
-
-export class GitHubGraphQLClient {
+export class GithubGraphqlClient implements IScopes {
   private readonly graphqlUrl: string;
 
   /**
    * Documentation can be found here: https://github.com/octokit/graphql.js
    */
-  private graph: graphql;
+  private graphqlWithAuth: graphql;
 
-  private readonly logger: IntegrationLogger;
-  private authClient: Octokit;
-  private tokenExpires: number;
+  /**
+   * Rate limit status.
+   */
   private rateLimitStatus: {
     limit: number;
     remaining: number;
     resetAt: string;
   };
 
+  /**
+   * The organization login.
+   */
+  private orgLogin: string | undefined;
+
+  /**
+   * The Github scopes from authentication response.
+   */
+  private scopes: ScopesSet | undefined;
+
+  /**
+   * The version of the GitHub Enterprise Server, if applicable.
+   * This is only fetched once and then cached.
+   * If the version is not applicable, it will be set to null.
+   */
+  private gheServerVersion: string | null | undefined;
+
   constructor(
-    graphqlUrl: string,
-    token: string,
-    tokenExpires: number,
-    logger: IntegrationLogger,
-    authClient: Octokit,
+    private readonly config: IntegrationConfig,
+    private readonly logger: IntegrationLogger,
   ) {
-    this.graphqlUrl = graphqlUrl;
-    this.graph = octokitGraphQl.defaults({
+    this.graphqlUrl = this.config.githubApiBaseUrl.includes('api.github.com')
+      ? this.config.githubApiBaseUrl
+      : `${this.config.githubApiBaseUrl}/api`;
+
+    const authStrategy = getAuthStrategy(this.config);
+    const requestHook = authStrategy.hook;
+    this.graphqlWithAuth = octokitGraphQl.defaults({
       baseUrl: this.graphqlUrl,
-      headers: {
-        'User-Agent': 'jupiterone-graph-github',
-        Authorization: `token ${token}`,
+      request: {
+        fetch: fetch,
+        hook: requestHook,
       },
     });
-    this.tokenExpires = tokenExpires;
-    this.logger = logger;
-    this.authClient = authClient;
+  }
+
+  async getOrganizationLogin(): Promise<string> {
+    if (this.orgLogin) {
+      return this.orgLogin;
+    }
+
+    this.orgLogin = await fetchOrganizationLogin(this.config);
+
+    if (!this.orgLogin) {
+      throw new IntegrationError({
+        code: 'ORG_LOGIN_NOT_FOUND',
+        message: 'Organization login was not found or could not be determined',
+      });
+    }
+
+    return this.orgLogin;
+  }
+
+  async getScopes(): Promise<ScopesSet | undefined> {
+    if (!this.scopes) {
+      this.scopes = await fetchScopes(this.config);
+    }
+
+    return this.scopes;
+  }
+
+  async getGithubEnterpriseServerVersion(): Promise<string | null> {
+    if (this.gheServerVersion === undefined) {
+      const response = await getMetaResponse(this.config);
+      const meta = response.data as { installed_version?: string };
+      this.gheServerVersion = meta.installed_version ?? null;
+    }
+    return this.gheServerVersion;
   }
 
   private collectRateLimitStatus(results: RateLimitStepSummary) {
@@ -137,38 +194,6 @@ export class GitHubGraphQLClient {
   }
 
   /**
-   * Refreshes the token and reinitialize the graphql client.
-   * @private
-   */
-  private async refreshToken() {
-    try {
-      const { token, expiresAt } = (await this.authClient.auth({
-        type: 'installation',
-        refresh: true, //required or else client will return the previous token from cache
-      })) as {
-        token: string;
-        expiresAt: string;
-      };
-      this.graph = octokitGraphQl.defaults({
-        baseUrl: this.graphqlUrl,
-        headers: {
-          'User-Agent': 'jupiterone-graph-github',
-          Authorization: `token ${token}`,
-        },
-      });
-      this.tokenExpires = parseTimePropertyValue(expiresAt) || 0;
-    } catch (err) {
-      this.logger.error(err);
-      throw new IntegrationProviderAuthenticationError({
-        cause: err,
-        endpoint: err.response?.url,
-        status: err.status,
-        statusText: err.response?.data?.message,
-      });
-    }
-  }
-
-  /**
    * Performs GraphQl request.
    * Handles:
    *    - token management (refreshes 5 minutes before expiring)
@@ -180,10 +205,6 @@ export class GitHubGraphQLClient {
     queryString: string,
     queryVariables: Record<string, unknown>,
   ) {
-    if (this.tokenExpires - FIVE_MINUTES_IN_MILLIS < Date.now()) {
-      await this.refreshToken();
-    }
-
     return await this.retryGraphQL(queryString, queryVariables);
   }
 
@@ -191,14 +212,17 @@ export class GitHubGraphQLClient {
    * Fetches organization associated with the provided login.
    * @param login
    */
-  public async fetchOrganization(login: string): Promise<OrganizationResults> {
+  @TokenScopes(['read:org', 'admin:org'])
+  public async fetchOrganization(): Promise<OrgQueryResponse | undefined> {
     const executor = createQueryExecutor(this, this.logger);
 
-    const results = await OrganizationQuery.fetchOrganization(login, executor);
+    const login = await this.getOrganizationLogin();
+    const { organization, rateLimit } =
+      await OrganizationQuery.fetchOrganization(login, executor);
 
-    this.collectRateLimitStatus(results.rateLimit);
+    this.collectRateLimitStatus(rateLimit);
 
-    return results;
+    return organization;
   }
 
   /**
@@ -227,689 +251,732 @@ export class GitHubGraphQLClient {
     return pullRequest;
   }
 
-  /**
-   * Iterates over pull requests for the given repository.
-   * @param repository
-   * @param ingestStartDatetime
-   * @param maxResourceIngestion
-   * @param iteratee
-   */
-  public async iteratePullRequests(
-    repository: { fullName: string; public: boolean },
+  // token: repo (for private repos)
+  async iteratePullRequests(
+    repoName: string,
+    isPublicRepo: boolean,
     ingestStartDatetime: string,
     maxResourceIngestion: number,
     maxSearchLimit: number,
     iteratee: ResourceIteratee<PullRequestResponse>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await PullRequestsQuery.iteratePullRequests(
-        {
-          ...repository,
-          ingestStartDatetime,
-          maxResourceIngestion,
-          maxSearchLimit,
-        },
-        executor,
-        iteratee,
-        this.logger,
-      ),
-    );
-  }
-
-  public async iterateBatchedPullRequests(
+  ): Promise<void>;
+  async iteratePullRequests(
     repoIds: string[],
     ingestStartDatetime: string,
     iteratee: ResourceIteratee<PullRequestResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void>;
+  async iteratePullRequests(
+    arg1: unknown,
+    arg2: unknown,
+    arg3: unknown,
+    arg4?: unknown,
+    arg5?: unknown,
+    arg6?: unknown,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
-      await BatchedPullRequestsQuery.iteratePullRequests(
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' && // repoName
+      typeof arg2 === 'boolean' && // isPublicRepo
+      typeof arg3 === 'string' && // ingestStartDatetime
+      typeof arg4 === 'number' && // maxResourceIngestion
+      typeof arg5 === 'number' && // maxSearchLimit
+      typeof arg6 === 'function' // iteratee
+    ) {
+      const login = await this.getOrganizationLogin();
+      const fullName = `${login}/${arg1}`;
+      const ingestStartDatetime = this.sanitizeLastExecutionTime(arg3);
+      const iteratee = arg6 as ResourceIteratee<PullRequestResponse>;
+      result = await PullRequestsQuery.iteratePullRequests(
         {
-          repoIds,
+          fullName,
+          public: arg2,
+          ingestStartDatetime,
+          maxResourceIngestion: arg4,
+          maxSearchLimit: arg5,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      );
+    } else if (
+      Array.isArray(arg1) && // repoIds
+      typeof arg2 === 'string' && // ingestStartDatetime
+      typeof arg3 === 'function' // iteratee
+    ) {
+      const ingestStartDatetime = this.sanitizeLastExecutionTime(arg2);
+      const iteratee = arg3 as ResourceIteratee<PullRequestResponse>;
+      result = await BatchedPullRequestsQuery.iteratePullRequests(
+        {
+          repoIds: arg1,
           ingestStartDatetime,
         },
         executor,
         iteratee,
-      ),
-    );
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates over reviews for the given pull request.
-   * @param repository
-   * @param pullRequestNumber
-   * @param iteratee
-   */
-  public async iterateReviews(
-    repository: { name: string; owner: string; isPublic: boolean },
+  // token: repo (for private repos)
+  async iterateReviews(
+    repoName: string,
+    isPublicRepo: boolean,
     pullRequestNumber: number,
     iteratee: ResourceIteratee<Review>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await ReviewsQuery.iterateReviews(
-        {
-          repoName: repository.name,
-          repoOwner: repository.owner,
-          isPublicRepo: repository.isPublic,
-          pullRequestNumber,
-          maxLimit: MAX_SEARCH_LIMIT,
-        },
-        executor,
-        iteratee,
-        this.logger,
-      ),
-    );
-  }
-
-  /**
-   * Iterates over reviews for the given pull request ids.
-   * @param pullRequestIds
-   * @param iteratee
-   */
-  public async iterateBatchedReviews(
+  ): Promise<void>;
+  async iterateReviews(
     pullRequestIds: string[],
     iteratee: ResourceIteratee<Review>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void>;
+  async iterateReviews(
+    arg1: unknown,
+    arg2: unknown,
+    arg3?: unknown,
+    arg4?: unknown,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
-      await BatchedReviewsQuery.iterateReviews(
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' &&
+      typeof arg2 === 'boolean' &&
+      typeof arg3 === 'number' &&
+      typeof arg4 === 'function'
+    ) {
+      const iteratee = arg4 as ResourceIteratee<Review>;
+      result = await ReviewsQuery.iterateReviews(
         {
-          pullRequestIds,
-        },
-        executor,
-        iteratee,
-      ),
-    );
-  }
-
-  /**
-   * Iterates over labels for the given pull request.
-   * @param repository
-   * @param pullRequestNumber
-   * @param iteratee
-   */
-  public async iterateLabels(
-    repository: { name: string; owner: string },
-    pullRequestNumber: number,
-    iteratee: ResourceIteratee<Label>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await LabelsQuery.iterateLabels(
-        {
-          repoName: repository.name,
-          repoOwner: repository.owner,
-          pullRequestNumber,
+          repoOwner: await this.getOrganizationLogin(),
+          repoName: arg1,
+          isPublicRepo: arg2,
+          pullRequestNumber: arg3,
           maxLimit: MAX_SEARCH_LIMIT,
         },
         executor,
         iteratee,
         this.logger,
-      ),
-    );
-  }
-
-  /**
-   * Iterates over labels for the given pull request.
-   * @param repository
-   * @param pullRequestNumber
-   * @param iteratee
-   */
-  public async iterateBatchedLabels(
-    pullRequestIds: string[],
-    iteratee: ResourceIteratee<Label>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await BatchedLabelsQuery.iterateLabels(
+      );
+    } else if (Array.isArray(arg1) && typeof arg2 === 'function') {
+      const iteratee = arg2 as ResourceIteratee<Review>;
+      result = await BatchedReviewsQuery.iterateReviews(
         {
-          pullRequestIds,
+          pullRequestIds: arg1,
         },
         executor,
         iteratee,
-      ),
-    );
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates over commits for the given pull request.
-   * @param repository
-   * @param pullRequestNumber
-   * @param iteratee
-   */
-  public async iterateCommits(
-    repository: { name: string; owner: string },
+  // token: repo (for private repos)
+  async iterateLabels(
+    repoName: string,
     pullRequestNumber: number,
-    iteratee: ResourceIteratee<Commit>,
-  ): Promise<RateLimitStepSummary> {
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<void>;
+  async iterateLabels(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Label>,
+  ): Promise<void>;
+  async iterateLabels(
+    arg1: unknown,
+    arg2: unknown,
+    arg3?: unknown,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
-      await CommitsQuery.iterateCommits(
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' &&
+      typeof arg2 === 'number' &&
+      typeof arg3 === 'function'
+    ) {
+      const iteratee = arg3 as ResourceIteratee<Label>;
+      result = await LabelsQuery.iterateLabels(
         {
-          repoName: repository.name,
-          repoOwner: repository.owner,
-          pullRequestNumber,
+          repoOwner: await this.getOrganizationLogin(),
+          repoName: arg1,
+          pullRequestNumber: arg2,
           maxLimit: MAX_SEARCH_LIMIT,
         },
         executor,
         iteratee,
         this.logger,
-      ),
-    );
-  }
-
-  /**
-   * Iterates over commits for the given pull request ids.
-   * @param repository
-   * @param pullRequestNumber
-   * @param iteratee
-   */
-  public async iterateBatchedCommits(
-    pullRequestIds: string[],
-    iteratee: ResourceIteratee<Commit>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await BatchedCommitsQuery.iterateCommits(
+      );
+    } else if (Array.isArray(arg1) && typeof arg2 === 'function') {
+      const iteratee = arg2 as ResourceIteratee<Label>;
+      result = await BatchedLabelsQuery.iterateLabels(
         {
-          pullRequestIds,
+          pullRequestIds: arg1,
         },
         executor,
         iteratee,
-      ),
-    );
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates over issues for the given repository.
-   * @param repoFullName
-   * @param lastExecutionTime
-   * @param iteratee
-   */
-  public async iterateIssues(
-    login: string,
+  // token: repo (for private repos)
+  async iterateCommits(
+    repoName: string,
+    pullRequestNumber: number,
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<void>;
+  async iterateCommits(
+    pullRequestIds: string[],
+    iteratee: ResourceIteratee<Commit>,
+  ): Promise<void>;
+  async iterateCommits(
+    arg1: unknown,
+    arg2: unknown,
+    arg3?: unknown,
+  ): Promise<void> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' &&
+      typeof arg2 === 'number' &&
+      typeof arg3 === 'function'
+    ) {
+      const iteratee = arg3 as ResourceIteratee<Commit>;
+      result = await CommitsQuery.iterateCommits(
+        {
+          repoOwner: await this.getOrganizationLogin(),
+          repoName: arg1,
+          pullRequestNumber: arg2,
+          maxLimit: MAX_SEARCH_LIMIT,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      );
+    } else if (Array.isArray(arg1) && typeof arg2 === 'function') {
+      const iteratee = arg2 as ResourceIteratee<Commit>;
+      result = await BatchedCommitsQuery.iterateCommits(
+        {
+          pullRequestIds: arg1,
+        },
+        executor,
+        iteratee,
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+
+    this.collectRateLimitStatus(result);
+  }
+
+  // token: repo (for private repos)
+  async iterateIssues(
     repoName: string,
     lastExecutionTime: string,
     iteratee: ResourceIteratee<IssueResponse>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await IssuesQuery.iterateIssues(
-        { login, repoName, lastExecutionTime, maxLimit: MAX_SEARCH_LIMIT },
-        executor,
-        iteratee,
-        this.logger,
-      ),
-    );
-  }
-
-  /**
-   * Iterates over issues for the given repositories.
-   * @param repoFullName
-   * @param lastExecutionTime
-   * @param iteratee
-   */
-  public async iterateBatchedIssues(
+  ): Promise<void>;
+  async iterateIssues(
     repoIds: string[],
     lastExecutionTime: string,
     iteratee: ResourceIteratee<IssueResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void>;
+  @AppScopes(['issues'])
+  async iterateIssues(
+    arg1: unknown,
+    lastExecutionTime: string,
+    iteratee: ResourceIteratee<IssueResponse>,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
+    const sanitizedLastExecutionTime =
+      this.sanitizeLastExecutionTime(lastExecutionTime);
 
-    return this.collectRateLimitStatus(
-      await BatchedIssuesQuery.iterateIssues(
-        { repoIds, lastExecutionTime },
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' // repoName
+    ) {
+      result = await IssuesQuery.iterateIssues(
+        {
+          login: await this.getOrganizationLogin(),
+          repoName: arg1,
+          lastExecutionTime: sanitizedLastExecutionTime,
+          maxLimit: MAX_SEARCH_LIMIT,
+        },
         executor,
         iteratee,
-      ),
-    );
+        this.logger,
+      );
+    } else if (
+      Array.isArray(arg1) // repoIds
+    ) {
+      result = await BatchedIssuesQuery.iterateIssues(
+        { repoIds: arg1, lastExecutionTime: sanitizedLastExecutionTime },
+        executor,
+        iteratee,
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates over issue labels for the given issue ids.
-   * @param {string[]} issueIds
-   * @param {ResourceIteratee<IssueLabel>} iteratee
-   */
-  public async iterateBatchedIssueLabels(
+  async iterateIssueLabels(
     issueIds: string[],
     iteratee: ResourceIteratee<IssueLabel>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await BatchedIssueLabelsQuery.iterateIssueLabels(
-        {
-          issueIds,
-        },
-        executor,
-        iteratee,
-      ),
+    const result = await BatchedIssueLabelsQuery.iterateIssueLabels(
+      {
+        issueIds,
+      },
+      executor,
+      iteratee,
     );
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates over issue assignees for the given issue ids.
-   * @param {string[]} issueIds
-   * @param {ResourceIteratee<IssueAssignee>} iteratee
-   */
-  public async iterateBatchedIssueAssignees(
+  async iterateIssueAssignees(
     issueIds: string[],
     iteratee: ResourceIteratee<IssueAssignee>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await BatchedIssueAssigneesQuery.iterateIssueAssignees(
-        {
-          issueIds,
-        },
-        executor,
-        iteratee,
-      ),
+    const result = await BatchedIssueAssigneesQuery.iterateIssueAssignees(
+      {
+        issueIds,
+      },
+      executor,
+      iteratee,
     );
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates over Organization repositories.
-   * @param login
-   * @param iteratee
-   */
-  public async iterateOrgRepositories(
-    login: string,
+  async iterateRepositories(
+    lastSuccessfulExecution: RepoConnectionFilters['lastSuccessfulExecution'],
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
-    connectionFilters: RepoConnectionFilters,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await OrgRepositoriesQuery.iterateRepositories(
-        { login, maxLimit: 50, ...connectionFilters },
-        executor,
-        iteratee,
-        this.logger,
-      ),
+    const gheServerVersion =
+      (await this.getGithubEnterpriseServerVersion()) ?? undefined;
+    const result = await OrgRepositoriesQuery.iterateRepositories(
+      {
+        login: await this.getOrganizationLogin(),
+        maxLimit: 50,
+        lastSuccessfulExecution,
+        alertStates: this.config.dependabotAlertStates ?? [],
+        gheServerVersion,
+      },
+      executor,
+      iteratee,
+      this.logger,
     );
+    this.collectRateLimitStatus(result);
   }
 
-  public async iterateTags(
-    repoOwner: string,
+  async iterateTags(
     repoName: string,
     iteratee: ResourceIteratee<TagQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await TagsQuery.iterateTags(
-        { repoName, repoOwner, maxLimit: MAX_REQUESTS_LIMIT },
-        executor,
-        iteratee,
-        this.logger,
-      ),
-    );
-  }
-
-  public async iterateBatchedTags(
+  ): Promise<void>;
+  async iterateTags(
     repoIds: string[],
     iteratee: ResourceIteratee<TagQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void>;
+  async iterateTags(
+    arg1: unknown,
+    iteratee: ResourceIteratee<TagQueryResponse>,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
-      await BatchedTagsQuery.iterateTags({ repoIds }, executor, iteratee),
-    );
-  }
-
-  public async iterateTopics(
-    repoOwner: string,
-    repoName: string,
-    iteratee: ResourceIteratee<TopicQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await TopicsQuery.iterateTopics(
-        { repoName, repoOwner, maxLimit: MAX_REQUESTS_LIMIT },
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' // repoName
+    ) {
+      result = await TagsQuery.iterateTags(
+        {
+          repoOwner: await this.getOrganizationLogin(),
+          repoName: arg1,
+          maxLimit: MAX_REQUESTS_LIMIT,
+        },
         executor,
         iteratee,
         this.logger,
-      ),
-    );
+      );
+    } else if (
+      Array.isArray(arg1) // repoIds
+    ) {
+      result = await BatchedTagsQuery.iterateTags(
+        { repoIds: arg1 },
+        executor,
+        iteratee,
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+
+    this.collectRateLimitStatus(result);
   }
 
-  public async iterateBatchedTopics(
+  async iterateTopics(
+    repoName: string,
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ): Promise<void>;
+  async iterateTopics(
     repoIds: string[],
     iteratee: ResourceIteratee<TopicQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void>;
+  async iterateTopics(
+    arg1: unknown,
+    iteratee: ResourceIteratee<TopicQueryResponse>,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
-      await BatchedTopicsQuery.iterateTopics({ repoIds }, executor, iteratee),
-    );
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' // repoName
+    ) {
+      result = await TopicsQuery.iterateTopics(
+        {
+          repoOwner: await this.getOrganizationLogin(),
+          repoName: arg1,
+          maxLimit: MAX_REQUESTS_LIMIT,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      );
+    } else if (
+      Array.isArray(arg1) // repoIds
+    ) {
+      result = await BatchedTopicsQuery.iterateTopics(
+        { repoIds: arg1 },
+        executor,
+        iteratee,
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterate teams found within an organization.
-   * @param login aka organization
-   * @param iteratee
-   */
   public async iterateTeams(
-    login: string,
     iteratee: ResourceIteratee<OrgTeamQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
-      await TeamsQuery.iterateTeams(
-        { login, maxLimit: MAX_REQUESTS_LIMIT },
-        executor,
-        iteratee,
-        this.logger,
-      ),
+    const result = await TeamsQuery.iterateTeams(
+      {
+        login: await this.getOrganizationLogin(),
+        maxLimit: MAX_REQUESTS_LIMIT,
+      },
+      executor,
+      iteratee,
+      this.logger,
     );
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterate repository collaborators within an organization.
-   * @param login aka organization
-   * @param repoName
-   * @param iteratee
-   */
-  public async iterateRepoCollaborators(
-    login: string,
+  async iterateCollaborators(
     repoName: string,
     iteratee: ResourceIteratee<CollaboratorResponse>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await RepoCollaboratorsQuery.iterateCollaborators(
-        {
-          login,
-          repoName,
-          maxLimit: MAX_REQUESTS_LIMIT,
-        },
-        executor,
-        iteratee,
-        this.logger,
-      ),
-    );
-  }
-
-  /**
-   * Iterate repository collaborators within an organization.
-   * @param login aka organization
-   * @param repoName
-   * @param iteratee
-   */
-  public async iterateBatchedRepoCollaborators(
+  ): Promise<void>;
+  async iterateCollaborators(
     repoIds: string[],
     iteratee: ResourceIteratee<CollaboratorResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void>;
+  async iterateCollaborators(
+    arg1: unknown,
+    iteratee: ResourceIteratee<CollaboratorResponse>,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
-      await BatchedRepoCollaboratorsQuery.iterateCollaborators(
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' // repoName
+    ) {
+      result = await RepoCollaboratorsQuery.iterateCollaborators(
         {
-          repoIds,
-        },
-        executor,
-        iteratee,
-      ),
-    );
-  }
-
-  /**
-   * Iterates over repositories for the given org & team.
-   * @param login - aka organization
-   * @param teamSlug
-   * @param iteratee
-   */
-  public async iterateTeamRepositories(
-    login: string,
-    teamSlug: string,
-    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await TeamRepositoriesQuery.iterateRepositories(
-        {
-          login,
-          teamSlug,
+          login: await this.getOrganizationLogin(),
+          repoName: arg1,
           maxLimit: MAX_REQUESTS_LIMIT,
         },
         executor,
         iteratee,
         this.logger,
-      ),
-    );
-  }
-
-  /**
-   * Iterates over repositories for the given team ids.
-   * @param teamIds
-   * @param iteratee
-   */
-  public async iterateBatchedTeamRepositories(
-    teamIds: string[],
-    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await BatchedTeamRepositoriesQuery.iterateRepositories(
+      );
+    } else if (
+      Array.isArray(arg1) // repoIds
+    ) {
+      result = await BatchedRepoCollaboratorsQuery.iterateCollaborators(
         {
-          teamIds,
+          repoIds: arg1,
         },
         executor,
         iteratee,
-      ),
-    );
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates over members of the given org.
-   * @param login - aka organization
-   * @param iteratee
-   */
-  public async iterateOrgMembers(
-    login: string,
+  async iterateTeamRepositories(
+    teamSlug: string,
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<void>;
+  async iterateTeamRepositories(
+    teamIds: string[],
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<void>;
+  async iterateTeamRepositories(
+    arg1: unknown,
+    iteratee: ResourceIteratee<OrgTeamRepoQueryResponse>,
+  ): Promise<void> {
+    const executor = createQueryExecutor(this, this.logger);
+
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' // teamSlug
+    ) {
+      result = await TeamRepositoriesQuery.iterateRepositories(
+        {
+          login: await this.getOrganizationLogin(),
+          teamSlug: arg1,
+          maxLimit: MAX_REQUESTS_LIMIT,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      );
+    } else if (
+      Array.isArray(arg1) // teamIds
+    ) {
+      result = await BatchedTeamRepositoriesQuery.iterateRepositories(
+        {
+          teamIds: arg1,
+        },
+        executor,
+        iteratee,
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+    this.collectRateLimitStatus(result);
+  }
+
+  async iterateMembers(
     iteratee: ResourceIteratee<OrgMemberQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
-      await OrgMembersQuery.iterateMembers(
-        { login, maxLimit: MAX_REQUESTS_LIMIT },
-        executor,
-        iteratee,
-        this.logger,
-      ),
+    const result = await OrgMembersQuery.iterateMembers(
+      {
+        login: await this.getOrganizationLogin(),
+        maxLimit: MAX_REQUESTS_LIMIT,
+      },
+      executor,
+      iteratee,
+      this.logger,
     );
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates over external identifiers of the given org.
-   * @param login - aka organization
-   * @param iteratee
-   */
-  public async iterateExternalIdentifiers(
-    login: string,
+  async iterateExternalIdentifiers(
     iteratee: ResourceIteratee<OrgExternalIdentifierQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
-    return this.collectRateLimitStatus(
-      await ExternalIdentifiersQuery.iterateExternalIdentifiers(
-        { login, maxLimit: MAX_REQUESTS_LIMIT },
-        executor,
-        iteratee,
-        this.logger,
-      ),
+    const result = await ExternalIdentifiersQuery.iterateExternalIdentifiers(
+      {
+        login: await this.getOrganizationLogin(),
+        enterpriseSlug:
+          this.config.selectedAuthType === 'githubEnterpriseToken'
+            ? this.config.enterpriseSlug
+            : undefined,
+        maxLimit: MAX_REQUESTS_LIMIT,
+      },
+      executor,
+      iteratee,
+      this.logger,
     );
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates over members of the given org & team.
-   * @param login
-   * @param teamSlug
-   * @param iteratee
-   */
-  public async iterateTeamMembers(
-    login: string,
+  async iterateTeamMembers(
     teamSlug: string,
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await TeamMembersQuery.iterateMembers(
-        { login, teamSlug, maxLimit: MAX_REQUESTS_LIMIT },
-        executor,
-        iteratee,
-        this.logger,
-      ),
-    );
-  }
-
-  /**
-   * Iterates over members of the given teamIds.
-   * @param teamIds
-   * @param iteratee
-   */
-  public async iterateBatchedTeamMembers(
+  ): Promise<void>;
+  async iterateTeamMembers(
     teamIds: string[],
     iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void>;
+  async iterateTeamMembers(
+    arg1: unknown,
+    iteratee: ResourceIteratee<OrgTeamMemberQueryResponse>,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await BatchedTeamMembersQuery.iterateMembers(
-        { teamIds },
-        executor,
-        iteratee,
-      ),
-    );
-  }
-
-  public async iterateRepoVulnAlerts(
-    login: string,
-    repoName: string,
-    filters: { severities: string[]; states: string[] },
-    gheServerVersion: string | undefined,
-    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
-    maxRequestLimit: number,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await RepoVulnAlertsQuery.iterateVulnerabilityAlerts(
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' // teamSlug
+    ) {
+      result = await TeamMembersQuery.iterateMembers(
         {
-          login,
-          repoName,
-          severityFilter: filters.severities ?? [],
-          stateFilter: filters.states ?? [],
-          gheServerVersion,
-          maxRequestLimit,
+          login: await this.getOrganizationLogin(),
+          teamSlug: arg1,
+          maxLimit: MAX_REQUESTS_LIMIT,
         },
         executor,
         iteratee,
         this.logger,
-      ),
-    );
+      );
+    } else if (
+      Array.isArray(arg1) // teamIds
+    ) {
+      result = await BatchedTeamMembersQuery.iterateMembers(
+        { teamIds: arg1 },
+        executor,
+        iteratee,
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+    this.collectRateLimitStatus(result);
   }
 
-  public async iterateBatchedRepoVulnAlerts(
-    repoIds: string[],
-    filters: { severities: string[]; states: string[] },
-    gheServerVersion: string | undefined,
+  async iterateRepoVulnAlerts(
+    repoName: string,
     iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void>;
+  async iterateRepoVulnAlerts(
+    repoIds: string[],
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+  ): Promise<void>;
+  async iterateRepoVulnAlerts(
+    arg1: unknown,
+    iteratee: ResourceIteratee<VulnerabilityAlertResponse>,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
-      await BatchedRepoVulnAlertsQuery.iterateVulnerabilityAlerts(
+    const gheServerVersion =
+      (await this.getGithubEnterpriseServerVersion()) ?? undefined;
+    const filters = {
+      states: this.config.dependabotAlertStates,
+      severities: this.config.dependabotAlertSeverities,
+    };
+
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' // repoName
+    ) {
+      result = await RepoVulnAlertsQuery.iterateVulnerabilityAlerts(
         {
-          repoIds,
+          login: await this.getOrganizationLogin(),
+          repoName: arg1,
+          severityFilter: filters.severities ?? [],
+          stateFilter: filters.states ?? [],
+          gheServerVersion,
+          maxRequestLimit: MAX_SEARCH_LIMIT,
+        },
+        executor,
+        iteratee,
+        this.logger,
+      );
+    } else if (
+      Array.isArray(arg1) // repoIds
+    ) {
+      result = await BatchedRepoVulnAlertsQuery.iterateVulnerabilityAlerts(
+        {
+          repoIds: arg1,
           severityFilter: filters.severities ?? [],
           stateFilter: filters.states ?? [],
           gheServerVersion,
         },
         executor,
         iteratee,
-      ),
-    );
+      );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+
+    this.collectRateLimitStatus(result);
   }
 
-  /**
-   * Iterates through all branch protections rules found on the provided repo.
-   * @param login - aka company
-   * @param repoName
-   * @param iteratee
-   */
-  public async iterateRepoBranchProtectionRules(
-    login: string,
+  async iterateBranchProtectionRules(
     repoName: string,
-    gheServerVersion: string | undefined,
     iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
-  ): Promise<RateLimitStepSummary> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    return this.collectRateLimitStatus(
-      await BranchProtectionRulesQuery.iterateBranchProtectionRules(
-        { repoOwner: login, repoName, gheServerVersion },
-        executor,
-        iteratee,
-      ),
-    );
-  }
-
-  /**
-   * Iterates through all branch protections rules found on the provided repo.
-   * @param login - aka company
-   * @param repoName
-   * @param iteratee
-   */
-  public async iterateBatchedRepoBranchProtectionRules(
+  ): Promise<void>;
+  async iterateBranchProtectionRules(
     repoIds: string[],
-    gheServerVersion: string | undefined,
     iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void>;
+  @AppScopes(['organization_administration'])
+  async iterateBranchProtectionRules(
+    arg1: unknown,
+    iteratee: ResourceIteratee<BranchProtectionRuleResponse>,
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
+    const gheServerVersion =
+      (await this.getGithubEnterpriseServerVersion()) ?? undefined;
 
-    return this.collectRateLimitStatus(
-      await BatchedBranchProtectionRulesQuery.iterateBranchProtectionRules(
-        { repoIds, gheServerVersion },
+    let result: RateLimitStepSummary | undefined;
+    if (
+      typeof arg1 === 'string' // repoName
+    ) {
+      result = await BranchProtectionRulesQuery.iterateBranchProtectionRules(
+        {
+          repoOwner: await this.getOrganizationLogin(),
+          repoName: arg1,
+          gheServerVersion,
+        },
         executor,
         iteratee,
-      ),
-    );
+      );
+    } else if (
+      Array.isArray(arg1) // repoIds
+    ) {
+      result =
+        await BatchedBranchProtectionRulesQuery.iterateBranchProtectionRules(
+          {
+            repoIds: arg1,
+            gheServerVersion,
+          },
+          executor,
+          iteratee,
+        );
+    } else {
+      throw new Error('Invalid arguments');
+    }
+
+    this.collectRateLimitStatus(result);
   }
 
-  public async iterateBatchedPolicyAllowances(
+  @AppScopes(['organization_administration'])
+  async iteratePolicyAllowances(
     branchProtectionRuleIds: string[],
-    gheServerVersion: string | undefined,
     iteratee: ResourceIteratee<BranchProtectionRuleAllowancesResponse>,
-  ): Promise<RateLimitStepSummary> {
+  ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
 
-    return this.collectRateLimitStatus(
+    const gheServerVersion =
+      (await this.getGithubEnterpriseServerVersion()) ?? undefined;
+    const result =
       await BatchedBranchProtectionRulesAllowancesQuery.iterateBranchProtectionRulesAllowances(
-        { branchProtectionRuleIds, gheServerVersion },
+        {
+          branchProtectionRuleIds,
+          gheServerVersion,
+        },
         executor,
         iteratee,
-      ),
-    );
+      );
+    this.collectRateLimitStatus(result);
   }
 
   private readonly TIMEOUT_RETRY_ATTEMPTS = 3;
@@ -936,7 +1003,7 @@ export class GitHubGraphQLClient {
           { queryString, queryVariables, timeoutRetryAttempt },
           'Attempting GraphQL request',
         );
-        return await this.graph(queryString, queryVariables);
+        return await this.graphqlWithAuth(queryString, queryVariables);
       } catch (error) {
         logger.debug(
           { queryString, queryVariables, timeoutRetryAttempt, error },
@@ -1006,7 +1073,16 @@ export class GitHubGraphQLClient {
             error,
             logger,
             attemptContext,
-            () => this.refreshToken(),
+            () => {
+              // Resets auth cache and it will fetch a new token on next request
+              this.graphqlWithAuth = octokitGraphQl.defaults({
+                baseUrl: this.graphqlUrl,
+                request: {
+                  fetch: fetch,
+                  hook: getAuthStrategy(this.config).hook,
+                },
+              });
+            },
           );
           if (delayMs) {
             retryDelay = delayMs;
@@ -1055,4 +1131,41 @@ export class GitHubGraphQLClient {
       throw error;
     }
   }
+
+  // TODO: move to a better place
+  private sanitizeLastExecutionTime(lastExecutionTime: string): string {
+    // defensive programming just in case of bad code changes later
+    // GitHub expects the query string for the updated parameter to be in format 'YYYY-MM-DD'.
+    // It will also take a full Date.toIsoString output with time.
+    // Examples: 2011-10-05 or 2011-10-05T14:48:00.000Z
+    // It will NOT behave properly with a msec-since-epoch integer.
+    // If a malformed string is passed to Github, it does NOT throw an error
+    // It simply returns no data, as if no data meets the criteria
+    // So if we have a bad string, we'll just set lastExecutionTime far back so we get the
+    // behavior of a first-time execution
+    let sanitizedExecutionTime = lastExecutionTime;
+    if (
+      new Date(lastExecutionTime).toString() === 'Invalid Date' ||
+      !lastExecutionTime.includes('-')
+    ) {
+      this.logger.warn(
+        { lastExecutionTime },
+        `Bad string format passed to lastExecutionTime, setting to 2000-01-01 for safety`,
+      );
+      sanitizedExecutionTime = '2000-01-01';
+    }
+    return sanitizedExecutionTime;
+  }
+}
+
+let graphqlClientInstance: GithubGraphqlClient | undefined;
+export function getOrCreateGraphqlClient(
+  config: IntegrationConfig,
+  logger: IntegrationLogger,
+): GithubGraphqlClient {
+  if (!graphqlClientInstance) {
+    graphqlClientInstance = new GithubGraphqlClient(config, logger);
+  }
+
+  return graphqlClientInstance;
 }

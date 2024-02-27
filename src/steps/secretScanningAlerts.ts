@@ -5,7 +5,6 @@ import {
   RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { SecretScanningFindingEntity } from '../types';
 import {
@@ -18,6 +17,7 @@ import {
   createSecretScanningAlertEntity,
   getRepositoryEntityKey,
 } from '../sync/converters';
+import { getOrCreateRestClient } from '../client/RESTClient/client';
 
 export async function fetchSecretScanningAlerts({
   instance,
@@ -25,9 +25,9 @@ export async function fetchSecretScanningAlerts({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const restClient = getOrCreateRestClient(config, logger);
 
-  await apiClient.iterateSecretScanningAlerts(async (alert) => {
+  await restClient.iterateSecretScanningAlerts(async (alert) => {
     const secretScanningAlertEntity = (await jobState.addEntity(
       createSecretScanningAlertEntity(alert),
     )) as SecretScanningFindingEntity;

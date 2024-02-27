@@ -64,7 +64,7 @@ export const retryErrorHandle = async (
   error,
   logger: IntegrationLogger,
   attemptContext: AttemptContext,
-  refreshToken: () => Promise<void>,
+  refreshToken: () => Promise<void> | void,
 ): Promise<DelayMs> => {
   let delayMs = 0;
   if (error instanceof GraphqlResponseError) {

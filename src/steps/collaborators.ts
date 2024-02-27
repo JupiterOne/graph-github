@@ -7,7 +7,6 @@ import {
   IntegrationLogger,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import {
   createRepoAllowsUserRelationship,
@@ -29,7 +28,10 @@ import {
   COLLABORATORS_TOTAL_BY_REPO,
 } from '../constants';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
-import { CollaboratorResponse } from '../client/GraphQLClient';
+import {
+  CollaboratorResponse,
+  getOrCreateGraphqlClient,
+} from '../client/GraphQLClient';
 
 export async function fetchCollaborators({
   instance,
@@ -37,7 +39,7 @@ export async function fetchCollaborators({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
 
   const memberByLoginMap = await jobState.getData<IdEntityMap<Entity['_key']>>(
     GITHUB_MEMBER_BY_LOGIN_MAP,
@@ -80,14 +82,14 @@ export async function fetchCollaborators({
     totalConnectionsById: collaboratorsTotalByRepo,
     threshold: 100,
     batchCb: async (repoKeys) => {
-      await apiClient.iterateBatchedRepoCollaborators(repoKeys, iteratee);
+      await graphqlClient.iterateCollaborators(repoKeys, iteratee);
     },
     singleCb: async (repoKey) => {
       const repoData = repoTags.get(repoKey);
       if (!repoData) {
         return;
       }
-      await apiClient.iterateRepoCollaborators(repoData.name, iteratee);
+      await graphqlClient.iterateCollaborators(repoData.name, iteratee);
     },
     logger,
   });

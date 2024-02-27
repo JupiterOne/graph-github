@@ -5,7 +5,6 @@ import {
   RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { CodeScanningFindingEntity } from '../types';
 import {
@@ -18,6 +17,7 @@ import {
   createCodeScanningFindingEntity,
   getRepositoryEntityKey,
 } from '../sync/converters';
+import { getOrCreateRestClient } from '../client/RESTClient/client';
 
 export async function fetchCodeScanAlerts({
   instance,
@@ -25,9 +25,9 @@ export async function fetchCodeScanAlerts({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const restClient = getOrCreateRestClient(config, logger);
 
-  await apiClient.iterateCodeScanningAlerts(async (alert) => {
+  await restClient.iterateCodeScanningAlerts(async (alert) => {
     const codeScanningFinding = (await jobState.addEntity(
       createCodeScanningFindingEntity(alert),
     )) as CodeScanningFindingEntity;

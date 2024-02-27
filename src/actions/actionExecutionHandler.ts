@@ -2,7 +2,6 @@ import {
   EntityIngestError,
   partialIngestActionHandler,
 } from './partialIngestActionHandler';
-import { getOrCreateApiClient } from '../client';
 import {
   Entity,
   IntegrationError,
@@ -10,6 +9,8 @@ import {
   IntegrationInstanceConfig,
 } from '@jupiterone/integration-sdk-core';
 import { IntegrationConfig } from '../config';
+import { getOrCreateRestClient } from '../client/RESTClient/client';
+import { getOrCreateGraphqlClient } from '../client/GraphQLClient';
 
 // TODO: extend IntegrationAction from jupiter-types VDubber 5/2022
 interface IntegrationPartialIngestAction {
@@ -36,9 +37,10 @@ export default async function actionExecutionHandler(
 
   logger.debug({ integrationAction: action }, 'Handling integration action');
 
-  const client = getOrCreateApiClient(instance.config, logger);
+  const restClient = getOrCreateRestClient(instance.config, logger);
+  const graphqlClient = getOrCreateGraphqlClient(instance.config, logger);
 
-  await client.verifyAuthentication();
+  await restClient.verifyAuthentication();
 
   switch (action.name) {
     case 'PARTIAL_INGEST': {
@@ -47,8 +49,9 @@ export default async function actionExecutionHandler(
       }
 
       return await partialIngestActionHandler(
-        client,
+        graphqlClient,
         action.parameters.entities,
+        instance.config,
         logger,
       );
     }

@@ -8,23 +8,21 @@ describe('getStepStartStates', () => {
     const validateAndReturnAuthenticationDataSpy = jest
       .spyOn(config, 'validateAndReturnAuthenticationData')
       .mockResolvedValueOnce({
-        scopes: {
-          repoAdmin: true,
-          repoIssues: true,
-          repoEnvironments: true,
-          orgAdmin: true,
-          orgSecrets: false,
-          repoSecrets: false,
-          repoPages: false,
-          dependabotAlerts: false,
-          repoDiscussions: true,
-          codeScanningAlerts: false,
-        },
+        gheServerVersion: null,
+        scopes: new Set([
+          'administration',
+          'issues',
+          'actions',
+          'organization_administration',
+          'discussions',
+        ]),
       });
 
     const context = {
       instance: {
-        config: {},
+        config: {
+          selectedAuthType: 'githubCloud',
+        },
       },
     } as any;
 
@@ -39,68 +37,61 @@ describe('getStepStartStates', () => {
     const validateAndReturnAuthenticationDataSpy = jest
       .spyOn(config, 'validateAndReturnAuthenticationData')
       .mockResolvedValueOnce({
-        scopes: {
+        gheServerVersion: null,
+        scopes: new Set([
           // tested permissions
-          repoAdmin: true,
-          repoDiscussions: true,
+          'administration',
+          'discussions',
           // not applicable
-          repoIssues: true,
-          repoEnvironments: true,
-          orgAdmin: true,
-          repoPages: true,
-          orgSecrets: false,
-          repoSecrets: false,
-          dependabotAlerts: false,
-          codeScanningAlerts: false,
-        },
+          'issues',
+          'actions',
+          'organization_administration',
+          'pages',
+        ]),
       })
       .mockResolvedValueOnce({
-        scopes: {
+        gheServerVersion: null,
+        scopes: new Set([
           // tested permissions
-          repoAdmin: true,
-          repoDiscussions: false,
+          'administration',
           // not applicable
-          repoIssues: true,
-          repoEnvironments: true,
-          orgAdmin: true,
-          repoPages: false,
-          orgSecrets: true,
-          repoSecrets: false,
-          dependabotAlerts: false,
-          codeScanningAlerts: false,
-        },
+          'issues',
+          'actions',
+          'organization_administration',
+          'organization_secrets',
+        ]),
       })
       .mockResolvedValueOnce({
-        scopes: {
-          // tested permissions
-          repoAdmin: false,
-          repoDiscussions: false,
-          // not applicable
-          repoIssues: true,
-          repoEnvironments: true,
-          orgAdmin: true,
-          repoPages: false,
-          orgSecrets: false,
-          repoSecrets: false,
-          dependabotAlerts: false,
-          codeScanningAlerts: false,
-        },
+        gheServerVersion: null,
+        scopes: new Set(['issues', 'actions', 'organization_administration']),
       });
 
     const states = await getStepStartStates({
-      instance: { config: {} },
+      instance: {
+        config: {
+          selectedAuthType: 'githubCloud',
+        },
+      },
     } as any);
 
     expect(validateAndReturnAuthenticationDataSpy).toHaveBeenCalled();
     expect(states['fetch-branch-protection-rules'].disabled).toBeFalsy();
 
     const states2 = await getStepStartStates({
-      instance: { config: {} },
+      instance: {
+        config: {
+          selectedAuthType: 'githubCloud',
+        },
+      },
     } as any);
     expect(states2['fetch-branch-protection-rules'].disabled).toBeFalsy();
 
     const states3 = await getStepStartStates({
-      instance: { config: {} },
+      instance: {
+        config: {
+          selectedAuthType: 'githubCloud',
+        },
+      },
     } as any);
     expect(states3['fetch-branch-protection-rules'].disabled).toBeTruthy();
   });
@@ -109,49 +100,45 @@ describe('getStepStartStates', () => {
     const validateAndReturnAuthenticationDataSpy = jest
       .spyOn(config, 'validateAndReturnAuthenticationData')
       .mockResolvedValueOnce({
-        scopes: {
-          // tested permissions
-          repoAdmin: true,
-          repoDiscussions: true,
-          // not applicable
-          repoIssues: true,
-          repoEnvironments: true,
-          repoPages: false,
-          orgAdmin: true,
-          orgSecrets: false,
-          repoSecrets: false,
-          dependabotAlerts: false,
-          codeScanningAlerts: true,
-        },
         gheServerVersion: '5.0.0',
+        scopes: new Set([
+          'administration',
+          'discussions',
+          'issues',
+          'actions',
+          'organization_administration',
+          'security_events',
+        ]),
       })
       .mockResolvedValueOnce({
-        scopes: {
-          // tested permissions
-          repoAdmin: true,
-          repoDiscussions: true,
-          // not applicable
-          repoIssues: true,
-          repoEnvironments: true,
-          repoPages: false,
-          orgAdmin: true,
-          orgSecrets: false,
-          repoSecrets: false,
-          dependabotAlerts: false,
-          codeScanningAlerts: true,
-        },
         gheServerVersion: '1.0.0',
+        scopes: new Set([
+          'administration',
+          'discussions',
+          'issues',
+          'actions',
+          'organization_administration',
+          'security_events',
+        ]),
       });
 
     const states = await getStepStartStates({
-      instance: { config: {} },
+      instance: {
+        config: {
+          selectedAuthType: 'githubCloud',
+        },
+      },
     } as any);
 
     expect(validateAndReturnAuthenticationDataSpy).toHaveBeenCalled();
     expect(states['fetch-code-scanning-alerts'].disabled).toBeFalsy();
 
     const states2 = await getStepStartStates({
-      instance: { config: {} },
+      instance: {
+        config: {
+          selectedAuthType: 'githubCloud',
+        },
+      },
     } as any);
     expect(states2['fetch-code-scanning-alerts'].disabled).toBeTruthy();
   });

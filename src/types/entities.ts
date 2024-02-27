@@ -22,7 +22,7 @@ export interface AppEntity extends Entity {
   name: string;
   displayName: string;
   webLink: string;
-  installationId: string; //the installation id
+  installationId: number; //the installation id
   appId: number;
   appSlug: string; //a name for the app
   targetId: number;

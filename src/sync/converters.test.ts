@@ -25,7 +25,7 @@ import {
   fixtureCommits,
   fixtureReviews,
 } from './fixtures/pullRequest';
-import { GithubPagesInfo } from '../client';
+import { GithubPagesInfo } from '../client/RESTClient/client';
 import { decomposePullRequestKey } from '../util/propertyHelpers';
 
 describe('toAccountEntity', () => {

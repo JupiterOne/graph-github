@@ -68,7 +68,7 @@ import {
   buildVulnAlertId,
   buildVulnAlertRecommendation,
 } from './converterUtils';
-import { GithubPagesInfo } from '../client';
+import { GithubPagesInfo } from '../client/RESTClient/client';
 
 export function toAccountEntity(data: OrgQueryResponse): AccountEntity {
   const accountEntity: AccountEntity = {
@@ -103,7 +103,7 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
   const appEntity: AppEntity = {
     _class: GithubEntities.GITHUB_APP._class,
     _type: GithubEntities.GITHUB_APP._type,
-    _key: getAppEntityKey(data.id),
+    _key: getAppEntityKey(String(data.id)),
     name: data.app_slug,
     displayName: data.app_slug,
     webLink: data.html_url,
@@ -117,8 +117,8 @@ export function toAppEntity(data: OrgAppQueryResponse): AppEntity {
     events: data.events,
     repositorySelection: data.repository_selection,
     singleFileName: data.single_file_name || '',
-    hasMultipleSingleFiles: data.has_multiple_single_files,
-    singleFilePaths: data.single_file_paths,
+    hasMultipleSingleFiles: Boolean(data.has_multiple_single_files),
+    singleFilePaths: data.single_file_paths ?? [],
     // suspendedBy: data.suspended_by || '',
     suspendedOn: parseTimePropertyValue(data.suspended_at),
     ...decomposePermissions(data.permissions),

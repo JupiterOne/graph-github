@@ -16,6 +16,27 @@ export default async function getStepStartStates(
 ): Promise<StepStartStates> {
   const { scopes, gheServerVersion } =
     await validateAndReturnAuthenticationData(context);
+  const { selectedAuthType } = context.instance.config;
+  const isAppAuth = ['githubCloud', 'githubEnterpriseServer'].includes(
+    selectedAuthType,
+  );
+
+  const disabledCodeScanningAlerts = isAppAuth
+    ? !scopes?.has('security_events') ||
+      !utils.isSupported(
+        EnterpriseFeatures.LIST_CODE_SCANNING_ALERT_FOR_ORG,
+        gheServerVersion,
+      )
+    : !scopes?.has('security_events') && !scopes?.has('repo');
+
+  // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
+  // const disabledSecretScanningAlerts = isAppAuth
+  //   ? !scopes?.has('secret_scanning_alerts') ||
+  //     !utils.isSupported(
+  //       EnterpriseFeatures.LIST_SECRET_SCANNING_ALERT_FOR_ORG,
+  //       gheServerVersion,
+  //     )
+  //   : !scopes?.has('repo') && !scopes?.has('security_events');
 
   return {
     [Steps.FETCH_ACCOUNT]: { disabled: false },
@@ -27,57 +48,64 @@ export default async function getStepStartStates(
     [Steps.FETCH_COLLABORATORS]: { disabled: false },
     [Steps.FETCH_PRS]: { disabled: false },
     [Steps.FETCH_ISSUES]: {
-      disabled: !scopes.repoIssues,
+      disabled: isAppAuth && !scopes?.has('issues'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_APPS]: {
-      disabled: !scopes.orgAdmin,
+      disabled: isAppAuth
+        ? !scopes?.has('organization_administration')
+        : !scopes?.has('read:org') && !scopes?.has('admin:org'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_CODE_SCANNING_ALERTS]: {
-      disabled:
-        !scopes.codeScanningAlerts ||
-        !utils.isSupported(
-          EnterpriseFeatures.LIST_CODE_SCANNING_ALERT_FOR_ORG,
-          gheServerVersion,
-        ),
-      disabledReason: !scopes.codeScanningAlerts
+      disabled: disabledCodeScanningAlerts,
+      disabledReason: (
+        isAppAuth
+          ? !scopes?.has('security_events')
+          : !scopes?.has('security_events') && !scopes?.has('repo')
+      )
         ? DisabledStepReason.PERMISSION
         : DisabledStepReason.API_VERSION,
     },
     [Steps.FETCH_ENVIRONMENTS]: {
-      disabled: !scopes.repoEnvironments,
+      disabled: isAppAuth
+        ? !scopes?.has('actions') && !scopes?.has('environments')
+        : !scopes?.has('repo'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_ORG_SECRETS]: {
-      disabled: !scopes.orgSecrets,
+      disabled: isAppAuth
+        ? !scopes?.has('organization_secrets')
+        : !scopes?.has('admin:org'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_REPO_SECRETS]: {
-      disabled: !scopes.repoSecrets,
+      disabled: isAppAuth ? !scopes?.has('secrets') : !scopes?.has('repo'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_ENV_SECRETS]: {
-      disabled: !scopes.repoSecrets || !scopes.repoEnvironments,
+      disabled: isAppAuth ? !scopes?.has('secrets') : !scopes?.has('repo'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_VULNERABILITY_ALERTS]: {
-      disabled: !scopes.dependabotAlerts,
+      disabled: isAppAuth && !scopes?.has('vulnerability_alerts'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     [Steps.FETCH_BRANCH_PROTECTION_RULES]: {
-      disabled: !scopes.repoAdmin && !scopes.repoDiscussions,
+      disabled:
+        isAppAuth &&
+        !scopes?.has('administration') &&
+        !scopes?.has('discussions'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
     // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
     // [Steps.FETCH_SECRET_SCANNING_ALERTS]: {
-    //   disabled:
-    //     !scopes.secretScanningAlerts ||
-    //     !utils.isSupported(
-    //       EnterpriseFeatures.LIST_SECRET_SCANNING_ALERT_FOR_ORG,
-    //       gheServerVersion,
-    //     ),
-    //   disabledReason: !scopes.secretScanningAlerts
+    //   disabled: disabledSecretScanningAlerts,
+    //   disabledReason: (
+    //     isAppAuth
+    //       ? !scopes?.has('secret_scanning_alerts')
+    //       : !scopes?.has('repo') && !scopes?.has('security_events')
+    //   )
     //     ? DisabledStepReason.PERMISSION
     //     : DisabledStepReason.API_VERSION,
     // },

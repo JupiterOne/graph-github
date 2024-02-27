@@ -17,6 +17,10 @@ interface QueryState extends BaseQueryState {
 
 type QueryParams = {
   login: string;
+  /**
+   * If enterpriseSlug is set then the query will be made on enterprise-level.
+   */
+  enterpriseSlug: string | undefined;
   maxLimit: number;
 };
 
@@ -29,42 +33,25 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   queryParams,
   queryState,
 ): ExecutableQuery => {
-  const query = `
-    query ($login: String!, $maxLimit: Int!, $memberCursor: String) {
-      organization(login: $login) {
-        samlIdentityProvider {
-          externalIdentities(first: $maxLimit, after: $memberCursor) {
-            nodes {
-              samlIdentity {
-                attributes {
-                  metadata
-                  name
-                  value
-                }
-                emails {
-                  primary
-                  type
-                  value
-                }
-                familyName
-                givenName
-                groups
-                nameId
-                username
-              }
-              user {
-                login
-              }
+  const query = rootQuery(
+    queryParams,
+    `samlIdentityProvider {
+        externalIdentities(first: $maxLimit, after: $memberCursor) {
+          nodes {
+            samlIdentity {
+              nameId
             }
-            pageInfo {
-              endCursor
-              hasNextPage
+            user {
+              login
             }
           }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
         }
-      }
-      ...${fragments.rateLimit}
-    }`;
+      }`,
+  );
 
   return {
     query,
@@ -80,6 +67,26 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
   };
 };
 
+function rootQuery(queryParams: QueryParams, subQuery: string) {
+  if (queryParams.enterpriseSlug) {
+    return `query ($enterpriseSlug: String!, $maxLimit: Int!, $memberCursor: String) {
+      enterprise(slug: $enterpriseSlug) {
+        ownerInfo {
+          ${subQuery}
+        }
+      }
+      ...${fragments.rateLimit}
+    }`;
+  }
+
+  return `query ($login: String!, $maxLimit: Int!, $memberCursor: String) {
+    organization(login: $login) {
+      ${subQuery}
+    }
+    ...${fragments.rateLimit}
+  }`;
+}
+
 /**
  * Processes data into a shape ready for the iterator.
  * @param responseData
@@ -90,9 +97,13 @@ const processResponseData: ProcessResponse<
   QueryState
 > = async (responseData, iteratee) => {
   const rateLimit = responseData.rateLimit;
+
+  let root = responseData.organization;
+  if (!root) {
+    root = responseData.enterprise?.ownerInfo;
+  }
   const identityNodes =
-    responseData.organization?.samlIdentityProvider?.externalIdentities
-      ?.nodes ?? [];
+    root?.samlIdentityProvider?.externalIdentities?.nodes ?? [];
 
   for (const node of identityNodes) {
     if (!utils.hasProperties(node)) {

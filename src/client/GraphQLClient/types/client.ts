@@ -108,21 +108,7 @@ export interface MemberRawData extends OrgMemberQueryResponse {
 
 export interface OrgExternalIdentifierQueryResponse {
   samlIdentity: {
-    attributes: {
-      metadata?: string;
-      name: string;
-      value: string;
-    }[];
-    emails?: {
-      primary?: boolean;
-      type?: string;
-      value: string;
-    }[];
-    familyName?: string;
-    givenName?: string;
-    groups?: string[];
     nameId?: string;
-    username?: string;
   };
   user: {
     login: string;

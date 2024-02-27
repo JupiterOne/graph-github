@@ -7,7 +7,6 @@ import {
   Entity,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { DATA_ACCOUNT_ENTITY } from './account';
 import { toAppEntity } from '../sync/converters';
@@ -19,6 +18,7 @@ import {
   IngestionSources,
   Relationships,
 } from '../constants';
+import { getOrCreateRestClient } from '../client/RESTClient/client';
 
 export async function fetchApps({
   instance,
@@ -26,7 +26,7 @@ export async function fetchApps({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const restClient = getOrCreateRestClient(config, logger);
 
   const accountEntity =
     await jobState.getData<AccountEntity>(DATA_ACCOUNT_ENTITY);
@@ -38,7 +38,7 @@ export async function fetchApps({
   }
 
   const appIdMap: IdEntityMap<Entity['_key']> = new Map();
-  await apiClient.iterateApps(async (app) => {
+  await restClient.iterateApps(async (app) => {
     const appEntity = (await jobState.addEntity(toAppEntity(app))) as AppEntity;
 
     appIdMap.set(`${app.app_id}`, appEntity._key);

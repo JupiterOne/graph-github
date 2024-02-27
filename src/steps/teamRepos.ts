@@ -5,7 +5,6 @@ import {
   JobState,
 } from '@jupiterone/integration-sdk-core';
 
-import { getOrCreateApiClient } from '../client';
 import { IntegrationConfig } from '../config';
 import { createRepoAllowsTeamRelationship } from '../sync/converters';
 import {
@@ -16,7 +15,10 @@ import {
 } from '../constants';
 import { TeamData } from '../types';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
-import { OrgTeamRepoQueryResponse } from '../client/GraphQLClient';
+import {
+  OrgTeamRepoQueryResponse,
+  getOrCreateGraphqlClient,
+} from '../client/GraphQLClient';
 
 export async function fetchTeamRepos({
   instance,
@@ -24,7 +26,7 @@ export async function fetchTeamRepos({
   jobState,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
-  const apiClient = getOrCreateApiClient(config, logger);
+  const graphqlClient = getOrCreateGraphqlClient(config, logger);
 
   const teamDataMap =
     await jobState.getData<Map<string, TeamData>>(TEAM_DATA_MAP);
@@ -49,14 +51,14 @@ export async function fetchTeamRepos({
     totalConnectionsById: repositoriesTotalByTeam,
     threshold: 100,
     batchCb: async (teamKeys) => {
-      await apiClient.iterateBatchedTeamRepos(teamKeys, iteratee);
+      await graphqlClient.iterateTeamRepositories(teamKeys, iteratee);
     },
     singleCb: async (teamKey) => {
       const teamData = teamDataMap.get(teamKey);
       if (!teamData) {
         return;
       }
-      await apiClient.iterateTeamRepos(teamData.name, iteratee);
+      await graphqlClient.iterateTeamRepositories(teamData.name, iteratee);
     },
     logger,
   });

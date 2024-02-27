@@ -51,7 +51,7 @@
     "@octokit/request": "^8.2.0",
     "@octokit/request-error": "^5.0.1",
     "@octokit/rest": "^20.0.2",
-    "date-fns": "^2.29.3",
+    "dayjs": "^1.11.10",
     "lodash": "^4.17.21",
     "node-fetch": "2",
     "semver": "^7.3.7"
@@ -68,7 +68,8 @@
     "@types/node": "^20.8.2",
     "@types/node-fetch": "^2.6.11",
     "@types/semver": "^7.3.13",
-    "auto": "^10.36.5"
+    "auto": "^10.36.5",
+    "mockdate": "^3.0.5"
   },
   "auto": {
     "plugins": [

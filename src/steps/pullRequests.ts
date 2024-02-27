@@ -1,7 +1,6 @@
 import {
   createDirectRelationship,
   Entity,
-  Execution,
   IntegrationLogger,
   IntegrationMissingKeyError,
   IntegrationStep,
@@ -38,7 +37,6 @@ import {
 } from '../sync/converters';
 import { cloneDeep } from 'lodash';
 import { hasAssociatedMergePullRequest } from '../sync/converterUtils';
-import { sub } from 'date-fns';
 import {
   Commit,
   getOrCreateGraphqlClient,
@@ -49,6 +47,7 @@ import {
 } from '../client/GraphQLClient';
 import { MAX_SEARCH_LIMIT } from '../client/GraphQLClient/paginate';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
+import dayjs from 'dayjs';
 
 const PULL_REQUESTS_PROCESSING_BATCH_SIZE = 500;
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
@@ -319,52 +318,19 @@ const processPullRequest = async ({
   }
 };
 
-const PollingIntervalToDurationMap: Record<string, Duration> = {
-  DISABLED: {},
-  ONE_WEEK: { days: 7 },
-  ONE_DAY: { days: 1 },
-  TWELVE_HOURS: { hours: 12 },
-  EIGHT_HOURS: { hours: 8 },
-  FOUR_HOURS: { hours: 4 },
-  ONE_HOUR: { hours: 1 },
-  THIRTY_MINUTES: { minutes: 30 },
-};
-
-/**
- * Determines what the ingestion start datetime should be for PRs.
- * Values are considered in the following order:
- * 1. Value provided by config
- * 2. last successful build time
- * 3. Defaults to Unix epoch
- * @param config
- * @param lastSuccessful
- */
 export const determineIngestStartDatetime = (
   config: IntegrationConfig,
-  lastSuccessful?: Execution,
 ): string => {
-  let startDatetime;
+  // Support for legacy config
+  // TODO: move existing instances using it to new config
   if (config.pullRequestIngestStartDatetime) {
-    // Allows for historical pull requests to be ingested.
-    startDatetime = config.pullRequestIngestStartDatetime;
-  } else if (lastSuccessful?.startedOn) {
-    startDatetime = lastSuccessful?.startedOn;
-
-    // subtract a pollingInterval to collect any missed PRs during the previous run
-    if (
-      config.pollingInterval &&
-      PollingIntervalToDurationMap[config.pollingInterval]
-    ) {
-      startDatetime = sub(
-        startDatetime,
-        PollingIntervalToDurationMap[config.pollingInterval],
-      );
-    }
-  } else {
-    startDatetime = 0;
+    return dayjs(config.pullRequestIngestStartDatetime).toISOString();
   }
 
-  return new Date(startDatetime).toISOString();
+  const nowDate = dayjs();
+  const days = config.pullRequestIngestSinceDays || 90;
+  const daysAgoDate = nowDate.subtract(days, 'day');
+  return daysAgoDate.toISOString();
 };
 
 export async function fetchPrs(
@@ -420,10 +386,7 @@ export async function fetchPrs(
     );
   }
 
-  const ingestStartDatetime = determineIngestStartDatetime(
-    config,
-    context.executionHistory.lastSuccessful,
-  );
+  const ingestStartDatetime = determineIngestStartDatetime(config);
   const maxResourceIngestion =
     config.pullRequestMaxResourcesPerRepo ??
     DEFAULT_MAX_RESOURCES_PER_EXECUTION;

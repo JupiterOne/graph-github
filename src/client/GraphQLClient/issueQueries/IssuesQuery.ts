@@ -18,7 +18,7 @@ interface QueryState extends BaseQueryState {
 type QueryParams = {
   repoName: string;
   login: string;
-  lastExecutionTime: string;
+  ingestStartDatetime: string;
   maxLimit: number;
 };
 
@@ -68,7 +68,7 @@ const buildQuery: BuildQuery<QueryParams, QueryState> = (
     queryVariables: {
       login: queryParams.login,
       repoName: queryParams.repoName,
-      since: queryParams.lastExecutionTime,
+      since: queryParams.ingestStartDatetime,
       maxSearchLimit: queryParams.maxLimit,
       ...(queryState?.issues?.hasNextPage && {
         issuesCursor: queryState?.issues.endCursor,
@@ -118,7 +118,7 @@ const processResponseData: ProcessResponse<IssueResponse, QueryState> = async (
 
 /**
  * Iterate issues, with pagination, up to 500.
- * Utilizes queryParams.lastExecutionTime to query the minimal amount.
+ * Utilizes queryParams.ingestStartDatetime to query the minimal amount.
  * @param queryParams
  * @param iteratee
  * @param execute

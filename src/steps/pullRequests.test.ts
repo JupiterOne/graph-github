@@ -12,6 +12,7 @@ import {
 } from '../../test/config';
 import { setupGithubRecording } from '../../test/recording';
 import { Relationships, Steps } from '../constants';
+import MockDate from 'mockdate';
 
 const filterOutPrContainsPrRelationships = (r: any) =>
   r._type !== Relationships.PULLREQUEST_CONTAINS_PULLREQUEST._type;
@@ -30,7 +31,13 @@ test('fetchPrs exec handler', async () => {
   });
 
   const stepConfig = buildStepTestConfig(Steps.FETCH_PRS);
-  const stepResults = await executeStepWithDependencies(stepConfig);
+  const stepResults = await executeStepWithDependencies({
+    ...stepConfig,
+    instanceConfig: {
+      ...stepConfig.instanceConfig,
+      pullRequestIngestSinceDays: 365,
+    },
+  });
 
   expect({
     ...stepResults,
@@ -60,27 +67,34 @@ test('fetchPrs exec handler', async () => {
   });
 });
 
-describe.each([
-  ['test', Date.UTC(2002, 5, 22, 15)],
-  ['DISABLED', Date.UTC(2002, 5, 22, 15)],
-  ['ONE_WEEK', Date.UTC(2002, 5, 15, 15)],
-  ['ONE_DAY', Date.UTC(2002, 5, 21, 15)],
-  ['TWELVE_HOURS', Date.UTC(2002, 5, 22, 3)],
-  ['EIGHT_HOURS', Date.UTC(2002, 5, 22, 7)],
-  ['FOUR_HOURS', Date.UTC(2002, 5, 22, 11)],
-  ['ONE_HOUR', Date.UTC(2002, 5, 22, 14)],
-  ['THIRTY_MINUTES', Date.UTC(2002, 5, 22, 14, 30)],
-])(
-  'determineIngestStartDatetime',
-  (pollingInterval: string, expected: number) => {
-    const startedOn = Date.UTC(2002, 5, 22, 15);
+describe('determineIngestStartDatetime', () => {
+  beforeEach(() => {
+    MockDate.set('2023-12-31T12:00:00.000Z');
+  });
 
+  afterEach(() => {
+    MockDate.reset();
+  });
+
+  it('should return the start datetime from config if provided', () => {
     const config = {
-      pollingInterval,
-    } as unknown as IntegrationConfig;
+      pullRequestIngestStartDatetime: '2024-01-20T12:00:00Z',
+    } as IntegrationConfig;
+    const result = determineIngestStartDatetime(config);
+    expect(result).toBe('2024-01-20T12:00:00.000Z');
+  });
 
-    expect(determineIngestStartDatetime(config, { startedOn })).toBe(
-      new Date(expected).toISOString(),
-    );
-  },
-);
+  it('should return the datetime from 90 days ago if config does not provide start datetime', () => {
+    const config = {} as IntegrationConfig;
+    const result = determineIngestStartDatetime(config);
+    expect(result).toBe('2023-10-02T12:00:00.000Z');
+  });
+
+  it('should return the datetime from specified number of days ago if provided in config', () => {
+    const config = {
+      pullRequestIngestSinceDays: 365,
+    } as IntegrationConfig;
+    const result = determineIngestStartDatetime(config);
+    expect(result).toBe('2022-12-31T12:00:00.000Z');
+  });
+});

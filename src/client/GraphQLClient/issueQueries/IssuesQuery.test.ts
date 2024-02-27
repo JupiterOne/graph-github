@@ -15,7 +15,7 @@ describe('IssuesQuery', () => {
         {
           login: 'J1-Test',
           repoName: 'reimagined-barnacle',
-          lastExecutionTime: '2011-10-05T14:48:00.000Z',
+          ingestStartDatetime: '2011-10-05T14:48:00.000Z',
           maxLimit: 100,
         },
         execute,

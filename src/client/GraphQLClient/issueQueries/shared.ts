@@ -1,5 +1,5 @@
-export const issuesTotalCountFragment = (lastSuccessfulExecution: string) => `
-  issues(filterBy: { since: "${lastSuccessfulExecution}" }) {
+export const issuesTotalCountFragment = (issuesSinceDate: string) => `
+  issues(filterBy: { since: "${issuesSinceDate}" }) {
     totalCount
   }
 `;

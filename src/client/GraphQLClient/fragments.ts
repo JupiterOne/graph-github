@@ -64,11 +64,11 @@ export default {
     login
   }`,
   repositoryFields: ({
-    lastSuccessfulExecution,
+    issuesSinceDate,
     alertStates,
     gheServerVersion,
   }: {
-    lastSuccessfulExecution: string;
+    issuesSinceDate: string;
     alertStates: string[];
     gheServerVersion?: string;
   }) => `on Repository {
@@ -108,7 +108,7 @@ export default {
       totalCount
     }
     ${vulnerabilityAlertsTotalCountFragment({ alertStates, gheServerVersion })}
-    ${issuesTotalCountFragment(lastSuccessfulExecution)}
+    ${issuesTotalCountFragment(issuesSinceDate)}
     tags: refs(refPrefix: "refs/tags/") {
       totalCount
     }

@@ -24,6 +24,9 @@ describe('getStepStartStates', () => {
           selectedAuthType: 'githubCloud',
         },
       },
+      logger: {
+        info: jest.fn(),
+      },
     } as any;
 
     const states = await getStepStartStates(context);
@@ -72,6 +75,9 @@ describe('getStepStartStates', () => {
           selectedAuthType: 'githubCloud',
         },
       },
+      logger: {
+        info: jest.fn(),
+      },
     } as any);
 
     expect(validateAndReturnAuthenticationDataSpy).toHaveBeenCalled();
@@ -83,6 +89,9 @@ describe('getStepStartStates', () => {
           selectedAuthType: 'githubCloud',
         },
       },
+      logger: {
+        info: jest.fn(),
+      },
     } as any);
     expect(states2['fetch-branch-protection-rules'].disabled).toBeFalsy();
 
@@ -91,6 +100,9 @@ describe('getStepStartStates', () => {
         config: {
           selectedAuthType: 'githubCloud',
         },
+      },
+      logger: {
+        info: jest.fn(),
       },
     } as any);
     expect(states3['fetch-branch-protection-rules'].disabled).toBeTruthy();
@@ -128,6 +140,9 @@ describe('getStepStartStates', () => {
           selectedAuthType: 'githubCloud',
         },
       },
+      logger: {
+        info: jest.fn(),
+      },
     } as any);
 
     expect(validateAndReturnAuthenticationDataSpy).toHaveBeenCalled();
@@ -138,6 +153,9 @@ describe('getStepStartStates', () => {
         config: {
           selectedAuthType: 'githubCloud',
         },
+      },
+      logger: {
+        info: jest.fn(),
       },
     } as any);
     expect(states2['fetch-code-scanning-alerts'].disabled).toBeTruthy();

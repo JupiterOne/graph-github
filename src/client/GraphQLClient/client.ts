@@ -551,7 +551,7 @@ export class GithubGraphqlClient implements IScopes {
   }
 
   async iterateRepositories(
-    lastSuccessfulExecution: RepoConnectionFilters['lastSuccessfulExecution'],
+    issuesSinceDate: RepoConnectionFilters['issuesSinceDate'],
     iteratee: ResourceIteratee<OrgRepoQueryResponse>,
   ): Promise<void> {
     const executor = createQueryExecutor(this, this.logger);
@@ -561,7 +561,7 @@ export class GithubGraphqlClient implements IScopes {
       {
         login: await this.getOrganizationLogin(),
         maxLimit: 50,
-        lastSuccessfulExecution,
+        issuesSinceDate,
         alertStates: this.config.dependabotAlertStates ?? [],
         gheServerVersion,
       },

@@ -111,7 +111,9 @@ const fetchIssueAssignees = async ({
   return assignees;
 };
 
-const determineIngestStartDatetime = (config: IntegrationConfig): string => {
+export const determineIngestStartDatetime = (
+  config: IntegrationConfig,
+): string => {
   const nowDate = dayjs();
   const days = config.issuesIngestSinceDays || 90;
   const daysAgoDate = nowDate.subtract(days, 'day');

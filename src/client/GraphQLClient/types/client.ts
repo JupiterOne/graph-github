@@ -165,7 +165,7 @@ enum RepositoryVisibility {
 }
 
 export type RepoConnectionFilters = {
-  lastSuccessfulExecution: string;
+  issuesSinceDate: string;
   alertStates: string[];
   gheServerVersion?: string;
 };

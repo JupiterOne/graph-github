@@ -1,3 +1,15 @@
+# v4.2.1 (Tue Mar 12 2024)
+
+#### 🐛 Bug Fix
+
+- add scopes log; fix issues totalCount field on repos [#296](https://github.com/JupiterOne/graph-github/pull/296) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.2.0 (Tue Feb 27 2024)
 
 #### 🚀 Enhancement

@@ -22,7 +22,7 @@ describe('OrgRepositoriesQuery', () => {
       {
         login,
         maxLimit: 100,
-        lastSuccessfulExecution: '1970-01-01T00:00:00.000Z',
+        issuesSinceDate: '1970-01-01T00:00:00.000Z',
         alertStates: ALL_ALERT_STATES,
         gheServerVersion: '5.0.0',
       },
@@ -59,7 +59,7 @@ describe('OrgRepositoriesQuery', () => {
       {
         login: 'J1-Test',
         maxLimit: 100,
-        lastSuccessfulExecution: '1970-01-01T00:00:00.000Z',
+        issuesSinceDate: '1970-01-01T00:00:00.000Z',
         alertStates: ALL_ALERT_STATES,
         gheServerVersion: '5.0.0',
       },

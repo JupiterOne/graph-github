@@ -38,6 +38,7 @@ import {
   GithubRestClient,
   getOrCreateRestClient,
 } from '../client/RESTClient/client';
+import { determineIngestStartDatetime } from './issues';
 
 const REPOSITORIES_PROCESSING_BATCH_SIZE = 500;
 
@@ -209,7 +210,6 @@ export async function fetchRepos({
   instance,
   logger,
   jobState,
-  executionHistory,
 }: IntegrationStepExecutionContext<IntegrationConfig>) {
   const config = instance.config;
   const restClient = getOrCreateRestClient(config, logger);
@@ -224,11 +224,7 @@ export async function fetchRepos({
     );
   }
 
-  const lastSuccessfulSyncTime =
-    executionHistory.lastSuccessful?.startedOn ?? 0;
-  const lastSuccessfulExecution = new Date(
-    lastSuccessfulSyncTime,
-  ).toISOString();
+  const issuesSinceDate = determineIngestStartDatetime(config);
 
   const repoTags = new Map<string, RepoData>();
   const branchProtectionRuleTotalByRepo = new Map<string, number>();
@@ -273,25 +269,22 @@ export async function fetchRepos({
     }
   };
 
-  await graphqlClient.iterateRepositories(
-    lastSuccessfulExecution,
-    async (repo) => {
-      repositoriesMap.set(repo.id, repo);
-      if (repo.tags?.totalCount) {
-        tagsTotalByRepo.set(repo.id, repo.tags.totalCount);
-      }
-      if (repo.topics.totalCount) {
-        topicsTotalByRepo.set(repo.id, repo.topics.totalCount);
-      }
+  await graphqlClient.iterateRepositories(issuesSinceDate, async (repo) => {
+    repositoriesMap.set(repo.id, repo);
+    if (repo.tags?.totalCount) {
+      tagsTotalByRepo.set(repo.id, repo.tags.totalCount);
+    }
+    if (repo.topics.totalCount) {
+      topicsTotalByRepo.set(repo.id, repo.topics.totalCount);
+    }
 
-      if (repositoriesMap.size >= REPOSITORIES_PROCESSING_BATCH_SIZE) {
-        await processReposBatch();
-        repositoriesMap.clear();
-        tagsTotalByRepo.clear();
-        topicsTotalByRepo.clear();
-      }
-    },
-  );
+    if (repositoriesMap.size >= REPOSITORIES_PROCESSING_BATCH_SIZE) {
+      await processReposBatch();
+      repositoriesMap.clear();
+      tagsTotalByRepo.clear();
+      topicsTotalByRepo.clear();
+    }
+  });
 
   // flush remaining unprocessed repositories
   if (repositoriesMap.size) {

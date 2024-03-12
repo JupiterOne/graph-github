@@ -21,6 +21,8 @@ export default async function getStepStartStates(
     selectedAuthType,
   );
 
+  context.logger.info({ perms: scopes }, 'Permissions received with token');
+
   const disabledCodeScanningAlerts = isAppAuth
     ? !scopes?.has('security_events') ||
       !utils.isSupported(

@@ -1,3 +1,15 @@
+# v4.2.2 (Tue Mar 12 2024)
+
+#### 🐛 Bug Fix
+
+- fix scopes' info log [#297](https://github.com/JupiterOne/graph-github/pull/297) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.2.1 (Tue Mar 12 2024)
 
 #### 🐛 Bug Fix

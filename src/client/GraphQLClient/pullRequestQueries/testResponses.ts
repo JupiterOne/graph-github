@@ -6,19 +6,21 @@ const pullRequestsPublic = [
   {
     search: {
       issueCount: 3,
-      edges: [
-        {
-          node: {
+    },
+    repository: {
+      pullRequests: {
+        nodes: [
+          {
             id: 'MDExOlB1bGxSZXF1ZXN0MTA=',
             title: 'Update CHANGELOG.md',
+            updatedAt: '2011-10-05T14:48:00.000Z',
             closed: false,
           },
-        },
-        {
-          node: {
+          {
             id: 'MDExOlB1bGxSZXF1ZXN0OQ==',
             title: 'Create CHANGELOG.md #2',
             closed: false,
+            updatedAt: '2011-10-05T14:48:00.000Z',
             mergeCommit: {
               id: 'C_kwDOIAVVA9oAKDg1NjNlOWIyZDYzMzRiNzUwZjhmN2I2MzA4NTgxODg5NTBkMmFiOTI',
               oid: '8563e9b2d6334b750f8f7b630858188950d2ab92',
@@ -35,11 +37,11 @@ const pullRequestsPublic = [
               },
             },
           },
+        ],
+        pageInfo: {
+          endCursor: 'Y3Vyc29yOjI=',
+          hasNextPage: true,
         },
-      ],
-      pageInfo: {
-        endCursor: 'Y3Vyc29yOjI=',
-        hasNextPage: true,
       },
     },
     rateLimit: {
@@ -47,20 +49,20 @@ const pullRequestsPublic = [
     },
   },
   {
-    search: {
-      issueCount: 3,
-      edges: [
-        {
-          node: {
+    repository: {
+      pullRequests: {
+        nodes: [
+          {
             id: 'pr3',
             title: 'Update CHANGELOG.md - page 2',
+            updatedAt: '2011-10-05T14:48:00.000Z',
             closed: false,
           },
+        ],
+        pageInfo: {
+          endCursor: 'zxcvee=',
+          hasNextPage: false,
         },
-      ],
-      pageInfo: {
-        endCursor: 'zxcvee=',
-        hasNextPage: false,
       },
     },
     rateLimit: {
@@ -71,12 +73,15 @@ const pullRequestsPublic = [
 
 const pullRequestsPublicInnerPagination = {
   search: {
-    issueCount: 3,
-    edges: [
-      {
-        node: {
+    issueCount: 1,
+  },
+  repository: {
+    pullRequests: {
+      nodes: [
+        {
           id: 'MDExOlB1bGxSZXF1ZXN0OQ==',
           title: 'pullRequestsPublicInnerPagination',
+          updatedAt: '2011-10-05T14:48:00.000Z',
           headRepository: {
             name: 'musical-palm-tree',
             owner: {
@@ -84,11 +89,11 @@ const pullRequestsPublicInnerPagination = {
             },
           },
         },
+      ],
+      pageInfo: {
+        endCursor: 'Y3Vyc29yOjI=',
+        hasNextPage: false,
       },
-    ],
-    pageInfo: {
-      endCursor: 'Y3Vyc29yOjI=',
-      hasNextPage: false,
     },
   },
   rateLimit: {
@@ -100,10 +105,14 @@ const emptyPullRequest = [
   {
     search: {
       issueCount: 0,
-      edges: [],
-      pageInfo: {
-        endCursor: null,
-        hasNextPage: false,
+    },
+    repository: {
+      pullRequests: {
+        nodes: [],
+        pageInfo: {
+          endCursor: null,
+          hasNextPage: false,
+        },
       },
     },
     rateLimit: {

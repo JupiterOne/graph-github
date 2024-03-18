@@ -284,11 +284,11 @@ export class GithubGraphqlClient implements IScopes {
       typeof arg6 === 'function' // iteratee
     ) {
       const login = await this.getOrganizationLogin();
-      const fullName = `${login}/${arg1}`;
       const iteratee = arg6 as ResourceIteratee<PullRequestResponse>;
       result = await PullRequestsQuery.iteratePullRequests(
         {
-          fullName,
+          repoOwner: login,
+          repoName: arg1,
           public: arg2,
           ingestStartDatetime: arg3,
           maxResourceIngestion: arg4,

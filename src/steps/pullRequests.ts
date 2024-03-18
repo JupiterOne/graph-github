@@ -483,7 +483,7 @@ export async function fetchPrs(
 
   await withBatching({
     totalConnectionsById: pullRequestsTotalByRepo,
-    threshold: 25,
+    threshold: maxSearchLimit,
     batchCb: async (repoKeys) => {
       await graphqlClient.iteratePullRequests(
         repoKeys,

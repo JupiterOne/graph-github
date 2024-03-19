@@ -9,7 +9,8 @@ describe('PullRequestsQuery', () => {
     test('first query - no query state', () => {
       // Act
       const executableQuery = buildQuery({
-        fullName: 'J1-Test/musical-palm-tree',
+        repoOwner: 'J1-Test',
+        repoName: 'musical-palm-tree',
         public: true,
         ingestStartDatetime: '2011-10-05T14:48:00.000Z',
         maxResourceIngestion: 500,
@@ -23,7 +24,8 @@ describe('PullRequestsQuery', () => {
     test('first private query - no query state', () => {
       // Act
       const executableQuery = buildQuery({
-        fullName: 'J1-Test/musical-palm-tree',
+        repoOwner: 'J1-Test',
+        repoName: 'musical-palm-tree',
         public: false,
         ingestStartDatetime: '2011-10-05T14:48:00.000Z',
         maxResourceIngestion: 500,
@@ -43,7 +45,8 @@ describe('PullRequestsQuery', () => {
       // Act
       const executableQuery = buildQuery(
         {
-          fullName: 'J1-Test/musical-palm-tree',
+          repoOwner: 'J1-Test',
+          repoName: 'musical-palm-tree',
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
           maxResourceIngestion: 500,
@@ -85,7 +88,8 @@ describe('PullRequestsQuery', () => {
       // Act
       const result = await PullRequestsQuery.iteratePullRequests(
         {
-          fullName: 'J1-Test/happy-sunshine',
+          repoOwner: 'J1-Test',
+          repoName: 'happy-sunshine',
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
           maxResourceIngestion: 500,
@@ -112,7 +116,8 @@ describe('PullRequestsQuery', () => {
       // Act
       const { totalCost } = await PullRequestsQuery.iteratePullRequests(
         {
-          fullName: 'J1-Test/happy-sunshine',
+          repoOwner: 'J1-Test',
+          repoName: 'happy-sunshine',
           public: true,
           ingestStartDatetime: '2011-10-05T14:48:00.000Z',
           maxResourceIngestion: 500,

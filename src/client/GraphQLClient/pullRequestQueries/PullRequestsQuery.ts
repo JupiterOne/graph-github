@@ -15,10 +15,12 @@ import { pullRequestFields } from './shared';
 
 interface QueryState extends BaseQueryState {
   pullRequests: CursorState;
+  issueCount?: number;
 }
 
 type QueryParams = {
-  fullName: string;
+  repoOwner: string;
+  repoName: string;
   public: boolean;
   ingestStartDatetime: string;
   maxResourceIngestion: number;
@@ -37,36 +39,47 @@ export const buildQuery: BuildQuery<QueryParams, QueryState> = (
   queryParams,
   queryState,
 ): ExecutableQuery => {
+  const issueCountQuery = `
+    search(first: $maxSearchLimit, type: ISSUE, query: $searchQuery) {
+      issueCount
+    }
+  `;
+
   const query = `
       query (
-        $issueQuery: String!, 
+        ${!queryState?.issueCount ? '$searchQuery: String!,' : ''}
+        $repoOwner: String!,
+        $repoName: String!,
         $maxSearchLimit: Int!,
         $pullRequestsCursor: String
       ) {
-        search(first: $maxSearchLimit, after: $pullRequestsCursor, type: ISSUE, query: $issueQuery) {
-          issueCount
-          edges {
-            node {
-              ...on PullRequest {
-                ${pullRequestFields(queryParams.public)}
-              }
+        ${!queryState?.issueCount ? issueCountQuery : ''}
+        repository(owner: $repoOwner, name: $repoName) {
+          pullRequests(orderBy: { field: UPDATED_AT, direction: DESC }, first: $maxSearchLimit, after: $pullRequestsCursor) {
+            nodes {
+              ${pullRequestFields(queryParams.public)}
             }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
+            pageInfo {
+              endCursor
+              hasNextPage
+            }
           }
         }
         ...${fragments.rateLimit}
       }`;
 
+  const fullName = `${queryParams.repoOwner}/${queryParams.repoName}`;
   return {
     query,
     ...(queryState?.rateLimit && {
       rateLimit: queryState.rateLimit,
     }),
     queryVariables: {
-      issueQuery: `is:pr repo:${queryParams.fullName} updated:>=${queryParams.ingestStartDatetime}`,
+      ...(!queryState?.issueCount && {
+        searchQuery: `is:pr repo:${fullName} updated:>=${queryParams.ingestStartDatetime}`,
+      }),
+      repoOwner: queryParams.repoOwner,
+      repoName: queryParams.repoName,
       maxSearchLimit: queryParams.maxSearchLimit,
       ...(queryState?.pullRequests?.hasNextPage && {
         pullRequestsCursor: queryState?.pullRequests.endCursor,
@@ -94,10 +107,9 @@ export const processResponseData = async (
   }
 
   const rateLimit = responseData.rateLimit;
-  const pullRequestEdges = responseData.search.edges;
+  const pullRequestNodes = responseData.repository.pullRequests.nodes;
 
-  for (const edge of pullRequestEdges) {
-    const pullRequest = edge.node;
+  for (const pullRequest of pullRequestNodes) {
     if (!utils.hasProperties(pullRequest)) {
       // If there's no data, pass - possible if permissions aren't correct in GHE
       continue;
@@ -108,7 +120,7 @@ export const processResponseData = async (
 
   return {
     rateLimit,
-    pullRequests: responseData.search.pageInfo,
+    pullRequests: responseData.repository.pullRequests.pageInfo,
   };
 };
 
@@ -137,12 +149,18 @@ const iteratePullRequests: IteratePagination<
   let queryCost = 0;
   let queryState: QueryState | undefined = undefined;
   let paginationComplete = false;
+  let issueCount: number | undefined;
 
   const countIteratee: ResourceIteratee<PullRequestResponse> = async (
     pullRequest: PullRequestResponse,
   ) => {
-    pullRequestFetched++;
-    await iteratee(pullRequest);
+    if (
+      new Date(pullRequest.updatedAt) >=
+      new Date(queryParams.ingestStartDatetime)
+    ) {
+      pullRequestFetched++;
+      await iteratee(pullRequest);
+    }
   };
 
   const withTimeoutHandler = buildTimeoutHandler({
@@ -152,7 +170,10 @@ const iteratePullRequests: IteratePagination<
   });
 
   while (!paginationComplete) {
-    const executable = buildQuery(queryParams, queryState);
+    const executable = buildQuery(
+      queryParams,
+      queryState ? { ...queryState, issueCount } : undefined,
+    );
     const { response, retry } = await withTimeoutHandler(async () =>
       execute(executable),
     );
@@ -161,6 +182,7 @@ const iteratePullRequests: IteratePagination<
       continue;
     }
 
+    issueCount = issueCount ?? response.search.issueCount;
     queryState = await processResponseData(response, countIteratee);
 
     queryCost += queryState.rateLimit?.cost ?? 0;
@@ -168,8 +190,14 @@ const iteratePullRequests: IteratePagination<
     const exceededMaxResourceLimit =
       pullRequestFetched >= queryParams.maxResourceIngestion;
 
+    const exceededTotalUpdatedPrs = Boolean(
+      issueCount && pullRequestFetched >= issueCount,
+    );
+
     paginationComplete =
-      !queryState.pullRequests?.hasNextPage || exceededMaxResourceLimit;
+      !queryState.pullRequests?.hasNextPage ||
+      exceededMaxResourceLimit ||
+      exceededTotalUpdatedPrs;
 
     if (exceededMaxResourceLimit) {
       logger?.warn(

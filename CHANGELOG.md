@@ -1,3 +1,15 @@
+# v4.3.0 (Tue Mar 19 2024)
+
+#### 🚀 Enhancement
+
+- change pull requests query approach to consume > 1000 PRs [#298](https://github.com/JupiterOne/graph-github/pull/298) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.2.2 (Tue Mar 12 2024)
 
 #### 🐛 Bug Fix

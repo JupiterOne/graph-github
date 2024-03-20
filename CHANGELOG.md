@@ -1,3 +1,15 @@
+# v4.3.1 (Wed Mar 20 2024)
+
+#### 🐛 Bug Fix
+
+- skip empty pull requests response object [#299](https://github.com/JupiterOne/graph-github/pull/299) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v4.3.0 (Tue Mar 19 2024)
 
 #### 🚀 Enhancement

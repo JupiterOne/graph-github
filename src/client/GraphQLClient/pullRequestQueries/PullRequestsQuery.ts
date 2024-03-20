@@ -107,7 +107,7 @@ export const processResponseData = async (
   }
 
   const rateLimit = responseData.rateLimit;
-  const pullRequestNodes = responseData.repository.pullRequests.nodes;
+  const pullRequestNodes = responseData.repository?.pullRequests?.nodes ?? [];
 
   for (const pullRequest of pullRequestNodes) {
     if (!utils.hasProperties(pullRequest)) {
@@ -120,7 +120,7 @@ export const processResponseData = async (
 
   return {
     rateLimit,
-    pullRequests: responseData.repository.pullRequests.pageInfo,
+    pullRequests: responseData.repository?.pullRequests?.pageInfo,
   };
 };
 

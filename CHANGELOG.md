@@ -1,3 +1,15 @@
+# v4.3.2 (Thu Apr 25 2024)
+
+#### 🐛 Bug Fix
+
+- Update Dockerfile [#300](https://github.com/JupiterOne/graph-github/pull/300) ([@zemberdotnet](https://github.com/zemberdotnet))
+
+#### Authors: 1
+
+- Matthew Zember ([@zemberdotnet](https://github.com/zemberdotnet))
+
+---
+
 # v4.3.1 (Wed Mar 20 2024)
 
 #### 🐛 Bug Fix

@@ -17,8 +17,13 @@ import MockDate from 'mockdate';
 const filterOutPrContainsPrRelationships = (r: any) =>
   r._type !== Relationships.PULLREQUEST_CONTAINS_PULLREQUEST._type;
 
+beforeEach(() => {
+  MockDate.set('2023-12-31T12:00:00.000Z');
+});
+
 let recording: Recording;
 afterEach(async () => {
+  MockDate.reset();
   if (recording) {
     await recording.stop();
   }
@@ -68,14 +73,6 @@ test('fetchPrs exec handler', async () => {
 });
 
 describe('determineIngestStartDatetime', () => {
-  beforeEach(() => {
-    MockDate.set('2023-12-31T12:00:00.000Z');
-  });
-
-  afterEach(() => {
-    MockDate.reset();
-  });
-
   it('should return the start datetime from config if provided', () => {
     const config = {
       pullRequestIngestStartDatetime: '2024-01-20T12:00:00Z',

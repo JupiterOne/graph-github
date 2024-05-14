@@ -1,5 +1,6 @@
 {
   "extends": "./node_modules/@jupiterone/integration-sdk-dev-tools/config/typescript",
+  "allowSyntheticDefaultImports": true,
   "compilerOptions": {
     "outDir": "dist"
   },

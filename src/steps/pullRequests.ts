@@ -48,6 +48,7 @@ import {
 import { MAX_SEARCH_LIMIT } from '../client/GraphQLClient/paginate';
 import { withBatching } from '../client/GraphQLClient/batchUtils';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
 const PULL_REQUESTS_PROCESSING_BATCH_SIZE = 500;
 const DEFAULT_MAX_RESOURCES_PER_EXECUTION = 500;
@@ -327,7 +328,8 @@ export const determineIngestStartDatetime = (
     return dayjs(config.pullRequestIngestStartDatetime).toISOString();
   }
 
-  const nowDate = dayjs();
+  dayjs.extend(utc);
+  const nowDate = dayjs().utc();
   const days = config.pullRequestIngestSinceDays || 90;
   const daysAgoDate = nowDate.subtract(days, 'day');
   return daysAgoDate.toISOString();

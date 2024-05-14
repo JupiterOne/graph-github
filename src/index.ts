@@ -7,7 +7,6 @@ import {
   ingestionConfig,
 } from './config';
 import getStepStartStates from './getStepStartStates';
-import actionExecutionHandler from './actions/actionExecutionHandler';
 
 export const invocationConfig: IntegrationInvocationConfig<IntegrationConfig> =
   {
@@ -21,4 +20,4 @@ export const invocationConfig: IntegrationInvocationConfig<IntegrationConfig> =
     stepConcurrency: 1,
   };
 
-export { validateInvocation, actionExecutionHandler };
+export { validateInvocation };

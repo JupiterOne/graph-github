@@ -1,3 +1,19 @@
+# v5.0.0 (Wed May 15 2024)
+
+#### 💥 Breaking Change
+
+- Remove actions handler [#302](https://github.com/JupiterOne/graph-github/pull/302) ([@Nick-NCSU](https://github.com/Nick-NCSU))
+
+#### 🐛 Bug Fix
+
+- Fix tests dates [#301](https://github.com/JupiterOne/graph-github/pull/301) ([@Nick-NCSU](https://github.com/Nick-NCSU))
+
+#### Authors: 1
+
+- Nick Thompson ([@Nick-NCSU](https://github.com/Nick-NCSU))
+
+---
+
 # v4.3.2 (Thu Apr 25 2024)
 
 #### 🐛 Bug Fix

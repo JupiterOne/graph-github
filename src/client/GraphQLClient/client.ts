@@ -27,7 +27,6 @@ import {
   RateLimitStepSummary,
   Review,
   TagQueryResponse,
-  SinglePullRequestResponse,
   VulnerabilityAlertResponse,
   RepoConnectionFilters,
   TopicQueryResponse,
@@ -53,7 +52,6 @@ import {
   retryErrorHandle,
 } from './errorHandlers';
 import { graphql } from '@octokit/graphql/dist-types/types';
-import SinglePullRequestQuery from './pullRequestQueries/SinglePullRequestQuery';
 import RepoVulnAlertsQuery from './vulnerabilityAlertQueries/RepoVulnAlertsQuery';
 import BranchProtectionRulesQuery from './branchProtectionRulesQueries/BranchProtectionRulesQuery';
 import TagsQuery from './tagQueries/TagsQuery';
@@ -223,32 +221,6 @@ export class GithubGraphqlClient implements IScopes {
     this.collectRateLimitStatus(rateLimit);
 
     return organization;
-  }
-
-  /**
-   * Fetches Pull Request based on the provided parameters.
-   * @param repoOwner
-   * @param repoName
-   * @param pullRequestNumber
-   */
-  public async fetchPullRequest(
-    repoOwner: string,
-    repoName: string,
-    pullRequestNumber: number,
-  ): Promise<SinglePullRequestResponse | undefined> {
-    const executor = createQueryExecutor(this, this.logger);
-
-    let pullRequest: SinglePullRequestResponse | undefined;
-    await SinglePullRequestQuery.iteratePullRequest(
-      { pullRequestNumber, repoName, repoOwner },
-      executor,
-      (pr) => {
-        pullRequest = pr as SinglePullRequestResponse;
-      },
-      this.logger,
-    );
-
-    return pullRequest;
   }
 
   async iteratePullRequests(

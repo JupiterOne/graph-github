@@ -56,7 +56,7 @@ questions:
       authorized repositories with a business need to access the Org secret.
     queries:
       - query: |
-          Find (github_account|github_repo|github_environment)
+          FIND (github_account|github_repo|github_environment)
             THAT HAS Secret
           RETURN TREE
     tags:
@@ -75,7 +75,6 @@ questions:
           FIND CodeRepo
             THAT USES Secret
           RETURN CodeRepo.displayName, Secret.displayName
-          ORDER BY Secret.displayName ASC
     tags:
       - github
       - secret
@@ -93,11 +92,11 @@ questions:
       - name: Past 180 Days
         resultsAre: INFORMATIVE
         query: |
-          Find Secret with updatedOn < date.now - 180 days
+          FIND Secret WITH updatedOn < date.now - 180 days
       - name: Past Year
         resultsAre: INFORMATIVE
         query: |
-          Find Secret with updatedOn < date.now - 1 year
+          FIND Secret WITH updatedOn < date.now - 1 year
     tags:
       - github
       - secret
@@ -114,9 +113,7 @@ questions:
         query: |
           FIND CodeRepo AS repo
             THAT USES CodeRepo AS dependency
-          RETURN
-            repo.name,
-            count(dependency) AS dependents
+          RETURN repo.name, count(dependency) AS dependents
           ORDER BY dependents DESC
       - name: Visualize Dependent Repos Across the Org
         resultsAre: INFORMATIVE
@@ -127,9 +124,9 @@ questions:
       - name: Visualize Impact of Dependent Repos with Vulnerabilities
         resultsAre: INFORMATIVE
         query: |
-          Find CodeRepo AS repo
+          FIND CodeRepo AS repo
             THAT USES CodeRepo AS dependency
-            THAT HAS (Finding|Vulnerability) WITH open=true
+            THAT HAS (Finding|Vulnerability) WITH open = true
           RETURN TREE
     tags:
       - github
@@ -141,7 +138,7 @@ questions:
     description: Finds all open PRs that have not been updated in the last week.
     queries:
       - query: |
-          FIND github_pullrequest with open = true AND updatedOn <= date.now-7days
+          FIND github_pullrequest WITH open = true AND updatedOn <= date.now-7days
     tags:
       - github
       - dev
@@ -167,7 +164,8 @@ questions:
     queries:
       - resultsAre: BAD
         query: |
-          FIND github_repo that !HAS github_branch_protection_rule
+          FIND github_repo
+            THAT !HAS github_branch_protection_rule
     tags:
       - github
       - dev

@@ -442,11 +442,10 @@ export const ingestionConfig: IntegrationIngestionConfigFieldMap = {
     title: 'GitHub Repository Secrets',
     description: 'Secrets metadata available in a repository.',
   },
-  // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
-  // [IngestionSources.SECRET_SCANNING_ALERTS]: {
-  //   title: 'GitHub Secret Scanning Alerts',
-  //   description:
-  //     'Alerts for potential leaks of known secrets in public repositories',
-  //   defaultsToDisabled: true,
-  // },
+  [IngestionSources.SECRET_SCANNING_ALERTS]: {
+    title: 'GitHub Secret Scanning Alerts',
+    description:
+      'Alerts for potential leaks of known secrets in public repositories',
+    defaultsToDisabled: true,
+  },
 };

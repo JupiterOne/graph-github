@@ -1,3 +1,15 @@
+# v5.1.1 (Wed Jul 10 2024)
+
+#### 🐛 Bug Fix
+
+- remove secret property from secret scanning findings [#306](https://github.com/JupiterOne/graph-github/pull/306) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v5.1.0 (Wed Jul 10 2024)
 
 #### 🚀 Enhancement

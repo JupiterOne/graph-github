@@ -1,3 +1,15 @@
+# v5.1.0 (Wed Jul 10 2024)
+
+#### 🚀 Enhancement
+
+- include secretScanningAlerts step back again [#305](https://github.com/JupiterOne/graph-github/pull/305) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v5.0.0 (Wed May 15 2024)
 
 #### 💥 Breaking Change

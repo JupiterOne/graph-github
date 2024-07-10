@@ -34,14 +34,13 @@ export default async function getStepStartStates(
       )
     : !scopes?.has('security_events') && !scopes?.has('repo');
 
-  // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
-  // const disabledSecretScanningAlerts = isAppAuth
-  //   ? !scopes?.has('secret_scanning_alerts') ||
-  //     !utils.isSupported(
-  //       EnterpriseFeatures.LIST_SECRET_SCANNING_ALERT_FOR_ORG,
-  //       gheServerVersion,
-  //     )
-  //   : !scopes?.has('repo') && !scopes?.has('security_events');
+  const disabledSecretScanningAlerts = isAppAuth
+    ? !scopes?.has('secret_scanning_alerts') ||
+      !utils.isSupported(
+        EnterpriseFeatures.LIST_SECRET_SCANNING_ALERT_FOR_ORG,
+        gheServerVersion,
+      )
+    : !scopes?.has('repo') && !scopes?.has('security_events');
 
   return {
     [Steps.FETCH_ACCOUNT]: { disabled: false },
@@ -103,16 +102,15 @@ export default async function getStepStartStates(
         !scopes?.has('discussions'),
       disabledReason: DisabledStepReason.PERMISSION,
     },
-    // TODO: enable when this is ready https://jupiterone.atlassian.net/browse/INT-9938
-    // [Steps.FETCH_SECRET_SCANNING_ALERTS]: {
-    //   disabled: disabledSecretScanningAlerts,
-    //   disabledReason: (
-    //     isAppAuth
-    //       ? !scopes?.has('secret_scanning_alerts')
-    //       : !scopes?.has('repo') && !scopes?.has('security_events')
-    //   )
-    //     ? DisabledStepReason.PERMISSION
-    //     : DisabledStepReason.API_VERSION,
-    // },
+    [Steps.FETCH_SECRET_SCANNING_ALERTS]: {
+      disabled: disabledSecretScanningAlerts,
+      disabledReason: (
+        isAppAuth
+          ? !scopes?.has('secret_scanning_alerts')
+          : !scopes?.has('repo') && !scopes?.has('security_events')
+      )
+        ? DisabledStepReason.PERMISSION
+        : DisabledStepReason.API_VERSION,
+    },
   };
 }

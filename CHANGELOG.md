@@ -1,3 +1,15 @@
+# v5.1.2 (Mon Jul 15 2024)
+
+#### 🐛 Bug Fix
+
+- add repo id to secret scanning finding _key [#307](https://github.com/JupiterOne/graph-github/pull/307) ([@RonaldEAM](https://github.com/RonaldEAM))
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v5.1.1 (Wed Jul 10 2024)
 
 #### 🐛 Bug Fix

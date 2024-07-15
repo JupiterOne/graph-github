@@ -28,9 +28,13 @@ export async function fetchSecretScanningAlerts({
   const restClient = getOrCreateRestClient(config, logger);
 
   await restClient.iterateSecretScanningAlerts(async (alert) => {
-    const secretScanningAlertEntity = (await jobState.addEntity(
-      createSecretScanningAlertEntity(alert),
-    )) as SecretScanningFindingEntity;
+    const secretScanningAlertEntity = createSecretScanningAlertEntity(
+      alert,
+    ) as SecretScanningFindingEntity;
+    if (!secretScanningAlertEntity) {
+      return;
+    }
+    await jobState.addEntity(secretScanningAlertEntity);
 
     const repoEntityKey =
       alert.repository?.node_id &&

@@ -204,9 +204,6 @@ export function getSecretScanningAlertKey(
 export function createSecretScanningAlertEntity(
   data: SecretScanningAlertQueryResponse,
 ) {
-  if (!data.repository) {
-    return;
-  }
   return createIntegrationEntity({
     entityData: {
       source: data,

@@ -193,8 +193,12 @@ export function createCodeScanningFindingEntity(
   });
 }
 
-export function getSecretScanningAlertKey(id: string) {
-  return `github_secret_scanning_finding:${id}`;
+export function getSecretScanningAlertKey(
+  data: SecretScanningAlertQueryResponse,
+) {
+  return `github_secret_scanning_finding:${data.repository!.node_id}:${
+    data.number
+  }`;
 }
 
 export function createSecretScanningAlertEntity(
@@ -206,7 +210,7 @@ export function createSecretScanningAlertEntity(
       assign: {
         _class: GithubEntities.GITHUB_SECRET_SCANNING_ALERT._class,
         _type: GithubEntities.GITHUB_SECRET_SCANNING_ALERT._type,
-        _key: getSecretScanningAlertKey(String(data.number)),
+        _key: getSecretScanningAlertKey(data),
         displayName: data.secret_type_display_name,
         name: data.secret_type_display_name,
         severity: 'CRITICAL',
